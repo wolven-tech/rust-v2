@@ -10,7 +10,7 @@ No Postgres, no Supabase, no TypeScript in the data path.
 - `tooling/` — `meta` (the orchestrator) and `pg2events` (the one-shot migrator).
 
 The design and every decision behind it live in
-`docs/architecture/001-rust-v2-allsource-foundation.md` in the `rust-v1` repo.
+[`docs/architecture/001-rust-v2-allsource-foundation.md`](docs/architecture/001-rust-v2-allsource-foundation.md).
 Read it before changing anything structural — it records *why*, and the code
 only records *what*.
 
@@ -182,37 +182,18 @@ It is `#[ignore]`d by default because it needs a live Core, and it **fails
 loudly** rather than skipping when Core is unreachable — a silently-skipped
 acceptance test is indistinguishable from a passing one.
 
-### By hand, with the real bytes visible
+### By hand — the one command worth running yourself
 
-With Core on `:3900` and the API on `:4400`:
+The automated test above asserts all of this. This is the single step it cannot
+show you: the stored event, straight out of Core.
 
 ```bash
-API=http://localhost:4400
-
-# 1. Real credential auth (better-auth's own route).
-TOKEN=$(curl -s -X POST $API/auth/sign-up/email \
-  -H 'content-type: application/json' \
-  -d '{"email":"you@example.com","password":"password123","name":"You"}' \
-  | python3 -c 'import sys,json;d=json.load(sys.stdin);print(d.get("token") or d["session"]["token"])')
-
-# 2. HTTP request → domain event → AllSource append.
-POST=$(curl -s -X POST $API/posts \
-  -H "authorization: Bearer $TOKEN" -H 'content-type: application/json' \
-  -d '{"title":"Hello from the vertical slice","content":"One event, all the way through."}')
-echo "$POST"
-ID=$(echo "$POST" | python3 -c 'import sys,json;print(json.load(sys.stdin)["id"])')
-
-# 3. The raw event, straight out of Core. This is the proof.
-curl -s "http://localhost:3900/api/v1/events/query?entity_id=post:$ID" | python3 -m json.tool
-
-# 4. Fold-on-read: one entity, one HTTP call, folded in the handler.
-curl -s $API/posts/$ID -H "authorization: Bearer $TOKEN" | python3 -m json.tool
-
-# 5. The cross-entity read model, served by the `posts_v1` projection worker.
-curl -s $API/posts -H "authorization: Bearer $TOKEN" | python3 -m json.tool
+# `tenant_id` is NOT optional. Core scopes every read to a tenant and answers a
+# tenant-less query with {"events":[],"count":0} and HTTP 200 — no error. Omit
+# it and this prints nothing, which looks exactly like "the write failed".
+curl -s "http://localhost:3900/api/v1/events/query?entity_id=post:$ID&tenant_id=default" \
+  | python3 -m json.tool
 ```
-
-Step 3 prints the stored event, and it is worth reading closely:
 
 ```json
 {
@@ -231,15 +212,18 @@ Step 3 prints the stored event, and it is worth reading closely:
 }
 ```
 
-Two things in there are load-bearing:
+Three things in there are load-bearing:
 
-- **`event_type` is dotted; the payload's `"type"` is PascalCase.** They are two
-  different namespaces, mapped explicitly in `rv2_events::wire` and *checked*
-  on decode. There is no fallback that guesses one from the other.
-- **`occurred_at` (payload) and `timestamp` (envelope) are different values.**
-  The envelope timestamp is assigned by Core at ingest. All domain time is read
-  from the payload, which is what makes a backdated or migrated event keep its
-  real date instead of collapsing to "now".
+- **`event_type` is dotted; the payload's `"type"` is PascalCase.** Two different
+  namespaces, mapped explicitly in `rv2_events::wire` and *checked* on decode.
+  Nothing guesses one from the other.
+- **`occurred_at` (payload) and `timestamp` (envelope) are different values.** The
+  envelope timestamp is assigned by Core at ingest. All domain time is read from
+  the payload, which is what lets a backdated or migrated event keep its real
+  date instead of collapsing to "now".
+- **The tenant scoping above is asserted**, not just documented, in
+  `crates/rv2-allsource/tests/core_contract.rs`. Every defect this codebase has
+  hit in AllSource was an assumption written in a comment and checked nowhere.
 
 ### In the browser
 
@@ -296,3 +280,17 @@ These are marked, not hidden. Each has a `SEAM` comment at the site.
 | `pg2events` has no Postgres reader | `tooling/pg2events/src/main.rs` | Phase-8 work; needs the real Supabase replica. The row→event mapping and its guarantees are implemented and tested. |
 | No session cache | `apps/api/src/infrastructure/auth/middleware.rs` | Authenticated requests cost two AllSource round-trips. Measure p99 before adding the cache. |
 | English only | — | No Rust i18n crate has been evaluated. rust-v1 shipped `en` + `fr`; this is a product regression that needs sign-off. |
+
+---
+
+## Docs
+
+| Document | What it is |
+|---|---|
+| [`docs/architecture/001-rust-v2-allsource-foundation.md`](docs/architecture/001-rust-v2-allsource-foundation.md) | The design. 21 numbered decisions (D1–D21), the risks (R*), and the open questions (OQ-*) that the code comments cite by number. Appendix C records what the scaffold changed; Appendix D corrects D3/D4 on tenant-scoped reads. |
+| [`docs/ledger/allsource-integration-corpus.md`](docs/ledger/allsource-integration-corpus.md) | The frozen list of AllSource behaviours this integration depends on (B1–B21), which are asserted, and the loop that asserted them. |
+| [`docs/ledger/component-kit-autoresearch.md`](docs/ledger/component-kit-autoresearch.md) | How `rv2-ui` got its scope and why the bundle is the size it is. |
+
+The architecture doc lived in the `rust-v1` repo until 2026-08-11, which left
+136 references to `§`, `D*`, `R*` and `OQ-*` in this codebase pointing at a file
+that was not here.

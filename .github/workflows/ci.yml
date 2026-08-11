@@ -1,5 +1,17 @@
 name: CI
 
+# Four jobs, split by what they NEED rather than by what they check.
+#
+# It was eight. `cargo audit` and `cargo deny check advisories` read the same
+# RustSec database, so one of them was pure duplication. rustfmt, clippy,
+# build+test and the Supabase greps all wanted the same toolchain and the same
+# warm target/ — as separate jobs they each paid a runner spin-up and compiled
+# the workspace again to report on it.
+#
+# What is left is split where the split buys something real: a different
+# toolchain target (wasm32), a different tool that must not share a cache
+# (cargo-deny), or a live server (Core).
+
 on:
   push:
     branches: [main]
@@ -14,34 +26,64 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  fmt:
-    name: rustfmt
+  check:
+    name: check
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: Swatinem/rust-cache@v2
+
+      # Cheapest first, so a formatting slip does not cost a full compile to
+      # discover. They share one warm target/ — the reason these are one job.
       - run: cargo fmt --all -- --check
 
-  clippy:
-    name: clippy
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: Swatinem/rust-cache@v2
       # `--all-targets` covers tests and benches too; a lint that only fires in
       # a test module is still a lint.
       # `--all-features` too: `apps/api`'s `allsource-auth` feature swaps the
       # better-auth adapter, and a lint inside that cfg branch is still a lint.
       - run: cargo clippy --workspace --all-targets --all-features -- -D warnings
 
-  test:
-    name: build + test
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: Swatinem/rust-cache@v2
       - run: cargo build --workspace
       - run: cargo test --workspace
+
+      # The point of the exercise. Greps, no toolchain — they ran on their own
+      # runner for five seconds of work.
+      #
+      # NOTE on what is checked and why. A bare `grep -ri supabase .` is NOT the
+      # right test and does not pass here: the word legitimately appears in
+      # prose — `tooling/pg2events` exists precisely to read Supabase, and
+      # several modules carry a comment naming the §7 responsibility they
+      # replace. Deleting those comments would remove the explanation, not the
+      # dependency. What must be zero is a real Supabase *artefact*.
+      - name: No Supabase dependency, client, credential or host
+        run: |
+          set -euo pipefail
+          fail=0
+
+          if grep -rin 'supabase' Cargo.lock Cargo.toml */*/Cargo.toml 2>/dev/null \
+               | grep -v '^tooling/pg2events/Cargo.toml:.*description'; then
+            echo "::error::a manifest or the lockfile references supabase"
+            fail=1
+          fi
+
+          if grep -rInE \
+               'NEXT_PUBLIC_SUPABASE|SUPABASE_SERVICE_KEY|SUPABASE_ANON|[a-z0-9-]+\.supabase\.co|@supabase/|createBrowserClient|createServerClient' \
+               --exclude-dir=.git --exclude-dir=target --exclude-dir=.github . ; then
+            echo "::error::a Supabase credential, host or client SDK reference is present"
+            fail=1
+          fi
+
+          exit $fail
+
+      - name: No package.json / bun.lock / tsconfig
+        run: |
+          set -euo pipefail
+          found=$(find . -name package.json -o -name bun.lock -o -name tsconfig.json \
+                    -o -name turbo.json -not -path './target/*' | grep -v '^./target' || true)
+          if [ -n "$found" ]; then
+            echo "::error::TypeScript build files found: $found"
+            exit 1
+          fi
 
   wasm:
     name: wasm32 boundary
@@ -49,6 +91,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: Swatinem/rust-cache@v2
+      # Kept separate from `check`: a different rustc target means a different
+      # set of artefacts, so this genuinely parallelises rather than queueing
+      # behind the host build.
+      #
       # §2.2: "the single most dangerous line in this workspace". A crate that
       # accidentally pulls tokio-net, reqwest or native TLS fails here in ~40s
       # instead of during a `dx build` three weeks later.
@@ -74,39 +120,8 @@ jobs:
             done
           done
 
-  audit:
-    name: cargo audit (every member)
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: Swatinem/rust-cache@v2
-      - run: cargo install cargo-audit --locked
-      # rust-v1 learned this the hard way: `cargo audit` there only ran against
-      # `tooling/meta`, so six advisories in `apps/api` — including a
-      # quinn-proto remote memory exhaustion and a reachable panic in
-      # rustls-webpki CRL parsing — sat unnoticed.
-      #
-      # This workspace has ONE root Cargo.lock covering every member, so a
-      # single run at the root genuinely covers all of them. The assertion below
-      # is what keeps that true: if someone adds a nested lockfile (a member
-      # excluded from the workspace), CI fails rather than quietly auditing less
-      # than it claims to.
-      - name: Assert one lockfile covers every member
-        run: |
-          set -euo pipefail
-          nested=$(find . -name Cargo.lock -not -path ./Cargo.lock -not -path './target/*')
-          if [ -n "$nested" ]; then
-            echo "::error::nested lockfile(s) found; cargo audit at the root would not cover them:"
-            echo "$nested"
-            exit 1
-          fi
-          members=$(cargo metadata --no-deps --format-version 1 | jq -r '.packages[].name' | sort)
-          echo "members covered by ./Cargo.lock:"
-          echo "$members"
-      - run: cargo audit --deny warnings
-
-  deny:
-    name: cargo deny
+  supply-chain:
+    name: supply chain
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -114,71 +129,49 @@ jobs:
       # cannot install the toolchain pinned in rust-toolchain.toml ("override
       # toolchain '1.97.1-x86_64-unknown-linux-musl' is not installed"). It then
       # resolves the graph with a different cargo and reports bans that do not
-      # reproduce locally — native-tls was flagged here while `cargo deny check`
+      # reproduce locally — native-tls was flagged there while `cargo deny check`
       # was clean on a developer machine. A check that disagrees with local is
       # noise, so this runs cargo-deny under the repo's own toolchain.
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
+
+      # rust-v1 learned this the hard way: `cargo audit` there only ran against
+      # `tooling/meta`, so six advisories in `apps/api` — including a quinn-proto
+      # remote memory exhaustion and a reachable panic in rustls-webpki CRL
+      # parsing — sat unnoticed.
+      #
+      # This workspace has ONE root Cargo.lock covering every member, so a single
+      # run at the root genuinely covers all of them. This assertion is what
+      # keeps that true: add a nested lockfile (a member excluded from the
+      # workspace) and CI fails, rather than quietly checking less than it claims.
+      - name: Assert one lockfile covers every member
+        run: |
+          set -euo pipefail
+          nested=$(find . -name Cargo.lock -not -path ./Cargo.lock -not -path './target/*')
+          if [ -n "$nested" ]; then
+            echo "::error::nested lockfile(s) found; a root-level check would not cover them:"
+            echo "$nested"
+            exit 1
+          fi
+          echo "members covered by ./Cargo.lock:"
+          cargo metadata --no-deps --format-version 1 | jq -r '.packages[].name' | sort
+
+      # `cargo deny check advisories` reads the same RustSec database as
+      # `cargo audit` and additionally enforces bans, licences and sources. The
+      # separate `cargo audit` job it replaces was running the same query twice.
       - run: cargo install cargo-deny --locked
       - run: cargo deny check advisories bans licenses sources
 
-  no-supabase:
-    name: no Supabase, no Node
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      # The point of the exercise.
-      #
-      # NOTE on what is checked and why. A bare `grep -ri supabase .` is NOT
-      # the right test and does not pass here: the word legitimately appears in
-      # prose — `tooling/pg2events` exists precisely to read Supabase, and
-      # several modules carry a comment naming the §7 responsibility they
-      # replace. Deleting those comments would remove the explanation, not the
-      # dependency.
-      #
-      # What must be zero is a real Supabase *artefact*: a dependency, a client,
-      # a credential, or a hostname. That is what is asserted.
-      - name: No Supabase dependency, client, credential or host
-        run: |
-          set -euo pipefail
-          fail=0
-
-          # A crate or npm package named supabase, anywhere in the lockfile or
-          # any manifest.
-          if grep -rin 'supabase' Cargo.lock Cargo.toml */*/Cargo.toml 2>/dev/null \
-               | grep -v '^tooling/pg2events/Cargo.toml:.*description'; then
-            echo "::error::a manifest or the lockfile references supabase"
-            fail=1
-          fi
-
-          # Credentials, hostnames, and the JS SDK.
-          if grep -rInE \
-               'NEXT_PUBLIC_SUPABASE|SUPABASE_SERVICE_KEY|SUPABASE_ANON|[a-z0-9-]+\.supabase\.co|@supabase/|createBrowserClient|createServerClient' \
-               --exclude-dir=.git --exclude-dir=target --exclude-dir=.github . ; then
-            echo "::error::a Supabase credential, host or client SDK reference is present"
-            fail=1
-          fi
-
-          exit $fail
-      - name: no package.json / bun.lock / tsconfig
-        run: |
-          set -euo pipefail
-          found=$(find . -name package.json -o -name bun.lock -o -name tsconfig.json \
-                    -o -name turbo.json -not -path './target/*' | grep -v '^./target' || true)
-          if [ -n "$found" ]; then
-            echo "::error::TypeScript build files found: $found"
-            exit 1
-          fi
-
-  vertical-slice:
-    name: vertical slice (live Core)
+  live-core:
+    name: live Core
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: Swatinem/rust-cache@v2
       # `allsource-core` is a plain crates.io binary, so CI needs no service
-      # container and no registry credentials — which matters, because the
-      # published Core images were not pullable when this was written.
+      # container and no registry credentials. (The public community images —
+      # `ghcr.io/all-source-os/allsource-core-community` — are amd64-only and
+      # would work here too; the binary is simply fewer moving parts.)
       - run: cargo install allsource-core --version 0.23.0 --locked
       - name: Start Core
         run: |
@@ -190,6 +183,15 @@ jobs:
             sleep 1
           done
           curl -sf http://localhost:3900/health
+
+      # Contract first: it asserts WHICH Core behaviours everything else relies
+      # on, so when an assumption breaks the failure names the behaviour instead
+      # of surfacing as a confusing 404 in the slice below.
+      - name: Assert the Core contract
+        env:
+          ALLSOURCE_CORE_URL: http://localhost:3900
+        run: cargo test -p rv2-allsource --test core_contract -- --ignored --test-threads=1
+
       - name: Run the acceptance test
         env:
           ALLSOURCE_CORE_URL: http://localhost:3900
@@ -201,12 +203,3 @@ jobs:
         run: |
           cargo test -p api --features allsource-auth --test vertical_slice \
             -- --ignored --nocapture --test-threads=1
-
-      # The contract suite is the point of the live-Core job. The vertical slice
-      # proves the feature works; these prove WHICH Core behaviours it relies on,
-      # so a regression names the broken assumption instead of surfacing as a
-      # confusing 404. An #[ignore]d test that CI never runs asserts nothing.
-      - name: Assert the Core contract
-        env:
-          ALLSOURCE_CORE_URL: http://localhost:3900
-        run: cargo test -p rv2-allsource --test core_contract -- --ignored --test-threads=1
