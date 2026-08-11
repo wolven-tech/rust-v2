@@ -7,7 +7,7 @@
 //! Two reasons it exists as its own crate rather than living in the handlers:
 //!
 //! - **R4 mitigation.** The architecture doc flags "authorization moved from
-//!   Postgres RLS into the application" as the risk most likely to cause a real
+//!   database row-level security into the application" as the risk most likely to cause a real
 //!   incident. Ownership checks live here as *named, greppable, unit-tested*
 //!   functions ([`can_edit_post`], [`can_delete_post`]) so a handler that
 //!   forgets one is a visible omission rather than an invisible one.

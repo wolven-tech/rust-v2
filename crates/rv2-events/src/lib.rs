@@ -348,7 +348,7 @@ mod tests {
             id: Uuid::nil(),
             author_id: Uuid::nil(),
             title: "backdated".into(),
-            content: "migrated from postgres".into(),
+            content: "backfilled".into(),
             occurred_at: ts("2024-03-01T12:00:00Z"),
         };
         let envelope = EventEnvelope {

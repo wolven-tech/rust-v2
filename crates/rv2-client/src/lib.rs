@@ -243,7 +243,7 @@ pub async fn get_user(id: Uuid) -> Result<UserView, ApiError> {
     send(authed(Request::get(&url)).build()?).await
 }
 
-/// `PATCH /users/{id}` — replaces Supabase's `updateUser` (§7 item 8).
+/// `PATCH /users/{id}` — updates a user's mutable profile fields.
 ///
 /// # Errors
 ///

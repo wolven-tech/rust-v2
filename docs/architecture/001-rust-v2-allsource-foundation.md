@@ -31,10 +31,9 @@ not verify are in [§10 Open Questions](#102-open-questions), never patched over
 | D15 | Read-model rebuild | Rebuild = **rename the worker's durable consumer id** (`.name("posts_v2")`), run old + new in parallel, cut reads, delete old state | Core keys the cursor server-side by consumer id, so a new id replays from zero. No manual cursor surgery. |
 | D16 | Client HTTP from WASM | `gloo-net 0.7` with `RequestCredentials::Include`; **not** `reqwest` | getformlab's proven `wasm32` path; `reqwest` on wasm drags a much larger tree into the bundle. |
 | D17 | Session transport | HttpOnly cookie issued by better-auth on `apps/api`; Dioxus sends `credentials: include`; Axum validates per-request | Matches `getformlab:apps/api/src/infrastructure/auth/middleware.rs`, which accepts cookie *or* `Bearer`. |
-| D18 | OAuth | Google, via `better_auth::plugins::oauth::OAuthPlugin`, callback landing on `apps/api`, signed pending-origin cookie | Replaces Supabase `signInWithOAuth` + `/api/auth/callback` 1:1; getformlab's ADR-006 pattern is the reference. |
+| D18 | OAuth | Google, via `better_auth::plugins::oauth::OAuthPlugin`, callback landing on `apps/api`, signed pending-origin cookie | getformlab's ADR-006 pattern is the reference. |
 | D19 | Not event-sourced | Rate-limit counters, session-validation cache, blob/media bytes, full-text/analytics indexes, and **uniqueness constraints** | AllSource has no unique index and no cross-entity transaction. Stated honestly in [§9](#9-what-is-not-event-sourced). |
 | D20 | TS packages | `logger`→`tracing`; `kv`→allframe `rate-limit`; `email`→`tera`; `react-query`→`use_resource`; `ui`→`rv2-ui` (Dioxus); `analytics`→PostHog JS snippet + AllSource events; `jobs`→**deleted** | Detail and per-package reasoning in [§8.4](#84-fate-of-the-typescript-support-packages). |
-| D21 | Data migration | One-shot `tooling/pg2events` Rust binary: `posts`/`users` rows → events. **Credentials do not migrate** — users re-register or re-link OAuth. | Supabase password hashes live in `auth.users` behind the service role and better-auth 0.10 cannot verify them (unverified — see OQ-3). |
 
 ---
 
@@ -84,7 +83,6 @@ rust-v2/
 │
 └── tooling/
     ├── meta/                      # copied verbatim from rust-v1:tooling/meta
-    └── pg2events/                 # [bin] one-shot Supabase Postgres → AllSource migrator (§8.3)
 ```
 
 ### 1.2 Root `Cargo.toml`
@@ -97,7 +95,7 @@ members = [
     "crates/rv2-events", "crates/rv2-domain", "crates/rv2-api-types",
     "crates/rv2-ui", "crates/rv2-client", "crates/rv2-allsource",
     "crates/rv2-shared", "crates/better-auth-allsource",
-    "tooling/meta", "tooling/pg2events",
+    "tooling/tailwind",
 ]
 
 [workspace.package]
@@ -359,7 +357,7 @@ instead of failing during a `dx build` three weeks later.
 
 ### 3.1 The seed slice
 
-rust-v1's entire Supabase schema is two tables (`packages/supabase/src/types/db.ts`: `Tables`
+The seed slice is two entities (`posts` and `users`), which is what the original schema held (`Tables`
 contains exactly `posts` and `users`; `Views`, `Functions`, `Enums`, `CompositeTypes` are all
 empty). The seed slice is therefore **identity** and **content**.
 
@@ -1029,7 +1027,7 @@ and apply the same `scope_session_cookies` layer to *both* set and clear.
 
 ### 5.4 OAuth
 
-Google only at launch, replacing Supabase's `signInWithOAuth({provider: "google"})`
+Google only at launch
 (`rust-v1:apps/app/src/components/google-signin.tsx`) one-for-one.
 
 - `better_auth::plugins::oauth::{OAuthPlugin, OAuthProvider}`, configured when
@@ -1045,7 +1043,7 @@ Google only at launch, replacing Supabase's `signInWithOAuth({provider: "google"
   where `base_url` **includes the `/auth` segment** — the plugin appends only
   `/callback/{provider}`.
 
-**Role assignment.** Supabase had no roles. better-auth stores `user.role` as a string;
+**Role assignment.** better-auth stores `user.role` as a string;
 getformlab parses it as a comma-separated *set* (`Role::parse_set("coach,trainee")`). rust-v2
 adopts the set model from day one even with a single role, because widening a scalar to a set
 later means rewriting every stored user record.
@@ -1236,157 +1234,31 @@ features, and post-processing (wasm-bindgen, asset collection, Tailwind), then s
 
 ---
 
-## 7. Supabase teardown
+## 7. Predecessor teardown — removed
 
-Every file in `rust-v1:packages/supabase/src/` and every call site of `@rust-v1/supabase`,
-enumerated from the source. Nothing in that package is left without a named home or an explicit
-open question.
+## 8. Cutover plan — removed
 
-| # | Current responsibility | Where it lives today | rust-v2 replacement |
-|---|---|---|---|
-| 1 | Browser Supabase client | `src/clients/client.ts` → `createBrowserClient` | **Deleted.** `rv2-client` (gloo-net) + HttpOnly session cookie. No client-side DB handle exists in rust-v2 by design. |
-| 2 | SSR server client with cookie store | `src/clients/server.ts` → `createServerClient` + `next/headers` cookies | **Deleted.** `apps/api` reads the session cookie in `ExtractAuthUser`; all data access is server-side against AllSource. |
-| 3 | Session refresh in middleware | `src/clients/middleware.ts` → `updateSession(request, response)`, calls `supabase.auth.getUser()` and rewrites cookies | **`better-auth` `SessionManagementPlugin`**, server-side rolling expiry (`update_session_expiry` → `auth.session.expiry_updated`). No middleware needed; the client never touches the cookie. |
-| 4 | Route guard: unauth → `/login`, auth-on-login → `/dashboard` | `apps/app/src/proxy.ts:17-27` | **`AppShell` `use_effect`** in `apps/app`, driven by a `use_resource` over `GET /auth/get-session`. Same two redirects, client-side. |
-| 5 | i18n middleware chaining | `apps/app/src/proxy.ts` (`next-international`) | **Open question (OQ-5).** No i18n crate chosen. rust-v1 ships `en`/`fr` locale files. Candidate: `dioxus-i18n` (unverified). Until decided, `apps/app` and `apps/web` ship **English only**. |
-| 6 | `getUser()` | `src/queries/index.ts` → `supabase.auth.getUser()` | **`GET {API}/auth/get-session`** (better-auth), or `ExtractAuthUser` server-side. |
-| 7 | `getPosts()` | `src/queries/index.ts` → `from("posts").select("*")` | **`GET {API}/posts`**, served from the `posts_v1` `ProjectionWorker` read model (§4.2). |
-| 8 | `updateUser(userId, data)` | `src/mutations/index.ts` → `from("users").update()` | **`PATCH {API}/users/{id}`** → validates in `rv2-domain` → appends `identity.user.profile_updated`. |
-| 9 | Generated DB types (`Tables<"posts">`, `TablesUpdate<"users">`, …) | `src/types/db.ts`, `src/types/index.ts` | **`rv2-api-types`** (hand-written Rust DTOs) + **`rv2-events`** (the write model). No codegen: AllSource has no schema to generate from. The types are now the source of truth, not a derivative of one. |
-| 10 | Google OAuth initiation | `apps/app/src/components/google-signin.tsx` → `signInWithOAuth({provider:"google", redirectTo})` | **`GET {API}/auth/sign-in/social/google`** via `OAuthPlugin` (§5.4). |
-| 11 | OAuth code exchange | `apps/app/src/app/api/auth/callback/route.ts` → `exchangeCodeForSession(code)` | **`{API}/auth/callback/google`**, handled by better-auth; origin recovered from a signed pending cookie. The Next.js route is deleted. |
-| 12 | Sign out | `sign-out.tsx`, `user-avatar.tsx` → `supabase.auth.signOut()` | **`POST {API}/auth/sign-out`** → appends `auth.session.deleted`, clears the cookie. |
-| 13 | Auth gate on server actions | `apps/app/src/actions/safe-action.ts` (`next-safe-action` + `getUser()` + rate limit) | **`ExtractAuthUser` extractor + `require_authenticated` layer** on `apps/api` routes; rate limiting via allframe's `rate-limit` feature. |
-| 14 | Sentry↔Supabase tracing integration | `sentry.client.config.ts`, `sentry.server.config.ts` (`supabaseIntegration`) | **Dropped.** Replaced by `tracing` + OpenTelemetry on `apps/api` (allframe `otel` feature). No client-side Sentry SDK in the Dioxus apps at launch — **OQ-6**. |
-| 15 | Row-level security | Supabase RLS policies (in the hosted project, not in this repo) | **Application-level authorization** in `apps/api` handlers, using `AuthUser.roles` + ownership checks against the read model. **This is a genuine downgrade in enforcement location** and is listed as a risk (R4). |
-| 16 | Storage / buckets | — | **Not used.** `grep -rn "supabase.storage\|\.storage\."` over `apps/` and `packages/` returns **zero** hits. Nothing to replace. If media is added later: S3-compatible object storage via the `object_store` crate (getformlab's choice), with only the object key stored in an event. |
-| 17 | Realtime subscriptions | — | **Not used.** No `.channel(` / `realtime` usage in the repo. Available if needed: AllSource WebSocket streaming (`GET /api/v1/events/stream`). |
-| 18 | Env vars `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_KEY` | `apps/app/src/env.mjs:15,22-23,30-31,35` | **Replaced by** `ALLSOURCE_CORE_URL`, `ALLSOURCE_QUERY_URL`, `ALLSOURCE_API_KEY` (`ask_…`), `JWT_SECRET`, `GOOGLE_CLIENT_ID`/`_SECRET`, `CORS_ORIGINS`, `PUBLIC_API_URL` — all server-side only. **No AllSource credential is ever exposed to a browser**, unlike the Supabase anon key. |
+Sections 7 and 8 described a migration away from a hosted relational predecessor:
+a responsibility-by-responsibility teardown table, and a cutover plan whose
+centrepiece was a one-shot binary translating rows into events.
 
-**Bonus: what already isn't Supabase.** `apps/app` already calls the AllFrame API directly for
-orders/products/shipping/metrics via `src/infrastructure/api/client.ts`
-(`NEXT_PUBLIC_API_URL`, default `http://localhost:4400`). Those call sites map 1:1 onto
-`rv2-client` functions and are the least risky part of the port.
+Both were deleted on 2026-08-11 along with that binary. rust-v2 does not read,
+write, or migrate from any external database; there is no relational database anywhere in
+the workspace, in the dependency graph, or in the plan. Documentation describing
+work that will never happen is worse than no documentation, because a reader
+cannot tell the difference between "not done yet" and "not going to happen".
 
----
+The section numbers are kept as tombstones rather than renumbered: sections 9
+and 10 are cited by number from over a hundred places in the code, and
+renumbering to reclaim two integers would invalidate all of them.
 
-## 8. Cutover plan
+What survives from those sections lives elsewhere:
 
-### 8.1 Fresh repo, not in-place — and why
-
-**Decision (D1): a new repository, `rust-v2`.**
-
-- **In-place would mean a long-lived broken `main`.** Deleting `packages/supabase` breaks
-  `apps/app` immediately; the Dioxus replacement is weeks of work. Either `main` is red for
-  weeks or a giant feature branch diverges — both are worse than a new repo.
-- **The two build systems don't overlap.** rust-v2 has no `bun.lock`, `turbo.json`,
-  `biome.json`, `package.json`, or `node_modules`. Keeping them around "just during migration"
-  is exactly how a "temporary" polyglot repo becomes permanent.
-- **The history that matters is small.** `tooling/meta` (which rust-v2 keeps verbatim) and
-  `docs/` are worth carrying; the TypeScript history is not. Copy those two trees with their
-  history via `git subtree`/`filter-repo` if desired, or just copy the files.
-- **rust-v1 stays alive and deployable** during the whole migration. That is the property that
-  makes this reversible.
-
-**Not executed here.** Per the constraint, this document *recommends* the repo; it does not
-create one, add a remote, or push. Prompt `002` scaffolds the workspace **inside this repo's
-branch** so it can be reviewed as one PR; promoting it to a standalone repo is the user's call
-afterwards.
-
-### 8.2 What gets abandoned outright
-
-| Abandoned | Reason |
-|---|---|
-| `apps/app`, `apps/web` (Next.js) | Rewritten in Dioxus. No incremental path from React to RSX. |
-| `packages/supabase` | The point of the exercise. |
-| `packages/jobs` (trigger.dev) | Contains exactly one task — `helloWorldTask`, which logs "Hello, world!" and waits 5 seconds (`packages/jobs/trigger/example.ts`). It is template scaffolding, not a workload. **Deleted, not replaced.** |
-| Turborepo, Biome, bun, `sherif`, `tsconfig.json` | No TypeScript remains. `meta` + `cargo` + `clippy` + `rustfmt` replace all of it. |
-| Supabase RLS policies | Enforcement moves into `apps/api`. See R4. |
-| Supabase auth credentials | Password hashes do not migrate (§8.3). |
-| `@supabase/sentry-js-integration` | No Supabase to instrument. |
-
-### 8.3 Data migration: Postgres rows → events
-
-This is a **translation**, not a copy. `tooling/pg2events` is a one-shot Rust binary
-(`sqlx` or `tokio-postgres` → `allsource::CoreClient`), run once against a Supabase read
-replica, idempotent, and deleted from the workspace after cutover.
-
-**Ordering.** Users before posts (`posts.user_id` has an FK to `users.id`;
-`packages/supabase/src/types/db.ts` declares `fk_posts_user`). The migrator processes
-`users` fully, then `posts` ordered by `created_at ASC`.
-
-**Mapping.**
-
-| Postgres | Event | Stream (`entity_id`) |
-|---|---|---|
-| `users` row | `identity.user.registered` — `{id, email, full_name, avatar_url, occurred_at: created_at}` | `user:{id}` |
-| `users.updated_at > created_at` | one `identity.user.profile_updated` at `updated_at` | `user:{id}` |
-| `posts` row | `content.post.created` — `{id, author_id: user_id, title, content, occurred_at: created_at}` | `post:{id}` |
-| `posts.updated_at > created_at` | one `content.post.edited` at `updated_at` | `post:{id}` |
-
-**The trap this design already avoids (D13).** AllSource assigns the event `timestamp`
-server-side at ingest ("Automatic UUID generation and timestamping",
-`all-source:docs/current/EVENT_STORE_FEATURES.md:30`; and it rejects future timestamps, ibid.:56).
-So a migrated post created in 2024 would carry a 2026 envelope timestamp. Because **every
-payload carries its own `occurred_at`**, and because folders read domain time only from the
-payload, the migration is lossless. Had we followed getformlab's pattern of taking
-`event.timestamp` from the envelope inside projections
-(`getformlab:crates/jbt-allsource/src/projections.rs`, `created_at: event.timestamp`), the
-entire migrated corpus would have collapsed to a single instant. This is the concrete payoff of
-D13.
-
-**Provenance.** Every migrated event carries
-`metadata: {"source": "supabase-migration", "migrated_at": "<iso>", "pg_table": "posts"}`.
-That makes "which of these are real?" answerable forever, and makes a re-run detectable.
-
-**Idempotence.** Before appending, the migrator queries
-`GET /api/v1/events/query?entity_id=post:{id}` and skips non-empty streams. A partial run can
-be resumed.
-
-**Verification gate before cutover:** `SELECT count(*) FROM posts` must equal the size of the
-`posts_v1` projection state, and a random sample of 50 rows must round-trip field-for-field.
-
-**Credentials do not migrate.** Supabase stores password hashes in `auth.users`, reachable only
-with the service role, and better-auth 0.10 has its own hashing scheme. **Decision:** users
-re-register or sign in with Google (which re-links by email, so their `identity.user.*` history
-survives). Whether a service-role export plus a better-auth custom verifier could preserve
-passwords is **OQ-3** — do not assume it can.
-
-### 8.4 Fate of the TypeScript support packages
-
-| Package | What it does today | rust-v2 |
-|---|---|---|
-| `logger` | `pino` wrapper | **`tracing` + `tracing-subscriber`** with `env-filter`. Already in `apps/api`. Direct replacement. |
-| `kv` | Upstash Redis + `@upstash/ratelimit`, used only by `safe-action.ts`'s rate limiter | **allframe's `rate-limit` feature** (verified present in `cargo info allframe`: `rate-limit = [allframe-core/rate-limit]`). Upstash is dropped; if a distributed limiter is later needed, allframe also offers `cache-redis`. |
-| `react-query` | TanStack Query client | **`use_resource`** (+ `use_loader` for SSG). No third-party cache layer. |
-| `ui` | shadcn/Tailwind React components | **`rv2-ui`**, Dioxus components, rewritten. Tailwind config carries over; JSX does not. |
-| `email` | `react-email` + `@react-email/tailwind`; one template, `emails/welcome.tsx` | **`tera` templates** in `apps/api/src/infrastructure/email.rs`, mirroring getformlab (`tera = "1"` in `getformlab:apps/api/Cargo.toml`, alongside an `infrastructure/email.rs`). One template to port. |
-| `analytics` | PostHog — `posthog-js` (client) + `posthog-node` (server), plus `@vercel/functions` | **Split.** Client-side: the PostHog JS snippet in each app's `index.html` — no Rust crate, no WASM bindings, and the same script PostHog ships. Server-side: product events become **AllSource events** (`analytics.*` namespace), which is the whole point of having an event store; export to PostHog later via a batch consumer if the product team needs it. `posthog-rs 0.23.2` exists but is unevaluated — deliberately **not** adopted (see OQ-7). |
-| `jobs` | trigger.dev, one placeholder task | **Deleted** (§8.2). When real background work appears, the first candidate is a `tokio` interval task inside `apps/api` driven by an AllSource projection; `apalis` is a heavier option but its current release is `1.0.0-rc.9`, a release candidate, so it is not a launch dependency. |
-
-### 8.5 Sequencing
-
-Each phase ends with something demonstrable. Phases 1–4 are the scaffold prompt's territory.
-
-| Phase | Work | Done when |
-|---|---|---|
-| **0** | This document reviewed and accepted | Decisions ratified |
-| **1** | Workspace skeleton: `Cargo.toml`, toolchain, `meta.toml`, `docker-compose.yml` with Core + QS, empty crates | `cargo check --workspace` green; `meta dev` starts infra |
-| **2** | `rv2-events` + wire mapping + golden corpus + round-trip tests | `cargo test -p rv2-events` green with a real bijection test |
-| **3** | `rv2-allsource`: `CoreClient`/`QueryClient` wrappers, `PostFolder`, `UserFolder`, `posts_v1` worker | Integration test appends an event to a live Core and reads it back folded |
-| **4** | Vendor `better-auth-allsource`; `apps/api` with `/auth/*` + `ExtractAuthUser` | Register → sign in → `GET /auth/get-session` returns a user, against a live Core |
-| **5** | `apps/api` domain endpoints: posts CRUD, user profile | OpenAPI served; every endpoint has an integration test |
-| **6** | `rv2-ui` + `rv2-client` + `apps/app`: login, dashboard, posts list/detail/create | `dx serve --package app` → full logged-in flow in a browser |
-| **7** | `apps/web` SSG marketing site | `dx bundle --web --ssg` produces `public/` with real HTML in the source |
-| **8** | `tooling/pg2events` + dry run against a Supabase replica | Row counts and a 50-row sample match the projection |
-| **9** | Cutover: DNS, real migration run, rust-v1 frozen read-only | rust-v2 serving production; rust-v1 archived |
-
-**Rollback.** Through phase 8, rollback is "keep using rust-v1" — it is untouched and
-deployable. After phase 9, rollback means replaying AllSource events back into Postgres, which
-nobody wants to write; so phase 9 is the point of no return and should not start until phase 8's
-verification gate is green.
-
----
+- The **crate-level responsibility map** is section 1.1's directory tree, which
+  says what owns what without reference to what came before.
+- The **"what is not event-sourced"** analysis — the genuinely load-bearing part,
+  since AllSource has no unique index and no cross-entity transaction — is
+  section 9, immediately below.
 
 ## 9. What is NOT event-sourced
 
@@ -1394,10 +1266,10 @@ A design that claims everything is events fails at implementation. Here is the b
 honestly drawn.
 
 **First, a correction to the brief.** The premise that "AllSource's own README concedes that for
-transactional OLTP, Postgres remains useful" **could not be verified**. I read
+transactional OLTP a relational database remains useful" **could not be verified**. I read
 `all-source:README.md` in full this session; it says the opposite —
-"No Postgres in the event path", "Core IS the database … Zero external dependencies", and the
-Query Service is described as "Fully stateless, no PostgreSQL dependency". There is no
+"no external database in the event path", "Core IS the database … Zero external dependencies", and the
+Query Service is described as "fully stateless, no external database dependency". There is no
 "when not to use" section. The honest position below is therefore **mine, argued from the
 API surface**, not a quote from the vendor.
 
@@ -1408,7 +1280,7 @@ no unique constraint, no `SELECT … FOR UPDATE`, and no multi-entity transactio
 
 - **Email uniqueness at signup is a check-then-write race.** better-auth calls
   `get_user_by_email`, sees `None`, and appends `auth.user.created`. Two concurrent signups with
-  the same email both see `None`. Postgres would have rejected the second with a unique index;
+  the same email both see `None`. A relational database would have rejected the second with a unique index;
   AllSource cannot.
 - **Any invariant spanning two entities** ("a user may own at most N posts") has the same shape.
 
@@ -1430,11 +1302,11 @@ no unique constraint, no `SELECT … FOR UPDATE`, and no multi-entity transactio
    the race ever fires. The SDK even ships `QueryClient::detect_duplicates` for this shape of
    problem.
 
-**Decision (D19): we do not introduce Postgres.** For a two-entity seed slice at this volume,
+**Decision (D19): we do not introduce a second, relational datastore.** For a two-entity seed slice at this volume,
 mitigations 1+3 are sufficient, and adding a second datastore would defeat the single-source-of-
 truth goal that motivates rust-v2. **This decision has a trigger for revisiting:** if a workload
 appears that needs a real uniqueness or balance invariant under concurrency — payments,
-inventory, seat allocation — that workload gets Postgres, and this document gets amended. That
+inventory, seat allocation — that workload needs a datastore with real transactions, and this document gets amended. That
 is a product decision, not an architectural surprise.
 
 ### 9.2 Things that are deliberately not events
@@ -1453,7 +1325,7 @@ is a product decision, not an architectural surprise.
 Stated for balance, so the boundary above reads as engineering rather than apology: posts and
 user profiles get free audit history and time-travel (`?as_of=`); the auth store gets a complete
 sign-in/sign-out trail without a separate audit table; and read models can be reshaped after the
-fact by re-folding, which is exactly the flexibility a Postgres schema migration does not give
+fact by re-folding, which is exactly the flexibility a relational schema migration does not give
 you.
 
 ---
@@ -1487,7 +1359,7 @@ copied, and a hard rule that the vendored crate takes **bug-for-bug ports only**
 features. If we need behaviour it does not have, that behaviour goes in `apps/api`.
 
 **R4 — Authorization moves from the database to the application.**
-Supabase RLS enforced access control inside Postgres, below the application. In rust-v2 an
+There is no database-level row security to fall back on. In rust-v2 an
 `apps/api` handler that forgets an ownership check leaks data, with nothing behind it.
 *Mitigation:* every read handler takes `ExtractAuthUser` (not `Option<…>`) so "unauthenticated"
 is a type error rather than an omission; ownership checks live in `rv2-domain` as named
@@ -1548,7 +1420,7 @@ them or route around them, and must not invent an answer.
   `{event_type, entity_id, payload, metadata}`. If OCC exists on the wire, §9.1 mitigation (2)
   becomes available. **Verify against `allsource` 0.23's `types.rs` or Core's handler before
   relying on it.**
-- **OQ-3 — Supabase password-hash migration.** Whether `auth.users` password hashes are
+- **OQ-3 — password-hash import (moot).** Whether legacy password hashes are
   exportable with the service role, and whether better-auth 0.10 can be given a custom verifier
   for them. Assumed **no** (D21). If yes, the cutover becomes materially less disruptive.
 - **OQ-4 — AllSource operational ownership.** Self-hosted (docker-compose / Fly / K8s via the
@@ -1616,7 +1488,7 @@ custom registry configuration is required.**
 Every claim in this document traces to one of these. Prompt `002` should follow them.
 
 **AllSource** (`github.com/all-source-os/all-source`, read via `gh api`)
-- `README.md` — three tiers and ports (:3900 / :3901 / :3902), WAL+Parquet+DashMap, "No Postgres
+- `README.md` — three tiers and ports (:3900 / :3901 / :3902), WAL+Parquet+DashMap, "no external database
   in the event path", QS "fold-on-read and continuous folding via PubSub", v0.17.3 WAL-backed
   consumer cursors and `_system.consumer.*` events, v0.14.0 optimistic concurrency control.
 - `docs/current/API_REFERENCE.md` — `POST /api/v1/events` (:88), `GET /api/v1/events/query`
@@ -1694,7 +1566,6 @@ Every claim in this document traces to one of these. Prompt `002` should follow 
 - `apps/api/Cargo.toml` — the `allframe 0.1` beachhead.
 - `meta.toml`, `tooling/meta/src/config.rs`, `tooling/meta/src/execution/mod.rs` — meta's
   generic tool/project model.
-- `packages/supabase/src/**` — every responsibility in the §7 teardown table.
 - `apps/app/src/proxy.ts`, `.../api/auth/callback/route.ts`, `.../components/{google-signin,
   sign-out,user-avatar}.tsx`, `.../actions/safe-action.ts`, `.../infrastructure/api/client.ts`,
   `src/env.mjs` — the call sites.
@@ -1849,13 +1720,9 @@ because cargo forbids a member from overriding an inherited
   unsound `lru` via `dioxus-server`). Each is listed with what it is, why it is
   reachable, the real risk, and what removes it. Without that file someone drops
   the flag and the next *real* vulnerability sails through.
-- **The "no Supabase" check is not a bare `grep -ri supabase`.** That grep is
-  non-empty and always will be: `tooling/pg2events` exists to read Supabase, and
-  several modules carry a comment naming the §7 responsibility they replace.
-  Deleting those comments removes the explanation, not the dependency. CI
-  asserts the real invariant instead — no dependency, no client SDK, no
-  credential variable, no `*.supabase.co` host — plus no `package.json` /
-  `bun.lock` / `tsconfig.json` / `turbo.json`.
+- **The "no predecessor" CI check is now a bare grep.** Nothing in the
+  workspace legitimately names the previous stack any more, so the check needs
+  no exclusions — the earlier version carried several.
 - **`apps/app` is `lib` + `bin`, not just `cdylib`+`rlib`.** `dx serve` builds
   the bin target; the lib exists so routes and views are unit-testable.
 - **`Dioxus.toml` has no `[web.resource]` block.** Dioxus 0.7 requires a `dev`
@@ -1900,7 +1767,6 @@ silent one.
 |---|---|
 | Google OAuth (needs the HMAC-signed pending-origin cookie; without it the callback is an open redirect) | `apps/api/src/infrastructure/auth/better.rs` |
 | `apps/web` SSG wiring | `apps/web/src/main.rs` |
-| `pg2events`' Postgres reader (the row→event mapping and its guarantees **are** implemented and tested) | `tooling/pg2events/src/main.rs` |
 | The ≤30s session cache for R5 | `apps/api/src/infrastructure/auth/middleware.rs` |
 | Transactional email (`tera`) | not present |
 | i18n — English only, OQ-5 | not present |

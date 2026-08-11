@@ -68,8 +68,8 @@ impl EventWriter {
         self.append_with_metadata(event, None).await
     }
 
-    /// Append with provenance metadata — used by `tooling/pg2events`, which
-    /// stamps every migrated event with `{"source": "supabase-migration", …}`.
+    /// Append with provenance metadata, for callers that need to record where
+    /// an event came from — a backfill, an import, an automated actor.
     ///
     /// # Errors
     ///

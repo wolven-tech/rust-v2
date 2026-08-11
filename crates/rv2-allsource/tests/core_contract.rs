@@ -469,10 +469,11 @@ async fn b17_an_unseen_consumer_id_has_no_checkpoint() {
 
 // ── B2 — metadata survives the append ────────────────────────────────────────
 
-/// `tooling/pg2events` stamps every migrated event with
-/// `{"source": "supabase-migration", …}`. If metadata were silently dropped,
-/// migrated and native events would become indistinguishable after the fact —
-/// and the migration is a one-shot, so the provenance is unrecoverable.
+/// `EventWriter::append_with_metadata` is how a caller records where an event
+/// came from — a backfill, an import, an automated actor. If metadata were
+/// silently dropped, those events would become indistinguishable from ones a
+/// user actually caused, and an append is immutable, so the provenance would be
+/// unrecoverable.
 #[tokio::test]
 #[ignore = "requires a live AllSource Core"]
 async fn b2_metadata_survives_the_append() {
@@ -565,9 +566,9 @@ async fn b4_our_wire_grammar_is_a_fixed_point_of_the_normalizer() {
 /// silently normalized server-side.
 ///
 /// That distinction matters. It means an event written by any non-SDK client —
-/// `curl`, another language's SDK, `tooling/pg2events` if it ever bypassed the
-/// writer — fails loudly rather than landing under a mangled name. The
-/// normalizer is a client-side convenience, not a server-side schema.
+/// `curl`, another language's SDK, any tool that bypasses `EventWriter` — fails
+/// loudly rather than landing under a mangled name. The normalizer is a
+/// client-side convenience, not a server-side schema.
 #[tokio::test]
 #[ignore = "requires a live AllSource Core"]
 async fn b3_the_sdk_normalizes_event_types_client_side() {

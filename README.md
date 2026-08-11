@@ -1,13 +1,13 @@
 # rust-v2
 
 An all-Rust workspace whose **only datastore is [AllSource](https://github.com/all-source-os/all-source)**.
-No Postgres, no Supabase, no TypeScript in the data path.
+One datastore, one language, no TypeScript in the data path.
 
 - `apps/api` — Axum HTTP API. The only server process.
 - `apps/app` — Dioxus CSR SPA, the authenticated dashboard.
 - `apps/web` — Dioxus marketing site, built SSG.
 - `crates/` — the shared crate graph (events, domain, DTOs, UI kit, client, AllSource integration).
-- `tooling/` — `meta` (the orchestrator) and `pg2events` (the one-shot migrator).
+- `tooling/` — `tailwind`, which compiles each app's stylesheet.
 
 The design and every decision behind it live in
 [`docs/architecture/001-rust-v2-allsource-foundation.md`](docs/architecture/001-rust-v2-allsource-foundation.md).
@@ -23,7 +23,7 @@ only records *what*.
 | Rust | `1.97.1` — pinned in `rust-toolchain.toml`, so `rustup` installs it for you |
 | wasm target | `wasm32-unknown-unknown` — also in `rust-toolchain.toml` |
 | `dx` | `cargo install dioxus-cli --version 0.7.10 --locked` — the only way to serve a frontend |
-| `meta` | `cargo install --path tooling/meta` — the task orchestrator |
+| `meta` | `cargo install monorepo-meta` — the task orchestrator, driven by `meta.toml` |
 | `bacon` | `cargo install bacon` — used by `meta dev` for the API |
 | AllSource Core | see below |
 
@@ -277,7 +277,6 @@ These are marked, not hidden. Each has a `SEAM` comment at the site.
 |---|---|---|
 | Google OAuth is not wired | `apps/api/src/infrastructure/auth/better.rs` | The plugin needs the HMAC-signed pending-origin cookie glue; without it the callback is an open redirect. Credential auth is complete end to end. |
 | `apps/web` SSG is not wired | `apps/web/src/main.rs` | Needs the `static_routes` server function + `IncrementalRendererConfig`. The app builds and cross-compiles; it currently renders CSR. |
-| `pg2events` has no Postgres reader | `tooling/pg2events/src/main.rs` | Phase-8 work; needs the real Supabase replica. The row→event mapping and its guarantees are implemented and tested. |
 | No session cache | `apps/api/src/infrastructure/auth/middleware.rs` | Authenticated requests cost two AllSource round-trips. Measure p99 before adding the cache. |
 | English only | — | No Rust i18n crate has been evaluated. rust-v1 shipped `en` + `fr`; this is a product regression that needs sign-off. |
 

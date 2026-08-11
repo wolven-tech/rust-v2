@@ -5,9 +5,10 @@ name = "rust-v2"
 root = "."
 
 # ── tools ────────────────────────────────────────────────────────────────────
-# `tooling/meta`'s config model is fully generic (`tools` is a
+# `monorepo-meta`'s config model is fully generic (`tools` is a
 # HashMap<String, ToolConfig>, `project_type` is a free String), so `dx` is
-# declarable without touching meta's source.
+# declarable without forking the tool. Install it with
+# `cargo install monorepo-meta`; it is a published crate, not vendored here.
 
 [tools.cargo]
 enabled = true
@@ -145,21 +146,3 @@ path = "crates/better-auth-allsource"
 [projects.better-auth-allsource.tasks]
 build = { tool = "cargo", command = "build -p better-auth-allsource" }
 test = { tool = "cargo", command = "test -p better-auth-allsource" }
-
-# ── tooling ──────────────────────────────────────────────────────────────────
-[projects.meta]
-type = "rust"
-path = "tooling/meta"
-[projects.meta.tasks]
-build = { tool = "cargo", command = "build --release -p monorepo-meta" }
-test = { tool = "cargo", command = "test -p monorepo-meta" }
-fmt = { tool = "cargo", command = "fmt --all -- --check" }
-fmt-fix = { tool = "cargo", command = "fmt --all" }
-audit = { tool = "cargo", command = "audit" }
-
-[projects.pg2events]
-type = "rust"
-path = "tooling/pg2events"
-[projects.pg2events.tasks]
-build = { tool = "cargo", command = "build -p pg2events" }
-test = { tool = "cargo", command = "test -p pg2events" }

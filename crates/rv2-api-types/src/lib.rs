@@ -8,7 +8,7 @@
 //! Nothing here may depend on `allsource`, `axum`, `reqwest`, or `tokio` — the
 //! Dioxus apps compile this crate to `wasm32-unknown-unknown`.
 //!
-//! These types replace `packages/supabase`'s generated `Tables<"posts">` /
+//! These types are hand-written rather than generated from a schema:
 //! `TablesUpdate<"users">` (§7 item 9). They are hand-written because AllSource
 //! has no schema to generate from — which makes them the source of truth rather
 //! than a derivative of one.

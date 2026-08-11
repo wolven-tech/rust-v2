@@ -4,7 +4,7 @@ name: CI
 #
 # It was eight. `cargo audit` and `cargo deny check advisories` read the same
 # RustSec database, so one of them was pure duplication. rustfmt, clippy,
-# build+test and the Supabase greps all wanted the same toolchain and the same
+# build+test and the predecessor greps all wanted the same toolchain and the same
 # warm target/ — as separate jobs they each paid a runner spin-up and compiled
 # the workspace again to report on it.
 #
@@ -46,34 +46,21 @@ jobs:
       - run: cargo build --workspace
       - run: cargo test --workspace
 
-      # The point of the exercise. Greps, no toolchain — they ran on their own
-      # runner for five seconds of work.
+      # The point of the exercise: no predecessor stack, anywhere.
       #
-      # NOTE on what is checked and why. A bare `grep -ri supabase .` is NOT the
-      # right test and does not pass here: the word legitimately appears in
-      # prose — `tooling/pg2events` exists precisely to read Supabase, and
-      # several modules carry a comment naming the §7 responsibility they
-      # replace. Deleting those comments would remove the explanation, not the
-      # dependency. What must be zero is a real Supabase *artefact*.
-      - name: No Supabase dependency, client, credential or host
+      # This used to need exclusions — a migration binary existed to read the old
+      # database, and several modules carried comments naming what they replaced,
+      # so a bare grep was non-empty and the check had to allow-list prose. Both
+      # the binary and the comments are gone, so the check is now the strict form
+      # it always wanted to be: zero matches, no exceptions, docs included.
+      - name: No predecessor database anywhere
         run: |
           set -euo pipefail
-          fail=0
-
-          if grep -rin 'supabase' Cargo.lock Cargo.toml */*/Cargo.toml 2>/dev/null \
-               | grep -v '^tooling/pg2events/Cargo.toml:.*description'; then
-            echo "::error::a manifest or the lockfile references supabase"
-            fail=1
-          fi
-
-          if grep -rInE \
-               'NEXT_PUBLIC_SUPABASE|SUPABASE_SERVICE_KEY|SUPABASE_ANON|[a-z0-9-]+\.supabase\.co|@supabase/|createBrowserClient|createServerClient' \
+          if grep -rinE 'supabase|postgres|pg2events' \
                --exclude-dir=.git --exclude-dir=target --exclude-dir=.github . ; then
-            echo "::error::a Supabase credential, host or client SDK reference is present"
-            fail=1
+            echo "::error::a reference to the predecessor stack is present"
+            exit 1
           fi
-
-          exit $fail
 
       - name: No package.json / bun.lock / tsconfig
         run: |

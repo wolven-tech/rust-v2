@@ -1,5 +1,4 @@
-//! User endpoints. Replaces `packages/supabase`'s `getUser` / `updateUser`
-//! (§7 items 6 and 8).
+//! User endpoints: read a user, and update a user's mutable profile fields.
 
 use std::sync::Arc;
 

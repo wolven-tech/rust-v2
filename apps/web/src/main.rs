@@ -107,7 +107,7 @@ fn Shell(children: Element) -> Element {
                     ),
                 ],
                 note: rsx! {
-                    p { "Built on AllSource. No Postgres, no Supabase, no TypeScript in the data path." }
+                    p { "Built on AllSource. One datastore, one language, no TypeScript in the data path." }
                 },
             }
         }
@@ -175,7 +175,7 @@ fn Home() -> Element {
                             FeatureCard {
                                 step: 3,
                                 title: "One dependency",
-                                body: "WAL, Parquet and an in-memory index. No Postgres in the event path at all.",
+                                body: "WAL, Parquet and an in-memory index. No external database in the event path at all.",
                                 action: rsx! {
                                     ArrowLink { href: "/#faq", "Read more" }
                                 },
@@ -272,7 +272,7 @@ fn About() -> Element {
                 Container { width: Width::Prose,
                     Heading { level: 1, size: HeadingSize::Display, "About" }
                     Text { class: "mt-4",
-                        "rust-v2 replaces a Next.js + Supabase monorepo with a Cargo workspace: \
+                        "rust-v2 is a Cargo workspace: \
                          an Axum API, two Dioxus frontends, and AllSource underneath."
                     }
                 }

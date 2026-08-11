@@ -6,10 +6,10 @@
 //!
 //! ## R4, restated as a type
 //!
-//! Handlers take `ExtractAuthUser` **by value**, never `Option<…>`. Supabase
-//! RLS used to enforce access below the application; in rust-v2 there is
-//! nothing behind the handler, so "I forgot the auth check" has to be a compile
-//! error rather than a silent data leak.
+//! Handlers take `ExtractAuthUser` **by value**, never `Option<…>`. There is no
+//! database-level row security behind the handler to catch a missed check, so
+//! "I forgot the auth check" has to be a compile error rather than a silent
+//! data leak.
 //!
 //! ## R5, stated honestly
 //!
