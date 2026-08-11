@@ -3975,8 +3975,10 @@ version = "0.1.0"
 dependencies = [
  "allsource",
  "chrono",
+ "reqwest 0.13.4",
  "rv2-api-types",
  "rv2-events",
+ "serde",
  "serde_json",
  "thiserror 2.0.20",
  "tokio",

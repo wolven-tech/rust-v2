@@ -8,20 +8,28 @@
 # (Three upstream sources give three different port pairs; this file picks one
 # and `.env.example` points at it.)
 #
-# NOTE — as of 2026-08-11 `ghcr.io/all-source-os/allsource-core:latest` returns
-# `denied` to an authenticated pull and `chronos-core:latest` returns `manifest
-# unknown`, so neither image was reachable from this machine. The supported
-# local path is therefore the native binary:
+# ## Images: use the `-community` tags
+#
+# The unsuffixed `allsource-core` / `allsource-query-service` images are the
+# **enterprise** builds (BSL 1.1) and require `docker login ghcr.io` with a
+# token — pulling them anonymously returns `denied`. The Apache-2.0 community
+# builds below are public and need no credentials.
+#
+# Caveat: as of 2026-08-11 the community images publish **linux/amd64 only**.
+# On Apple Silicon they run under emulation, which is slow. `platform` is set
+# explicitly so Compose does not fail the pull outright; if the emulation
+# overhead is not worth it, the native binary is the faster local path:
 #
 #     cargo install allsource-core
 #     ALLSOURCE_DATA_DIR=.allsource-data ALLSOURCE_DEV_MODE=true allsource-core
 #
-# which is what `meta dev` runs and what the vertical slice was verified
-# against. Keep this file for when the images become pullable.
+# That binary is what `meta dev` runs, what CI runs, and what the vertical
+# slice was verified against.
 
 services:
   core:
-    image: ghcr.io/all-source-os/chronos-core:latest
+    image: ghcr.io/all-source-os/allsource-core-community:latest
+    platform: linux/amd64
     ports:
       - "3900:3900"
     environment:
@@ -40,15 +48,24 @@ services:
       start_period: 5s
       retries: 3
 
-  # The Query Service is optional for rust-v2 (§4.2 / D4).
+  # The Query Service is optional **for the read paths rust-v2 uses**, which is
+  # a narrower claim than "optional".
   #
-  # The SDK's `QueryClient::query_events` calls Core's own
-  # `/api/v1/events/query`, so a single-node dev stack can point
-  # ALLSOURCE_QUERY_URL at Core on :3900 and skip this service entirely. Bring
-  # it up when you want the gateway concerns it owns — per-tenant rate limits,
-  # quotas, billing — or when clients are external/untrusted.
+  # `QueryClient` is a thin `HttpTransport` wrapper pointed at whatever URL you
+  # configure — it is not bound to the Query Service. The methods this codebase
+  # calls (`query_events`, `get_entity_events`, `query_and_fold`) hit
+  # `/api/v1/events/query`, which the SDK documents as *Core's* endpoint, and
+  # the vertical slice reads data back with ALLSOURCE_QUERY_URL on :3900.
+  #
+  # But four `QueryClient` methods — `list_prime_projections`,
+  # `define_prime_projection`, `project_node`, `node_field_provenance` —
+  # deserialize a gateway-only `{"data": ...}` envelope and will NOT work
+  # against Core. Bring this service up before using any of them, and for the
+  # gateway concerns it owns: per-tenant rate limits, quotas, billing, and any
+  # external or untrusted client.
   query-service:
-    image: ghcr.io/all-source-os/chronos-query-service:latest
+    image: ghcr.io/all-source-os/allsource-query-service-community:latest
+    platform: linux/amd64
     profiles: ["gateway"]
     ports:
       - "3902:3902"

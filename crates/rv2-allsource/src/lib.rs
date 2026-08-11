@@ -19,6 +19,7 @@
 #![forbid(unsafe_code)]
 
 pub mod folders;
+pub mod tenant_query;
 pub mod workers;
 pub mod writer;
 
@@ -50,6 +51,10 @@ pub struct AllSource {
     /// `QueryClient::query_events` calls Core's own `/api/v1/events/query`.
     /// See the README's "one Core, no Query Service" note.
     pub query: QueryClient,
+    /// Kept so [`AllSource::fold_entity`] can issue tenant-scoped reads, which
+    /// the SDK cannot express. See [`tenant_query`].
+    query_url: String,
+    api_key: String,
 }
 
 impl AllSource {
@@ -64,7 +69,26 @@ impl AllSource {
         Ok(Self {
             core: CoreClient::new(core_url, api_key)?,
             query: QueryClient::new(query_url, api_key)?,
+            query_url: query_url.to_string(),
+            api_key: api_key.to_string(),
         })
+    }
+
+    /// Read one entity's events and fold them, scoped to the tenant.
+    ///
+    /// Prefer this over [`QueryClient::query_and_fold`] whenever
+    /// `ALLSOURCE_QUERY_URL` may point at Core: the SDK cannot send
+    /// `tenant_id`, and Core answers a tenant-less query with an empty result
+    /// set rather than an error. See [`tenant_query`].
+    ///
+    /// # Errors
+    ///
+    /// [`reqwest::Error`] if the query endpoint is unreachable or fails.
+    pub async fn fold_entity<F: allsource::EventFolder>(
+        &self,
+        entity_id: &str,
+    ) -> Result<Option<F::State>, reqwest::Error> {
+        tenant_query::fold_entity::<F>(&self.query_url, &self.api_key, entity_id).await
     }
 
     /// A writer over the Core client.

@@ -53,16 +53,38 @@ curl -s http://localhost:3900/health
 # {"status":"healthy","role":"leader","service":"allsource-core", ...}
 ```
 
-**Alternative: Docker.** `docker-compose.yml` is set up for it. Be aware that as
-of 2026-08-11 `ghcr.io/all-source-os/allsource-core:latest` returns `denied` to
-an authenticated pull and `chronos-core:latest` returns `manifest unknown`, so
-the images were not actually reachable when this was written. Use the binary.
+**Alternative: Docker.** `docker-compose.yml` is set up for it, using the
+public Apache-2.0 **community** images:
 
-**Do you need the Query Service?** No, not for local development. The SDK's
-`QueryClient::query_events` calls Core's own `/api/v1/events/query`, so
-`ALLSOURCE_QUERY_URL` can point at Core on `:3900`. Bring up the Query Service
-(`docker compose --profile gateway up`) when you want the gateway concerns it
-owns: per-tenant rate limits, quotas, billing.
+```bash
+docker pull ghcr.io/all-source-os/allsource-core-community:latest
+```
+
+Use the `-community` tags. The unsuffixed `allsource-core` and
+`allsource-query-service` images are the enterprise builds (BSL 1.1) and return
+`denied` without a `docker login ghcr.io` token — that denial is an auth
+failure, not a missing image.
+
+One caveat: as of 2026-08-11 the community images publish **linux/amd64 only**,
+so on Apple Silicon they run under emulation. The native binary above is
+faster there, and is what `meta dev`, CI, and the vertical slice all use.
+
+**Do you need the Query Service?** Not for the read paths this codebase uses —
+which is a narrower claim than "not for local development", and the distinction
+matters.
+
+`QueryClient` is a thin `HttpTransport` wrapper aimed at whatever URL you give
+it; it is not bound to the Query Service. The methods used here — `query_events`,
+`get_entity_events`, `query_and_fold` — hit `/api/v1/events/query`, which the
+SDK documents as *Core's* endpoint, and the vertical slice reads data back with
+`ALLSOURCE_QUERY_URL` pointing at Core on `:3900`.
+
+Four `QueryClient` methods do **not** work against Core:
+`list_prime_projections`, `define_prime_projection`, `project_node` and
+`node_field_provenance` all deserialize a gateway-only `{"data": ...}` envelope.
+Bring the service up (`docker compose --profile gateway up`) before using any of
+them, and for the gateway concerns it owns: per-tenant rate limits, quotas,
+billing, and any external or untrusted client.
 
 > **On ports.** Never hard-code one. Three upstream sources give three different
 > pairs for the same services (`:3900`/`:3902`, `:3280`/`:3283`,

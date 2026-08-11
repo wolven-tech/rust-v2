@@ -2,6 +2,15 @@ use crate::error::AllsourceAuthError;
 use reqwest::Client;
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 
+/// Core's `/api/v1/events/query` scopes every read to a tenant and returns an
+/// EMPTY result set — `{"events":[],"count":0}`, HTTP 200, no error — when the
+/// `tenant_id` parameter is absent. Every query below must therefore carry it,
+/// or session lookups silently find nothing and every request 401s.
+///
+/// The Query Service derives the tenant from the API key, which is why traffic
+/// through the gateway does not need this. Talking to Core directly does.
+const DEFAULT_TENANT: &str = "default";
+
 /// Low-level HTTP client for Allsource Core and Query Service.
 #[derive(Clone)]
 pub struct AllsourceClient {
@@ -9,6 +18,7 @@ pub struct AllsourceClient {
     core_url: String,
     query_url: String,
     api_key: String,
+    tenant_id: String,
 }
 
 #[derive(Debug, Serialize)]
@@ -61,6 +71,8 @@ impl AllsourceClient {
             core_url: core_url.trim_end_matches('/').to_string(),
             query_url: query_url.trim_end_matches('/').to_string(),
             api_key: api_key.to_string(),
+            tenant_id: std::env::var("ALLSOURCE_TENANT_ID")
+                .unwrap_or_else(|_| DEFAULT_TENANT.to_string()),
         }
     }
 
@@ -129,7 +141,11 @@ impl AllsourceClient {
             .http
             .get(&url)
             .header("Authorization", format!("Bearer {}", self.api_key))
-            .query(&[("entity_id", entity_id), ("limit", "1000")])
+            .query(&[
+                ("entity_id", entity_id),
+                ("tenant_id", &self.tenant_id),
+                ("limit", "1000"),
+            ])
             .send()
             .await?;
 
@@ -168,6 +184,7 @@ impl AllsourceClient {
             .header("Authorization", format!("Bearer {}", self.api_key))
             .query(&[
                 ("event_type_prefix", event_type_prefix),
+                ("tenant_id", &self.tenant_id),
                 ("limit", &limit.to_string()),
             ])
             .send()
@@ -238,6 +255,7 @@ impl AllsourceClient {
             .header("Authorization", format!("Bearer {}", self.api_key))
             .query(&[
                 ("event_type_prefix", event_type_prefix),
+                ("tenant_id", &self.tenant_id),
                 ("payload_filter", &filter.to_string()),
                 ("limit", "1"),
             ])
@@ -300,7 +318,11 @@ impl AllsourceClient {
             .http
             .get(&url)
             .header("Authorization", format!("Bearer {}", self.api_key))
-            .query(&[("event_type_prefix", event_type_prefix), ("limit", "10000")])
+            .query(&[
+                ("event_type_prefix", event_type_prefix),
+                ("tenant_id", &self.tenant_id),
+                ("limit", "10000"),
+            ])
             .send()
             .await?;
 
@@ -361,7 +383,11 @@ impl AllsourceClient {
             .http
             .get(&url)
             .header("Authorization", format!("Bearer {}", self.api_key))
-            .query(&[("event_type_prefix", event_type_prefix), ("limit", "10000")])
+            .query(&[
+                ("event_type_prefix", event_type_prefix),
+                ("tenant_id", &self.tenant_id),
+                ("limit", "10000"),
+            ])
             .send()
             .await?;
 

@@ -32,12 +32,17 @@ use crate::infrastructure::{auth::ExtractAuthUser, error::ApiError, state::AppSt
 
 /// Fold one post's stream on read.
 async fn load(state: &AppState, id: Uuid) -> Result<PostView, ApiError> {
-    let params = QueryEventsParams::new().entity_id(&stream(StreamKind::Post, id));
+    // `rv2_allsource::tenant_query` rather than `QueryClient::query_and_fold`:
+    // Core scopes reads by tenant and returns an EMPTY result — HTTP 200, no
+    // error — when `tenant_id` is absent, and the SDK's `QueryEventsParams` has
+    // no field for it. Against Core the SDK path therefore reads nothing
+    // forever, which made this handler 404 immediately after a successful
+    // append. See that module's docs.
     state
         .allsource
-        .query
-        .query_and_fold::<rv2_allsource::PostFolder>(params)
-        .await?
+        .fold_entity::<rv2_allsource::PostFolder>(&stream(StreamKind::Post, id))
+        .await
+        .map_err(|_| ApiError::NotFound { kind: "post" })?
         .ok_or(ApiError::NotFound { kind: "post" })
 }
 
