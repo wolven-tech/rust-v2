@@ -45,7 +45,8 @@ use crate::presentation::handlers;
 ///    reimplement any of it.
 /// 3. Domain routes sit behind the rate limiter and take `ExtractAuthUser`
 ///    per-handler.
-#[must_use]
+// No `#[must_use]`: axum's `Router` already carries it, and doubling it is a
+// clippy error (`double_must_use`).
 pub fn build_router(state: Arc<AppState>) -> Router {
     let auth_router = Arc::clone(&state.auth)
         .axum_router()
