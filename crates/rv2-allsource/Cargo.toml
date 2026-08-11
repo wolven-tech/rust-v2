@@ -25,3 +25,9 @@ uuid = { workspace = true, features = ["v4"] }
 
 [dev-dependencies]
 tokio = { workspace = true, features = ["rt-multi-thread", "macros"] }
+# `tests/core_contract.rs` talks to Core over raw HTTP on purpose: it asserts
+# what the WIRE does, so routing it through the SDK would test the SDK's
+# interpretation instead of Core's behaviour.
+reqwest = { workspace = true }
+serde_json = { workspace = true }
+uuid = { workspace = true, features = ["v4"] }

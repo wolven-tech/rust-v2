@@ -201,3 +201,12 @@ jobs:
         run: |
           cargo test -p api --features allsource-auth --test vertical_slice \
             -- --ignored --nocapture --test-threads=1
+
+      # The contract suite is the point of the live-Core job. The vertical slice
+      # proves the feature works; these prove WHICH Core behaviours it relies on,
+      # so a regression names the broken assumption instead of surfacing as a
+      # confusing 404. An #[ignore]d test that CI never runs asserts nothing.
+      - name: Assert the Core contract
+        env:
+          ALLSOURCE_CORE_URL: http://localhost:3900
+        run: cargo test -p rv2-allsource --test core_contract -- --ignored --test-threads=1
