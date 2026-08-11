@@ -2,7 +2,6 @@
 //!
 //! **Layer 2, WASM-safe.** This is a **rewrite** of rust-v1's `packages/ui`
 //! (shadcn/React), not a port — there is no mechanical path from JSX to RSX.
-//! getformlab's `crates/jbt-ui` is the shape and scope being matched.
 //!
 //! The crate takes `dioxus` with `default-features = false, features = ["lib"]`
 //! deliberately: a component library must not decide the renderer. `apps/app`
@@ -10,13 +9,46 @@
 //!
 //! Styling is Tailwind utility classes. `dx` has automatic Tailwind detection in
 //! 0.7, so each app owns an `assets/tailwind.css` and `dx serve` runs the build.
+//!
+//! ## Scope
+//!
+//! Deliberately shadcn-shaped but **minimal**: the set was fixed by auditing a
+//! real marketing page rather than by porting a component catalogue. Everything
+//! here is used by `apps/web` or `apps/app`. There is no modal, tab, tooltip,
+//! carousel or date picker, because no page needs one yet — an unused component
+//! is bundle weight and maintenance cost with nothing on the other side of the
+//! ledger.
+//!
+//! ## Dependencies
+//!
+//! `dioxus` only. In particular:
+//!
+//! - **No router.** Navigation components take plain `href` strings, so the kit
+//!   works under any renderer and callers wrap with `Link` if they want
+//!   client-side routing.
+//! - **No domain types.** Components take primitives, so nothing in this crate
+//!   changes when the API's shapes change. `PostCard` lived here once and forced
+//!   a `rv2-api-types` dependency on every consumer of the kit; it now lives in
+//!   `apps/app`, next to the only thing that renders it.
+//! - **No JavaScript for disclosure.** [`site::Faq`] is built on native
+//!   `<details>`, so it works in the SSG build before hydration.
 
 #![forbid(unsafe_code)]
 #![allow(non_snake_case)] // Dioxus components are PascalCase by convention.
 
-pub mod components;
+pub mod feedback;
+pub mod form;
+pub mod layout;
+pub mod primitives;
+pub mod site;
+pub mod typography;
 
-pub use crate::components::{
-    Button, Card, EmptyState, ErrorBanner, PageHeader, PostCard, Skeleton, TextArea, TextField,
-    Variant,
+pub use crate::feedback::{Card, EmptyState, ErrorBanner, PageHeader, Skeleton};
+pub use crate::form::{TextArea, TextField};
+pub use crate::layout::{Container, Divider, Grid, Row, Section, Space, Stack, Width};
+pub use crate::primitives::{ArrowLink, Badge, Button, LinkButton, Size, StepMarker, Variant};
+pub use crate::site::{
+    Fact, FactList, Faq, FeatureCard, Footer, FooterColumn, Hero, NavBar, NavItem, PricingCard,
+    QandA, Step, StepList,
 };
+pub use crate::typography::{Eyebrow, Heading, HeadingSize, Text, Tone};

@@ -42,6 +42,17 @@ path = "."
 [projects.infra.tasks]
 dev = { tool = "allsource", command = "" }
 
+# Stylesheets. `dx build`/`dx bundle` only *copy* `assets/tailwind.css`; they do
+# not run Tailwind. Without this step both apps ship the uncompiled `@import`
+# line as a 23-byte stylesheet and render completely unstyled, while every
+# command still reports success. Run it before the `app`/`web` builds.
+[projects.styles]
+type = "rust"
+path = "tooling/tailwind"
+dev_default = false
+[projects.styles.tasks]
+build = { tool = "cargo", command = "run -q -p tailwind-build" }
+
 # ── apps ─────────────────────────────────────────────────────────────────────
 [projects.api]
 type = "rust"

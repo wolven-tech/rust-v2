@@ -206,10 +206,8 @@ dependencies = [
  "allframe",
  "allsource",
  "axum",
- "axum-extra 0.12.6",
  "better-auth",
  "better-auth-allsource",
- "better-auth-core",
  "chrono",
  "reqwest 0.13.4",
  "rv2-allsource",
@@ -217,11 +215,9 @@ dependencies = [
  "rv2-domain",
  "rv2-events",
  "rv2-shared",
- "serde",
  "serde_json",
  "thiserror 2.0.20",
  "tokio",
- "tower",
  "tower-http",
  "tracing",
  "tracing-subscriber",
@@ -235,7 +231,6 @@ dependencies = [
  "dioxus",
  "rv2-api-types",
  "rv2-client",
- "rv2-domain",
  "rv2-ui",
  "uuid",
 ]
@@ -432,29 +427,6 @@ dependencies = [
  "pin-project-lite",
  "rustversion",
  "serde_core",
- "tower-layer",
- "tower-service",
- "tracing",
-]
-
-[[package]]
-name = "axum-extra"
-version = "0.12.6"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "be44683b41ccb9ab2d23a5230015c9c3c55be97a25e4428366de8873103f7970"
-dependencies = [
- "axum",
- "axum-core",
- "bytes",
- "cookie",
- "futures-core",
- "futures-util",
- "headers",
- "http",
- "http-body",
- "http-body-util",
- "mime",
- "pin-project-lite",
  "tower-layer",
  "tower-service",
  "tracing",
@@ -1452,7 +1424,7 @@ dependencies = [
  "async-tungstenite",
  "axum",
  "axum-core",
- "axum-extra 0.10.3",
+ "axum-extra",
  "base64",
  "bytes",
  "ciborium",
@@ -3362,10 +3334,8 @@ name = "pg2events"
 version = "0.1.0"
 dependencies = [
  "chrono",
- "rv2-allsource",
  "rv2-events",
  "serde_json",
- "tokio",
  "tracing",
  "tracing-subscriber",
  "uuid",
@@ -4007,7 +3977,6 @@ dependencies = [
  "chrono",
  "rv2-api-types",
  "rv2-events",
- "serde",
  "serde_json",
  "thiserror 2.0.20",
  "tokio",
@@ -4045,7 +4014,6 @@ dependencies = [
  "chrono",
  "rv2-api-types",
  "rv2-events",
- "serde",
  "thiserror 2.0.20",
  "uuid",
 ]
@@ -4074,7 +4042,6 @@ name = "rv2-ui"
 version = "0.1.0"
 dependencies = [
  "dioxus",
- "rv2-api-types",
 ]
 
 [[package]]
@@ -4531,6 +4498,10 @@ dependencies = [
  "core-foundation-sys",
  "libc",
 ]
+
+[[package]]
+name = "tailwind-build"
+version = "0.1.0"
 
 [[package]]
 name = "tempfile"

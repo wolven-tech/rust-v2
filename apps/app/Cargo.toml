@@ -27,6 +27,5 @@ dioxus = { workspace = true, features = [
 ] }
 rv2-api-types.workspace = true
 rv2-client.workspace = true
-rv2-domain.workspace = true
 rv2-ui.workspace = true
 uuid.workspace = true

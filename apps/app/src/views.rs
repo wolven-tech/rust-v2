@@ -8,10 +8,11 @@
 use dioxus::prelude::*;
 use rv2_api_types::{CreatePostRequest, PostView, SessionView};
 use rv2_ui::{
-    Button, Card, EmptyState, ErrorBanner, PageHeader, PostCard, Skeleton, TextArea, TextField,
-    Variant,
+    Button, Card, EmptyState, ErrorBanner, PageHeader, Skeleton, TextArea, TextField, Variant,
 };
 use uuid::Uuid;
+
+use crate::post_card::PostCard;
 
 use crate::routes::Route;
 

@@ -9,6 +9,5 @@ version.workspace = true
 chrono.workspace = true
 rv2-api-types.workspace = true
 rv2-events.workspace = true
-serde.workspace = true
 thiserror.workspace = true
 uuid.workspace = true

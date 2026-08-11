@@ -10,4 +10,3 @@ version.workspace = true
 # `devtools` or `logger`. A component library must stay renderer-agnostic: the
 # apps pick `web` / `fullstack`, this crate must not pick for them.
 dioxus = { workspace = true, default-features = false, features = ["lib"] }
-rv2-api-types.workspace = true

@@ -1,0 +1,8 @@
+[package]
+name = "tailwind-build"
+description = "Compiles each app's Tailwind stylesheet with the standalone CLI."
+edition.workspace = true
+license.workspace = true
+version.workspace = true
+
+[dependencies]

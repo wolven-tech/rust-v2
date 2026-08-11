@@ -9,6 +9,7 @@
 
 #![allow(non_snake_case)]
 
+pub mod post_card;
 pub mod routes;
 pub mod views;
 

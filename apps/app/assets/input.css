@@ -1,0 +1,15 @@
+/* Tailwind source for `apps/app`.
+ *
+ * Compiled to `tailwind.css` by `tooling/tailwind`, which is what `main.rs`
+ * links via `asset!()`.
+ *
+ * `source(none)` disables Tailwind v4's automatic scanning, which otherwise
+ * walks up to the git root and pulls in every class in the workspace — so
+ * `apps/app` was shipping `apps/app`'s classes and vice versa. With it off,
+ * the globs below are the complete, intentional source list. `crates/rv2-ui`
+ * must be among them: its classes live outside this app, and without it every
+ * component renders unstyled while the app's own classes still work. */
+@import "tailwindcss" source(none);
+
+@source "../src";
+@source "../../../crates/rv2-ui/src";

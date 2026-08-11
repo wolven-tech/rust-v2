@@ -19,5 +19,5 @@ server = ["dioxus/server"]
 web = ["dioxus/web"]
 
 [dependencies]
-dioxus = { workspace = true, features = ["fullstack", "launch", "lib", "logger", "router"] }
+dioxus = { workspace = true, features = ["fullstack", "launch", "lib", "router"] }
 rv2-ui.workspace = true
