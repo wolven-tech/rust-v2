@@ -1,0 +1,10 @@
+[application]
+name = "web"
+
+[web.app]
+title = "rust-v2"
+base_path = "/"
+
+# NOTE: no [web.resource] block. Dioxus 0.7 requires a `dev` field there and,
+# more importantly, stylesheets are injected from Rust via `asset!()` +
+# `document::Link` — declaring them twice would load them twice.

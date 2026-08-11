@@ -1,0 +1,38 @@
+# Rust build artifacts
+/target/
+**/target/
+**/*.rs.bk
+Cargo.lock.bak
+
+# Dioxus / dx
+/dist/
+**/dist/
+.dioxus/
+**/.dioxus/
+public/
+
+# AllSource local data (docker-compose volume fallback + native Core)
+.allsource-data/
+
+# Local env
+.env
+.env*.local
+!.env.example
+
+# meta runtime data
+.meta/
+meta-logs-*.txt
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+.cursor/
+*.swp
+*.swo
+*~
+
+# Claude Code
+.claude/settings.local.json

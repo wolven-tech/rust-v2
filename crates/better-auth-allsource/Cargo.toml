@@ -1,0 +1,25 @@
+[package]
+name = "better-auth-allsource"
+version = "0.14.5"
+description = "Allsource DatabaseAdapter for better-auth-rs — VENDORED. See PROVENANCE.md."
+edition = "2021"
+license = "MIT"
+publish = false
+
+[features]
+default = ["rustls"]
+native-tls = ["reqwest/native-tls"]
+rustls = ["reqwest/rustls-tls"]
+
+[dependencies]
+async-trait = "0.1"
+better-auth-core = "0.10"
+chrono = { version = "0.4", features = ["clock", "serde"] }
+# NOTE: reqwest 0.12, NOT the workspace's 0.13. This crate is a bug-for-bug
+# vendor of getformlab's copy and must stay byte-identical to upstream; it also
+# shares 0.12 with `better-auth-api`, which is what R7 already accounts for.
+reqwest = { version = "0.12", default-features = false, features = ["json"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+thiserror = "2"
+uuid = { version = "1", features = ["v4"] }

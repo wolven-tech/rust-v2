@@ -1,0 +1,193 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+env:
+  CARGO_TERM_COLOR: always
+  RUSTFLAGS: -D warnings
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  fmt:
+    name: rustfmt
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo fmt --all -- --check
+
+  clippy:
+    name: clippy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: Swatinem/rust-cache@v2
+      # `--all-targets` covers tests and benches too; a lint that only fires in
+      # a test module is still a lint.
+      - run: cargo clippy --workspace --all-targets -- -D warnings
+
+  test:
+    name: build + test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo build --workspace
+      - run: cargo test --workspace
+
+  wasm:
+    name: wasm32 boundary
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: Swatinem/rust-cache@v2
+      # §2.2: "the single most dangerous line in this workspace". A crate that
+      # accidentally pulls tokio-net, reqwest or native TLS fails here in ~40s
+      # instead of during a `dx build` three weeks later.
+      - run: rustup target add wasm32-unknown-unknown
+      - name: WASM-safe crates must cross-compile
+        run: |
+          cargo check --target wasm32-unknown-unknown \
+            -p rv2-events -p rv2-domain -p rv2-api-types -p rv2-ui -p rv2-client \
+            -p app -p web
+      # The other half of the boundary: server-only crates must NOT be reachable
+      # from the frontends. `cargo tree --invert` returning only the crate
+      # itself proves nothing depends on it.
+      - name: Server-only crates must not be reachable from the apps
+        run: |
+          set -euo pipefail
+          for server_crate in rv2-allsource rv2-shared better-auth-allsource; do
+            for wasm_app in app web; do
+              if cargo tree --target wasm32-unknown-unknown -p "$wasm_app" \
+                   --prefix none 2>/dev/null | grep -qx "$server_crate v.*"; then
+                echo "::error::$wasm_app depends on the server-only crate $server_crate"
+                exit 1
+              fi
+            done
+          done
+
+  audit:
+    name: cargo audit (every member)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo install cargo-audit --locked
+      # rust-v1 learned this the hard way: `cargo audit` there only ran against
+      # `tooling/meta`, so six advisories in `apps/api` — including a
+      # quinn-proto remote memory exhaustion and a reachable panic in
+      # rustls-webpki CRL parsing — sat unnoticed.
+      #
+      # This workspace has ONE root Cargo.lock covering every member, so a
+      # single run at the root genuinely covers all of them. The assertion below
+      # is what keeps that true: if someone adds a nested lockfile (a member
+      # excluded from the workspace), CI fails rather than quietly auditing less
+      # than it claims to.
+      - name: Assert one lockfile covers every member
+        run: |
+          set -euo pipefail
+          nested=$(find . -name Cargo.lock -not -path ./Cargo.lock -not -path './target/*')
+          if [ -n "$nested" ]; then
+            echo "::error::nested lockfile(s) found; cargo audit at the root would not cover them:"
+            echo "$nested"
+            exit 1
+          fi
+          members=$(cargo metadata --no-deps --format-version 1 | jq -r '.packages[].name' | sort)
+          echo "members covered by ./Cargo.lock:"
+          echo "$members"
+      - run: cargo audit --deny warnings
+
+  deny:
+    name: cargo deny
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: EmbarkStudios/cargo-deny-action@v2
+        with:
+          command: check bans licenses sources
+
+  no-supabase:
+    name: no Supabase, no Node
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # The point of the exercise.
+      #
+      # NOTE on what is checked and why. A bare `grep -ri supabase .` is NOT
+      # the right test and does not pass here: the word legitimately appears in
+      # prose — `tooling/pg2events` exists precisely to read Supabase, and
+      # several modules carry a comment naming the §7 responsibility they
+      # replace. Deleting those comments would remove the explanation, not the
+      # dependency.
+      #
+      # What must be zero is a real Supabase *artefact*: a dependency, a client,
+      # a credential, or a hostname. That is what is asserted.
+      - name: No Supabase dependency, client, credential or host
+        run: |
+          set -euo pipefail
+          fail=0
+
+          # A crate or npm package named supabase, anywhere in the lockfile or
+          # any manifest.
+          if grep -rin 'supabase' Cargo.lock Cargo.toml */*/Cargo.toml 2>/dev/null \
+               | grep -v '^tooling/pg2events/Cargo.toml:.*description'; then
+            echo "::error::a manifest or the lockfile references supabase"
+            fail=1
+          fi
+
+          # Credentials, hostnames, and the JS SDK.
+          if grep -rInE \
+               'NEXT_PUBLIC_SUPABASE|SUPABASE_SERVICE_KEY|SUPABASE_ANON|[a-z0-9-]+\.supabase\.co|@supabase/|createBrowserClient|createServerClient' \
+               --exclude-dir=.git --exclude-dir=target --exclude-dir=.github . ; then
+            echo "::error::a Supabase credential, host or client SDK reference is present"
+            fail=1
+          fi
+
+          exit $fail
+      - name: no package.json / bun.lock / tsconfig
+        run: |
+          set -euo pipefail
+          found=$(find . -name package.json -o -name bun.lock -o -name tsconfig.json \
+                    -o -name turbo.json -not -path './target/*' | grep -v '^./target' || true)
+          if [ -n "$found" ]; then
+            echo "::error::TypeScript build files found: $found"
+            exit 1
+          fi
+
+  vertical-slice:
+    name: vertical slice (live Core)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: Swatinem/rust-cache@v2
+      # `allsource-core` is a plain crates.io binary, so CI needs no service
+      # container and no registry credentials — which matters, because the
+      # published Core images were not pullable when this was written.
+      - run: cargo install allsource-core --version 0.23.0 --locked
+      - name: Start Core
+        run: |
+          ALLSOURCE_HOST=127.0.0.1 ALLSOURCE_PORT=3900 \
+          ALLSOURCE_DATA_DIR="$RUNNER_TEMP/allsource" ALLSOURCE_DEV_MODE=true \
+            allsource-core &
+          for _ in $(seq 1 30); do
+            curl -sf http://localhost:3900/health && break
+            sleep 1
+          done
+          curl -sf http://localhost:3900/health
+      - name: Run the acceptance test
+        env:
+          ALLSOURCE_CORE_URL: http://localhost:3900
+          ALLSOURCE_QUERY_URL: http://localhost:3900
+          ALLSOURCE_API_KEY: dev
+          JWT_SECRET: ci-secret-key-that-is-at-least-32-characters-long
+        # `--features allsource-auth` so the vendored better-auth adapter is
+        # exercised against a real Core too, not just the memory adapter.
+        run: |
+          cargo test -p api --features allsource-auth --test vertical_slice \
+            -- --ignored --nocapture --test-threads=1

@@ -1,0 +1,66 @@
+# cargo-deny policy.
+#
+# The point of this file is R7: the workspace currently resolves TWO copies of
+# `reqwest`, and that is an accepted, *recorded* cost — not a thing we are
+# unaware of. Recording it is what lets a NEW duplicate still fail CI.
+
+[graph]
+targets = [
+  { triple = "aarch64-apple-darwin" },
+  { triple = "x86_64-unknown-linux-gnu" },
+  { triple = "wasm32-unknown-unknown" },
+]
+
+[advisories]
+yanked = "deny"
+ignore = []
+
+[licenses]
+allow = [
+  "0BSD",
+  "Apache-2.0",
+  "Apache-2.0 WITH LLVM-exception",
+  "BSD-2-Clause",
+  "BSD-3-Clause",
+  "BSL-1.0",
+  "CC0-1.0",
+  "ISC",
+  "MIT",
+  "MIT-0",
+  "MPL-2.0",
+  "Unicode-3.0",
+  "Unlicense",
+  "Zlib",
+]
+confidence-threshold = 0.9
+
+[bans]
+# `warn`, not `deny`: a 500-crate tree with two HTTP stacks has a long tail of
+# legitimate duplicates, and a hard failure here would be turned off within a
+# week. The named skips below are the ones we have actually reasoned about.
+multiple-versions = "warn"
+wildcards = "deny"
+
+skip = [
+  # R7, verified this session:
+  #   reqwest 0.13.x <- allsource 0.23
+  #   reqwest 0.12.x <- better-auth-api 0.10, dioxus-fullstack 0.7,
+  #                     and our vendored better-auth-allsource
+  # Two TLS stacks and two HTTP clients in one binary: slower builds, bigger
+  # binary, two CVE surfaces. It resolves and builds. Revisit when better-auth
+  # moves to reqwest 0.13, at which point DELETE this skip.
+  { name = "reqwest" },
+]
+
+deny = [
+  # The WASM boundary (§2.2), enforced by policy as well as by the cross-compile:
+  # native TLS never links on wasm32 and must not appear anywhere in the tree
+  # reachable from the frontends.
+  { name = "openssl-sys" },
+  { name = "native-tls" },
+]
+
+[sources]
+unknown-registry = "deny"
+unknown-git = "deny"
+allow-registry = ["https://github.com/rust-lang/crates.io-index"]

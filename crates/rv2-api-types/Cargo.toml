@@ -1,0 +1,14 @@
+[package]
+name = "rv2-api-types"
+description = "Request/response DTOs and read models shared between apps/api and the Dioxus apps. WASM-safe (layer 1)."
+edition.workspace = true
+license.workspace = true
+version.workspace = true
+
+[dependencies]
+chrono.workspace = true
+serde.workspace = true
+uuid.workspace = true
+
+[dev-dependencies]
+serde_json.workspace = true

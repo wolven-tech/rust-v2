@@ -1,0 +1,18 @@
+[package]
+name = "rv2-events"
+description = "Domain event model and AllSource wire mapping. WASM-safe (layer 0)."
+edition.workspace = true
+license.workspace = true
+version.workspace = true
+
+[dependencies]
+chrono.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+uuid.workspace = true
+
+[dev-dependencies]
+# `v4` is enabled for tests only — the library itself never mints UUIDs, which
+# is what keeps `getrandom` out of the wasm32 dependency tree (§2.2 trap 1).
+uuid = { workspace = true, features = ["v4"] }

@@ -1,0 +1,52 @@
+# bacon jobs. `meta dev` runs `bacon run-long` for `apps/api`, and `meta doctor`
+# warns if this file is missing, so it lives at the workspace root where every
+# member can see it.
+#
+# §6.7: `bacon` and `dx` run as INDEPENDENT processes under `meta dev`. We do
+# not use Dioxus 0.7's `dx serve @client @server` multi-package syntax, because
+# our server is a plain Axum binary rather than a `dioxus-server` app.
+
+default_job = "check"
+
+[jobs.check]
+command = ["cargo", "check", "--workspace", "--all-targets", "--color", "always"]
+need_stdout = false
+
+[jobs.clippy]
+command = [
+  "cargo", "clippy", "--workspace", "--all-targets", "--color", "always",
+  "--", "-D", "warnings",
+]
+need_stdout = false
+
+[jobs.test]
+command = ["cargo", "test", "--workspace", "--color", "always"]
+need_stdout = true
+
+# The job `meta dev` uses for `apps/api`: rebuild and restart the server on
+# every change. `allsource-auth` is on, because the point of `meta dev` is to
+# run against the real Core that `meta dev`'s `infra` project just started.
+[jobs.run-long]
+command = [
+  "cargo", "run", "-p", "api", "--features", "allsource-auth", "--color", "always",
+]
+need_stdout = true
+allow_warnings = true
+background = false
+on_change_strategy = "kill_then_restart"
+
+# The wasm32 boundary check, on demand. Same command CI runs (§2.2).
+[jobs.wasm]
+command = [
+  "cargo", "check", "--target", "wasm32-unknown-unknown", "--color", "always",
+  "-p", "rv2-events", "-p", "rv2-domain", "-p", "rv2-api-types",
+  "-p", "rv2-ui", "-p", "rv2-client", "-p", "app", "-p", "web",
+]
+need_stdout = false
+
+[keybindings]
+c = "job:check"
+l = "job:clippy"
+t = "job:test"
+w = "job:wasm"
+r = "job:run-long"

@@ -1,0 +1,276 @@
+# rust-v2
+
+An all-Rust workspace whose **only datastore is [AllSource](https://github.com/all-source-os/all-source)**.
+No Postgres, no Supabase, no TypeScript in the data path.
+
+- `apps/api` — Axum HTTP API. The only server process.
+- `apps/app` — Dioxus CSR SPA, the authenticated dashboard.
+- `apps/web` — Dioxus marketing site, built SSG.
+- `crates/` — the shared crate graph (events, domain, DTOs, UI kit, client, AllSource integration).
+- `tooling/` — `meta` (the orchestrator) and `pg2events` (the one-shot migrator).
+
+The design and every decision behind it live in
+`docs/architecture/001-rust-v2-allsource-foundation.md` in the `rust-v1` repo.
+Read it before changing anything structural — it records *why*, and the code
+only records *what*.
+
+---
+
+## Prerequisites
+
+| | |
+|---|---|
+| Rust | `1.97.1` — pinned in `rust-toolchain.toml`, so `rustup` installs it for you |
+| wasm target | `wasm32-unknown-unknown` — also in `rust-toolchain.toml` |
+| `dx` | `cargo install dioxus-cli --version 0.7.10 --locked` — the only way to serve a frontend |
+| `meta` | `cargo install --path tooling/meta` — the task orchestrator |
+| `bacon` | `cargo install bacon` — used by `meta dev` for the API |
+| AllSource Core | see below |
+
+### Getting an AllSource Core running
+
+**Recommended: the native binary.** Core is published on crates.io, so this
+needs no Docker and no registry credentials:
+
+```bash
+cargo install allsource-core --version 0.23.0 --locked
+
+ALLSOURCE_HOST=0.0.0.0 \
+ALLSOURCE_PORT=3900 \
+ALLSOURCE_DATA_DIR=.allsource-data \
+ALLSOURCE_DEV_MODE=true \
+  allsource-core
+```
+
+`ALLSOURCE_DEV_MODE=true` bypasses API-key auth. **Local development only.**
+Without `ALLSOURCE_DATA_DIR` Core runs in-memory and everything is lost on
+restart.
+
+Verify:
+
+```bash
+curl -s http://localhost:3900/health
+# {"status":"healthy","role":"leader","service":"allsource-core", ...}
+```
+
+**Alternative: Docker.** `docker-compose.yml` is set up for it. Be aware that as
+of 2026-08-11 `ghcr.io/all-source-os/allsource-core:latest` returns `denied` to
+an authenticated pull and `chronos-core:latest` returns `manifest unknown`, so
+the images were not actually reachable when this was written. Use the binary.
+
+**Do you need the Query Service?** No, not for local development. The SDK's
+`QueryClient::query_events` calls Core's own `/api/v1/events/query`, so
+`ALLSOURCE_QUERY_URL` can point at Core on `:3900`. Bring up the Query Service
+(`docker compose --profile gateway up`) when you want the gateway concerns it
+owns: per-tenant rate limits, quotas, billing.
+
+> **On ports.** Never hard-code one. Three upstream sources give three different
+> pairs for the same services (`:3900`/`:3902`, `:3280`/`:3283`,
+> `:3854`/`:3855`). `ServerConfig::from_env` therefore **requires**
+> `ALLSOURCE_CORE_URL` and `ALLSOURCE_QUERY_URL` with no fallback, so a
+> misconfiguration fails at boot with a named variable instead of silently
+> talking to the wrong port.
+
+---
+
+## Setup
+
+```bash
+git clone <this repo> && cd rust-v2
+cp .env.example .env
+set -a && source .env && set +a
+```
+
+## Run
+
+```bash
+meta dev      # tmux: Core + api (bacon) + app (dx :4402) + web (dx :4401)
+```
+
+or individually:
+
+```bash
+# terminal 1 — Core
+ALLSOURCE_DATA_DIR=.allsource-data ALLSOURCE_DEV_MODE=true allsource-core
+
+# terminal 2 — API on :4400
+cargo run -p api --features allsource-auth
+
+# terminal 3 — dashboard on :4402
+dx serve --package app --platform web --port 4402
+```
+
+| Service | Port |
+|---|---|
+| AllSource Core | 3900 |
+| AllSource Query Service (optional) | 3902 |
+| `apps/api` | 4400 |
+| `apps/web` | 4401 |
+| `apps/app` | 4402 |
+
+Ports 4400–4402 preserve rust-v1's allocation, so existing `.env` files and
+bookmarks carry over.
+
+## Test
+
+```bash
+meta test                                    # every member
+cargo test --workspace                       # same, without meta
+cargo clippy --workspace --all-targets -- -D warnings
+cargo fmt --all -- --check
+cargo audit --deny warnings                  # one lockfile ⇒ covers all 13 members
+```
+
+**The WASM boundary** is the most dangerous line in the workspace, so it is
+proven by a real cross-compile rather than by inspection:
+
+```bash
+cargo check --target wasm32-unknown-unknown \
+  -p rv2-events -p rv2-domain -p rv2-api-types -p rv2-ui -p rv2-client \
+  -p app -p web
+```
+
+A crate that accidentally pulls `tokio` with `net`, `reqwest`, or native TLS
+fails here in seconds instead of during a `dx build` three weeks later.
+
+---
+
+## The vertical slice
+
+One feature, end to end:
+
+```
+HTTP request → domain event → AllSource append → projection fold
+             → read model → rendered in the Dioxus UI
+```
+
+### As an automated test
+
+```bash
+export ALLSOURCE_CORE_URL=http://localhost:3900
+export ALLSOURCE_QUERY_URL=http://localhost:3900
+export ALLSOURCE_API_KEY=dev
+export JWT_SECRET=dev-secret-key-that-is-at-least-32-characters-long
+
+cargo test -p api --features allsource-auth --test vertical_slice \
+  -- --ignored --nocapture --test-threads=1
+```
+
+It is `#[ignore]`d by default because it needs a live Core, and it **fails
+loudly** rather than skipping when Core is unreachable — a silently-skipped
+acceptance test is indistinguishable from a passing one.
+
+### By hand, with the real bytes visible
+
+With Core on `:3900` and the API on `:4400`:
+
+```bash
+API=http://localhost:4400
+
+# 1. Real credential auth (better-auth's own route).
+TOKEN=$(curl -s -X POST $API/auth/sign-up/email \
+  -H 'content-type: application/json' \
+  -d '{"email":"you@example.com","password":"password123","name":"You"}' \
+  | python3 -c 'import sys,json;d=json.load(sys.stdin);print(d.get("token") or d["session"]["token"])')
+
+# 2. HTTP request → domain event → AllSource append.
+POST=$(curl -s -X POST $API/posts \
+  -H "authorization: Bearer $TOKEN" -H 'content-type: application/json' \
+  -d '{"title":"Hello from the vertical slice","content":"One event, all the way through."}')
+echo "$POST"
+ID=$(echo "$POST" | python3 -c 'import sys,json;print(json.load(sys.stdin)["id"])')
+
+# 3. The raw event, straight out of Core. This is the proof.
+curl -s "http://localhost:3900/api/v1/events/query?entity_id=post:$ID" | python3 -m json.tool
+
+# 4. Fold-on-read: one entity, one HTTP call, folded in the handler.
+curl -s $API/posts/$ID -H "authorization: Bearer $TOKEN" | python3 -m json.tool
+
+# 5. The cross-entity read model, served by the `posts_v1` projection worker.
+curl -s $API/posts -H "authorization: Bearer $TOKEN" | python3 -m json.tool
+```
+
+Step 3 prints the stored event, and it is worth reading closely:
+
+```json
+{
+  "event_type": "content.post.created",
+  "entity_id": "post:4862f98b-1c2e-422f-8210-1b3aa76389bd",
+  "payload": {
+    "type": "PostCreated",
+    "id": "4862f98b-…",
+    "author_id": "cf1714ec-…",
+    "title": "Hello from the vertical slice",
+    "content": "One event, all the way through.",
+    "occurred_at": "2026-08-11T12:04:35.007276Z"
+  },
+  "timestamp": "2026-08-11T12:04:35.008130Z",
+  "version": 1
+}
+```
+
+Two things in there are load-bearing:
+
+- **`event_type` is dotted; the payload's `"type"` is PascalCase.** They are two
+  different namespaces, mapped explicitly in `rv2_events::wire` and *checked*
+  on decode. There is no fallback that guesses one from the other.
+- **`occurred_at` (payload) and `timestamp` (envelope) are different values.**
+  The envelope timestamp is assigned by Core at ingest. All domain time is read
+  from the payload, which is what makes a backdated or migrated event keep its
+  real date instead of collapsing to "now".
+
+### In the browser
+
+```bash
+dx serve --package app --platform web --port 4402
+```
+
+Open <http://localhost:4402/posts>. Unauthenticated you are redirected to
+`/login` (the client-side replacement for rust-v1's Next.js `proxy.ts`
+middleware). After signing in, the list renders `PostView`s folded from
+`content.post.*` events — **not fixtures** — and the Publish form appends a new
+event and re-reads through the API rather than patching a local cache, so a
+render proves the fold actually happened.
+
+---
+
+## Architecture notes worth knowing before you edit
+
+**The crate layers.** `rv2-events` is layer 0; `rv2-domain` and `rv2-api-types`
+layer 1; `rv2-ui`, `rv2-client`, `rv2-allsource`, `rv2-shared` and
+`better-auth-allsource` layer 2; `apps/*` layer 3. A crate may only depend on
+strictly lower layers, and `apps/*` are leaves.
+
+**Events are immutable, forever.** Fields may only be **added**, and every added
+field carries `#[serde(default)]`. `crates/rv2-events/tests/golden/` holds one
+captured JSON payload per released schema version, and every one must keep
+deserializing into the current build. Anything that cannot be expressed
+additively becomes a **new** wire type plus a new variant; the old variant and
+its fold arm stay in the code permanently.
+
+**Folders must be pure and total.** A read-model rebuild replays the entire
+store, so no clock reads, no network calls, no `unwrap()` on payload shape, and
+`apply` must be idempotent for an event it has already seen.
+
+**Rebuilding a projection** = renaming the worker's durable consumer id
+(`posts_v1` → `posts_v2`). Core keys the cursor by that name, so a new name
+replays from zero. Run both in parallel, compare, flip the handler, then delete
+the old state. Do not attempt cursor surgery.
+
+**`crates/better-auth-allsource` is vendored and is a version bridge, not a
+fork.** Bug-for-bug ports only; never add features. See its `PROVENANCE.md`, and
+the weekly `vendor-check` workflow that opens an issue when it can be deleted.
+
+---
+
+## Known gaps
+
+These are marked, not hidden. Each has a `SEAM` comment at the site.
+
+| Gap | Where | Why |
+|---|---|---|
+| Google OAuth is not wired | `apps/api/src/infrastructure/auth/better.rs` | The plugin needs the HMAC-signed pending-origin cookie glue; without it the callback is an open redirect. Credential auth is complete end to end. |
+| `apps/web` SSG is not wired | `apps/web/src/main.rs` | Needs the `static_routes` server function + `IncrementalRendererConfig`. The app builds and cross-compiles; it currently renders CSR. |
+| `pg2events` has no Postgres reader | `tooling/pg2events/src/main.rs` | Phase-8 work; needs the real Supabase replica. The row→event mapping and its guarantees are implemented and tested. |
+| No session cache | `apps/api/src/infrastructure/auth/middleware.rs` | Authenticated requests cost two AllSource round-trips. Measure p99 before adding the cache. |
+| English only | — | No Rust i18n crate has been evaluated. rust-v1 shipped `en` + `fr`; this is a product regression that needs sign-off. |

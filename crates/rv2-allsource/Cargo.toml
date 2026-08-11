@@ -1,0 +1,23 @@
+[package]
+name = "rv2-allsource"
+description = "AllSource SDK wrapper: writer, folders, projection workers. SERVER-ONLY (layer 2)."
+edition.workspace = true
+license.workspace = true
+version.workspace = true
+
+[dependencies]
+allsource.workspace = true
+# `clock` is enabled here (and NOT in the workspace default) because this is a
+# server crate: the writer stamps `occurred_at` when the caller does not supply
+# one. WASM crates must never get this feature — see §2.2 trap 2.
+chrono = { workspace = true, features = ["clock"] }
+rv2-api-types.workspace = true
+rv2-events.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+tracing.workspace = true
+uuid = { workspace = true, features = ["v4"] }
+
+[dev-dependencies]
+tokio = { workspace = true, features = ["rt-multi-thread", "macros"] }

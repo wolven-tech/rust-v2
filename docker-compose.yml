@@ -1,0 +1,66 @@
+# Local AllSource stack for rust-v2.
+#
+# Copied in shape from `all-source-os/all-source:docker-compose.community.yml`.
+#
+# R6 — the ports here are the ONLY place local AllSource ports are fixed.
+# Nothing in the Rust source hard-codes one: `ServerConfig::from_env` requires
+# ALLSOURCE_CORE_URL and ALLSOURCE_QUERY_URL and has no fallback for them.
+# (Three upstream sources give three different port pairs; this file picks one
+# and `.env.example` points at it.)
+#
+# NOTE — as of 2026-08-11 `ghcr.io/all-source-os/allsource-core:latest` returns
+# `denied` to an authenticated pull and `chronos-core:latest` returns `manifest
+# unknown`, so neither image was reachable from this machine. The supported
+# local path is therefore the native binary:
+#
+#     cargo install allsource-core
+#     ALLSOURCE_DATA_DIR=.allsource-data ALLSOURCE_DEV_MODE=true allsource-core
+#
+# which is what `meta dev` runs and what the vertical slice was verified
+# against. Keep this file for when the images become pullable.
+
+services:
+  core:
+    image: ghcr.io/all-source-os/chronos-core:latest
+    ports:
+      - "3900:3900"
+    environment:
+      ALLSOURCE_HOST: "0.0.0.0"
+      ALLSOURCE_PORT: "3900"
+      ALLSOURCE_DATA_DIR: "/app/data"
+      # Dev mode bypasses API-key auth. NEVER set this outside local dev.
+      ALLSOURCE_DEV_MODE: "true"
+      RUST_LOG: "allsource_core=info"
+    volumes:
+      - core-data:/app/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3900/health"]
+      interval: 10s
+      timeout: 5s
+      start_period: 5s
+      retries: 3
+
+  # The Query Service is optional for rust-v2 (§4.2 / D4).
+  #
+  # The SDK's `QueryClient::query_events` calls Core's own
+  # `/api/v1/events/query`, so a single-node dev stack can point
+  # ALLSOURCE_QUERY_URL at Core on :3900 and skip this service entirely. Bring
+  # it up when you want the gateway concerns it owns — per-tenant rate limits,
+  # quotas, billing — or when clients are external/untrusted.
+  query-service:
+    image: ghcr.io/all-source-os/chronos-query-service:latest
+    profiles: ["gateway"]
+    ports:
+      - "3902:3902"
+    environment:
+      CORE_URL: "http://core:3900"
+      CORE_WS_URL: "ws://core:3900/api/v1/events/stream"
+      ALLSOURCE_EDITION: "community"
+      PORT: "3902"
+      SECRET_KEY_BASE: "community-dev-secret-key-minimum-64-chars-change-in-production-please"
+    depends_on:
+      core:
+        condition: service_healthy
+
+volumes:
+  core-data:

@@ -1,0 +1,32 @@
+[package]
+name = "app"
+description = "Dioxus CSR SPA — the authenticated dashboard. Replaces rust-v1 apps/app (Next.js)."
+edition.workspace = true
+license.workspace = true
+version.workspace = true
+
+[lib]
+name = "app"
+path = "src/lib.rs"
+crate-type = ["cdylib", "rlib"]
+
+[[bin]]
+name = "app"
+path = "src/main.rs"
+
+[dependencies]
+# NOTE: no `fullstack`, no `server`, no `tokio`, no `reqwest`. That is what
+# makes this crate 100% wasm32 and keeps `dioxus-server` out of the tree (D7).
+dioxus = { workspace = true, features = [
+  "devtools",
+  "launch",
+  "lib",
+  "logger",
+  "router",
+  "web",
+] }
+rv2-api-types.workspace = true
+rv2-client.workspace = true
+rv2-domain.workspace = true
+rv2-ui.workspace = true
+uuid.workspace = true

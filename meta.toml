@@ -1,0 +1,154 @@
+version = "1"
+
+[workspace]
+name = "rust-v2"
+root = "."
+
+# ── tools ────────────────────────────────────────────────────────────────────
+# `tooling/meta`'s config model is fully generic (`tools` is a
+# HashMap<String, ToolConfig>, `project_type` is a free String), so `dx` is
+# declarable without touching meta's source.
+
+[tools.cargo]
+enabled = true
+command = "cargo"
+for_languages = ["rust"]
+for_tasks = ["build", "test", "fmt", "clippy", "audit", "check"]
+
+[tools.bacon]
+enabled = true
+command = "bacon"
+for_languages = ["rust"]
+for_tasks = ["dev"]
+
+[tools.dx]
+enabled = true
+command = "dx"
+for_languages = ["rust"]
+for_tasks = ["dev", "build"]
+
+[tools.allsource]
+enabled = true
+command = "allsource-core"
+for_tasks = ["dev"]
+
+# ── infra: AllSource Core on :3900 ───────────────────────────────────────────
+# `allsource-core` is a plain crates.io binary (`cargo install allsource-core`),
+# so local dev needs no Docker at all. `docker-compose.yml` remains as the
+# alternative — see the README.
+[projects.infra]
+type = "allsource"
+path = "."
+[projects.infra.tasks]
+dev = { tool = "allsource", command = "" }
+
+# ── apps ─────────────────────────────────────────────────────────────────────
+[projects.api]
+type = "rust"
+path = "apps/api"
+[projects.api.tasks]
+dev = { tool = "bacon", command = "run-long" }
+build = { tool = "cargo", command = "build --release -p api --features allsource-auth" }
+test = { tool = "cargo", command = "test -p api" }
+clippy = { tool = "cargo", command = "clippy -p api --all-targets -- -D warnings" }
+check = { tool = "cargo", command = "check -p api --all-targets" }
+
+[projects.app]
+type = "rust"
+path = "apps/app"
+[projects.app.tasks]
+dev = { tool = "dx", command = "serve --package app --platform web --port 4402" }
+build = { tool = "dx", command = "bundle --package app --platform web --release" }
+test = { tool = "cargo", command = "test -p app" }
+clippy = { tool = "cargo", command = "clippy -p app --all-targets -- -D warnings" }
+
+[projects.web]
+type = "rust"
+path = "apps/web"
+[projects.web.tasks]
+dev = { tool = "dx", command = "serve --package web --platform web --port 4401" }
+build = { tool = "dx", command = "bundle --package web --platform web --release" }
+test = { tool = "cargo", command = "test -p web" }
+clippy = { tool = "cargo", command = "clippy -p web --all-targets -- -D warnings" }
+
+# ── library crates: build/test only, no dev task (excluded from `meta dev`) ───
+[projects.rv2-events]
+type = "rust"
+path = "crates/rv2-events"
+[projects.rv2-events.tasks]
+build = { tool = "cargo", command = "build -p rv2-events" }
+test = { tool = "cargo", command = "test -p rv2-events" }
+clippy = { tool = "cargo", command = "clippy -p rv2-events --all-targets -- -D warnings" }
+
+[projects.rv2-domain]
+type = "rust"
+path = "crates/rv2-domain"
+[projects.rv2-domain.tasks]
+build = { tool = "cargo", command = "build -p rv2-domain" }
+test = { tool = "cargo", command = "test -p rv2-domain" }
+clippy = { tool = "cargo", command = "clippy -p rv2-domain --all-targets -- -D warnings" }
+
+[projects.rv2-api-types]
+type = "rust"
+path = "crates/rv2-api-types"
+[projects.rv2-api-types.tasks]
+build = { tool = "cargo", command = "build -p rv2-api-types" }
+test = { tool = "cargo", command = "test -p rv2-api-types" }
+clippy = { tool = "cargo", command = "clippy -p rv2-api-types --all-targets -- -D warnings" }
+
+[projects.rv2-ui]
+type = "rust"
+path = "crates/rv2-ui"
+[projects.rv2-ui.tasks]
+build = { tool = "cargo", command = "build -p rv2-ui" }
+test = { tool = "cargo", command = "test -p rv2-ui" }
+clippy = { tool = "cargo", command = "clippy -p rv2-ui --all-targets -- -D warnings" }
+
+[projects.rv2-client]
+type = "rust"
+path = "crates/rv2-client"
+[projects.rv2-client.tasks]
+build = { tool = "cargo", command = "build -p rv2-client" }
+test = { tool = "cargo", command = "test -p rv2-client" }
+clippy = { tool = "cargo", command = "clippy -p rv2-client --all-targets -- -D warnings" }
+
+[projects.rv2-allsource]
+type = "rust"
+path = "crates/rv2-allsource"
+[projects.rv2-allsource.tasks]
+build = { tool = "cargo", command = "build -p rv2-allsource" }
+test = { tool = "cargo", command = "test -p rv2-allsource" }
+clippy = { tool = "cargo", command = "clippy -p rv2-allsource --all-targets -- -D warnings" }
+
+[projects.rv2-shared]
+type = "rust"
+path = "crates/rv2-shared"
+[projects.rv2-shared.tasks]
+build = { tool = "cargo", command = "build -p rv2-shared" }
+test = { tool = "cargo", command = "test -p rv2-shared" }
+clippy = { tool = "cargo", command = "clippy -p rv2-shared --all-targets -- -D warnings" }
+
+[projects.better-auth-allsource]
+type = "rust"
+path = "crates/better-auth-allsource"
+[projects.better-auth-allsource.tasks]
+build = { tool = "cargo", command = "build -p better-auth-allsource" }
+test = { tool = "cargo", command = "test -p better-auth-allsource" }
+
+# ── tooling ──────────────────────────────────────────────────────────────────
+[projects.meta]
+type = "rust"
+path = "tooling/meta"
+[projects.meta.tasks]
+build = { tool = "cargo", command = "build --release -p monorepo-meta" }
+test = { tool = "cargo", command = "test -p monorepo-meta" }
+fmt = { tool = "cargo", command = "fmt --all -- --check" }
+fmt-fix = { tool = "cargo", command = "fmt --all" }
+audit = { tool = "cargo", command = "audit" }
+
+[projects.pg2events]
+type = "rust"
+path = "tooling/pg2events"
+[projects.pg2events.tasks]
+build = { tool = "cargo", command = "build -p pg2events" }
+test = { tool = "cargo", command = "test -p pg2events" }

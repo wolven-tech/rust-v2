@@ -1,0 +1,24 @@
+# rustfmt configuration for the rust-v2 workspace.
+#
+# Carried over from rust-v1 with `edition` moved to 2024 (D2), and with the
+# nightly-gated options REMOVED. rust-v1's file sets nine of them
+# (`imports_granularity`, `group_imports`, `wrap_comments`, `format_strings`,
+# `normalize_comments`, `normalize_doc_attributes`, `comment_width`,
+# `format_macro_matchers`, `format_macro_bodies`); on the pinned stable
+# toolchain rustfmt ignores every one of them and prints a warning per file, so
+# `cargo fmt --all -- --check` emits hundreds of lines of noise that nobody
+# reads and that hides real output.
+#
+# Keeping them would also mean stable and nightly formatting differ, which
+# turns `--check` into a coin flip depending on who ran it. If the team wants
+# them, pin a nightly in `rust-toolchain.toml` and add them back together.
+
+edition = "2024"
+max_width = 100
+hard_tabs = false
+tab_spaces = 4
+newline_style = "Unix"
+use_small_heuristics = "Default"
+remove_nested_parens = true
+reorder_imports = true
+reorder_modules = true

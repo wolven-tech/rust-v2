@@ -1,0 +1,13 @@
+[package]
+name = "rv2-ui"
+description = "Dioxus component kit shared by apps/app and apps/web. WASM-safe (layer 2)."
+edition.workspace = true
+license.workspace = true
+version.workspace = true
+
+[dependencies]
+# `lib` = macro + html + signals + hooks + document + asset, WITHOUT `launch`,
+# `devtools` or `logger`. A component library must stay renderer-agnostic: the
+# apps pick `web` / `fullstack`, this crate must not pick for them.
+dioxus = { workspace = true, default-features = false, features = ["lib"] }
+rv2-api-types.workspace = true

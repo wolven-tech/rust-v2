@@ -1,0 +1,19 @@
+{
+  "id": "evt-golden-content.post.created-v1",
+  "entity_id": "post:00000000-0000-0000-0000-000000000002",
+  "event_type": "content.post.created",
+  "data": {
+    "type": "PostCreated",
+    "id": "00000000-0000-0000-0000-000000000002",
+    "author_id": "00000000-0000-0000-0000-000000000001",
+    "title": "On the Analytical Engine",
+    "content": "Note G.",
+    "occurred_at": "2026-01-15T10:30:00Z"
+  },
+  "metadata": {
+    "captured_for": "golden-corpus",
+    "schema_version": 1
+  },
+  "ingested_at": "2026-01-15T10:30:01Z",
+  "version": 1
+}

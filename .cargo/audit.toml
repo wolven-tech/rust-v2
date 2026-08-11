@@ -1,0 +1,42 @@
+# cargo-audit configuration.
+#
+# CI runs `cargo audit --deny warnings`, which is the strict setting. That is
+# only tenable if the advisories we have already looked at are listed here with
+# a reason — otherwise the first `unmaintained` warning makes someone drop the
+# flag, and then the next *real* vulnerability sails through. rust-v1's lesson
+# was that a partial audit is worse than a loud one.
+#
+# ONE lockfile covers every workspace member (CI asserts there is no nested
+# `Cargo.lock`), so a single run at the root genuinely audits all 13 members.
+#
+# Every entry below must name: what it is, why it is reachable, what the actual
+# risk is, and what removes it. Re-review when any of the parent crates moves.
+
+[advisories]
+ignore = [
+  # ── unmaintained, transitive through allframe ──────────────────────────────
+  # `backoff` 0.4.0 <- allframe-core 0.1.28 <- allframe <- apps/api.
+  # Unmaintained, not vulnerable. Used by allframe's retry helpers, which this
+  # workspace does not call (we use the SDK's own retry). Removed when allframe
+  # switches to `backon`/`tokio-retry`, or when D5's allframe usage is dropped.
+  "RUSTSEC-2025-0012",
+
+  # `instant` 0.1.13 <- backoff 0.4.0. Same root cause as the above; it goes
+  # away with it. Unmaintained wall-clock shim, no known vulnerability.
+  "RUSTSEC-2024-0384",
+
+  # `proc-macro-error2` 2.0.1 <- validator_derive <- validator <-
+  # better-auth-core 0.10. A BUILD-TIME proc macro: it never ships in the
+  # binary and is not reachable at runtime. Removed when better-auth's
+  # `validator` moves off it.
+  "RUSTSEC-2026-0173",
+
+  # ── unsound, transitive through dioxus ─────────────────────────────────────
+  # `lru` 0.16.4 <- dioxus-server 0.7.10 <- dioxus <- apps/web.
+  # Potential use-after-free if `LruCache::pop()` panics. Reachable only from
+  # `dioxus-server`, which rust-v2 uses at BUILD TIME ONLY for the SSG render of
+  # `apps/web` (D8) — nothing runs it in production, and `apps/app` never links
+  # it at all. Removed when dioxus bumps `lru`, or immediately if `apps/web`
+  # ever gains a running server.
+  "RUSTSEC-2026-0253",
+]

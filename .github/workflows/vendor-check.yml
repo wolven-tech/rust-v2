@@ -1,0 +1,70 @@
+name: vendor bridge check
+
+# R3 / §5.1's exit condition, automated so the vendored
+# `crates/better-auth-allsource` does not become a permanent fork by accident.
+#
+# It is a VERSION BRIDGE: it exists only because every published
+# `better-auth-allsource` declares `better-auth-core ^0.8` while we pin
+# `better-auth 0.10` (which needs `better-auth-core 0.10`). The moment upstream
+# catches up, the vendor should be deleted and the workspace dependency changed
+# to a version dep.
+
+on:
+  schedule:
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  issues: write
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Compare upstream's better-auth-core requirement with ours
+        id: check
+        run: |
+          set -euo pipefail
+          upstream=$(curl -s https://index.crates.io/be/tt/better-auth-allsource \
+            | tail -1 \
+            | jq -r '[.vers, ([.deps[] | select(.name=="better-auth-core") | .req] | join(","))] | @tsv')
+          echo "upstream: $upstream"
+          req=$(printf '%s' "$upstream" | cut -f2)
+          echo "req=$req" >> "$GITHUB_OUTPUT"
+          echo "vers=$(printf '%s' "$upstream" | cut -f1)" >> "$GITHUB_OUTPUT"
+          if [[ "$req" == *"0.10"* ]]; then
+            echo "compatible=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "compatible=false" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Open an issue when the bridge can be removed
+        if: steps.check.outputs.compatible == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const vers = "${{ steps.check.outputs.vers }}";
+            const req = "${{ steps.check.outputs.req }}";
+            const title = `Remove the vendored better-auth-allsource (upstream ${vers} now needs better-auth-core ${req})`;
+            const existing = await github.rest.issues.listForRepo({
+              owner: context.repo.owner, repo: context.repo.repo, state: "open",
+            });
+            if (existing.data.some(i => i.title === title)) return;
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title,
+              body: [
+                `Upstream \`better-auth-allsource ${vers}\` declares \`better-auth-core ${req}\`,`,
+                "which is compatible with the `better-auth 0.10` this workspace pins.",
+                "",
+                "The version bridge has served its purpose. To close this out:",
+                "",
+                "1. Delete `crates/better-auth-allsource/`.",
+                "2. Remove it from `[workspace] members`.",
+                "3. Change the `[workspace.dependencies]` entry from `path` to `version`.",
+                "4. Run the vertical slice with `--features allsource-auth`.",
+                "",
+                "See `crates/better-auth-allsource/PROVENANCE.md`.",
+              ].join("\n"),
+            });
