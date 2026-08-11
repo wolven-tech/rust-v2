@@ -4,6 +4,9 @@ description = "Request/response DTOs and read models shared between apps/api and
 edition.workspace = true
 license.workspace = true
 version.workspace = true
+# Never published: internal workspace crate. Also what makes cargo-deny's
+# `allow-wildcard-paths` apply — it is skipped for publishable crates.
+publish = false
 
 [dependencies]
 chrono.workspace = true

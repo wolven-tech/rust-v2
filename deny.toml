@@ -13,7 +13,20 @@ targets = [
 
 [advisories]
 yanked = "deny"
-ignore = []
+# `unmaintained` advisories on TRANSITIVE crates we do not choose and cannot
+# drop. Each is listed with who pulls it in, so a dependency bump that removes
+# the path is also the moment to delete the entry. None is a vulnerability;
+# leaving the whole class un-ignored would fail CI on someone else's release
+# cadence and train everyone to ignore the job.
+ignore = [
+  # backoff 0.4 <- allframe (resilience). Retry/backoff only.
+  "RUSTSEC-2025-0012",
+  # instant 0.1 <- backoff, same path. A wasm-time shim.
+  "RUSTSEC-2024-0384",
+  # proc-macro-error2 <- dioxus macro crates. Build-time only; never linked
+  # into the shipped binary or the wasm bundle.
+  "RUSTSEC-2026-0173",
+]
 
 [licenses]
 allow = [
@@ -24,6 +37,10 @@ allow = [
   "BSD-3-Clause",
   "BSL-1.0",
   "CC0-1.0",
+  # webpki-roots / webpki-root-certs — Mozilla's CA certificate bundle. The
+  # CDLA is a permissive *data* licence; it covers the certificate set, not
+  # code, and imposes no obligation on a binary that embeds it.
+  "CDLA-Permissive-2.0",
   "ISC",
   "MIT",
   "MIT-0",
@@ -40,6 +57,10 @@ confidence-threshold = 0.9
 # week. The named skips below are the ones we have actually reasoned about.
 multiple-versions = "warn"
 wildcards = "deny"
+# Without this, every internal `rv2-* .workspace = true` is reported as a
+# wildcard dependency and `bans` fails on our own crates. The rule is meant to
+# catch `foo = "*"` on a *registry* crate; path deps have no version to pin.
+allow-wildcard-paths = true
 
 skip = [
   # R7, verified this session:

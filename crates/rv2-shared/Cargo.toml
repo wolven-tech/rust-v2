@@ -4,6 +4,9 @@ description = "Server-side cross-cutting types: ServerConfig, AuthUser, Role. SE
 edition.workspace = true
 license.workspace = true
 version.workspace = true
+# Never published: internal workspace crate. Also what makes cargo-deny's
+# `allow-wildcard-paths` apply — it is skipped for publishable crates.
+publish = false
 
 [dependencies]
 thiserror.workspace = true

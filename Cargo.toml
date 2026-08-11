@@ -38,7 +38,13 @@ allsource = { version = "0.23.0", default-features = false, features = [
 ] }
 
 # ── Auth ─────────────────────────────────────────────────────────────────────
-better-auth = { version = "0.10.0", features = ["axum"] }
+# `default-features = false`: better-auth's default feature is `native-tls`,
+# which drags openssl-sys into the tree and trips the deny.toml ban. Everything
+# else here is rustls, so this must be too.
+better-auth = { version = "0.10.0", default-features = false, features = [
+  "axum",
+  "rustls",
+] }
 better-auth-allsource = { path = "crates/better-auth-allsource", default-features = false, features = [
   "rustls",
 ] }
