@@ -110,9 +110,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: EmbarkStudios/cargo-deny-action@v2
-        with:
-          command: check bans licenses sources
+      # NOT EmbarkStudios/cargo-deny-action: it runs in its own container, which
+      # cannot install the toolchain pinned in rust-toolchain.toml ("override
+      # toolchain '1.97.1-x86_64-unknown-linux-musl' is not installed"). It then
+      # resolves the graph with a different cargo and reports bans that do not
+      # reproduce locally — native-tls was flagged here while `cargo deny check`
+      # was clean on a developer machine. A check that disagrees with local is
+      # noise, so this runs cargo-deny under the repo's own toolchain.
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo install cargo-deny --locked
+      - run: cargo deny check advisories bans licenses sources
 
   no-supabase:
     name: no Supabase, no Node
