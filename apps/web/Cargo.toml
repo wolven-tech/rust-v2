@@ -15,9 +15,19 @@ default = ["web"]
 # production — `dx bundle --web --ssg` uses it at build time to render each
 # route to static HTML, and the output is a `public/` folder on a static host.
 # That is what keeps "one server process" true.
-server = ["dioxus/server"]
+server = ["dioxus/fullstack", "dioxus/server"]
 web = ["dioxus/web"]
 
 [dependencies]
-dioxus = { workspace = true, features = ["fullstack", "launch", "lib", "router"] }
+dioxus = { workspace = true, features = ["launch", "lib", "router"] }
 rv2-ui.workspace = true
+# `dioxus-web` calls `Window::location()` but relies on another dioxus crate to
+# enable the web-sys feature that provides it. That crate arrived via
+# `fullstack`; with fullstack now opt-in (see `server`), this app must enable it.
+web-sys = { workspace = true, features = ["Location"] }
+
+[package.metadata.cargo-machete]
+# `web-sys` is a feature-only dependency: no Rust code here names it, it exists
+# solely to turn on the `Location` feature that `dioxus-web` needs and does not
+# enable for itself. cargo-machete cannot see that, so it must be told.
+ignored = ["web-sys"]

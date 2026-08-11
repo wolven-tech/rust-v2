@@ -110,3 +110,16 @@ codegen-units = 1
 lto = true
 opt-level = "s"
 strip = true
+
+# `dx` builds the wasm bundle with its own `wasm-release` profile, NOT `release`
+# — so everything tuned above applies to the server binary and native builds
+# and never reached the browser. Defining it explicitly is what actually sizes
+# the bundle. `opt-level = "z"` over `"s"` because a wasm payload is downloaded
+# before it runs, so bytes cost more than the marginal speed does.
+[profile.wasm-release]
+inherits = "release"
+codegen-units = 1
+lto = "fat"
+opt-level = "z"
+panic = "abort"
+strip = true

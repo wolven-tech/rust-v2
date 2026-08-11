@@ -5332,6 +5332,7 @@ version = "0.1.0"
 dependencies = [
  "dioxus",
  "rv2-ui",
+ "web-sys",
 ]
 
 [[package]]

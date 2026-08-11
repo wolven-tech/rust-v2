@@ -44,8 +44,52 @@ coverage fixture. A smaller bundle that drops coverage is a discard, not a win.
 | 2 | Compile Tailwind for real via `tooling/tailwind` + the standalone CLI | 557,653 B (wasm unchanged); CSS 23 B → 22,266 B | 0 on the scalar | **Keep** — not a scalar move, a correctness fix. See R1. |
 | 3 | Strip the 9 confirmed-unused dependencies found by `cargo-machete` | 557,653 B | 0 on the scalar | **Keep** — every one was server-side, so none touch the wasm tree. `cargo-machete` now reports clean. Kept anyway: build hygiene, not bundle size. |
 | 4 | Drop the `logger` feature from `apps/web` | **490,481 B** | **−20,054 (−3.9%)** | **Keep** — −67,172 B (−12.0%) against proposal 3. A static marketing page has nothing to log at runtime. |
+| 5 | `opt-level = "z"` in `[profile.release]` | 490,481 B | 0 | **Discard** — byte-identical, because `dx` builds the bundle with its own `wasm-release` profile. Everything tuned in `[profile.release]` was reaching the server binary and never the browser. |
+| 6 | Define `[profile.wasm-release]` explicitly: `opt-level = "z"`, fat LTO, `panic = "abort"`, `strip` | 483,669 B | −26,866 (−5.3%) | **Keep** — the profile `dx` actually uses. Costs ~10 min of build time; worth stating before anyone wonders why CI slowed down. |
+| 7 | Make `fullstack` opt-in behind the existing `server` feature instead of unconditional | **423,713 B** | **−86,822 (−17.0%)** | **Keep** — and it fixed a blank page. See R2. |
 
-**Net: −20,054 B (−3.9%) against baseline, while adding 20 components.**
+**Net: −86,822 B (−17.0%) against baseline, while adding 20 components.**
+
+**Stopped on effort budget**, not dryness — the loop's stop condition (2 consecutive
+discards) was never reached, so there is very likely more here. Remaining candidates are in
+Open.
+
+## R2 — the coverage claim was false until proposal 7
+
+The gate had never rejected a proposal, which the method treats as a warning that the gate is
+too weak rather than as evidence the work is good. It was: the gate proved `apps/web`
+**compiled**, and compiling is not rendering.
+
+Serving the bundle and actually looking at it produced a **completely blank page** and a
+console error:
+
+```
+InvalidCharacterError: Failed to execute 'atob' on 'Window'
+```
+
+`apps/web` was built with `fullstack`, which expects server-rendered HTML carrying base64
+hydration data. Served as static files — which is exactly what D8's SSG mode is supposed to
+produce — there is no such data, hydration throws, and nothing renders. Because the SSG
+server-function wiring (OQ-10) was never implemented, `fullstack` was not a working
+configuration at all: it was the cost of a feature that could not function.
+
+Two things follow, and the second is the more important:
+
+- Making `fullstack` opt-in behind the `server` feature is **not** the loop deleting an
+  architectural decision. R1's mitigation in the architecture doc already names CSR as the
+  sanctioned fallback. The loop deferred this in round 1 on the grounds that it *would* have
+  been; the rendering evidence is what changed the answer. Deferring was right; so was
+  revisiting it once there was evidence.
+- **A visual check is now part of the gate.** A component kit's entire output is class strings
+  and render trees that no compiler checks. Two of the seven proposals found a defect that every
+  single command reported success on — the 23-byte stylesheet (R1) and the blank page (R2).
+  For this kind of work, "the build is green" is close to no signal at all.
+
+Proposal 7 also surfaced a latent packaging issue: `dioxus-web` calls `Window::location()` but
+relies on another dioxus crate to enable the `web-sys` feature that provides it. That crate
+arrived via `fullstack`, so removing it broke the build until `apps/web` enabled `Location`
+itself. It is declared feature-only, with a `cargo-machete` ignore explaining why no Rust code
+names it.
 
 ## R1 — the finding that mattered more than the scalar
 
@@ -105,17 +149,27 @@ Deliberate choices worth keeping:
   cheapest available test for a library whose output is otherwise only
   checkable by eye.
 
+- **Verified by rendering, not just compiling.** The bundle was served statically and
+  photographed: nav with call-to-action, hero with dual actions, numbered step list,
+  three-column feature grid, itemised cost breakdown, pricing card, FAQ, multi-column footer —
+  all styled. That is the coverage claim, and it is the one that was false before proposal 7.
+
 ## Open
 
-- **The `fullstack` feature is still in `apps/web`** even though the SSG seam
-  (OQ-10) is unimplemented, so the app is effectively CSR and paying for
-  fullstack anyway. Removing it would very likely beat 490,481 B, but it has to
-  go back when SSG lands. Not run — the loop should not optimise the scalar by
-  deleting a decision the architecture doc made.
-- **The lockfile is unchanged at 533 crates.** The stripped dependencies were
-  all still reachable transitively, so nothing left the graph. Direct-dependency
-  hygiene improved; the graph did not shrink.
-- **`wasm-opt` was never run.** `dx` may or may not apply it in release; not
-  verified, and it is the most likely remaining single-digit-percent win.
-- **Dark mode is absent**, matching the audited page. Adding it later means
-  touching every colour class in the kit.
+- **SSG is still unimplemented (OQ-10).** `apps/web` is now honestly CSR: `fullstack` is opt-in
+  behind the `server` feature, so the wiring can be finished without undoing anything here. Until
+  it is, the marketing site hands a crawler an empty `<div>` — which was *also* true before, just
+  hidden behind a blank page that nobody had looked at.
+- **The lockfile is unchanged at 533 crates.** The stripped dependencies were all still
+  reachable transitively, so nothing left the graph. Direct-dependency hygiene improved; the
+  graph did not shrink.
+- **`wasm-opt` was never run.** `dx` may or may not apply it in release; not verified, and it is
+  the most likely remaining single-digit-percent win.
+- **`apps/app` was never rendered.** It is CSR by design (D7), so it does not have the R2 defect,
+  but the same "compiles ≠ renders" gap applies and has not been closed.
+- **The loop did not run dry.** It stopped on effort budget after 7 proposals with the stop
+  condition (2 consecutive discards) unmet. Cheapest remaining candidates: `wasm-opt`, trimming
+  `dioxus` features further, and auditing what actually dominates the 423 KB — no size profiler
+  (`twiggy`, `cargo-bloat`) was ever run, so the composition of the bundle is still unknown.
+- **Dark mode is absent**, matching the audited page. Adding it later means touching every colour
+  class in the kit.
