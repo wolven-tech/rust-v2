@@ -68,6 +68,21 @@ pub async fn create(
     // synthesising a response from the request. If the append and the fold ever
     // disagree, the caller sees it immediately instead of on the next page load.
     let view = load(&state, id).await?;
+
+    // rust-v1 tracked from the server-action middleware; this is the same event
+    // from the equivalent place. `track` never errors and never blocks the
+    // response on a vendor — a analytics outage must not turn a successful
+    // publish into a 500.
+    state
+        .analytics
+        .track(
+            rv2_analytics::TrackedEvent::new("post_published")
+                .actor(actor.id.to_string())
+                .property("post_id", id.to_string())
+                .property("title_length", request.title.len()),
+        )
+        .await;
+
     Ok((StatusCode::CREATED, Json(view)))
 }
 

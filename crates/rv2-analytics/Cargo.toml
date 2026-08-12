@@ -1,0 +1,15 @@
+[package]
+name = "rv2-analytics"
+description = "Product analytics. Server-only; a no-op when unconfigured."
+edition.workspace = true
+license.workspace = true
+version.workspace = true
+publish = false
+
+[dependencies]
+posthog-rs = { workspace = true }
+serde_json.workspace = true
+tracing.workspace = true
+
+[dev-dependencies]
+tokio = { workspace = true, features = ["rt-multi-thread", "macros"] }

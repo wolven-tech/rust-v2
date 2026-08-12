@@ -1828,3 +1828,58 @@ indistinguishable from one reporting "no such entity". Every layer above it — 
 adapter, the handler — faithfully propagated "nothing here" and produced a plausible 404/401.
 Where a read can be silently scoped, assert on a known-present fixture rather than trusting an
 empty result.
+
+## Appendix E — D20 realised: platform capabilities
+
+D20 mapped rust-v1's TypeScript support packages onto Rust equivalents but
+nothing implemented the two vendor integrations. Both now exist as crates with
+tests, wired into `AppState`.
+
+| D20 said | Built |
+|---|---|
+| `analytics` → PostHog + AllSource events | `crates/rv2-analytics` on `posthog-rs` 0.23.2, PostHog's **official** SDK. Tracks `post_published` from the create handler — the same place rust-v1 tracked from its server-action middleware. |
+| `email` → `tera` | `crates/rv2-email` on `tera` 2.1.1 **plus `resend-rs` 0.29.0**, Resend's official SDK. D20 named only a template engine; a template engine does not send anything. |
+| `jobs` → deleted | Still nothing. See below. |
+
+### What D20 got wrong about email
+
+D20 mapped `packages/email` to a template engine, which matched what that
+package *was* — React Email templates and nothing else. It missed that this left
+the capability unimplemented: rust-v1 declared `RESEND_API_KEY` in `env.mjs` and
+in `turbo.json`, and **no code ever read it**. The capability was configured and
+absent, which is the worst of both states, because the configuration implies it
+works.
+
+rust-v2 sends. That is a small scope increase over both D20 and rust-v1, taken
+deliberately.
+
+### Degradation is the design, not a fallback
+
+Neither integration can fail a boot or a request when its key is missing:
+analytics logs the event, email renders it to the log. Two consequences worth
+stating, because they are easy to regress:
+
+- `cargo run -p api` works on a fresh clone with no vendor accounts at all.
+- Both crates are testable with no network — their tests exercise the real code
+  path rather than a mock, because the unconfigured path *is* a real code path.
+
+The asymmetry between them is deliberate. `Analytics::track` returns nothing and
+swallows transport errors; `Mailer::send` returns `Result`. Losing a product
+metric is cheap; silently losing a welcome email is a user-visible bug, and only
+the caller knows whether it is worth failing the request over.
+
+### The second native-TLS default
+
+`resend-rs`'s default feature is `native-tls`, which pulled `openssl-sys` back
+into the tree and tripped the `deny.toml` ban — the same shape as the
+`better-auth` defect in Appendix D. Two occurrences is a pattern: **check the
+TLS feature of anything new that speaks HTTP.** `cargo deny check bans` is what
+catches it, and it caught this one before the commit.
+
+### Background jobs remain unbuilt
+
+rust-v1 used trigger.dev. Nothing replaces it, and nothing pretends to. The
+options — an in-process scheduler, a durable queue needing a backing store this
+workspace does not have, or an external scheduler calling an authenticated
+endpoint — differ enough in operational cost that picking one without a real
+workload would be guessing. It needs a decision before it needs code.

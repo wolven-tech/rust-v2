@@ -5,9 +5,11 @@ members = [
   "apps/web",
   "crates/better-auth-allsource",
   "crates/rv2-allsource",
+  "crates/rv2-analytics",
   "crates/rv2-api-types",
   "crates/rv2-client",
   "crates/rv2-domain",
+  "crates/rv2-email",
   "crates/rv2-events",
   "crates/rv2-shared",
   "crates/rv2-ui",
@@ -69,6 +71,23 @@ tokio = { version = "1.53", features = [
 tower = "0.5"
 tower-http = { version = "0.6.11", features = ["cors", "trace"] }
 
+# ── Product analytics & email (server-only) ──────────────────────────────────
+# Both are OFFICIAL SDKs, which is why they are dependencies rather than
+# hand-rolled HTTP: posthog/posthog-rs and resend/resend-rust.
+posthog-rs = "0.23.2"
+# 0.29.0, not the 0.30.0-rc1 that `cargo add` picks up by default — a release
+# candidate is not a thing to pin a transactional email path to.
+#
+# `default-features = false` for the same reason as better-auth above: its
+# default feature is `native-tls`, which drags openssl-sys into the tree and
+# trips the deny.toml ban. That is now the SECOND dependency here whose default
+# is native TLS, so treat it as the expectation rather than the exception —
+# check the TLS feature of anything new that speaks HTTP.
+resend-rs = { version = "0.29.0", default-features = false, features = [
+  "rustls-tls",
+] }
+tera = "2.1.1"
+
 # ── Frontend ─────────────────────────────────────────────────────────────────
 # `default-features = false` here (not `true`) so member crates may opt out:
 # cargo forbids a member from overriding an inherited `default-features = true`.
@@ -102,9 +121,11 @@ tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 
 # ── Internal ─────────────────────────────────────────────────────────────────
 rv2-allsource = { path = "crates/rv2-allsource" }
+rv2-analytics = { path = "crates/rv2-analytics" }
 rv2-api-types = { path = "crates/rv2-api-types" }
 rv2-client = { path = "crates/rv2-client" }
 rv2-domain = { path = "crates/rv2-domain" }
+rv2-email = { path = "crates/rv2-email" }
 rv2-events = { path = "crates/rv2-events" }
 rv2-shared = { path = "crates/rv2-shared" }
 rv2-ui = { path = "crates/rv2-ui" }

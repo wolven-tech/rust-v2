@@ -4,6 +4,8 @@ use std::sync::Arc;
 
 use allframe::resilience::KeyedRateLimiter;
 use rv2_allsource::{AllSource, EventWriter, PostsReadModel, ProjectionHandle};
+use rv2_analytics::Analytics;
+use rv2_email::Mailer;
 use rv2_shared::ServerConfig;
 
 use crate::infrastructure::auth::{ApiBetterAuth, build_auth};
@@ -23,6 +25,14 @@ pub struct AppState {
     /// ip; in-memory, because a rate-limit counter is explicitly *not* an event
     /// (D19 / §9.2).
     pub rate_limiter: KeyedRateLimiter<String>,
+    /// Replaces rust-v1's `packages/analytics` (PostHog). `Disabled` without
+    /// `POSTHOG_API_KEY`, which is a supported state — a missing analytics key
+    /// must never fail a request that would otherwise have succeeded.
+    pub analytics: Analytics,
+    /// Replaces rust-v1's `packages/email`, which was templates with no sender:
+    /// `RESEND_API_KEY` was declared in its env schema and no code ever read it.
+    /// Without the key this still renders, to the log.
+    pub mailer: Mailer,
 }
 
 impl AppState {
@@ -57,6 +67,12 @@ pub async fn build_state(config: &ServerConfig) -> Result<AppState, String> {
         .await
         .map_err(|e| format!("could not build the auth stack: {e}"))?;
 
+    // Neither of these can fail the boot: both degrade to a no-op when their key
+    // is absent, which is what makes `cargo run -p api` work on a fresh clone
+    // with no vendor accounts at all.
+    let analytics = Analytics::from_env().await;
+    let mailer = Mailer::from_env();
+
     let posts = match rv2_allsource::start_posts_worker(allsource.core.clone()).await {
         Ok(handle) => {
             tracing::info!(
@@ -84,5 +100,7 @@ pub async fn build_state(config: &ServerConfig) -> Result<AppState, String> {
         // normal SPA never notices and tight enough to blunt a scripted abuse
         // loop; tune once there is real traffic to measure.
         rate_limiter: KeyedRateLimiter::new(60, 120),
+        analytics,
+        mailer,
     })
 }

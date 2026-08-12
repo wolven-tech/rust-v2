@@ -212,7 +212,13 @@ fn wasm_boundary() -> Fallible {
         ],
     )?;
 
-    for server_crate in ["rv2-allsource", "rv2-shared", "better-auth-allsource"] {
+    for server_crate in [
+        "rv2-allsource",
+        "rv2-shared",
+        "better-auth-allsource",
+        "rv2-analytics",
+        "rv2-email",
+    ] {
         for wasm_app in ["app", "web"] {
             let tree = Command::new("cargo")
                 .args([

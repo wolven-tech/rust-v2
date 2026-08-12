@@ -288,6 +288,46 @@ These are marked, not hidden. Each has a `SEAM` comment at the site.
 
 ---
 
+## Platform capabilities
+
+What rust-v1 provided as TypeScript packages, and where each lives now. Every
+row is either implemented or names what is missing — a capability that is
+configured but absent is worse than one that is obviously not there.
+
+| Capability | rust-v1 | rust-v2 | State |
+|---|---|---|---|
+| Product analytics | `packages/analytics` (posthog-node) | `crates/rv2-analytics` — PostHog's **official** Rust SDK | **Done.** Tracks `post_published`; `Disabled` without a key |
+| Transactional email | `packages/email` — React Email templates, **no sender** | `crates/rv2-email` — Tera templates + Resend's **official** Rust SDK | **Done, and more than v1 had.** v1 declared `RESEND_API_KEY` and never read it |
+| Logging | `packages/logger` (pino) | `tracing` throughout | **Done** |
+| Rate limiting / KV | `packages/kv` (Upstash Redis) | `allframe`'s `KeyedRateLimiter` in `AppState` | **Done**, in-memory. A counter is deliberately not an event (§9.2) |
+| Server state / caching | `packages/react-query` | Dioxus `use_resource` | **Done** |
+| UI kit | `packages/ui` (shadcn/React) | `crates/rv2-ui` (Dioxus) | **Done** — 29 components |
+| Background jobs | `packages/jobs` (trigger.dev) | — | **Not built.** No job runner is wired. See below |
+
+### Unconfigured is a supported state
+
+Both vendor integrations degrade rather than fail:
+
+- **No `POSTHOG_API_KEY`** → events are logged, not sent. Analytics is not
+  load-bearing, and a missing key must never fail a request that would otherwise
+  have succeeded.
+- **No `RESEND_API_KEY`** → the template still *renders*, to the log. A broken
+  template then surfaces in development rather than the first time a key exists
+  in staging, and local development sees the email without a vendor account.
+
+That is also what makes both crates testable with no network and no keys: their
+tests drive the real code path, not a mock.
+
+### Background jobs are genuinely missing
+
+rust-v1 used trigger.dev; nothing replaces it. The honest options are an
+in-process scheduler (`tokio-cron-scheduler`), a durable queue (`apalis`, which
+needs a backing store this workspace does not have), or an external scheduler
+hitting an authenticated endpoint. No decision has been made, so no seam has
+been faked. It needs a decision before it needs code.
+
+---
+
 ## Docs
 
 | Document | What it is |

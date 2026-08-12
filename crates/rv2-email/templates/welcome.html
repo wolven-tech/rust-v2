@@ -1,0 +1,22 @@
+<!-- The React Email equivalent from rust-v1, as a Tera template.
+     Inline styles on purpose: email clients strip <style> blocks and support no
+     cascade worth relying on. -->
+<div style="font-family:system-ui,-apple-system,'Segoe UI',sans-serif;line-height:1.5;color:#0f172a;max-width:480px;margin:0 auto;padding:32px 24px">
+  <h1 style="font-size:20px;font-weight:600;margin:0 0 16px">Welcome, {{ name }}</h1>
+
+  <p style="margin:0 0 16px;color:#475569">
+    Thanks for signing up to {{ product }}. Your account is ready.
+  </p>
+
+  <p style="margin:0 0 24px;color:#475569">
+    Everything you do is stored as an event, so nothing is ever silently
+    overwritten and any view of your data can be rebuilt from scratch.
+  </p>
+
+  <hr style="border:0;border-top:1px solid #e2e8f0;margin:24px 0" />
+
+  <p style="margin:0;font-size:12px;color:#94a3b8">
+    Sent by {{ product }}. If you did not create this account you can ignore
+    this message.
+  </p>
+</div>

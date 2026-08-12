@@ -1,0 +1,16 @@
+[package]
+name = "rv2-email"
+description = "Transactional email. Server-only; renders to the log when unconfigured."
+edition.workspace = true
+license.workspace = true
+version.workspace = true
+publish = false
+
+[dependencies]
+resend-rs = { workspace = true }
+tera = { workspace = true }
+thiserror.workspace = true
+tracing.workspace = true
+
+[dev-dependencies]
+tokio = { workspace = true, features = ["rt-multi-thread", "macros"] }
