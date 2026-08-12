@@ -1,0 +1,8 @@
+# `cargo xtask <task>` — the workspace's development commands.
+#
+# This alias is the whole reason the pattern is called xtask: it makes a plain
+# Rust binary feel like a first-class cargo subcommand, so the project needs no
+# Makefile, no justfile and no shell scripts. `cargo xtask ci` is exactly what
+# CI runs.
+[alias]
+xtask = "run --quiet --package xtask --"

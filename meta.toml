@@ -28,31 +28,37 @@ command = "dx"
 for_languages = ["rust"]
 for_tasks = ["dev", "build"]
 
-[tools.allsource]
-enabled = true
-command = "allsource-core"
-for_tasks = ["dev"]
-
 # ── infra: AllSource Core on :3900 ───────────────────────────────────────────
 # `allsource-core` is a plain crates.io binary (`cargo install allsource-core`),
 # so local dev needs no Docker at all. `docker-compose.yml` remains as the
 # alternative — see the README.
+#
+# Routed through xtask rather than declared as its own tool: `meta doctor`
+# probes every declared tool with `--version`, and `allsource-core` has no such
+# flag — the probe starts a server and doctor hangs forever.
 [projects.infra]
-type = "allsource"
+type = "rust"
 path = "."
 [projects.infra.tasks]
-dev = { tool = "allsource", command = "" }
+dev = { tool = "cargo", command = "run -q -p xtask -- core" }
 
-# Stylesheets. `dx build`/`dx bundle` only *copy* `assets/tailwind.css`; they do
-# not run Tailwind. Without this step both apps ship the uncompiled `@import`
-# line as a 23-byte stylesheet and render completely unstyled, while every
-# command still reports success. Run it before the `app`/`web` builds.
-[projects.styles]
+# Development commands. `cargo xtask ci` is the whole local gate and is exactly
+# what CI runs; `styles` compiles the stylesheets.
+#
+# Stylesheets need their own task because `dx build`/`dx bundle` only *copy*
+# `assets/tailwind.css` — they do not run Tailwind. Without it both apps ship
+# the uncompiled `@import` line as a 23-byte stylesheet and render completely
+# unstyled, while every command still reports success. The compiled CSS is
+# committed, so this only matters after editing classes; `cargo xtask ci` fails
+# if what is committed has gone stale.
+[projects.xtask]
 type = "rust"
-path = "tooling/tailwind"
+path = "tooling/xtask"
 dev_default = false
-[projects.styles.tasks]
-build = { tool = "cargo", command = "run -q -p tailwind-build" }
+[projects.xtask.tasks]
+build = { tool = "cargo", command = "run -q -p xtask -- styles" }
+check = { tool = "cargo", command = "run -q -p xtask -- ci" }
+test = { tool = "cargo", command = "run -q -p xtask -- live" }
 
 # ── apps ─────────────────────────────────────────────────────────────────────
 [projects.api]

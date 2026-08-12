@@ -1,16 +1,15 @@
 name: CI
 
-# Four jobs, split by what they NEED rather than by what they check.
+# Three jobs, split by what they NEED rather than by what they check.
 #
-# It was eight. `cargo audit` and `cargo deny check advisories` read the same
-# RustSec database, so one of them was pure duplication. rustfmt, clippy,
-# build+test and the predecessor greps all wanted the same toolchain and the same
-# warm target/ — as separate jobs they each paid a runner spin-up and compiled
-# the workspace again to report on it.
+# It was eight. Most of them wanted the same toolchain and the same warm
+# target/, and as separate jobs each paid a runner spin-up and recompiled the
+# workspace in order to report on it. `cargo audit` and `cargo deny check
+# advisories` read the same RustSec database, so one was pure duplication.
 #
-# What is left is split where the split buys something real: a different
-# toolchain target (wasm32), a different tool that must not share a cache
-# (cargo-deny), or a live server (Core).
+# The `check` job is now a single `cargo xtask ci` — the exact command a
+# developer runs, so the two cannot drift. What stays separate needs a different
+# tool (`cargo-deny`) or a live server (Core).
 
 on:
   push:
@@ -32,80 +31,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: Swatinem/rust-cache@v2
-
-      # Cheapest first, so a formatting slip does not cost a full compile to
-      # discover. They share one warm target/ — the reason these are one job.
-      - run: cargo fmt --all -- --check
-
-      # `--all-targets` covers tests and benches too; a lint that only fires in
-      # a test module is still a lint.
-      # `--all-features` too: `apps/api`'s `allsource-auth` feature swaps the
-      # better-auth adapter, and a lint inside that cfg branch is still a lint.
-      - run: cargo clippy --workspace --all-targets --all-features -- -D warnings
-
-      - run: cargo build --workspace
-      - run: cargo test --workspace
-
-      # The point of the exercise: no predecessor stack, anywhere.
+      # ONE step, on purpose. `cargo xtask ci` is what a developer runs, so
+      # local and CI cannot drift — there is no shell script duplicated into
+      # YAML to keep in sync. It prints a header per step, so a failure still
+      # names itself; that is the readability the per-step UI would have given.
       #
-      # This used to need exclusions — a migration binary existed to read the old
-      # database, and several modules carried comments naming what they replaced,
-      # so a bare grep was non-empty and the check had to allow-list prose. Both
-      # the binary and the comments are gone, so the check is now the strict form
-      # it always wanted to be: zero matches, no exceptions, docs included.
-      - name: No predecessor database anywhere
-        run: |
-          set -euo pipefail
-          if grep -rinE 'supabase|postgres|pg2events' \
-               --exclude-dir=.git --exclude-dir=target --exclude-dir=.github . ; then
-            echo "::error::a reference to the predecessor stack is present"
-            exit 1
-          fi
-
-      - name: No package.json / bun.lock / tsconfig
-        run: |
-          set -euo pipefail
-          found=$(find . -name package.json -o -name bun.lock -o -name tsconfig.json \
-                    -o -name turbo.json -not -path './target/*' | grep -v '^./target' || true)
-          if [ -n "$found" ]; then
-            echo "::error::TypeScript build files found: $found"
-            exit 1
-          fi
-
-  wasm:
-    name: wasm32 boundary
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: Swatinem/rust-cache@v2
-      # Kept separate from `check`: a different rustc target means a different
-      # set of artefacts, so this genuinely parallelises rather than queueing
-      # behind the host build.
-      #
-      # §2.2: "the single most dangerous line in this workspace". A crate that
-      # accidentally pulls tokio-net, reqwest or native TLS fails here in ~40s
-      # instead of during a `dx build` three weeks later.
-      - run: rustup target add wasm32-unknown-unknown
-      - name: WASM-safe crates must cross-compile
-        run: |
-          cargo check --target wasm32-unknown-unknown \
-            -p rv2-events -p rv2-domain -p rv2-api-types -p rv2-ui -p rv2-client \
-            -p app -p web
-      # The other half of the boundary: server-only crates must NOT be reachable
-      # from the frontends. `cargo tree --invert` returning only the crate
-      # itself proves nothing depends on it.
-      - name: Server-only crates must not be reachable from the apps
-        run: |
-          set -euo pipefail
-          for server_crate in rv2-allsource rv2-shared better-auth-allsource; do
-            for wasm_app in app web; do
-              if cargo tree --target wasm32-unknown-unknown -p "$wasm_app" \
-                   --prefix none 2>/dev/null | grep -qx "$server_crate v.*"; then
-                echo "::error::$wasm_app depends on the server-only crate $server_crate"
-                exit 1
-              fi
-            done
-          done
+      # It runs: rustfmt, clippy, build, test, a stylesheet-freshness check, the
+      # no-predecessor grep, and the wasm32 boundary in both directions.
+      - run: cargo xtask ci
 
   supply-chain:
     name: supply chain
@@ -123,7 +56,7 @@ jobs:
       - uses: Swatinem/rust-cache@v2
 
       # rust-v1 learned this the hard way: `cargo audit` there only ran against
-      # `tooling/meta`, so six advisories in `apps/api` — including a quinn-proto
+      # one crate, so six advisories in `apps/api` — including a quinn-proto
       # remote memory exhaustion and a reachable panic in rustls-webpki CRL
       # parsing — sat unnoticed.
       #
@@ -171,22 +104,9 @@ jobs:
           done
           curl -sf http://localhost:3900/health
 
-      # Contract first: it asserts WHICH Core behaviours everything else relies
-      # on, so when an assumption breaks the failure names the behaviour instead
-      # of surfacing as a confusing 404 in the slice below.
-      - name: Assert the Core contract
-        env:
-          ALLSOURCE_CORE_URL: http://localhost:3900
-        run: cargo test -p rv2-allsource --test core_contract -- --ignored --test-threads=1
-
-      - name: Run the acceptance test
-        env:
-          ALLSOURCE_CORE_URL: http://localhost:3900
-          ALLSOURCE_QUERY_URL: http://localhost:3900
-          ALLSOURCE_API_KEY: dev
-          JWT_SECRET: ci-secret-key-that-is-at-least-32-characters-long
-        # `--features allsource-auth` so the vendored better-auth adapter is
-        # exercised against a real Core too, not just the memory adapter.
-        run: |
-          cargo test -p api --features allsource-auth --test vertical_slice \
-            -- --ignored --nocapture --test-threads=1
+      # The same binary a developer runs. It verifies Core is reachable, sets
+      # the four environment variables the README used to ask people to export
+      # by hand, and runs the contract suite BEFORE the slice — so when an
+      # assumption breaks, the failure names the behaviour rather than surfacing
+      # as a confusing 404 downstream.
+      - run: cargo xtask live

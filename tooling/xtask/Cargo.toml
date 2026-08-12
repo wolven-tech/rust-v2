@@ -1,6 +1,6 @@
 [package]
-name = "tailwind-build"
-description = "Compiles each app's Tailwind stylesheet with the standalone CLI."
+name = "xtask"
+description = "Development commands. `cargo xtask ci` is what CI runs."
 edition.workspace = true
 license.workspace = true
 version.workspace = true

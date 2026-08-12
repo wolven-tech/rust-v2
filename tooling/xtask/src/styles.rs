@@ -55,9 +55,11 @@ const APPS: &[App] = &[
     },
 ];
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// Compile every app's stylesheet. Returns the byte size per app.
+pub fn build() -> Result<Vec<(&'static str, u64)>, Box<dyn std::error::Error>> {
     let root = workspace_root()?;
     let binary = ensure_tailwind(&root)?;
+    let mut sizes = Vec::new();
 
     for app in APPS {
         let dir = root.join(app.dir);
@@ -99,10 +101,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             .into());
         }
 
-        println!("{}: {bytes} bytes", app.name);
+        sizes.push((app.name, bytes));
     }
 
-    Ok(())
+    Ok(sizes)
 }
 
 fn workspace_root() -> Result<PathBuf, Box<dyn std::error::Error>> {

@@ -112,8 +112,8 @@ meta dev      # tmux: Core + api (bacon) + app (dx :4402) + web (dx :4401)
 or individually:
 
 ```bash
-# terminal 1 — Core
-ALLSOURCE_DATA_DIR=.allsource-data ALLSOURCE_DEV_MODE=true allsource-core
+# terminal 1 — Core on :3900
+cargo xtask core
 
 # terminal 2 — API on :4400
 cargo run -p api --features allsource-auth
@@ -121,6 +121,11 @@ cargo run -p api --features allsource-auth
 # terminal 3 — dashboard on :4402
 dx serve --package app --platform web --port 4402
 ```
+
+After editing a component's Tailwind classes, recompile the stylesheets:
+`cargo xtask styles`. The compiled CSS is committed so a fresh clone renders
+correctly with no build step; `cargo xtask ci` fails if what is committed has
+gone stale.
 
 | Service | Port |
 |---|---|
@@ -136,24 +141,31 @@ bookmarks carry over.
 ## Test
 
 ```bash
-meta test                                    # every member
-cargo test --workspace                       # same, without meta
-cargo clippy --workspace --all-targets -- -D warnings
-cargo fmt --all -- --check
-cargo audit --deny warnings                  # one lockfile ⇒ covers all 13 members
+cargo xtask ci      # exactly what CI runs — see below
+cargo xtask live    # the tests that need a live Core
 ```
 
-**The WASM boundary** is the most dangerous line in the workspace, so it is
-proven by a real cross-compile rather than by inspection:
+`cargo xtask ci` is the whole gate: rustfmt, clippy, build, test, a
+stylesheet-freshness check, the no-predecessor grep, and the wasm32 boundary in
+both directions. CI runs the same command, so the two cannot drift — there is no
+shell script duplicated into YAML to keep in sync. It stops at the first
+failure and prints a header per step, so a failure names itself.
 
-```bash
-cargo check --target wasm32-unknown-unknown \
-  -p rv2-events -p rv2-domain -p rv2-api-types -p rv2-ui -p rv2-client \
-  -p app -p web
-```
+The one thing it does **not** cover is `cargo deny check` (advisories, bans,
+licences, sources), which needs its own tool install and has its own CI job.
 
-A crate that accidentally pulls `tokio` with `net`, `reqwest`, or native TLS
-fails here in seconds instead of during a `dx build` three weeks later.
+**The WASM boundary** is the most dangerous line in the workspace, so `xtask ci`
+proves it by real cross-compile rather than by inspection — and in both
+directions: the WASM-safe crates must compile for `wasm32-unknown-unknown`, and
+the server-only crates must not be reachable from either app. A crate that
+accidentally pulls `tokio` with `net`, `reqwest`, or native TLS fails in seconds
+instead of during a `dx build` three weeks later.
+
+**The live tests are `#[ignore]`d**, so a plain `cargo test` skips them in
+silence — which is indistinguishable from passing. `cargo xtask live` is what
+actually runs them: it checks Core is reachable, tells you how to start one if
+not, sets the four environment variables, and runs the contract suite before the
+vertical slice.
 
 ---
 
@@ -169,13 +181,7 @@ HTTP request → domain event → AllSource append → projection fold
 ### As an automated test
 
 ```bash
-export ALLSOURCE_CORE_URL=http://localhost:3900
-export ALLSOURCE_QUERY_URL=http://localhost:3900
-export ALLSOURCE_API_KEY=dev
-export JWT_SECRET=dev-secret-key-that-is-at-least-32-characters-long
-
-cargo test -p api --features allsource-auth --test vertical_slice \
-  -- --ignored --nocapture --test-threads=1
+cargo xtask live
 ```
 
 It is `#[ignore]`d by default because it needs a live Core, and it **fails

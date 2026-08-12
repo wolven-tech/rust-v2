@@ -11,7 +11,7 @@ members = [
   "crates/rv2-events",
   "crates/rv2-shared",
   "crates/rv2-ui",
-  "tooling/tailwind",
+  "tooling/xtask",
 ]
 resolver = "3"
 
