@@ -1,21 +1,27 @@
 # Default owner for everything.
-* @wolven-tech/maintainers
+#
+# An individual rather than a team on purpose: GitHub **silently ignores** a
+# CODEOWNERS entry naming a team that does not exist or has no repository
+# access. The file then looks correct and enforces nothing, which is worse than
+# not having one. `wolven-tech` has no `maintainers` team today; swap this for
+# one the moment it exists.
+* @decebal
 
 # The files where a wrong change is expensive and quiet.
 #
 # `better-auth-allsource` is a vendored VERSION BRIDGE, not a fork: bug-for-bug
 # ports only, never features. See its PROVENANCE.md and the weekly vendor-check
 # workflow that opens an issue when it can be deleted.
-/crates/better-auth-allsource/   @wolven-tech/maintainers
+/crates/better-auth-allsource/   @decebal
 
 # Event schemas are immutable once released. The golden fixtures are the only
 # thing standing between an additive change and a breaking one.
-/crates/rv2-events/              @wolven-tech/maintainers
+/crates/rv2-events/              @decebal
 
 # The gate itself. A weakened check reports success for longer than it should.
-/tooling/xtask/                  @wolven-tech/maintainers
-/.github/workflows/              @wolven-tech/maintainers
-/deny.toml                       @wolven-tech/maintainers
+/tooling/xtask/                  @decebal
+/.github/workflows/              @decebal
+/deny.toml                       @decebal
 
 # The record of why. Code that contradicts it is a bug in one of the two.
-/docs/architecture/              @wolven-tech/maintainers
+/docs/architecture/              @decebal

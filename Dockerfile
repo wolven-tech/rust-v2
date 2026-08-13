@@ -43,6 +43,7 @@ COPY crates/rv2-client/Cargo.toml crates/rv2-client/
 COPY crates/rv2-domain/Cargo.toml crates/rv2-domain/
 COPY crates/rv2-email/Cargo.toml crates/rv2-email/
 COPY crates/rv2-events/Cargo.toml crates/rv2-events/
+COPY crates/rv2-jobs/Cargo.toml crates/rv2-jobs/
 COPY crates/rv2-shared/Cargo.toml crates/rv2-shared/
 COPY crates/rv2-ui/Cargo.toml crates/rv2-ui/
 COPY tooling/xtask/Cargo.toml tooling/xtask/

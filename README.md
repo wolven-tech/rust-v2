@@ -6,7 +6,7 @@ One datastore, one language, no TypeScript in the data path.
 - `apps/api` — Axum HTTP API. The only server process.
 - `apps/app` — Dioxus CSR SPA, the authenticated dashboard.
 - `apps/web` — Dioxus marketing site, built SSG.
-- `crates/` — the shared crate graph (events, domain, DTOs, UI kit, client, AllSource integration, analytics, email).
+- `crates/` — the shared crate graph (events, domain, DTOs, UI kit, client, AllSource integration, analytics, email, jobs).
 - `tooling/xtask` — the gate: `cargo xtask ci`, and the Tailwind compile.
 
 The design and every decision behind it live in
@@ -289,8 +289,9 @@ render proves the fold actually happened.
 
 **The crate layers.** `rv2-events` is layer 0; `rv2-domain` and `rv2-api-types`
 layer 1; `rv2-ui`, `rv2-client`, `rv2-allsource`, `rv2-shared`,
-`better-auth-allsource`, `rv2-analytics` and `rv2-email` layer 2; `apps/*` layer
-3. A crate may only depend on strictly lower layers, and `apps/*` are leaves.
+`better-auth-allsource`, `rv2-analytics`, `rv2-email` and `rv2-jobs` layer 2;
+`apps/*` layer 3. A crate may only depend on strictly lower layers, and `apps/*`
+are leaves.
 
 **`GET /posts` is paginated** — `?limit=` (default 50, capped at 200, clamped
 rather than rejected) and `?offset=`. It is bounded because an unbounded list
@@ -332,8 +333,8 @@ These are marked, not hidden. Each has a `SEAM` comment at the site.
 | `apps/web` SSG is not wired | `apps/web/src/main.rs` | Needs the `static_routes` server function + `IncrementalRendererConfig`. The app builds and cross-compiles; it currently renders CSR. |
 | No session cache | `apps/api/src/infrastructure/auth/middleware.rs` | Authenticated requests cost two AllSource round-trips. Measure p99 before adding the cache. |
 | English only | — | No Rust i18n crate has been evaluated. rust-v1 shipped `en` + `fr`; this is a product regression that needs sign-off. |
-| No metrics or traces exported | — | Logs are structured (`LOG_FORMAT=json`) and nothing is exported. Choosing between an OpenTelemetry collector and a Prometheus scrape is an operator decision with real cost either way, so no client has been wired. |
 | Rate limits are per-instance | `apps/api/src/infrastructure/rate_limit.rs` | In-memory, so N instances allow N× the limit, and a restart clears them. Correct for now (§9.2: a counter is not an event); a shared limiter needs a store this workspace does not have. |
+| No durable job queue | `crates/rv2-jobs` | Periodic in-process work only: every instance runs every job, nothing survives a restart, and failures are not retried. See *Background jobs* below. |
 
 **`TRUSTED_PROXY_HOPS` is not a gap but is easy to get wrong.** It defaults to
 `0`, meaning no trusted proxy, under which `x-forwarded-for` is ignored entirely
@@ -355,11 +356,12 @@ configured but absent is worse than one that is obviously not there.
 | Product analytics | `packages/analytics` (posthog-node) | `crates/rv2-analytics` — PostHog's **official** Rust SDK | **Done.** Tracks `post_published`; `Disabled` without a key |
 | Transactional email | `packages/email` — React Email templates, **no sender** | `crates/rv2-email` — Tera templates + Resend's **official** Rust SDK | **Done, and more than v1 had.** v1 declared `RESEND_API_KEY` and never read it |
 | Logging | `packages/logger` (pino) | `tracing` throughout, `LOG_FORMAT=json` for structured output | **Done** |
-| Metrics / traces | — (rust-v1 had none either) | — | **Not built.** Structured logs only; see *Known gaps* |
+| Metrics | — (rust-v1 had none) | Prometheus scrape on `METRICS_ADDR` | **Done**, opt-in. HTTP + job metrics, labelled by matched route |
+| Traces | — (rust-v1 had none) | OTLP export on `OTEL_EXPORTER_OTLP_ENDPOINT` | **Done**, opt-in. Verified against a live collector |
 | Rate limiting / KV | `packages/kv` (Upstash Redis) | `allframe`'s `KeyedRateLimiter` in `AppState` | **Done**, in-memory. A counter is deliberately not an event (§9.2) |
 | Server state / caching | `packages/react-query` | Dioxus `use_resource` | **Done** |
 | UI kit | `packages/ui` (shadcn/React) | `crates/rv2-ui` (Dioxus) | **Done** — 29 components |
-| Background jobs | `packages/jobs` (trigger.dev) | — | **Not built.** No job runner is wired. See below |
+| Background jobs | `packages/jobs` (trigger.dev) | `crates/rv2-jobs` | **Periodic work only.** Not a durable queue — read the caveat below before adding a job |
 
 ### Analytics is off the request path, in both halves
 
@@ -388,13 +390,70 @@ Both vendor integrations degrade rather than fail:
 That is also what makes both crates testable with no network and no keys: their
 tests drive the real code path, not a mock.
 
-### Background jobs are genuinely missing
+### Background jobs: periodic work, and nothing more
 
-rust-v1 used trigger.dev; nothing replaces it. The honest options are an
-in-process scheduler (`tokio-cron-scheduler`), a durable queue (`apalis`, which
-needs a backing store this workspace does not have), or an external scheduler
-hitting an authenticated endpoint. No decision has been made, so no seam has
-been faked. It needs a decision before it needs code.
+`crates/rv2-jobs` is an in-process periodic scheduler. It is the smallest thing
+that is genuinely useful, and the boundary is sharp:
+
+| | `rv2-jobs` | A durable queue |
+|---|---|---|
+| Survives a restart | No — schedules are in memory | Yes |
+| Runs once across N instances | **No — every instance runs every job** | Yes, via a lease |
+| Retries a failure | No; it runs again next period | Yes, with backoff |
+| Enqueued at runtime | No; registered at boot | Yes |
+
+The second row is the one that bites. Scale to three instances and every job
+runs three times per period. Fine for refreshing a gauge, completely wrong for
+"email the customer" — so **do not register a job whose second execution would
+be a defect.**
+
+What it does get right, because each of these is a way the naive version fails
+silently: a panicking run does not kill the schedule (each tick runs in its own
+task); a slow run does not pile up (missed ticks are skipped, not queued); jobs
+do not all fire in the same millisecond after a deploy (each is offset by a
+deterministic fraction of its period, derived from its name); and shutdown
+awaits in-flight runs rather than cutting them off mid-write.
+
+One job is registered today — `dependency_health`, which refreshes the
+`allsource_reachable` and `projection_caught_up` gauges.
+
+When you need durability, the seam to build against is a **leased queue over
+AllSource**: append `job.claimed` / `job.finished` events and get durability
+plus an audit trail from the store that already exists. That is a design, not a
+line of code, and it needs a real workload before it needs writing.
+
+### Metrics and traces
+
+Both are opt-in and both cost nothing when off.
+
+| Signal | Off unless | When off |
+|---|---|---|
+| Structured logs | `LOG_FORMAT=json` | Human-readable to stdout |
+| Metrics | `METRICS_ADDR` is set | No recorder installed; every `metrics` macro is a no-op |
+| Traces | `OTEL_EXPORTER_OTLP_ENDPOINT` is set | No exporter, no batching thread |
+
+```bash
+METRICS_ADDR=0.0.0.0:9090 \
+OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318 \
+  cargo run -p api
+```
+
+**`/metrics` is on its own port, not on the application router.** Scrape output
+names every route and reports request volumes; it has no business being subject
+to — or exempt from — the app's rate limiter and CORS policy. A separate
+listener that is simply never published outside the network is a cruder control
+than an auth check and a much harder one to get subtly wrong. The `Dockerfile`
+does not `EXPOSE` it.
+
+**HTTP metrics are labelled by the matched route** (`/posts/{id}`), never the
+request path. Labelling by path is one time series per uuid, they never expire,
+and the Prometheus instance falls over long before anyone connects it to the
+line of code responsible. Unrouted requests report `unmatched` for the same
+reason — 404-scanning traffic would otherwise mint unbounded labels.
+
+A `METRICS_ADDR` that will not bind **fails the boot**, on purpose. A metrics
+endpoint that silently is not there is how a dashboard ends up showing a flat
+line that everyone reads as "no traffic".
 
 ---
 

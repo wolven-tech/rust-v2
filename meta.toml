@@ -138,6 +138,14 @@ build = { tool = "cargo", command = "build -p rv2-allsource" }
 test = { tool = "cargo", command = "test -p rv2-allsource" }
 clippy = { tool = "cargo", command = "clippy -p rv2-allsource --all-targets -- -D warnings" }
 
+[projects.rv2-jobs]
+type = "rust"
+path = "crates/rv2-jobs"
+[projects.rv2-jobs.tasks]
+build = { tool = "cargo", command = "build -p rv2-jobs" }
+test = { tool = "cargo", command = "test -p rv2-jobs" }
+clippy = { tool = "cargo", command = "clippy -p rv2-jobs --all-targets -- -D warnings" }
+
 [projects.rv2-shared]
 type = "rust"
 path = "crates/rv2-shared"

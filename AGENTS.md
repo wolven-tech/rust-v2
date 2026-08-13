@@ -14,7 +14,7 @@ TypeScript, and no JavaScript package manager.
 - `apps/app` — Dioxus CSR SPA, the authenticated dashboard.
 - `apps/web` — Dioxus marketing site.
 - `crates/` — the shared graph: events, domain, DTOs, UI kit, client, AllSource
-  integration, analytics, email.
+  integration, analytics, email, jobs.
 - `tooling/xtask` — the gate.
 
 ## One command
@@ -83,15 +83,32 @@ behaviour under test. Docs state limitations plainly rather than omitting them:
 a capability that is configured but absent is treated as worse than one that is
 obviously missing.
 
+## Observability is opt-in, and off by default
+
+`LOG_FORMAT=json`, `METRICS_ADDR`, `OTEL_EXPORTER_OTLP_ENDPOINT`. Unset, each is
+inert — no recorder, no exporter, no batching thread — so a fresh clone needs no
+collector and pays for none of it. `metrics` is a facade, so instrumentation in
+the code is free when nothing is recording rather than being feature-gated.
+
+Two rules if you touch it: label HTTP metrics by the **matched route**, never
+the request path (one time series per uuid otherwise), and remember the OTLP
+batch processor runs on its **own thread outside the tokio runtime** — the async
+reqwest client panics there with "no reactor running", on a background thread,
+so the process keeps serving and the collector silently receives nothing.
+
+## Background jobs run on every instance
+
+`crates/rv2-jobs` is periodic in-process work, **not a queue**. Every instance
+runs every job, nothing survives a restart, and a failure is not retried — it
+just runs again next period. Do not register a job whose second concurrent
+execution would be a defect. Read that crate's module docs before adding one.
+
 ## Things deliberately not built
 
-- **Background jobs.** No runner is wired, and no seam has been faked, because
-  the options differ enough operationally that choosing without a real workload
-  is guessing.
+- **A durable job queue.** The seam is a leased queue over AllSource
+  (`job.claimed` / `job.finished` events); it needs a real workload first.
 - **Google OAuth.** Marked with a `SEAM` comment. Wiring it without the
   HMAC-signed pending-origin cookie glue produces an open redirect.
 - **`apps/web` SSG.** It renders CSR today.
-- **Metrics and traces.** Logs are structured; nothing is exported. Picking a
-  backend is an operator decision.
 
 Do not quietly fill one of these in as a side effect of another change.

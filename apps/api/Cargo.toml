@@ -33,18 +33,25 @@ axum.workspace = true
 better-auth.workspace = true
 better-auth-allsource.workspace = true
 chrono = { workspace = true, features = ["clock"] }
+metrics.workspace = true
+metrics-exporter-prometheus.workspace = true
+opentelemetry.workspace = true
+opentelemetry-otlp.workspace = true
+opentelemetry_sdk.workspace = true
 rv2-allsource.workspace = true
 rv2-analytics.workspace = true
 rv2-api-types.workspace = true
 rv2-domain.workspace = true
 rv2-email.workspace = true
 rv2-events.workspace = true
+rv2-jobs.workspace = true
 rv2-shared.workspace = true
 serde_json.workspace = true
 thiserror.workspace = true
 tokio.workspace = true
 tower-http.workspace = true
 tracing.workspace = true
+tracing-opentelemetry.workspace = true
 tracing-subscriber.workspace = true
 uuid = { workspace = true, features = ["v4", "v5"] }
 
