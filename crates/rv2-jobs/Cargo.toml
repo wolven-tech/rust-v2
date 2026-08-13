@@ -1,0 +1,12 @@
+[package]
+name = "rv2-jobs"
+description = "In-process periodic job scheduler. Layer 2, server-only."
+edition.workspace = true
+license.workspace = true
+version.workspace = true
+publish = false
+
+[dependencies]
+metrics.workspace = true
+tokio.workspace = true
+tracing.workspace = true

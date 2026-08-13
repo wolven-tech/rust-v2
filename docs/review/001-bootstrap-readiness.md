@@ -105,9 +105,8 @@ repository. On a public repository that is not a formality — absent an explici
 grant, the default is all rights reserved, so nobody could legally fork the
 thing that exists to be forked.
 
-**Fixed.** MIT text added, `Copyright (c) 2026 Wolven Tech`. *If that is not the
-right legal entity, it is a one-line change and worth making now rather than
-after the first external contribution.*
+**Fixed.** MIT text added, `Copyright (c) 2026 Wolven Tech Advisory` — the
+entity named in rust-v1's own `LICENSE.md`, rather than a guess.
 
 ---
 
@@ -162,23 +161,56 @@ map, held in process by the worker, so there is no cheaper source to page from.
 What the limit bounds is the serialized response and the client's parse, which
 are the parts that scale with the store.
 
-### 8. No metrics or traces exported 📝
+### 8. No metrics or traces exported ✅
 
 `tracing` wrote to stdout as human-readable text. The README's "Logging: Done"
 row overstated what was actually available to an operator.
 
-**Partly fixed, partly recorded.** `LOG_FORMAT=json` now emits one JSON object
-per event, so the fields the code already attaches reach an aggregator as fields
-rather than as a line to re-parse with a regex. The `Dockerfile` sets it; local
-development does not, because a developer wants the readable form. It is
-deliberately not auto-detected from a TTY — a container run interactively must
-log the way it does in production, or the format silently differs between the
-place you debug and the place it matters.
+**Fixed, in three parts.**
 
-Metrics and traces are **not** wired, and that is now a stated gap rather than
-an omission. Choosing between an OpenTelemetry collector and a Prometheus scrape
-has real operational cost either way, and picking one without knowing where this
-will run would be guessing. It needs a decision before it needs code.
+**Logs.** `LOG_FORMAT=json` emits one JSON object per event, so the fields the
+code already attaches reach an aggregator as fields rather than as a line to
+re-parse. The `Dockerfile` sets it; local development does not. Deliberately not
+auto-detected from a TTY — a container run interactively must log the way it
+does in production, or the format silently differs between the place you debug
+and the place it matters.
+
+**Metrics.** Prometheus, on a listener of its own bound from `METRICS_ADDR`,
+unset by default. `/metrics` is deliberately **not** on the application router:
+scrape output names every route and reports request volumes, and it has no
+business being subject to — or exempt from — the app's rate limiter and CORS
+policy. A separate listener that is never published outside the network is a
+cruder control than an auth check and a much harder one to get subtly wrong.
+
+Emitted: `http_requests_total` and `http_request_duration_seconds`, labelled by
+the **matched route** (`/posts/{id}`) rather than the path — labelling by path
+is one never-expiring time series per uuid — plus `job_runs_total`,
+`job_duration_seconds`, `allsource_reachable` and `projection_caught_up`.
+
+**Traces.** OTLP over HTTP, gated on the specification's own
+`OTEL_EXPORTER_OTLP_ENDPOINT` rather than an invented variable name.
+
+Two defects surfaced only by running it against a real collector, and both would
+have shipped as "configured, exports nothing":
+
+1. **The request span was below the filter.** `tower_http`'s `DefaultMakeSpan`
+   creates it at `DEBUG` and the default filter is `info`, so no span was ever
+   recorded and the exporter had nothing to export. Fixed by making the span
+   `INFO`. A span nobody records is indistinguishable from an exporter that does
+   not work.
+2. **The async HTTP client cannot be used from the batch processor.** The SDK
+   runs batching on a dedicated thread outside the tokio runtime, so
+   `reqwest-client` panicked with *"there is no reactor running"* — on a
+   background thread, meaning the process kept serving happily while the
+   collector received nothing. Fixed by using `reqwest-blocking-client`, which
+   is what that thread exists for.
+
+Verified against a live Jaeger instance: five requests produced five traces
+under service `api`, with the request URIs attached.
+
+Everything here is off unless configured, and costs nothing when off — `metrics`
+is a facade, so instrumentation compiles to approximately nothing with no
+recorder installed rather than needing to be feature-gated.
 
 ### 9. The rate limiter trusted a client-controlled header ✅
 
@@ -278,7 +310,7 @@ Unchanged by this review, listed so they are not mistaken for oversights:
 
 | Item | Why it is still open |
 |---|---|
-| Background jobs | Needs a decision (in-process scheduler vs durable queue vs external scheduler), not code. No seam has been faked. |
+| A durable job queue | `crates/rv2-jobs` now covers periodic in-process work, which is the half that needed no new infrastructure. Durability, single-execution across instances and retries are the other half; the seam is a leased queue over AllSource (`job.claimed` / `job.finished` events), and it needs a real workload before it needs writing. |
 | Google OAuth | Marked `SEAM`. Wiring it without the HMAC-signed pending-origin cookie glue produces an open redirect. |
 | `apps/web` SSG | `OQ-10`. Renders CSR; needs `static_routes` + `IncrementalRendererConfig`. |
 | i18n | rust-v1 shipped `en` + `fr`. A product regression that needs sign-off, not a technical choice. |

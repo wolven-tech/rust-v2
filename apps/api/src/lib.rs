@@ -30,7 +30,11 @@ use std::sync::Arc;
 
 use axum::{Router, middleware, routing::get};
 use better_auth::AxumIntegration;
-use tower_http::{cors::CorsLayer, trace::TraceLayer};
+use tower_http::{
+    cors::CorsLayer,
+    trace::{DefaultMakeSpan, DefaultOnFailure, TraceLayer},
+};
+use tracing::Level;
 
 use crate::presentation::handlers;
 
@@ -83,8 +87,33 @@ pub fn build_router(state: Arc<AppState>) -> Router {
         .with_state(Arc::clone(&state))
         .merge(domain_routes)
         .nest("/auth", auth_router)
+        // Outermost of the application layers, so it sees every request —
+        // including the ones the rate limiter rejects. "How often are we
+        // shedding load?" is one of the few questions this exists to answer,
+        // and a limiter mounted above it would hide exactly that.
+        //
+        // With no recorder installed (the default) every macro inside is a
+        // no-op, so this is not conditional on metrics being enabled.
+        .layer(middleware::from_fn(
+            infrastructure::observability::track_requests,
+        ))
         .layer(cors_layer(&state.cors_origins))
-        .layer(TraceLayer::new_for_http())
+        // `.level(Level::INFO)` is load-bearing, not cosmetic. `DefaultMakeSpan`
+        // creates the per-request span at DEBUG, and the default filter is
+        // `info` — so with the stock configuration there was no request span at
+        // all, and the OTLP exporter therefore had nothing to export. Traces
+        // were "configured" and the collector saw zero services. A span nobody
+        // records is indistinguishable from an exporter that does not work.
+        .layer(
+            TraceLayer::new_for_http()
+                .make_span_with(DefaultMakeSpan::new().level(Level::INFO))
+                // WARN, not the default ERROR. `/ready` answers 503 by design
+                // while a dependency is down, and an orchestrator polls it every
+                // few seconds — at ERROR that is a page-worthy severity emitted
+                // on a timer for a condition already logged, with its own
+                // fields, by the handler itself.
+                .on_failure(DefaultOnFailure::new().level(Level::WARN)),
+        )
 }
 
 /// CORS for a credentialed session cookie (§5.3).

@@ -11,6 +11,7 @@ members = [
   "crates/rv2-domain",
   "crates/rv2-email",
   "crates/rv2-events",
+  "crates/rv2-jobs",
   "crates/rv2-shared",
   "crates/rv2-ui",
   "tooling/xtask",
@@ -122,6 +123,43 @@ uuid = { version = "1", features = ["serde"] }
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
 
+# A facade, so a crate can record a metric without knowing whether an exporter
+# is installed. With no recorder every macro compiles to approximately nothing,
+# which is what makes "metrics are opt-in" cost nothing when they are off.
+metrics = "0.24.6"
+# `default-features = false`: the default set includes `push-gateway`, which
+# pulls hyper-rustls with the aws-lc-rs provider — a SECOND crypto backend
+# alongside ring, in a workspace that already carries two HTTP stacks (R7). The
+# scrape listener needs none of it.
+metrics-exporter-prometheus = { version = "0.18.3", default-features = false, features = [
+  "http-listener",
+] }
+
+# ── OpenTelemetry (traces) ───────────────────────────────────────────────────
+# Off unless OTEL_EXPORTER_OTLP_ENDPOINT is set. The span data already exists —
+# `tracing` instruments the whole request path — so this is a subscriber layer
+# that ships it somewhere, not new instrumentation.
+opentelemetry = "0.32"
+opentelemetry_sdk = { version = "0.32", features = ["rt-tokio"] }
+# `http-proto` rather than the default `grpc-tonic`: tonic brings its own
+# transport and TLS stack into a binary that already has two, and OTLP/HTTP is
+# accepted by every collector worth pointing at.
+#
+# `reqwest-blocking-client`, NOT `reqwest-client`, and this is not a preference.
+# The SDK's batch span processor runs on its own dedicated thread, outside the
+# tokio runtime. Give it the async client and every export panics with
+# "there is no reactor running, must be called from the context of a Tokio 1.x
+# runtime" — on a background thread, so the process keeps serving and the
+# collector simply never receives anything. Blocking IO is correct here: that
+# thread exists to block.
+opentelemetry-otlp = { version = "0.32", default-features = false, features = [
+  "http-proto",
+  "reqwest-blocking-client",
+  "reqwest-rustls",
+  "trace",
+] }
+tracing-opentelemetry = "0.33"
+
 # ── Internal ─────────────────────────────────────────────────────────────────
 rv2-allsource = { path = "crates/rv2-allsource" }
 rv2-analytics = { path = "crates/rv2-analytics" }
@@ -130,6 +168,7 @@ rv2-client = { path = "crates/rv2-client" }
 rv2-domain = { path = "crates/rv2-domain" }
 rv2-email = { path = "crates/rv2-email" }
 rv2-events = { path = "crates/rv2-events" }
+rv2-jobs = { path = "crates/rv2-jobs" }
 rv2-shared = { path = "crates/rv2-shared" }
 rv2-ui = { path = "crates/rv2-ui" }
 

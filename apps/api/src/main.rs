@@ -2,13 +2,23 @@
 
 use std::{net::SocketAddr, sync::Arc};
 
-use api::{build_router, infrastructure::state::build_state};
+use api::{
+    build_router,
+    infrastructure::{jobs, observability, state::build_state},
+};
 use rv2_shared::ServerConfig;
-use tracing_subscriber::{EnvFilter, fmt};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    init_tracing();
+    // First, so every failure below is itself logged.
+    let observability = observability::init();
+
+    // Before the router, because the recorder has to be installed before the
+    // first `metrics!` macro runs — and after logging, so its own decisions are
+    // visible. A bad `METRICS_ADDR` fails the boot on purpose: a metrics
+    // endpoint that silently is not there is how a dashboard ends up showing a
+    // flat line everyone reads as "no traffic".
+    observability::init_metrics()?;
 
     // R6: this fails loudly and by name if ALLSOURCE_CORE_URL /
     // ALLSOURCE_QUERY_URL are unset. There is deliberately no default port.
@@ -17,6 +27,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let state = Arc::new(build_state(&config).await?);
     let app = build_router(Arc::clone(&state));
+
+    // Started before the listener so the first scrape after a boot has real
+    // values rather than an absent series, which reads on a graph as a gap
+    // rather than as "just started".
+    let jobs = jobs::start(Arc::clone(&state));
 
     let listener = tokio::net::TcpListener::bind(&config.bind_addr).await?;
     tracing::info!(addr = %config.bind_addr, "listening");
@@ -30,38 +45,25 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     .with_graceful_shutdown(shutdown_signal())
     .await?;
 
-    // AFTER serve returns, so nothing tracked by an in-flight request is lost.
-    //
-    // `Analytics::track` is fire-and-forget (see that crate's module docs), so
-    // at any instant some events exist only in an in-process queue. Exiting
-    // without this drops them, and drops them *silently* — the symptom is
-    // "PostHog is missing the last few minutes before every deploy", which
+    // Everything below runs AFTER serve returns, in dependency order.
+
+    // Jobs first: they touch state, and one mid-run when the process exits is
+    // the kind of half-finished work that gets discovered months later.
+    jobs.shutdown().await;
+
+    // Then analytics. `track` is fire-and-forget (see that crate's module
+    // docs), so at any instant some events exist only in an in-process queue.
+    // Exiting without this drops them, and drops them *silently* — the symptom
+    // is "PostHog is missing the last few minutes before every deploy", which
     // nobody traces back to a missing flush.
     state.analytics.shutdown().await;
     tracing::info!("shutdown complete");
 
+    // Last: the exporter batches, so the spans describing this shutdown exist
+    // only in memory until it drains.
+    observability.shutdown();
+
     Ok(())
-}
-
-/// Structured logging, with the format chosen by the environment.
-///
-/// `LOG_FORMAT=json` emits one JSON object per event, which is what a log
-/// aggregator needs in order to index the fields this codebase already attaches
-/// (`%error`, `event = %event.name`, `worker = …`) as *fields* rather than as a
-/// flat string it has to re-parse with a regex.
-///
-/// Deliberately not auto-detected from a TTY: a container that happens to be run
-/// interactively must log the way it does in production, or the format silently
-/// differs between the place you debug and the place it matters.
-fn init_tracing() {
-    let filter =
-        EnvFilter::try_from_default_env().unwrap_or_else(|_| EnvFilter::new("info,api=debug"));
-
-    if std::env::var("LOG_FORMAT").is_ok_and(|f| f.eq_ignore_ascii_case("json")) {
-        fmt().json().with_env_filter(filter).init();
-    } else {
-        fmt().with_env_filter(filter).init();
-    }
 }
 
 /// Ctrl-C or SIGTERM. Without this, a container stop kills in-flight requests.

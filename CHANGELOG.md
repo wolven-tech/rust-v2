@@ -8,6 +8,40 @@ Nothing here is released yet — the workspace is at `0.1.0` and every crate is
 
 ## [Unreleased]
 
+### Added — observability and jobs
+
+- **Prometheus metrics**, opt-in via `METRICS_ADDR`, served from a listener of
+  their own rather than the application router. `http_requests_total` and
+  `http_request_duration_seconds` are labelled by the **matched route**, never
+  the request path — labelling by path is one never-expiring time series per
+  entity id. Plus `job_runs_total`, `job_duration_seconds`,
+  `allsource_reachable` and `projection_caught_up`.
+- **OTLP trace export**, opt-in via the specification's own
+  `OTEL_EXPORTER_OTLP_ENDPOINT`. Verified against a live collector, which
+  surfaced two defects that would otherwise have shipped as "configured, exports
+  nothing": the request span was created at `DEBUG` and dropped by the default
+  `info` filter, and the async HTTP client panicked with "no reactor running" on
+  the SDK's dedicated batch-processor thread. Now `INFO` spans and the blocking
+  client.
+- **`crates/rv2-jobs`** — an in-process periodic scheduler. A panicking run does
+  not kill the schedule, a slow run does not pile up (missed ticks are skipped),
+  jobs do not all fire together after a deploy, and shutdown awaits in-flight
+  runs. It is **not** a durable queue: every instance runs every job. One job is
+  registered, `dependency_health`.
+- `LOG_FORMAT`, `METRICS_ADDR` and `OTEL_EXPORTER_OTLP_ENDPOINT` documented in
+  `.env.example`.
+
+### Changed
+
+- `tower_http`'s failure logging dropped from `ERROR` to `WARN`. `/ready`
+  answers 503 by design while a dependency is down, and an orchestrator polls it
+  on a timer — a page-worthy severity emitted every few seconds, for a condition
+  the handler already logs with its own fields.
+- `LICENSE` names Wolven Tech Advisory, the entity in rust-v1's own licence.
+- `CODEOWNERS` names an individual rather than `@wolven-tech/maintainers`, which
+  does not exist — GitHub silently ignores an entry naming a team that has no
+  access, so the file looked correct and enforced nothing.
+
 ### Fixed
 
 - **Analytics no longer blocks the request path.** `Analytics::track` called

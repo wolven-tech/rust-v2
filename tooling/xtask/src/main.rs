@@ -236,6 +236,7 @@ fn wasm_boundary() -> Fallible {
         "better-auth-allsource",
         "rv2-analytics",
         "rv2-email",
+        "rv2-jobs",
     ];
 
     // One `cargo tree` per app, not one per (app, crate) pair. The tree depends

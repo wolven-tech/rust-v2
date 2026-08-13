@@ -37,6 +37,8 @@ no way to tell which won.
 | Nothing server-only is reachable from a Dioxus app | `cargo xtask ci`, by real cross-compile in both directions |
 | No new HTTP dependency brings `native-tls` | `deny.toml` bans `openssl-sys` and `native-tls`. **Check the TLS feature of anything that speaks HTTP** — two dependencies here defaulted to native TLS, so treat it as the expectation |
 | Every crate declares its layer and depends only on strictly lower ones | Review, and the crate-level doc comment on each `lib.rs` |
+| A background job is idempotent and safe to skip | Review. `rv2-jobs` runs **every job on every instance** — a job whose second concurrent execution is a defect does not belong there |
+| A metric label has bounded cardinality | Review. Label by matched route, never by path or entity id |
 
 ## Adding a dependency
 
