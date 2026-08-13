@@ -40,7 +40,7 @@ jobs:
           fi
       - name: Open an issue when the bridge can be removed
         if: steps.check.outputs.compatible == 'true'
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         with:
           script: |
             const vers = "${{ steps.check.outputs.vers }}";
