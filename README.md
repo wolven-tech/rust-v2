@@ -335,6 +335,7 @@ These are marked, not hidden. Each has a `SEAM` comment at the site.
 | English only | — | No Rust i18n crate has been evaluated. rust-v1 shipped `en` + `fr`; this is a product regression that needs sign-off. |
 | Rate limits are per-instance | `apps/api/src/infrastructure/rate_limit.rs` | In-memory, so N instances allow N× the limit, and a restart clears them. Correct for now (§9.2: a counter is not an event); a shared limiter needs a store this workspace does not have. |
 | No durable job queue | `crates/rv2-jobs` | Periodic in-process work only: every instance runs every job, nothing survives a restart, and failures are not retried. See *Background jobs* below. |
+| **Nothing tests the UI in a browser** | — | `cargo xtask live` drives the API with reqwest and JSON. It passed for weeks while the login screen was a form that could not submit anything, because it never rendered a page. A `dx serve` and one manual sign-in is currently the only thing that closes that gap. |
 
 **`TRUSTED_PROXY_HOPS` is not a gap but is easy to get wrong.** It defaults to
 `0`, meaning no trusted proxy, under which `x-forwarded-for` is ignored entirely

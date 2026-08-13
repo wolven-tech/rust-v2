@@ -194,31 +194,94 @@ fn PostBody(post: PostView) -> Element {
     }
 }
 
-/// Credential sign-in. Posts straight at better-auth's own route on `apps/api`,
+/// Credential sign-in.
+///
+/// `rv2_client::sign_in` posts JSON at better-auth's own route on `apps/api`,
 /// which sets the HttpOnly session cookie (D17); the client never sees a token.
+///
+/// ## This was a form that could not submit
+///
+/// It used to be a **native HTML form POST** — `method="post"`,
+/// `action="…/auth/sign-in/email"` — with `value: String::new()` hardcoded and
+/// no-op `oninput` handlers. Clicking Sign in navigated the browser off the SPA
+/// to the API origin and got a `400`: a native submit is form-encoded, and
+/// better-auth answers JSON-or-400. Even had the encoding matched, the fields
+/// held no state and `TextField` rendered no `name`, so the body was empty.
+///
+/// The API was never at fault, and the vertical slice passed throughout —
+/// because it drives the API with reqwest and JSON and never touches this
+/// screen. The whole dashboard was unreachable in a browser: `/posts` correctly
+/// redirects here, and there was no way back out. Found by signing in with a
+/// real browser, which is the only thing that would have found it.
 #[component]
 pub fn Login() -> Element {
+    let navigator = use_navigator();
+
+    let mut email = use_signal(String::new);
+    let mut password = use_signal(String::new);
+    let mut error = use_signal(|| None::<String>);
+    let mut submitting = use_signal(|| false);
+
+    let submit = move |_| async move {
+        submitting.set(true);
+        error.set(None);
+        match rv2_client::sign_in(&email(), &password()).await {
+            // Straight to the dashboard rather than `Shell`'s bootstrap being
+            // re-run in place: `Shell` re-reads `GET /me` on mount, so the
+            // navigation *is* the session refresh. `replace`, not `push`, so
+            // Back does not return to a login screen the user has passed.
+            Ok(()) => {
+                password.set(String::new());
+                navigator.replace(Route::Dashboard {});
+            }
+            // Deliberately not "invalid email or password": better-auth already
+            // answers with a message that does not distinguish the two, and
+            // re-wording it here would only risk saying something it did not.
+            Err(error_response) => error.set(Some(error_response.to_string())),
+        }
+        submitting.set(false);
+    };
+
     rsx! {
         div { class: "mx-auto max-w-sm px-6 py-16",
             PageHeader { title: "Sign in" }
             Card {
                 form {
                     class: "space-y-3",
-                    method: "post",
-                    action: "{rv2_client::api_base()}/auth/sign-in/email",
+                    // `prevent_default` is what stops the browser doing its own
+                    // navigation to `action`. Without it the handler runs and
+                    // the page leaves anyway.
+                    onsubmit: move |event| {
+                        event.prevent_default();
+                        submit(())
+                    },
                     TextField {
                         label: "Email",
                         r#type: "email",
-                        value: String::new(),
-                        oninput: move |_: FormEvent| {},
+                        name: "email",
+                        autocomplete: "email",
+                        required: true,
+                        value: email(),
+                        oninput: move |event: FormEvent| email.set(event.value()),
                     }
                     TextField {
                         label: "Password",
                         r#type: "password",
-                        value: String::new(),
-                        oninput: move |_: FormEvent| {},
+                        name: "password",
+                        autocomplete: "current-password",
+                        required: true,
+                        value: password(),
+                        oninput: move |event: FormEvent| password.set(event.value()),
                     }
-                    Button { r#type: "submit", variant: Variant::Primary, "Sign in" }
+                    if let Some(message) = error() {
+                        ErrorBanner { message }
+                    }
+                    Button {
+                        r#type: "submit",
+                        variant: Variant::Primary,
+                        disabled: submitting(),
+                        "Sign in"
+                    }
                 }
             }
             p { class: "mt-4 text-xs text-slate-500",
