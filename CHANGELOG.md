@@ -42,6 +42,29 @@ Nothing here is released yet — the workspace is at `0.1.0` and every crate is
   does not exist — GitHub silently ignores an entry naming a team that has no
   access, so the file looked correct and enforced nothing.
 
+### Fixed — browser sign-in was impossible
+
+- **The login screen was a native HTML form POST** aimed at better-auth's
+  JSON-only route: form-encoded against a route that answers JSON-or-400, with
+  `value: String::new()` hardcoded, no-op `oninput` handlers, and no `name`
+  attributes on the inputs, so the body would have been empty regardless. It
+  navigated the browser off the SPA to the API origin and got a `400`.
+
+  Because `/posts` correctly redirects to `/login`, the entire dashboard was
+  unreachable in a browser — there was no way back out. The API was never at
+  fault, and `cargo xtask live` passed throughout, because it drives the API
+  with reqwest and JSON and never renders a page.
+
+  Now: `rv2_client::sign_in` posts JSON with credentials, and the view holds
+  signals, prevents the default submit, shows the failure, and navigates on
+  success.
+- `rv2_ui::TextField` gained `name`, `autocomplete` and `required`. Without
+  `name` a field contributes nothing to a form submission and no password
+  manager can fill it.
+- `rv2_client::sign_out` checked no status, so a sign-out the server refused
+  looked exactly like one that worked — the user stayed signed in while the UI
+  said otherwise. It and `delete_post` now share one `discard_body` helper.
+
 ### Fixed
 
 - **Analytics no longer blocks the request path.** `Analytics::track` called

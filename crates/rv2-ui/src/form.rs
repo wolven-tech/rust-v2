@@ -11,6 +11,22 @@ pub fn TextField(
     value: String,
     #[props(default)] placeholder: String,
     #[props(default = "text".to_string())] r#type: String,
+    /// The `name` attribute.
+    ///
+    /// Optional, but omitting it is half of what made the login screen a form
+    /// that could not submit anything: a native form POST serializes fields
+    /// **by name**, and a nameless input contributes nothing to the body at
+    /// all. Password managers key on it too — without one they cannot offer to
+    /// save or fill a credential.
+    #[props(default)]
+    name: Option<String>,
+    /// The `autocomplete` token — `email`, `current-password`, and so on.
+    ///
+    /// A fixed vocabulary, not free text. Browsers need it to fill credentials
+    /// into the right box.
+    #[props(default)]
+    autocomplete: Option<String>,
+    #[props(default = false)] required: bool,
     /// Field-level validation message. Rendered with `role="alert"` so screen
     /// readers announce it — a validation error nobody hears is not a
     /// validation error.
@@ -26,6 +42,9 @@ pub fn TextField(
                 r#type: "{r#type}",
                 value: "{value}",
                 placeholder: "{placeholder}",
+                name: name.unwrap_or_default(),
+                autocomplete: autocomplete.unwrap_or_default(),
+                required,
                 oninput: move |event| oninput.call(event),
             }
             if let Some(message) = error {

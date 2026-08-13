@@ -113,6 +113,31 @@ async fn send<T: serde::de::DeserializeOwned>(
     serde_json::from_str(&text).map_err(|e| ApiError::Decode(e.to_string()))
 }
 
+/// Send a request, check the status, and throw the body away.
+///
+/// For the routes whose success carries no data — a sign-in that sets a cookie,
+/// a sign-out, a `204` delete. Checking the status is the whole job: the
+/// alternative is what `sign_out` used to do, which was to ignore it and report
+/// success for a request the server refused.
+async fn discard_body(request: gloo_net::http::Request) -> Result<(), ApiError> {
+    let response = request.send().await?;
+    let status = response.status();
+    if (200..300).contains(&status) {
+        return Ok(());
+    }
+
+    let text = response.text().await.unwrap_or_default();
+    let (code, message) = serde_json::from_str::<ErrorResponse>(&text).map_or_else(
+        |_| ("unexpected_response".to_string(), text.clone()),
+        |e| (e.code, e.message),
+    );
+    Err(ApiError::Api {
+        status,
+        code,
+        message,
+    })
+}
+
 // ═════════════════════════════════════════════════════════════════════════════
 // Auth — better-auth's own routes, mounted under `/auth` on apps/api
 // ═════════════════════════════════════════════════════════════════════════════
@@ -150,15 +175,60 @@ pub async fn get_session() -> Result<Option<SessionView>, ApiError> {
     }
 }
 
+/// The body better-auth's credential route expects.
+///
+/// A typed struct rather than an inline `json!`, so a renamed field is a
+/// compile error rather than a 400 discovered in a browser.
+#[derive(serde::Serialize)]
+struct SignInRequest<'a> {
+    email: &'a str,
+    password: &'a str,
+}
+
+/// `POST /auth/sign-in/email`.
+///
+/// On success better-auth sets the **HttpOnly session cookie**; that is the
+/// entire result, and it is why this returns `()` rather than a token. The
+/// response body does carry one, and the browser must never see it (D17) — so
+/// it is deliberately discarded here rather than plumbed into a signal where
+/// some later call site would be tempted to store it.
+///
+/// ## Why this exists
+///
+/// It did not, and `apps/app`'s login screen was a **native HTML form POST**
+/// aimed straight at this route: `method="post"`, `action="…/auth/sign-in/email"`.
+/// Three things made that unable to work, each fatal alone —
+///
+/// 1. a native submit sends `application/x-www-form-urlencoded`, and
+///    better-auth answers JSON-or-400;
+/// 2. `rv2_ui::TextField` rendered no `name` attribute, so the body was empty
+///    anyway;
+/// 3. the fields held no state, so there was nothing to send.
+///
+/// It also navigated the browser away from the SPA to the API origin, which is
+/// not a login flow. The API side was fine the whole time, and the vertical
+/// slice passed, because that test drives the API with JSON directly and never
+/// touches the form. Found by signing in with a real browser.
+///
+/// # Errors
+///
+/// [`ApiError`]; bad credentials surface as `Api { status: 401, .. }`.
+pub async fn sign_in(email: &str, password: &str) -> Result<(), ApiError> {
+    let url = format!("{}/auth/sign-in/email", api_base());
+    let body = SignInRequest { email, password };
+    discard_body(authed(Request::post(&url)).json(&body)?).await
+}
+
 /// `POST /auth/sign-out`.
 ///
 /// # Errors
 ///
-/// [`ApiError`] if the request fails.
+/// [`ApiError`] if the request fails. It previously ignored the status
+/// entirely, so a sign-out that the server refused looked identical to one that
+/// worked — and the user stayed signed in while the UI said otherwise.
 pub async fn sign_out() -> Result<(), ApiError> {
     let url = format!("{}/auth/sign-out", api_base());
-    authed(Request::post(&url)).build()?.send().await?;
-    Ok(())
+    discard_body(authed(Request::post(&url)).build()?).await
 }
 
 // ═════════════════════════════════════════════════════════════════════════════
@@ -212,21 +282,7 @@ pub async fn update_post(id: Uuid, req: &UpdatePostRequest) -> Result<PostView, 
 /// [`ApiError`]; a non-author gets `Api { status: 403, .. }`.
 pub async fn delete_post(id: Uuid) -> Result<(), ApiError> {
     let url = format!("{}/posts/{id}", api_base());
-    let response = authed(Request::delete(&url)).build()?.send().await?;
-    let status = response.status();
-    if !(200..300).contains(&status) {
-        let text = response.text().await.unwrap_or_default();
-        let (code, message) = serde_json::from_str::<ErrorResponse>(&text).map_or_else(
-            |_| ("unexpected_response".to_string(), text.clone()),
-            |e| (e.code, e.message),
-        );
-        return Err(ApiError::Api {
-            status,
-            code,
-            message,
-        });
-    }
-    Ok(())
+    discard_body(authed(Request::delete(&url)).build()?).await
 }
 
 // ═════════════════════════════════════════════════════════════════════════════

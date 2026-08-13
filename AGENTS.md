@@ -103,6 +103,17 @@ runs every job, nothing survives a restart, and a failure is not retried — it
 just runs again next period. Do not register a job whose second concurrent
 execution would be a defect. Read that crate's module docs before adding one.
 
+## The gate does not render a page
+
+`cargo xtask live` drives the API with reqwest and JSON. Nothing in CI opens a
+browser. That is exactly how the login screen shipped as a native HTML form POST
+that could not submit anything — no state on the fields, no `name` attributes,
+form-encoded against a JSON-only route — while every test stayed green and the
+whole dashboard was unreachable behind a working redirect to `/login`.
+
+So: **if you change a view, open it.** `dx serve --package app --platform web`
+and click the thing. The suite will not tell you.
+
 ## Things deliberately not built
 
 - **A durable job queue.** The seam is a leased queue over AllSource
