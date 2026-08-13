@@ -1,0 +1,36 @@
+# Something has to watch the pins, because this repository has a lot of them.
+#
+# The toolchain is pinned in rust-toolchain.toml, `allsource` is pinned to an
+# exact version, and deny.toml carries three dated RUSTSEC ignores that are only
+# correct until the crate that pulls each one moves. None of that drifts loudly:
+# it drifts by staying exactly the same while the world moves, and the first
+# signal is an advisory nobody has looked at in six months.
+
+version: 2
+updates:
+  # One PR per week for the whole workspace, grouped. Individually-opened PRs
+  # for a 500-crate tree are noise that gets bulk-closed, which is the same as
+  # having no updates at all but with more notifications.
+  - package-ecosystem: cargo
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+    groups:
+      # Patch and minor together: these are the ones `cargo xtask ci` can
+      # honestly judge on its own.
+      routine:
+        update-types: [minor, patch]
+    ignore:
+      # `allsource` is the datastore SDK and its version tracks a running server
+      # — bumping the crate without bumping Core is how you get a client that
+      # speaks an API the server does not. It moves when someone decides it
+      # moves, and `cargo xtask live` is what proves it.
+      - dependency-name: allsource
+        update-types: [version-update:semver-major, version-update:semver-minor]
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly

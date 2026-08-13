@@ -1,0 +1,20 @@
+# Keep the build context small and keep host state out of the image.
+#
+# `target/` is the big one: it reaches tens of gigabytes during development, and
+# every byte of it would be uploaded to the daemon on each build for no benefit —
+# the builder compiles from scratch in its own layer.
+
+target/
+.git/
+.github/
+
+# Host secrets. `.env` is gitignored, but `.dockerignore` is a separate list and
+# a file missing from it lands in the image.
+.env
+.env.*
+!.env.example
+
+.allsource-data/
+**/dist/
+**/*.log
+.DS_Store

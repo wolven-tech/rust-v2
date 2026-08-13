@@ -116,8 +116,11 @@ thiserror = "2"
 uuid = { version = "1", features = ["serde"] }
 
 # ── Observability ────────────────────────────────────────────────────────────
+# `json` so `LOG_FORMAT=json` can emit one object per event: the fields this
+# codebase already attaches to spans are only useful to an aggregator if they
+# arrive as fields rather than as a flat line it has to re-parse.
 tracing = "0.1"
-tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
 
 # ── Internal ─────────────────────────────────────────────────────────────────
 rv2-allsource = { path = "crates/rv2-allsource" }

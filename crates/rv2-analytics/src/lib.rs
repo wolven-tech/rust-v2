@@ -13,14 +13,38 @@
 //! ## Unconfigured is a supported state, not an error
 //!
 //! Without `POSTHOG_API_KEY` this is [`Analytics::Disabled`]: every `track`
-//! call becomes a `tracing` line and returns `Ok`. That is deliberate and it is
-//! the behaviour rust-v1 had — analytics is not load-bearing, and a missing key
-//! must never fail a request that would otherwise have succeeded. The failure
-//! mode of "we lost some product metrics" is enormously cheaper than "checkout
-//! 500s because the analytics vendor is down".
+//! call becomes a `tracing` line. That is deliberate and it is the behaviour
+//! rust-v1 had — analytics is not load-bearing, and a missing key must never
+//! fail a request that would otherwise have succeeded. The failure mode of "we
+//! lost some product metrics" is enormously cheaper than "checkout 500s because
+//! the analytics vendor is down".
 //!
 //! It is also what makes this crate testable without a network or a key: the
 //! tests below drive the real code path.
+//!
+//! ## Tracking is off the request path, and that has two halves
+//!
+//! [`Analytics::track`] is **synchronous and fire-and-forget**: it hands the
+//! event to the SDK's background worker and returns. It is not `async`, so a
+//! caller physically cannot await a vendor round-trip.
+//!
+//! This was not always true, and the bug is worth recording. The first version
+//! called `Client::capture_immediate` — whose own docs say it "sends inline"
+//! and "retries transient failures per the client's retry configuration", and
+//! "prefer fire-and-forget everywhere else". Awaited from a handler, that put
+//! PostHog's latency *and its whole retry budget* on the request path, under a
+//! comment claiming it never blocked on a vendor. The API was chosen by its
+//! name.
+//!
+//! The second half is the one fire-and-forget always brings with it:
+//! **[`Analytics::shutdown`] must be called**, or everything still queued dies
+//! with the process. `apps/api` calls it after `axum::serve` returns. rust-v1's
+//! `setupAnalytics` returned `{ track, shutdown }` for exactly this reason; the
+//! shutdown half is easy to drop and silent when you do.
+//!
+//! Delivery failures surface through the SDK's `on_error` hook, registered in
+//! [`Analytics::configure`], because a queued-and-lost event is otherwise
+//! indistinguishable from a delivered one.
 
 #![forbid(unsafe_code)]
 
@@ -127,6 +151,25 @@ impl Analytics {
         if let Some(host) = host.filter(|h| !h.trim().is_empty()) {
             builder.host(host);
         }
+        // Fire-and-forget capture reports nothing to the caller, so without this
+        // a vendor outage is completely silent. The hook is the *only* delivery
+        // signal there is.
+        //
+        // Log and nothing else. The SDK's own docs are emphatic that a hook must
+        // never call back into it — emitting an event while handling a capture
+        // failure is an amplification loop — and the hook runs on the transport
+        // thread, so it must stay cheap.
+        builder.on_error(|error| match error {
+            posthog_rs::PostHogError::Capture(failure) => {
+                tracing::warn!(
+                    events = failure.event_count(),
+                    status = ?failure.status(),
+                    attempt = failure.attempt(),
+                    "analytics batch was not delivered"
+                );
+            }
+            other => tracing::warn!(?other, "analytics error"),
+        });
 
         let options = match builder.build() {
             Ok(options) => options,
@@ -142,10 +185,16 @@ impl Analytics {
 
     /// Record an event.
     ///
-    /// Never returns an error, by design: see the module docs. A transport
-    /// failure is logged at `warn` and swallowed, because the alternative is
-    /// letting an analytics outage take down a request path.
-    pub async fn track(&self, event: TrackedEvent) {
+    /// **Not `async`, and that is the contract** — a caller cannot accidentally
+    /// await a vendor from a request handler, because there is nothing to await.
+    /// The event is queued on the SDK's background worker; delivery failures
+    /// arrive at the `on_error` hook registered in [`Analytics::configure`],
+    /// never here.
+    ///
+    /// The queue is bounded. A full queue drops the event with a warning from
+    /// the SDK, which is the correct trade: back-pressuring a request path on an
+    /// analytics buffer would recreate the very problem this shape avoids.
+    pub fn track(&self, event: TrackedEvent) {
         match self {
             Analytics::Disabled => {
                 tracing::debug!(
@@ -165,9 +214,27 @@ impl Analytics {
                         tracing::warn!(%error, key, "dropping unserializable analytics property");
                     }
                 }
-                if let Err(error) = client.capture_immediate(payload).await {
-                    tracing::warn!(%error, event = %event.name, "analytics capture failed");
-                }
+                client.capture(payload);
+            }
+        }
+    }
+
+    /// Flush the queue and stop the background worker.
+    ///
+    /// **Required.** Fire-and-forget capture means that at any moment some
+    /// events exist only in an in-process queue; a process that exits without
+    /// this loses all of them, silently. `apps/api` calls it once
+    /// `axum::serve` has returned from its graceful shutdown.
+    ///
+    /// Safe to call on [`Analytics::Disabled`], so a caller needs no branch.
+    pub async fn shutdown(&self) {
+        match self {
+            Analytics::Disabled => {}
+            Analytics::PostHog(client) => {
+                // No count to log: `pending_events` is gated behind the SDK's
+                // `test-harness` feature and is explicitly not public API.
+                tracing::info!("flushing queued analytics events");
+                client.shutdown().await;
             }
         }
     }
@@ -205,14 +272,25 @@ mod tests {
     }
 
     /// The whole point of the `Disabled` variant: it must be reachable, and
-    /// tracking through it must not panic or block.
-    #[tokio::test]
-    async fn tracking_while_disabled_is_a_silent_no_op() {
+    /// tracking through it must not panic.
+    ///
+    /// This is a plain `#[test]`, not `#[tokio::test]`, and that is the
+    /// assertion — `track` is synchronous, so there is no runtime to need and
+    /// no future a handler could be tempted to await. It stops compiling the
+    /// moment someone puts a vendor round-trip back on the request path.
+    #[test]
+    fn tracking_while_disabled_is_a_silent_no_op() {
         let analytics = Analytics::Disabled;
         assert!(!analytics.is_enabled());
-        analytics
-            .track(TrackedEvent::new("post_published").actor("user-1"))
-            .await;
+        analytics.track(TrackedEvent::new("post_published").actor("user-1"));
+    }
+
+    /// `shutdown` must be callable without a branch at the call site, including
+    /// on the variant that has nothing to flush — otherwise the one code path
+    /// that runs on every deploy is the one nobody exercises.
+    #[tokio::test]
+    async fn shutdown_is_safe_while_disabled() {
+        Analytics::Disabled.shutdown().await;
     }
 
     /// A missing key must yield `Disabled` rather than panicking or building a

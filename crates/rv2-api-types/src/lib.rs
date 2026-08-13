@@ -61,6 +61,41 @@ pub struct CreatePostRequest {
     pub content: String,
 }
 
+/// `GET /posts` — pagination.
+///
+/// Both fields are optional on the wire so an existing caller keeps working,
+/// but the *defaults* are not "everything": an unbounded list endpoint is a
+/// cliff that arrives without warning, at whatever point the store has enough
+/// posts in it.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub struct ListPostsQuery {
+    #[serde(default)]
+    pub limit: Option<usize>,
+    #[serde(default)]
+    pub offset: Option<usize>,
+}
+
+impl ListPostsQuery {
+    /// What a caller gets for asking for nothing in particular.
+    pub const DEFAULT_LIMIT: usize = 50;
+    /// The most one request may take, however large a `limit` it asks for.
+    /// Clamped rather than rejected: a client asking for too much wants as much
+    /// as it can have, and a 422 here would be a worse answer than a full page.
+    pub const MAX_LIMIT: usize = 200;
+
+    #[must_use]
+    pub fn resolved_limit(&self) -> usize {
+        self.limit
+            .unwrap_or(Self::DEFAULT_LIMIT)
+            .clamp(1, Self::MAX_LIMIT)
+    }
+
+    #[must_use]
+    pub fn resolved_offset(&self) -> usize {
+        self.offset.unwrap_or(0)
+    }
+}
+
 /// `PATCH /posts/{id}` — sparse. Absent field = unchanged.
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
 pub struct UpdatePostRequest {
@@ -116,13 +151,38 @@ where
 // Responses
 // ═════════════════════════════════════════════════════════════════════════════
 
-/// `GET /health`
+/// `GET /health` — **liveness**. "This process is running and can serve."
+///
+/// Deliberately carries no dependency state. A liveness probe that reports on a
+/// *dependency* gets the process killed for someone else's outage, and the
+/// restart cannot help. Dependency state lives in [`ReadinessResponse`].
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct HealthResponse {
     pub status: String,
     pub version: String,
-    /// Whether Core answered its own `/health` on the last check.
+}
+
+/// `GET /ready` — **readiness**. "Send this instance traffic."
+///
+/// The distinction from [`HealthResponse`] is the whole point. Failing liveness
+/// means "restart me"; failing readiness means "route around me until I say
+/// otherwise". Collapsing them into one endpoint forces one answer to two
+/// questions, and the answer is wrong for one of them.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct ReadinessResponse {
+    /// Every check below passed. Served with `200`; `503` otherwise.
+    pub ready: bool,
+    /// Core answered its own `/health`.
     pub allsource_reachable: bool,
+    /// The `posts_v1` projection has replayed history and is following the log.
+    ///
+    /// `false` while it is still catching up after a boot — the instance serves
+    /// *stale* data in that window, which is exactly what readiness exists to
+    /// keep out of a load balancer. `None` when the worker is not running at
+    /// all, which is a supported degraded mode (`GET /posts` folds on read) and
+    /// so is not a readiness failure.
+    #[serde(default)]
+    pub projection_caught_up: Option<bool>,
 }
 
 /// The session shape `GET /auth/get-session` is normalised into.
@@ -178,6 +238,38 @@ mod tests {
 
         let empty: UpdateProfileRequest = serde_json::from_str("{}").unwrap();
         assert_eq!(empty, UpdateProfileRequest::default());
+    }
+
+    /// The defaults are the whole point of the type: a caller that passes no
+    /// query string must still get a bounded page.
+    #[test]
+    fn an_absent_query_still_bounds_the_page() {
+        let query = ListPostsQuery {
+            limit: None,
+            offset: None,
+        };
+        assert_eq!(query.resolved_limit(), ListPostsQuery::DEFAULT_LIMIT);
+        assert_eq!(query.resolved_offset(), 0);
+    }
+
+    #[test]
+    fn an_oversized_limit_is_clamped_rather_than_rejected() {
+        let query = ListPostsQuery {
+            limit: Some(100_000),
+            offset: None,
+        };
+        assert_eq!(query.resolved_limit(), ListPostsQuery::MAX_LIMIT);
+    }
+
+    /// `limit=0` would otherwise be an infinite-scroll client that never
+    /// advances and never errors.
+    #[test]
+    fn a_zero_limit_is_raised_to_one() {
+        let query = ListPostsQuery {
+            limit: Some(0),
+            offset: None,
+        };
+        assert_eq!(query.resolved_limit(), 1);
     }
 
     #[test]

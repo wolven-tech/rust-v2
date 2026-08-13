@@ -58,10 +58,18 @@ fn document() -> Value {
         },
         "security": [{ "sessionCookie": [] }, { "bearer": [] }],
         "paths": {
-            "/health": { "get": { "summary": "Liveness probe", "security": [], "responses": { "200": { "description": "ok" } } } },
+            "/health": { "get": { "summary": "Liveness probe — no dependency checks; 200 whenever the process can serve", "security": [], "responses": { "200": { "description": "ok" } } } },
+            "/ready": { "get": { "summary": "Readiness probe — Core reachable and the projection caught up", "security": [], "responses": { "200": { "description": "ready" }, "503": { "description": "not ready; route around this instance" } } } },
             "/me": { "get": { "summary": "The authenticated principal", "responses": { "200": { "description": "session" }, "401": { "description": "unauthorized" } } } },
             "/posts": {
-                "get": { "summary": "List posts (posts_v1 projection)", "responses": { "200": { "description": "posts" }, "401": { "description": "unauthorized" } } },
+                "get": {
+                    "summary": "List posts (posts_v1 projection)",
+                    "parameters": [
+                        { "name": "limit", "in": "query", "required": false, "description": "Clamped to the range, not rejected.", "schema": { "type": "integer", "default": 50, "minimum": 1, "maximum": 200 } },
+                        { "name": "offset", "in": "query", "required": false, "schema": { "type": "integer", "default": 0, "minimum": 0 } }
+                    ],
+                    "responses": { "200": { "description": "posts" }, "401": { "description": "unauthorized" } }
+                },
                 "post": { "summary": "Create a post (appends content.post.created)", "responses": { "201": { "description": "created" }, "422": { "description": "validation failed" } } }
             },
             "/posts/{id}": {
@@ -88,18 +96,42 @@ mod tests {
     fn the_spec_documents_every_mounted_route() {
         let spec = document();
         let paths = spec["paths"].as_object().unwrap();
-        for route in ["/health", "/me", "/posts", "/posts/{id}", "/users/{id}"] {
+        for route in [
+            "/health",
+            "/ready",
+            "/me",
+            "/posts",
+            "/posts/{id}",
+            "/users/{id}",
+        ] {
             assert!(paths.contains_key(route), "{route} is not documented");
         }
     }
 
+    /// Pagination that is not in the contract is pagination no client knows to
+    /// send, which makes the default page look like a truncated list.
     #[test]
-    fn health_is_documented_as_unauthenticated() {
+    fn the_list_endpoint_documents_its_pagination() {
         let spec = document();
-        assert_eq!(
-            spec["paths"]["/health"]["get"]["security"],
-            serde_json::json!([]),
-            "health must not require a session — it is mounted outside auth"
-        );
+        let names: Vec<_> = spec["paths"]["/posts"]["get"]["parameters"]
+            .as_array()
+            .expect("no parameters on GET /posts")
+            .iter()
+            .map(|p| p["name"].as_str().unwrap_or_default().to_string())
+            .collect();
+        assert!(names.contains(&"limit".to_string()));
+        assert!(names.contains(&"offset".to_string()));
+    }
+
+    #[test]
+    fn both_probes_are_documented_as_unauthenticated() {
+        let spec = document();
+        for probe in ["/health", "/ready"] {
+            assert_eq!(
+                spec["paths"][probe]["get"]["security"],
+                serde_json::json!([]),
+                "{probe} must not require a session — it is mounted outside auth"
+            );
+        }
     }
 }

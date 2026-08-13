@@ -121,28 +121,23 @@ fn ci() -> Fallible {
 /// longer matches the source with nothing to notice.
 ///
 /// Same shape as `cargo fmt --check` — regenerate, compare, fail on a
-/// difference. This is the only check here that *writes* before it reads, which
-/// is why it restores the originals on mismatch rather than leaving a dirty tree.
+/// difference.
+///
+/// It compiles into `target/style-check/` rather than over the committed files.
+/// The first version wrote in place and restored the originals when they
+/// differed, which made the one command whose entire job is "verify nothing
+/// changed" also the command most likely to leave a dirty tree: a panic, a
+/// failing second app, or a Ctrl-C between the write and the restore all left
+/// generated CSS staged over the committed CSS.
 fn styles_are_current() -> Fallible {
-    let root = std::env::current_dir()?;
-    let paths: Vec<_> = ["apps/web", "apps/app"]
-        .iter()
-        .map(|dir| root.join(dir).join("assets/tailwind.css"))
-        .collect();
-
-    let before: Vec<_> = paths
-        .iter()
-        .map(|p| std::fs::read(p).unwrap_or_default())
-        .collect();
-
-    styles::build()?;
+    let root = styles::workspace_root()?;
+    let scratch = root.join("target/style-check");
 
     let mut stale = Vec::new();
-    for (path, original) in paths.iter().zip(&before) {
-        let now = std::fs::read(path)?;
-        if &now != original {
-            std::fs::write(path, original)?;
-            stale.push(path.display().to_string());
+    for sheet in styles::compile(Some(&scratch))? {
+        let committed = styles::committed(&root, sheet.app);
+        if std::fs::read(&committed).unwrap_or_default() != std::fs::read(&sheet.path)? {
+            stale.push(committed.display().to_string());
         }
     }
 
@@ -157,12 +152,25 @@ fn styles_are_current() -> Fallible {
     Ok(())
 }
 
+/// The marker a line may carry to opt out of [`no_predecessor`].
+///
+/// The check is a blunt grep for three words, and a blunt grep cannot tell a
+/// dependency from a sentence *about* a dependency. Without an escape hatch,
+/// writing "we do not use Postgres" in a design doc fails CI with no way to say
+/// "I meant that" — and the usual outcome of an unarguable check is that
+/// somebody deletes the check.
+///
+/// It is deliberately ugly and deliberately per-line: an opt-out that is easy
+/// to apply broadly stops being an exception.
+const PREDECESSOR_OPT_OUT: &str = "predecessor-mention-ok";
+
 /// No trace of the predecessor stack, anywhere, documentation included.
 ///
 /// This needed allow-listed exceptions while a migration binary existed to read
 /// the old database. It does not any more, so it is the strict form: zero
-/// matches, no exclusions beyond build output and this tool's own source (which
-/// necessarily contains the words it searches for).
+/// matches, no exclusions beyond build output, this tool's own source (which
+/// necessarily contains the words it searches for), and any line explicitly
+/// marked with [`PREDECESSOR_OPT_OUT`].
 fn no_predecessor() -> Fallible {
     let output = Command::new("grep")
         .args([
@@ -176,9 +184,19 @@ fn no_predecessor() -> Fallible {
         ])
         .output()?;
 
-    if output.status.success() {
-        eprint!("{}", String::from_utf8_lossy(&output.stdout));
-        return Err("a reference to the predecessor stack is present".into());
+    let offenders: Vec<_> = String::from_utf8_lossy(&output.stdout)
+        .lines()
+        .filter(|line| !line.contains(PREDECESSOR_OPT_OUT))
+        .map(str::to_string)
+        .collect();
+
+    if !offenders.is_empty() {
+        eprintln!("{}", offenders.join("\n"));
+        return Err(format!(
+            "a reference to the predecessor stack is present\n         \
+             if a line genuinely needs the word, mark it `{PREDECESSOR_OPT_OUT}`"
+        )
+        .into());
     }
     println!("clean");
     Ok(())
@@ -212,26 +230,34 @@ fn wasm_boundary() -> Fallible {
         ],
     )?;
 
-    for server_crate in [
+    const SERVER_ONLY: &[&str] = &[
         "rv2-allsource",
         "rv2-shared",
         "better-auth-allsource",
         "rv2-analytics",
         "rv2-email",
-    ] {
-        for wasm_app in ["app", "web"] {
-            let tree = Command::new("cargo")
-                .args([
-                    "tree",
-                    "--target",
-                    "wasm32-unknown-unknown",
-                    "-p",
-                    wasm_app,
-                    "--prefix",
-                    "none",
-                ])
-                .output()?;
-            let reachable = String::from_utf8_lossy(&tree.stdout)
+    ];
+
+    // One `cargo tree` per app, not one per (app, crate) pair. The tree depends
+    // only on the app, so the nested loop this replaced ran the same two
+    // commands five times each — ten resolutions for two distinct answers, on
+    // every CI run and every local gate.
+    for wasm_app in ["app", "web"] {
+        let tree = Command::new("cargo")
+            .args([
+                "tree",
+                "--target",
+                "wasm32-unknown-unknown",
+                "-p",
+                wasm_app,
+                "--prefix",
+                "none",
+            ])
+            .output()?;
+        let tree = String::from_utf8_lossy(&tree.stdout);
+
+        for server_crate in SERVER_ONLY {
+            let reachable = tree
                 .lines()
                 .any(|line| line.starts_with(&format!("{server_crate} v")));
             if reachable {

@@ -41,6 +41,18 @@ pub struct ServerConfig {
     pub auth_base_url: String,
     /// Origins allowed to send credentialed requests. Never `*`.
     pub cors_origins: Vec<String>,
+    /// How many `x-forwarded-for` hops on the **right** are appended by
+    /// infrastructure you control. `0` — the default — means "no trusted
+    /// proxy", and the header is then ignored entirely.
+    ///
+    /// This has to be configured, not inferred. On a directly-exposed service
+    /// `x-forwarded-for` is wholly client-controlled, so keying a rate limiter
+    /// on its leftmost entry lets any caller mint a fresh bucket per request by
+    /// sending a new fake ip — which disables the limiter *and* grows its key
+    /// set without bound. Behind exactly one proxy the honest client ip is the
+    /// **last** entry, not the first; behind two it is second-from-last. Only
+    /// the operator knows which, so only the operator can say.
+    pub trusted_proxy_hops: usize,
     /// Google OAuth, if configured. `None` disables the OAuth plugin entirely
     /// rather than registering a half-configured provider.
     pub google_oauth: Option<GoogleOAuthConfig>,
@@ -63,6 +75,7 @@ impl fmt::Debug for ServerConfig {
             .field("jwt_secret", &"<redacted>")
             .field("auth_base_url", &self.auth_base_url)
             .field("cors_origins", &self.cors_origins)
+            .field("trusted_proxy_hops", &self.trusted_proxy_hops)
             .field("google_oauth", &self.google_oauth.is_some())
             .finish()
     }
@@ -147,6 +160,13 @@ impl ServerConfig {
             });
         }
 
+        let trusted_proxy_hops = optional("TRUSTED_PROXY_HOPS", "0")
+            .parse::<usize>()
+            .map_err(|e| ConfigError::Invalid {
+                name: "TRUSTED_PROXY_HOPS",
+                reason: e.to_string(),
+            })?;
+
         let google_oauth = match (
             env::var("GOOGLE_CLIENT_ID").ok().filter(|v| !v.is_empty()),
             env::var("GOOGLE_CLIENT_SECRET")
@@ -179,6 +199,7 @@ impl ServerConfig {
                 &optional("AUTH_BASE_URL", "http://localhost:4400/auth"),
             )?,
             cors_origins,
+            trusted_proxy_hops,
             google_oauth,
         })
     }

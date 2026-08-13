@@ -6,13 +6,16 @@ One datastore, one language, no TypeScript in the data path.
 - `apps/api` — Axum HTTP API. The only server process.
 - `apps/app` — Dioxus CSR SPA, the authenticated dashboard.
 - `apps/web` — Dioxus marketing site, built SSG.
-- `crates/` — the shared crate graph (events, domain, DTOs, UI kit, client, AllSource integration).
-- `tooling/` — `tailwind`, which compiles each app's stylesheet.
+- `crates/` — the shared crate graph (events, domain, DTOs, UI kit, client, AllSource integration, analytics, email).
+- `tooling/xtask` — the gate: `cargo xtask ci`, and the Tailwind compile.
 
 The design and every decision behind it live in
 [`docs/architecture/001-rust-v2-allsource-foundation.md`](docs/architecture/001-rust-v2-allsource-foundation.md).
 Read it before changing anything structural — it records *why*, and the code
 only records *what*.
+
+New here? [`AGENTS.md`](AGENTS.md) is the short orientation — what this is, the
+one command, and the four things most likely to catch you out.
 
 ---
 
@@ -138,6 +141,42 @@ gone stale.
 Ports 4400–4402 preserve rust-v1's allocation, so existing `.env` files and
 bookmarks carry over.
 
+## Deploy
+
+```bash
+docker build -t rust-v2-api .
+docker run --rm -p 4400:4400 --env-file .env rust-v2-api
+```
+
+The image builds `apps/api` only. The Dioxus frontends compile to static wasm
+bundles (`dx bundle --package web --platform web --release`) and belong on a CDN
+or a static file server — putting them inside the API image would couple a
+frontend deploy to an API deploy for no reason.
+
+It runs as a non-root user, ships no toolchain, and sets `LOG_FORMAT=json` so
+logs arrive at an aggregator as fields rather than as text to re-parse.
+
+### Probes
+
+Two endpoints, because they answer two different questions. Wire both.
+
+| | Endpoint | Answers | On failure |
+|---|---|---|---|
+| Liveness | `GET /health` | "Is this process wedged?" | The orchestrator restarts it |
+| Readiness | `GET /ready` | "Should this instance get traffic?" | Routed around, left running |
+
+`/health` deliberately checks **no dependency** and always answers `200` while
+the process can serve. A liveness probe that reports on AllSource gets every
+instance killed during a Core outage, and the restart cannot help.
+
+`/ready` is where dependencies belong: it reports Core reachability and whether
+the `posts_v1` projection has caught up, and answers `503` when either says this
+instance should not be serving. During a projection replay the data is real but
+stale — keeping that out of the load balancer is the entire job.
+
+The `Dockerfile`'s `HEALTHCHECK` uses `/health` only, because Docker's sole
+response to a failing check is a restart, which is the wrong answer to `/ready`.
+
 ## Test
 
 ```bash
@@ -249,9 +288,17 @@ render proves the fold actually happened.
 ## Architecture notes worth knowing before you edit
 
 **The crate layers.** `rv2-events` is layer 0; `rv2-domain` and `rv2-api-types`
-layer 1; `rv2-ui`, `rv2-client`, `rv2-allsource`, `rv2-shared` and
-`better-auth-allsource` layer 2; `apps/*` layer 3. A crate may only depend on
-strictly lower layers, and `apps/*` are leaves.
+layer 1; `rv2-ui`, `rv2-client`, `rv2-allsource`, `rv2-shared`,
+`better-auth-allsource`, `rv2-analytics` and `rv2-email` layer 2; `apps/*` layer
+3. A crate may only depend on strictly lower layers, and `apps/*` are leaves.
+
+**`GET /posts` is paginated** — `?limit=` (default 50, capped at 200, clamped
+rather than rejected) and `?offset=`. It is bounded because an unbounded list
+endpoint is a cliff that arrives without warning, at whatever point the store
+grows enough. When the projection worker is down the fallback scans events
+directly, and that scan has a 10,000-event ceiling it logs at `error` on
+crossing: past it the folds are computed from a truncated history, so they are
+*wrong* rather than merely short.
 
 **Events are immutable, forever.** Fields may only be **added**, and every added
 field carries `#[serde(default)]`. `crates/rv2-events/tests/golden/` holds one
@@ -285,6 +332,15 @@ These are marked, not hidden. Each has a `SEAM` comment at the site.
 | `apps/web` SSG is not wired | `apps/web/src/main.rs` | Needs the `static_routes` server function + `IncrementalRendererConfig`. The app builds and cross-compiles; it currently renders CSR. |
 | No session cache | `apps/api/src/infrastructure/auth/middleware.rs` | Authenticated requests cost two AllSource round-trips. Measure p99 before adding the cache. |
 | English only | — | No Rust i18n crate has been evaluated. rust-v1 shipped `en` + `fr`; this is a product regression that needs sign-off. |
+| No metrics or traces exported | — | Logs are structured (`LOG_FORMAT=json`) and nothing is exported. Choosing between an OpenTelemetry collector and a Prometheus scrape is an operator decision with real cost either way, so no client has been wired. |
+| Rate limits are per-instance | `apps/api/src/infrastructure/rate_limit.rs` | In-memory, so N instances allow N× the limit, and a restart clears them. Correct for now (§9.2: a counter is not an event); a shared limiter needs a store this workspace does not have. |
+
+**`TRUSTED_PROXY_HOPS` is not a gap but is easy to get wrong.** It defaults to
+`0`, meaning no trusted proxy, under which `x-forwarded-for` is ignored entirely
+and the limiter keys on the socket address. Deploy behind a proxy without
+setting it and every request buckets under the proxy's own ip. Set it too high
+and a caller can choose their own bucket — which both bypasses the limit and
+grows the key set without bound.
 
 ---
 
@@ -298,11 +354,25 @@ configured but absent is worse than one that is obviously not there.
 |---|---|---|---|
 | Product analytics | `packages/analytics` (posthog-node) | `crates/rv2-analytics` — PostHog's **official** Rust SDK | **Done.** Tracks `post_published`; `Disabled` without a key |
 | Transactional email | `packages/email` — React Email templates, **no sender** | `crates/rv2-email` — Tera templates + Resend's **official** Rust SDK | **Done, and more than v1 had.** v1 declared `RESEND_API_KEY` and never read it |
-| Logging | `packages/logger` (pino) | `tracing` throughout | **Done** |
+| Logging | `packages/logger` (pino) | `tracing` throughout, `LOG_FORMAT=json` for structured output | **Done** |
+| Metrics / traces | — (rust-v1 had none either) | — | **Not built.** Structured logs only; see *Known gaps* |
 | Rate limiting / KV | `packages/kv` (Upstash Redis) | `allframe`'s `KeyedRateLimiter` in `AppState` | **Done**, in-memory. A counter is deliberately not an event (§9.2) |
 | Server state / caching | `packages/react-query` | Dioxus `use_resource` | **Done** |
 | UI kit | `packages/ui` (shadcn/React) | `crates/rv2-ui` (Dioxus) | **Done** — 29 components |
 | Background jobs | `packages/jobs` (trigger.dev) | — | **Not built.** No job runner is wired. See below |
+
+### Analytics is off the request path, in both halves
+
+`Analytics::track` is **synchronous** and fire-and-forget. That is not a detail,
+it is the guarantee: a handler cannot await a vendor because there is no future
+to await. An earlier version called PostHog's `capture_immediate` — which sends
+inline and retries per the client's retry configuration — and awaited it from
+`POST /posts`, putting the vendor's latency *and its whole retry budget* on
+every publish, under a comment claiming it never blocked on a vendor.
+
+The other half of fire-and-forget is the easy one to forget: `apps/api` calls
+`Analytics::shutdown` after `axum::serve` returns. Without it, everything still
+queued dies with the process, silently, on every deploy.
 
 ### Unconfigured is a supported state
 
@@ -335,6 +405,11 @@ been faked. It needs a decision before it needs code.
 | [`docs/architecture/001-rust-v2-allsource-foundation.md`](docs/architecture/001-rust-v2-allsource-foundation.md) | The design. 21 numbered decisions (D1–D21), the risks (R*), and the open questions (OQ-*) that the code comments cite by number. Appendix C records what the scaffold changed; Appendix D corrects D3/D4 on tenant-scoped reads. |
 | [`docs/ledger/allsource-integration-corpus.md`](docs/ledger/allsource-integration-corpus.md) | The frozen list of AllSource behaviours this integration depends on (B1–B21), which are asserted, and the loop that asserted them. |
 | [`docs/ledger/component-kit-autoresearch.md`](docs/ledger/component-kit-autoresearch.md) | How `rv2-ui` got its scope and why the bundle is the size it is. |
+| [`docs/review/001-bootstrap-readiness.md`](docs/review/001-bootstrap-readiness.md) | A cold review of this repository as a foundation to start a project from: twelve findings, what each one actually was, and what was done about it. |
+| [`AGENTS.md`](AGENTS.md) | The short orientation for anyone arriving with no context. `CLAUDE.md` points here. |
+| [`CONTRIBUTING.md`](CONTRIBUTING.md) | The rules, and what enforces each one. |
+| [`SECURITY.md`](SECURITY.md) | How to report a vulnerability, what is in scope, and the limitations stated rather than hidden. |
+| [`CHANGELOG.md`](CHANGELOG.md) | What has changed and why. |
 
 The architecture doc lived in the `rust-v1` repo until 2026-08-11, which left
 136 references to `§`, `D*`, `R*` and `OQ-*` in this codebase pointing at a file
