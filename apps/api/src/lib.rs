@@ -38,8 +38,9 @@ use crate::presentation::handlers;
 ///
 /// The ordering matters and is deliberate:
 ///
-/// 1. `/health` is mounted **outside** the rate limiter, because a health probe
-///    that gets 429'd takes the service out of the load balancer.
+/// 1. `/health` and `/ready` are mounted **outside** the rate limiter, because
+///    a probe that gets 429'd takes the service out of the load balancer. They
+///    are two endpoints because they answer two questions — see that module.
 /// 2. `/auth/*` is better-auth's own router, nested whole. It owns its cookie
 ///    handling and (when configured) its OAuth callbacks; we do not
 ///    reimplement any of it.
@@ -77,6 +78,7 @@ pub fn build_router(state: Arc<AppState>) -> Router {
     Router::new()
         // Deliberately outside the rate limiter.
         .route("/health", get(handlers::health::health))
+        .route("/ready", get(handlers::health::ready))
         .route("/openapi.json", get(handlers::openapi::spec))
         .with_state(Arc::clone(&state))
         .merge(domain_routes)

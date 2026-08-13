@@ -25,6 +25,11 @@ pub struct AppState {
     /// ip; in-memory, because a rate-limit counter is explicitly *not* an event
     /// (D19 / §9.2).
     pub rate_limiter: KeyedRateLimiter<String>,
+    /// `TRUSTED_PROXY_HOPS`. `0` means the limiter ignores `x-forwarded-for`
+    /// and keys on the socket address — see `infrastructure::rate_limit`, where
+    /// trusting the header by default was both a bypass and an unbounded-memory
+    /// vector.
+    pub trusted_proxy_hops: usize,
     /// Replaces rust-v1's `packages/analytics` (PostHog). `Disabled` without
     /// `POSTHOG_API_KEY`, which is a supported state — a missing analytics key
     /// must never fail a request that would otherwise have succeeded.
@@ -100,6 +105,7 @@ pub async fn build_state(config: &ServerConfig) -> Result<AppState, String> {
         // normal SPA never notices and tight enough to blunt a scripted abuse
         // loop; tune once there is real traffic to measure.
         rate_limiter: KeyedRateLimiter::new(60, 120),
+        trusted_proxy_hops: config.trusted_proxy_hops,
         analytics,
         mailer,
     })

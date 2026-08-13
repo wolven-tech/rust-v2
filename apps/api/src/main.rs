@@ -8,11 +8,7 @@ use tracing_subscriber::{EnvFilter, fmt};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    fmt()
-        .with_env_filter(
-            EnvFilter::try_from_default_env().unwrap_or_else(|_| EnvFilter::new("info,api=debug")),
-        )
-        .init();
+    init_tracing();
 
     // R6: this fails loudly and by name if ALLSOURCE_CORE_URL /
     // ALLSOURCE_QUERY_URL are unset. There is deliberately no default port.
@@ -34,7 +30,38 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     .with_graceful_shutdown(shutdown_signal())
     .await?;
 
+    // AFTER serve returns, so nothing tracked by an in-flight request is lost.
+    //
+    // `Analytics::track` is fire-and-forget (see that crate's module docs), so
+    // at any instant some events exist only in an in-process queue. Exiting
+    // without this drops them, and drops them *silently* — the symptom is
+    // "PostHog is missing the last few minutes before every deploy", which
+    // nobody traces back to a missing flush.
+    state.analytics.shutdown().await;
+    tracing::info!("shutdown complete");
+
     Ok(())
+}
+
+/// Structured logging, with the format chosen by the environment.
+///
+/// `LOG_FORMAT=json` emits one JSON object per event, which is what a log
+/// aggregator needs in order to index the fields this codebase already attaches
+/// (`%error`, `event = %event.name`, `worker = …`) as *fields* rather than as a
+/// flat string it has to re-parse with a regex.
+///
+/// Deliberately not auto-detected from a TTY: a container that happens to be run
+/// interactively must log the way it does in production, or the format silently
+/// differs between the place you debug and the place it matters.
+fn init_tracing() {
+    let filter =
+        EnvFilter::try_from_default_env().unwrap_or_else(|_| EnvFilter::new("info,api=debug"));
+
+    if std::env::var("LOG_FORMAT").is_ok_and(|f| f.eq_ignore_ascii_case("json")) {
+        fmt().json().with_env_filter(filter).init();
+    } else {
+        fmt().with_env_filter(filter).init();
+    }
 }
 
 /// Ctrl-C or SIGTERM. Without this, a container stop kills in-flight requests.

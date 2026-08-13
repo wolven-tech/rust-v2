@@ -18,12 +18,12 @@ use std::sync::Arc;
 
 use axum::{
     Json,
-    extract::{Path, State},
+    extract::{Path, Query, State},
     http::StatusCode,
 };
 use chrono::Utc;
 use rv2_allsource::QueryEventsParams;
-use rv2_api_types::{CreatePostRequest, PostView, UpdatePostRequest};
+use rv2_api_types::{CreatePostRequest, ListPostsQuery, PostView, UpdatePostRequest};
 use rv2_domain::post;
 use rv2_events::{DomainEvent, StreamKind, stream};
 use uuid::Uuid;
@@ -70,18 +70,15 @@ pub async fn create(
     let view = load(&state, id).await?;
 
     // rust-v1 tracked from the server-action middleware; this is the same event
-    // from the equivalent place. `track` never errors and never blocks the
-    // response on a vendor — a analytics outage must not turn a successful
-    // publish into a 500.
-    state
-        .analytics
-        .track(
-            rv2_analytics::TrackedEvent::new("post_published")
-                .actor(actor.id.to_string())
-                .property("post_id", id.to_string())
-                .property("title_length", request.title.len()),
-        )
-        .await;
+    // from the equivalent place. Note there is no `.await` and no `?`: `track`
+    // is synchronous and infallible by construction, so an analytics outage
+    // cannot add latency to a publish, let alone turn one into a 500.
+    state.analytics.track(
+        rv2_analytics::TrackedEvent::new("post_published")
+            .actor(actor.id.to_string())
+            .property("post_id", id.to_string())
+            .property("title_length", request.title.len()),
+    );
 
     Ok((StatusCode::CREATED, Json(view)))
 }
@@ -92,12 +89,26 @@ pub async fn create(
 /// `build_state`). It is honestly slower — it scans every `content.post.*`
 /// event — but a degraded list beats a 500.
 ///
+/// ## Pagination
+///
+/// `?limit=&offset=`, defaulting to the first [`ListPostsQuery::DEFAULT_LIMIT`]
+/// and capped at [`ListPostsQuery::MAX_LIMIT`]. This endpoint previously
+/// returned **every** post, which is a response size that grows with the store
+/// and gives no signal at all until it is already a problem.
+///
+/// Paginating in memory rather than in the query is deliberate and is not
+/// laziness: the read model *is* the full map — the worker holds it in process —
+/// so there is no cheaper source to page from. What the limit bounds is the
+/// serialized response and the client's parse, which are the parts that scale
+/// with the store.
+///
 /// # Errors
 ///
 /// 502 if AllSource is unreachable on the fallback path.
 pub async fn list(
     State(state): State<Arc<AppState>>,
     ExtractAuthUser(_actor): ExtractAuthUser,
+    Query(query): Query<ListPostsQuery>,
 ) -> Result<Json<Vec<PostView>>, ApiError> {
     let mut posts: Vec<PostView> = if let Some(handle) = state.posts_handle() {
         // Bind the `Arc<RwLock<_>>` before locking: `handle.state()` returns by
@@ -110,15 +121,29 @@ pub async fn list(
         fold_all_posts(&state).await?
     };
 
-    // Newest first, then by id so the order is total and pagination will be
-    // stable when it arrives.
+    // Newest first, then by id, so the order is total and the page boundaries
+    // below are stable across requests.
     posts.sort_by(|a, b| {
         b.created_at
             .cmp(&a.created_at)
             .then_with(|| a.id.cmp(&b.id))
     });
-    Ok(Json(posts))
+
+    let page: Vec<PostView> = posts
+        .into_iter()
+        .skip(query.resolved_offset())
+        .take(query.resolved_limit())
+        .collect();
+    Ok(Json(page))
 }
+
+/// How many events one fallback scan will read.
+///
+/// This is a ceiling, not a page size — the fallback has to see a whole stream
+/// to fold it, so it cannot page. Crossing it means the fold is now working
+/// from a truncated history and some posts will be **wrong**, not merely
+/// missing, which is why hitting it logs at `error`.
+const FALLBACK_SCAN_LIMIT: u32 = 10_000;
 
 /// The `GET /posts` fallback: scan every post event and fold per entity.
 async fn fold_all_posts(state: &AppState) -> Result<Vec<PostView>, ApiError> {
@@ -130,9 +155,22 @@ async fn fold_all_posts(state: &AppState) -> Result<Vec<PostView>, ApiError> {
         .query_events(
             QueryEventsParams::new()
                 .event_type_prefix("content.post.")
-                .limit(10_000),
+                .limit(FALLBACK_SCAN_LIMIT),
         )
         .await?;
+
+    // The cap used to be silent. A truncated scan and a complete one are the
+    // same shape, so the only way to tell them apart is to check — otherwise
+    // the first symptom is a user reporting that an edit "did not save", long
+    // after the store crossed the line.
+    if response.events.len() >= FALLBACK_SCAN_LIMIT as usize {
+        tracing::error!(
+            limit = FALLBACK_SCAN_LIMIT,
+            "the GET /posts fallback scan hit its event ceiling; folds are now computed from a \
+             TRUNCATED history and may be incorrect. The projection worker needs to be running, \
+             or this path needs a paged scan."
+        );
+    }
 
     // Group by stream, then fold each stream with the *same* folder the
     // per-entity path uses, so the two cannot drift.

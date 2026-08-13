@@ -111,7 +111,12 @@ async fn an_event_travels_the_full_path() {
     let base = serve().await;
     let client = reqwest::Client::new();
 
-    // ── 0. The service is up and Core is reachable ───────────────────────────
+    // ── 0. The service is up (liveness) and Core is reachable (readiness) ────
+    //
+    // Two calls because they are two questions. `/health` proves the process
+    // answers at all and deliberately checks no dependency; `/ready` is the one
+    // that knows about Core, and is the one whose failure makes everything
+    // below meaningless.
     let health: serde_json::Value = client
         .get(format!("{base}/health"))
         .send()
@@ -122,8 +127,22 @@ async fn an_event_travels_the_full_path() {
         .unwrap();
     println!("health: {health}");
     assert_eq!(health["status"], "ok");
+    assert!(
+        health.get("allsource_reachable").is_none(),
+        "liveness must not report dependency state; that is what /ready is for"
+    );
+
+    let ready: serde_json::Value = client
+        .get(format!("{base}/ready"))
+        .send()
+        .await
+        .unwrap()
+        .json()
+        .await
+        .unwrap();
+    println!("ready: {ready}");
     assert_eq!(
-        health["allsource_reachable"], true,
+        ready["allsource_reachable"], true,
         "Core is not reachable — the rest of this test would be meaningless"
     );
 

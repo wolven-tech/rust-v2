@@ -1,0 +1,21 @@
+# Default owner for everything.
+* @wolven-tech/maintainers
+
+# The files where a wrong change is expensive and quiet.
+#
+# `better-auth-allsource` is a vendored VERSION BRIDGE, not a fork: bug-for-bug
+# ports only, never features. See its PROVENANCE.md and the weekly vendor-check
+# workflow that opens an issue when it can be deleted.
+/crates/better-auth-allsource/   @wolven-tech/maintainers
+
+# Event schemas are immutable once released. The golden fixtures are the only
+# thing standing between an additive change and a breaking one.
+/crates/rv2-events/              @wolven-tech/maintainers
+
+# The gate itself. A weakened check reports success for longer than it should.
+/tooling/xtask/                  @wolven-tech/maintainers
+/.github/workflows/              @wolven-tech/maintainers
+/deny.toml                       @wolven-tech/maintainers
+
+# The record of why. Code that contradicts it is a bug in one of the two.
+/docs/architecture/              @wolven-tech/maintainers

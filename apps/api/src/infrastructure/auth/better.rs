@@ -117,6 +117,7 @@ mod tests {
             jwt_secret: "test-secret-key-that-is-at-least-32-characters-long".into(),
             auth_base_url: "http://localhost:4400/auth".into(),
             cors_origins: vec!["http://localhost:4402".into()],
+            trusted_proxy_hops: 0,
             google_oauth: None,
         }
     }

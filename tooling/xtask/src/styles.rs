@@ -55,16 +55,56 @@ const APPS: &[App] = &[
     },
 ];
 
-/// Compile every app's stylesheet. Returns the byte size per app.
+/// One compiled stylesheet.
+pub struct Stylesheet {
+    pub app: &'static str,
+    /// Where it was written — which is not the committed path when `compile`
+    /// was given an `out_dir`.
+    pub path: PathBuf,
+    pub bytes: u64,
+}
+
+/// Compile every app's stylesheet in place. Returns the byte size per app.
 pub fn build() -> Result<Vec<(&'static str, u64)>, Box<dyn std::error::Error>> {
+    Ok(compile(None)?
+        .into_iter()
+        .map(|sheet| (sheet.app, sheet.bytes))
+        .collect())
+}
+
+/// Where the committed stylesheet for an app lives.
+pub fn committed(root: &Path, app: &str) -> PathBuf {
+    let dir = APPS
+        .iter()
+        .find(|a| a.name == app)
+        .map_or("apps", |a| a.dir);
+    root.join(dir).join("assets/tailwind.css")
+}
+
+/// Compile every app's stylesheet, optionally somewhere other than in place.
+///
+/// `out_dir` exists so the freshness check can compile *without touching the
+/// working tree*. The check used to overwrite the committed files and restore
+/// them on mismatch, which meant the one command whose job is to verify nothing
+/// changed was itself the command most likely to leave a dirty tree — a panic
+/// or a Ctrl-C between the write and the restore did exactly that.
+///
+pub fn compile(out_dir: Option<&Path>) -> Result<Vec<Stylesheet>, Box<dyn std::error::Error>> {
     let root = workspace_root()?;
     let binary = ensure_tailwind(&root)?;
     let mut sizes = Vec::new();
 
+    if let Some(dir) = out_dir {
+        std::fs::create_dir_all(dir)?;
+    }
+
     for app in APPS {
         let dir = root.join(app.dir);
         let input = dir.join("assets/input.css");
-        let output = dir.join("assets/tailwind.css");
+        let output = match out_dir {
+            Some(out) => out.join(format!("{}.css", app.name)),
+            None => dir.join("assets/tailwind.css"),
+        };
 
         if !input.exists() {
             return Err(format!(
@@ -101,13 +141,17 @@ pub fn build() -> Result<Vec<(&'static str, u64)>, Box<dyn std::error::Error>> {
             .into());
         }
 
-        sizes.push((app.name, bytes));
+        sizes.push(Stylesheet {
+            app: app.name,
+            path: output,
+            bytes,
+        });
     }
 
     Ok(sizes)
 }
 
-fn workspace_root() -> Result<PathBuf, Box<dyn std::error::Error>> {
+pub fn workspace_root() -> Result<PathBuf, Box<dyn std::error::Error>> {
     // CARGO_MANIFEST_DIR is tooling/tailwind; the root is two levels up.
     let manifest = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
     Ok(manifest
