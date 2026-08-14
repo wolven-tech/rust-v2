@@ -32,9 +32,10 @@
 
 use dioxus::prelude::*;
 use rv2_ui::{
-    ArrowLink, Container, Divider, Eyebrow, Fact, FactList, Faq, FeatureCard, Footer, FooterColumn,
-    Grid, Heading, HeadingSize, Hero, LinkButton, NavBar, NavItem, PricingCard, QandA, Section,
-    Size, Space, Step, StepList, Text, Tone, Width,
+    ArrowLink, Blob, Container, Crumple, Divider, Eyebrow, Fact, FactList, Faq, FeatureCard, Foil,
+    Footer, FooterColumn, Fur, GradientBuilder, Grid, Heading, HeadingSize, Hero, Hologram,
+    LinkButton, Mood, NavBar, NavItem, PricingCard, PullCord, QandA, Section, Size, Space, Step,
+    StepList, Text, Tone, Vacuum, Width,
 };
 
 const TAILWIND: Asset = asset!("/assets/tailwind.css");
@@ -45,6 +46,8 @@ enum Route {
     Home {},
     #[route("/about")]
     About {},
+    #[route("/motion")]
+    Motion {},
 }
 
 fn main() {
@@ -77,6 +80,7 @@ fn Shell(children: Element) -> Element {
                 items: vec![
                     NavItem::new("How it works", "/#how-it-works"),
                     NavItem::new("Pricing", "/#pricing"),
+                    NavItem::new("Motion", "/motion"),
                     NavItem::new("About", "/about"),
                 ],
                 action: rsx! {
@@ -258,6 +262,216 @@ fn Home() -> Element {
                             ],
                         }
                     }
+                }
+            }
+        }
+    }
+}
+
+/// The `rv2_ui::motion` showcase, and the reason that module is allowed to
+/// exist at all.
+///
+/// Same argument as `Home`: this is a **coverage fixture**, not decoration. Every
+/// motion component is mounted here with real props, so removing one or changing
+/// its signature stops this page compiling. For components whose whole output is
+/// visual, a page that must keep compiling is the cheapest test there is — and
+/// for the rest, look at it. Nothing in CI renders a page.
+#[component]
+fn Motion() -> Element {
+    // Blob state: the form companion. Where the blob looks, and whether its eyes
+    // are shut, follows the focused field.
+    let mut mood = use_signal(|| Mood::Neutral);
+    let mut gaze = use_signal(|| (0.0_f32, 0.0_f32));
+    let mut fed_up = use_signal(|| false);
+
+    // Dismissal demos.
+    let mut crumpled = use_signal(|| false);
+    let mut vacuumed = use_signal(|| false);
+
+    // The cord toggles the foil card between two skins, so its effect is
+    // visible on the page rather than being a console message.
+    let mut lights_on = use_signal(|| true);
+
+    rsx! {
+        Shell {
+            Section {
+                Container { width: Width::Prose,
+                    Eyebrow { "Component kit" }
+                    Heading { level: 1, size: HeadingSize::Display, "Things that move" }
+                    Text { class: "mt-4", tone: Tone::Muted,
+                        "Reimplementations of ideas from FeralUI, in Dioxus. No React, no npm, \
+                         and no render loop — every one of these is CSS animation driven by \
+                         signals. Where that costs fidelity, the component's docs say so."
+                    }
+                }
+            }
+
+            Divider {}
+
+            // ── Blob ─────────────────────────────────────────────────────────
+            Section {
+                Container {
+                    Heading { level: 2, size: HeadingSize::Section, "Blob" }
+                    Text { class: "mt-2", tone: Tone::Muted,
+                        "Poke it. Five pokes and it has had enough. Focus a field and it \
+                         reads along — then shuts its eyes for the password, which is the \
+                         one mood here with a behavioural contract rather than a cosmetic one."
+                    }
+                    Grid { columns: 2, class: "mt-6 items-center gap-8",
+                        div { class: "flex flex-col items-center gap-3",
+                            Blob {
+                                mood: mood(),
+                                gaze: gaze(),
+                                size: 160,
+                                on_overpoke: move |()| fed_up.set(true),
+                            }
+                            if fed_up() {
+                                Text { tone: Tone::Muted, "“That is enough, thank you.”" }
+                            }
+                        }
+                        div { class: "space-y-3",
+                            label { class: "block space-y-1",
+                                span { class: "text-sm font-medium text-slate-700", "Email" }
+                                input {
+                                    r#type: "email",
+                                    name: "demo_email",
+                                    autocomplete: "email",
+                                    class: "w-full rounded-md border border-slate-300 px-3 py-2 text-sm",
+                                    onfocusin: move |_| {
+                                        mood.set(Mood::Hmm);
+                                        gaze.set((6.0, 3.0));
+                                    },
+                                }
+                            }
+                            label { class: "block space-y-1",
+                                span { class: "text-sm font-medium text-slate-700", "Password" }
+                                input {
+                                    r#type: "password",
+                                    name: "demo_password",
+                                    autocomplete: "current-password",
+                                    class: "w-full rounded-md border border-slate-300 px-3 py-2 text-sm",
+                                    onfocusin: move |_| {
+                                        mood.set(Mood::Password);
+                                        gaze.set((0.0, 0.0));
+                                    },
+                                }
+                            }
+                            div { class: "flex flex-wrap gap-2 pt-2",
+                                for (label , value) in [
+                                    ("Neutral", Mood::Neutral),
+                                    ("Happy", Mood::Happy),
+                                    ("Sad", Mood::Sad),
+                                    ("Angry", Mood::Angry),
+                                    ("Hmm", Mood::Hmm),
+                                    ("Side eye", Mood::SideEye),
+                                ] {
+                                    button {
+                                        r#type: "button",
+                                        class: "rounded-md border border-slate-300 px-3 py-1 text-xs \
+                                                hover:bg-slate-50",
+                                        onclick: move |_| mood.set(value),
+                                        "{label}"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            Divider {}
+
+            // ── Hologram + PullCord ──────────────────────────────────────────
+            Section {
+                Container {
+                    Heading { level: 2, size: HeadingSize::Section, "Hologram, and a pull-cord" }
+                    Text { class: "mt-2", tone: Tone::Muted,
+                        "Point at the card and it tilts, the sheen follows, the border glows \
+                         where the light is. Leave it alone and the light keeps sweeping. \
+                         Pull the cord to change the foil — it actuates mid-pull, at the \
+                         detent, not on release."
+                    }
+                    Grid { columns: 2, class: "mt-6 items-start gap-8",
+                        div { class: "max-w-[320px]",
+                            Hologram {
+                                foil: if lights_on() { Foil::Sunburst } else { Foil::Cosmos },
+                                intensity: 0.45,
+                                Eyebrow { "AllSource" }
+                                Heading { level: 3, size: HeadingSize::Card, "Event, holo rare" }
+                                Text { class: "mt-2",
+                                    "Append-only. Folds on read. Never overwrites."
+                                }
+                            }
+                        }
+                        div { class: "flex flex-col items-center",
+                            PullCord {
+                                label: "Change the foil",
+                                on_pull: move |()| lights_on.toggle(),
+                            }
+                            Text { class: "mt-4", tone: Tone::Muted,
+                                if lights_on() { "Sunburst foil." } else { "Cosmos foil." }
+                            }
+                        }
+                    }
+                }
+            }
+
+            Divider {}
+
+            // ── Crumple, Vacuum, Fur ─────────────────────────────────────────
+            Section {
+                Container {
+                    Heading { level: 2, size: HeadingSize::Section, "Getting rid of things" }
+                    Text { class: "mt-2", tone: Tone::Muted,
+                        "Two ways to dismiss something, and a surface with a coat on it."
+                    }
+                    Grid { columns: 3, class: "mt-6 items-start gap-6",
+                        div { class: "space-y-3",
+                            Crumple { crumpled: crumpled(),
+                                div { class: "rounded-lg border border-slate-200 bg-white p-4 shadow-sm",
+                                    Text { "Screw this one up and throw it away." }
+                                }
+                            }
+                            button {
+                                r#type: "button",
+                                class: "rounded-md border border-slate-300 px-3 py-1 text-xs hover:bg-slate-50",
+                                onclick: move |_| crumpled.toggle(),
+                                if crumpled() { "Un-crumple" } else { "Crumple" }
+                            }
+                        }
+                        div { class: "space-y-3",
+                            Vacuum {
+                                active: vacuumed(),
+                                target: ("40px".to_string(), "180px".to_string()),
+                                div { class: "rounded-lg border border-slate-200 bg-white p-4 shadow-sm",
+                                    Text { "Sucked toward a point you choose." }
+                                }
+                            }
+                            button {
+                                r#type: "button",
+                                class: "rounded-md border border-slate-300 px-3 py-1 text-xs hover:bg-slate-50",
+                                onclick: move |_| vacuumed.toggle(),
+                                if vacuumed() { "Put it back" } else { "Vacuum" }
+                            }
+                        }
+                        Fur { tint: "#a16207".to_string(),
+                            Text { class: "text-amber-50", "Hover to ruffle the coat." }
+                        }
+                    }
+                }
+            }
+
+            Divider {}
+
+            // ── GradientBuilder ──────────────────────────────────────────────
+            Section {
+                Container { width: Width::Prose,
+                    Heading { level: 2, size: HeadingSize::Section, "Gradient builder" }
+                    Text { class: "mt-2 mb-6", tone: Tone::Muted,
+                        "The one component reproduced in full, because it is pure state — \
+                         there is no simulation to approximate, so nothing is lost."
+                    }
+                    GradientBuilder {}
                 }
             }
         }
