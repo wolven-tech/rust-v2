@@ -462,11 +462,22 @@ fn Motion() -> Element {
                                 if vacuumed() { "Put it back" } else { "Vacuum" }
                             }
                         }
-                        // Light text set on a plain element rather than through
-                        // `Text`, whose tone classes win over a passed `class`
-                        // and left this dark-on-brown.
+                        // Light text on an OPAQUE chip, not directly on the coat.
+                        //
+                        // Same reason as the hologram's plate: text on a
+                        // repeating-gradient has no computable contrast ratio, so
+                        // a checker refuses to certify it — and here it was a
+                        // real risk, because the fur's strand highlights swing
+                        // several stops of lightness under the text as it
+                        // ruffles. A caption whose legibility depends on which
+                        // strand it lands on is not AA at any moment.
+                        //
+                        // `Text` is not used: its tone classes beat a passed
+                        // `class`, which is what left this dark-on-brown before.
                         Fur { tint: "#a16207".to_string(),
-                            p { class: "text-sm font-medium text-amber-50 drop-shadow",
+                            p {
+                                class: "inline-block rounded-md bg-stone-900 px-3 py-1.5 \
+                                        text-sm font-medium text-amber-50",
                                 "Hover to ruffle the coat."
                             }
                         }

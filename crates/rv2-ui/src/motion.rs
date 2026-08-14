@@ -385,7 +385,21 @@ pub fn Hologram(
                             background-size: 220% 100%;",
                 }
 
-                div { class: "relative z-10", {children} }
+                // An OPAQUE plate under the content, and it is an accessibility
+                // fix rather than a styling choice.
+                //
+                // Text sitting directly on the foil has no computable contrast
+                // ratio — a checker walks up for a background colour, finds a
+                // gradient overlapping the text, and correctly refuses to
+                // certify it. "Unverifiable" is not "passing", and it was
+                // genuinely marginal: `mix-blend-color-dodge` at the intensity
+                // that makes foil look good will brighten a dark backdrop by an
+                // unpredictable amount.
+                //
+                // Solid `bg-slate-900` makes the ratio computable AND fixed, so
+                // the same card passes at any foil intensity. It is also how a
+                // real foil card works: the art shimmers, the text box does not.
+                div { class: "relative z-10 rounded-lg bg-slate-900 p-3", {children} }
             }
         }
     }
