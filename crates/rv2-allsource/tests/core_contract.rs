@@ -577,12 +577,11 @@ async fn b3_the_sdk_normalizes_event_types_client_side() {
     let core = CoreClient::new(&core_url(), "dev").expect("client");
     let id = entity("b3");
 
-    core.ingest_event(IngestEventInput {
-        entity_id: id.clone(),
-        event_type: "ContractProbeCreated".to_string(),
-        payload: json!({"probe": true}),
-        metadata: None,
-    })
+    core.ingest_event(IngestEventInput::new(
+        "ContractProbeCreated",
+        id.clone(),
+        json!({"probe": true}),
+    ))
     .await
     .expect(
         "ingest_event failed — if this is a 400, the SDK stopped normalizing \

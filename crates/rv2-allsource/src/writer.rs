@@ -46,7 +46,8 @@ impl EventWriter {
     ///
     /// `CoreClient::ingest_event` **unconditionally** runs
     /// `normalize_event_type` on the event type before posting — verified in
-    /// `allsource-0.23.0/src/client.rs`. The architecture doc (D11) rejects
+    /// `allsource-0.24.0/src/client.rs`, and unchanged since 0.23.0. The
+    /// architecture doc (D11) rejects
     /// that normalizer as a schema because it is lossy and non-injective
     /// (`TwoFactorCreated` → `two.factor.created`; `user_created`,
     /// `userCreated`, `UserCreated` and `user-created` all collapse to
@@ -88,18 +89,56 @@ impl EventWriter {
             });
         }
 
-        let response = self
-            .core
-            .ingest_event(IngestEventInput {
-                event_type: declared.to_string(),
-                entity_id: event.stream_id(),
-                payload: serde_json::to_value(event)?,
-                metadata,
-            })
-            .await?;
+        // Builders, not a struct literal. The SDK's own docs ask for this —
+        // "the builders keep compiling when a field is added, whereas a literal
+        // has to name every field" — and 0.24.0 proved the point by adding
+        // `expected_version`, which broke this call site and nothing else.
+        let mut input = IngestEventInput::new(
+            declared.to_string(),
+            event.stream_id(),
+            serde_json::to_value(event)?,
+        );
+        if let Some(metadata) = metadata {
+            input = input.with_metadata(metadata);
+        }
+
+        // NOTE: no `with_expected_version`, so this appends unconditionally —
+        // the same behaviour as before 0.24.0, deliberately unchanged here.
+        //
+        // Adopting the compare-and-swap guard is a real correctness win and a
+        // separate piece of work, because it needs a version to compare
+        // against and the read path does not currently surface one. See the
+        // `SEAM` note below.
+        let response = self.core.ingest_event(input).await?;
         Ok(response.event_id)
     }
 }
+
+// ── SEAM: optimistic concurrency (allsource 0.24.0) ──────────────────────────
+//
+// `IngestEventInput::with_expected_version(v)` makes a write a compare-and-swap:
+// Core rejects it with `Error::VersionConflict { expected, current }` unless the
+// entity sits at exactly `v`. `0` asserts "this entity does not exist yet".
+//
+// Two places in `apps/api` would be genuinely more correct with it, and both are
+// races that today resolve as a silent last-write-wins:
+//
+//   - `posts::create` mints a fresh uuid and could assert `expected_version = 0`,
+//     turning "an id collision would overwrite a stream" from a trusted
+//     invariant into an enforced one.
+//   - `posts::update` and `posts::delete` re-read the post to authorize it (R4)
+//     and then append. Between those two steps another writer can land an edit,
+//     and the second write silently wins over a decision made against state that
+//     no longer exists.
+//
+// It is not wired here because the read path does not surface a version to
+// compare against: `fold_entity` returns folded state, and the version lives on
+// the query response (`entity_version`) which is discarded. Closing that means
+// threading a version out of the fold and into the handler, plus deciding the
+// retry policy — re-read, re-authorize, recompute, retry — and a conflict is a
+// 409, which is a new arm on `ApiError`.
+//
+// That is a design change with its own tests, not a line in this function.
 
 #[cfg(test)]
 mod tests {

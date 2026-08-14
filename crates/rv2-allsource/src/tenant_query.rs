@@ -8,9 +8,14 @@
 //! from "this entity has no events".
 //!
 //! The SDK cannot send the parameter: `allsource::QueryEventsParams` has no
-//! `tenant_id` field (v0.23.0). The Query Service derives the tenant from the
-//! API key, so SDK reads work through the gateway — but a `QueryClient` aimed
-//! at Core silently reads nothing, forever.
+//! `tenant_id` field. **Re-checked at v0.24.0 and still true** — that bump
+//! added `order` and `payload_filter` to the struct and no tenant. So this
+//! module is not deletable yet; check again on the next SDK bump, because the
+//! day it gains one is the day this file goes away.
+//!
+//! The Query Service derives the tenant from the API key, so SDK reads work
+//! through the gateway — but a `QueryClient` aimed at Core silently reads
+//! nothing, forever.
 //!
 //! That is not theoretical. It made `POST /posts` return 404: the handler
 //! appends, then reads back through the fold to prove the write landed, and the

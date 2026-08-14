@@ -27,6 +27,13 @@ updates:
       # — bumping the crate without bumping Core is how you get a client that
       # speaks an API the server does not. It moves when someone decides it
       # moves, and `cargo xtask live` is what proves it.
+      #
+      # This has now been exercised once, and the rule earned its place. 0.24.0
+      # shipped while `allsource-core` stayed at 0.23.0, and the bump was a
+      # breaking API change (`IngestEventInput` gained `expected_version`).
+      # Dependabot would have opened it as a routine update; a human read the
+      # diff, fixed the call sites, and ran `cargo xtask live` against a real
+      # Core 0.23 before believing any of it.
       - dependency-name: allsource
         update-types: [version-update:semver-major, version-update:semver-minor]
 
