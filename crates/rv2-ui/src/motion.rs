@@ -169,24 +169,34 @@ pub fn Blob(
                 width: "100%",
                 height: "100%",
                 class: "{anim} origin-bottom",
-                style: "--jelly-body: var(--jelly-body, #a78bfa); \
-                        --jelly-cheek: var(--jelly-cheek, #f0abfc); \
-                        --jelly-eye: var(--jelly-eye, #1e1b4b);",
+
+                // NOTE: the palette custom properties are deliberately NOT
+                // redeclared here. Writing `--jelly-body: var(--jelly-body, …)`
+                // on this element looks like "default it if unset" and is
+                // actually a **self-reference**: a custom property whose value
+                // mentions itself is a cycle, invalid at computed-value time, so
+                // every `fill` below resolved to nothing and painted black. The
+                // blob rendered as a featureless dark circle while the DOM,
+                // classes and animations all looked perfectly correct.
+                //
+                // Defaults belong at the use site, where `var(x, fallback)` does
+                // what it appears to. An ancestor setting `--jelly-*` still wins,
+                // which is the whole point of the palette being properties.
 
                 // Body. A blobby path rather than a circle, so the idle wobble
                 // has something asymmetric to deform.
                 path {
                     d: "M50 8 C74 8 90 26 90 50 C90 76 74 92 50 92 C26 92 10 76 10 50 C10 26 26 8 50 8 Z",
-                    fill: "var(--jelly-body)",
+                    fill: "var(--jelly-body, #a78bfa)",
                 }
 
                 // Cheeks.
-                ellipse { cx: "27", cy: "62", rx: "8", ry: "5", fill: "var(--jelly-cheek)", opacity: "0.55" }
-                ellipse { cx: "73", cy: "62", rx: "8", ry: "5", fill: "var(--jelly-cheek)", opacity: "0.55" }
+                ellipse { cx: "27", cy: "62", rx: "8", ry: "5", fill: "var(--jelly-cheek, #f0abfc)", opacity: "0.55" }
+                ellipse { cx: "73", cy: "62", rx: "8", ry: "5", fill: "var(--jelly-cheek, #f0abfc)", opacity: "0.55" }
 
                 // Brows. Mirrored tilt, so angry converges and sad diverges.
                 g {
-                    stroke: "var(--jelly-eye)",
+                    stroke: "var(--jelly-eye, #1e1b4b)",
                     stroke_width: "2.5",
                     stroke_linecap: "round",
                     opacity: if brow == 0.0 { "0" } else { "0.9" },
@@ -203,7 +213,7 @@ pub fn Blob(
                 // Eyes. Closed moods draw arcs instead of pupils.
                 if closed {
                     g {
-                        stroke: "var(--jelly-eye)",
+                        stroke: "var(--jelly-eye, #1e1b4b)",
                         stroke_width: "3",
                         stroke_linecap: "round",
                         fill: "none",
@@ -218,13 +228,13 @@ pub fn Blob(
                             cx: "{36.0 + px}",
                             cy: "{44.0 + py}",
                             r: if mood == Mood::Hmm { "2.4" } else { "3.4" },
-                            fill: "var(--jelly-eye)",
+                            fill: "var(--jelly-eye, #1e1b4b)",
                         }
                         circle {
                             cx: "{64.0 + px}",
                             cy: "{44.0 + py}",
                             r: "3.4",
-                            fill: "var(--jelly-eye)",
+                            fill: "var(--jelly-eye, #1e1b4b)",
                         }
                     }
                 }
@@ -232,7 +242,7 @@ pub fn Blob(
                 // Mouth.
                 path {
                     d: "M40 62 Q50 {62.0 + curve} 60 62",
-                    stroke: "var(--jelly-eye)",
+                    stroke: "var(--jelly-eye, #1e1b4b)",
                     stroke_width: "3",
                     stroke_linecap: "round",
                     fill: "none",
@@ -342,8 +352,21 @@ pub fn Hologram(
             },
 
             // The card face.
-            div { class: "relative overflow-hidden rounded-[14px] bg-slate-900 p-5 text-slate-100",
-                {children}
+            //
+            // ORDER MATTERS, and getting it wrong is not subtle. The light
+            // layers are painted FIRST and the content LAST.
+            //
+            // `mix-blend-color-dodge` blends with its backdrop — everything
+            // already painted beneath it. With the content painted first, that
+            // backdrop included the text, and dodge brightens: near-white body
+            // copy on a dark card washed out to unreadable at exactly the
+            // intensities that make the foil look good. `z-10` on the content
+            // did not save it, because the problem was never paint order, it was
+            // what the blend had to chew on.
+            //
+            // Painting the light first means it only ever blends the card
+            // surface, and the text sits cleanly on top of the result.
+            div { class: "relative isolate overflow-hidden rounded-[14px] bg-slate-900 p-5 text-slate-100",
 
                 // Foil, gated by a radial so it is brightest under the light.
                 div {
@@ -361,6 +384,8 @@ pub fn Hologram(
                             rgba(255,255,255,0.35) 50%, transparent 60%); \
                             background-size: 220% 100%;",
                 }
+
+                div { class: "relative z-10", {children} }
             }
         }
     }

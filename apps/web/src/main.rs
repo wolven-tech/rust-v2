@@ -393,12 +393,20 @@ fn Motion() -> Element {
                     }
                     Grid { columns: 2, class: "mt-6 items-start gap-8",
                         div { class: "max-w-[320px]",
+                            // Plain elements with explicit light classes, not
+                            // `Heading`/`Text`: those carry their own slate
+                            // colours, which beat the card's inherited
+                            // `text-slate-100` and render dark-on-dark. The card
+                            // is a dark surface, so its contents have to say so.
                             Hologram {
                                 foil: if lights_on() { Foil::Sunburst } else { Foil::Cosmos },
                                 intensity: 0.45,
-                                Eyebrow { "AllSource" }
-                                Heading { level: 3, size: HeadingSize::Card, "Event, holo rare" }
-                                Text { class: "mt-2",
+                                p {
+                                    class: "text-xs font-semibold uppercase tracking-widest text-slate-300",
+                                    "AllSource"
+                                }
+                                p { class: "mt-1 text-xl font-semibold text-white", "Event, holo rare" }
+                                p { class: "mt-2 text-sm text-slate-200",
                                     "Append-only. Folds on read. Never overwrites."
                                 }
                             }
@@ -454,8 +462,13 @@ fn Motion() -> Element {
                                 if vacuumed() { "Put it back" } else { "Vacuum" }
                             }
                         }
+                        // Light text set on a plain element rather than through
+                        // `Text`, whose tone classes win over a passed `class`
+                        // and left this dark-on-brown.
                         Fur { tint: "#a16207".to_string(),
-                            Text { class: "text-amber-50", "Hover to ruffle the coat." }
+                            p { class: "text-sm font-medium text-amber-50 drop-shadow",
+                                "Hover to ruffle the coat."
+                            }
                         }
                     }
                 }
