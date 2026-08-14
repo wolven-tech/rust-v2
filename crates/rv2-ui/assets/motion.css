@@ -1,0 +1,199 @@
+/* Motion primitives for `rv2_ui::motion`.
+ *
+ * Imported by each app's `input.css`, because Tailwind v4 runs per app and
+ * `@theme` tokens have to be in the compiled graph of both. The components that
+ * use these classes live in `crates/rv2-ui/src/motion.rs`, which is already in
+ * every app's `@source` list.
+ *
+ * ## Why the animation lives here and not in Rust
+ *
+ * These are declarative, GPU-composited CSS animations: no per-frame loop, no
+ * `requestAnimationFrame`, no timer. That is a deliberate constraint, not a
+ * shortcut — `rv2-ui` depends on `dioxus` and nothing else (see its lib.rs), and
+ * a spring solver running each frame would mean `web-sys` and a render loop in
+ * a crate whose whole selling point is that it has neither.
+ *
+ * The cost is honest: where the original simulates, this approximates with an
+ * overshooting easing curve. It feels right; it is not a solver.
+ */
+
+@theme {
+  /* An overshoot curve. The tail past 1.0 is the "spring" — it goes beyond the
+   * target and comes back, which is the single cheapest way to read as physical
+   * rather than as a tween. */
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-settle: cubic-bezier(0.22, 1, 0.36, 1);
+
+  --animate-blob-idle: blob-idle 6s ease-in-out infinite;
+  --animate-blob-poke: blob-poke 0.6s var(--ease-spring);
+  --animate-cord-settle: cord-settle 1.1s var(--ease-settle);
+  --animate-crumple: crumple 0.5s ease-in forwards;
+  --animate-vacuum: vacuum 0.55s ease-in forwards;
+  --animate-sheen: sheen 3.5s linear infinite;
+  --animate-fur-ruffle: fur-ruffle 0.9s ease-in-out;
+}
+
+/* A slow, off-centre breathing wobble. `border-radius` is animated rather than
+ * `transform`, so the silhouette actually deforms instead of being squashed —
+ * that difference is most of why it reads as jelly rather than as a bouncing
+ * circle. */
+@keyframes blob-idle {
+  0%,
+  100% {
+    border-radius: 46% 54% 52% 48% / 54% 48% 52% 46%;
+    transform: translateY(0) rotate(0deg);
+  }
+  33% {
+    border-radius: 54% 46% 44% 56% / 46% 56% 44% 54%;
+    transform: translateY(-3px) rotate(-1.2deg);
+  }
+  66% {
+    border-radius: 48% 52% 56% 44% / 52% 44% 56% 48%;
+    transform: translateY(2px) rotate(1deg);
+  }
+}
+
+/* The poke. Squash on impact, overshoot on the way back — a rebound that
+ * overshoots is what sells "elastic"; a symmetric one reads as rubber-stamped. */
+@keyframes blob-poke {
+  0% {
+    transform: scale(1, 1);
+  }
+  30% {
+    transform: scale(1.14, 0.84) translateY(4px);
+  }
+  60% {
+    transform: scale(0.94, 1.08) translateY(-3px);
+  }
+  100% {
+    transform: scale(1, 1);
+  }
+}
+
+/* Release of the cord: a damped swing, each pass smaller and slower. Hand-tuned
+ * decay rather than a solved one; the ratios matter more than the numbers. */
+@keyframes cord-settle {
+  0% {
+    transform: translateY(var(--cord-pull, 0px)) rotate(var(--cord-swing, 0deg));
+  }
+  35% {
+    transform: translateY(0) rotate(calc(var(--cord-swing, 0deg) * -0.45));
+  }
+  60% {
+    transform: translateY(0) rotate(calc(var(--cord-swing, 0deg) * 0.22));
+  }
+  82% {
+    transform: translateY(0) rotate(calc(var(--cord-swing, 0deg) * -0.09));
+  }
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+}
+
+/* Crumple: collapse inward while the corners fold at odds with each other.
+ * The `skew` is what stops it reading as a plain scale-down. */
+@keyframes crumple {
+  0% {
+    transform: scale(1) rotate(0deg) skew(0deg, 0deg);
+    filter: blur(0);
+    opacity: 1;
+  }
+  45% {
+    transform: scale(0.72) rotate(-6deg) skew(4deg, -3deg);
+    filter: blur(0.4px);
+    opacity: 0.9;
+  }
+  100% {
+    transform: scale(0.15) rotate(14deg) skew(-8deg, 6deg);
+    filter: blur(2px);
+    opacity: 0;
+  }
+}
+
+/* Sucked toward a point. The point is `--vacuum-x`/`--vacuum-y`, so a caller
+ * can aim it at wherever the "nozzle" is. */
+@keyframes vacuum {
+  0% {
+    transform: translate(0, 0) scale(1) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(var(--vacuum-x, 0), var(--vacuum-y, 120px)) scale(0.02)
+      rotate(220deg);
+    opacity: 0;
+  }
+}
+
+/* The unattended light sweep on a foil card — the thing that keeps a hologram
+ * alive when nobody is pointing at it. */
+@keyframes sheen {
+  0% {
+    background-position: -140% 0;
+  }
+  100% {
+    background-position: 240% 0;
+  }
+}
+
+@keyframes fur-ruffle {
+  0%,
+  100% {
+    background-position-x: 0;
+  }
+  50% {
+    background-position-x: 3px;
+  }
+}
+
+/* Fur, as a stack of repeating gradients: fine strands, a coarser undercoat at
+ * an angle, and a soft radial to fake depth. Cheaper than any image and it
+ * scales to any size. */
+.fur-surface {
+  background-image:
+    repeating-linear-gradient(
+      95deg,
+      color-mix(in oklab, var(--fur-tint, #78716c) 92%, black) 0 1px,
+      transparent 1px 3px
+    ),
+    repeating-linear-gradient(
+      82deg,
+      color-mix(in oklab, var(--fur-tint, #78716c) 70%, white) 0 1px,
+      transparent 1px 5px
+    ),
+    radial-gradient(
+      120% 90% at 30% 20%,
+      color-mix(in oklab, var(--fur-tint, #78716c) 78%, white),
+      var(--fur-tint, #78716c)
+    );
+  background-size:
+    4px 100%,
+    6px 100%,
+    100% 100%;
+}
+
+/* Hover parts the coat. `background-position` moves the strand layers against
+ * the base, so the fur separates rather than the whole patch sliding. */
+.fur-surface:hover {
+  animation: var(--animate-fur-ruffle);
+}
+
+/* ── Reduced motion ───────────────────────────────────────────────────────────
+ *
+ * Not optional, and not a nicety. Every animation above is decorative, and for
+ * a reader with vestibular sensitivity the idle wobble is the worst kind:
+ * unprompted, looping, and impossible to dismiss. The components stay fully
+ * usable — a poke still registers, a cord still actuates — they simply stop
+ * moving. */
+@media (prefers-reduced-motion: reduce) {
+  .fur-surface:hover,
+  [class*="animate-blob"],
+  [class*="animate-cord"],
+  [class*="animate-sheen"],
+  [class*="animate-fur"] {
+    animation: none !important;
+  }
+
+  .motion-tilt {
+    transform: none !important;
+  }
+}

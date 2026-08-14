@@ -13,3 +13,8 @@
 
 @source "../src";
 @source "../../../crates/rv2-ui/src";
+
+/* Motion primitives for `rv2_ui::motion` — keyframes and easing tokens.
+ * Imported rather than duplicated: Tailwind runs once per app, so both need it
+ * in their graph, and one copy is the only way they cannot drift. */
+@import "../../../crates/rv2-ui/assets/motion.css";

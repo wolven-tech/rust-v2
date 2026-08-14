@@ -32,6 +32,22 @@
 //!   `apps/app`, next to the only thing that renders it.
 //! - **No JavaScript for disclosure.** [`site::Faq`] is built on native
 //!   `<details>`, so it works in the SSG build before hydration.
+//! - **No render loop.** [`motion`] is animated entirely in CSS, because a
+//!   spring solver would mean `web-sys` and a per-frame callback in a crate
+//!   whose selling point is having neither. Where that costs fidelity, the
+//!   component says so.
+//!
+//! ## A deviation from "minimal", recorded rather than hidden
+//!
+//! The scope note above says every component here is used by an app. [`motion`]
+//! stretches that: it is a set of *playful* components — a pokeable mascot, a
+//! foil card, a pull-cord — reimplemented from [FeralUI](https://feralui.dev)'s
+//! ideas, and they exist because a kit with no personality is a kit nobody
+//! reaches for. They are exercised by `apps/web`'s `/motion` page, which is
+//! their honest justification: a showcase, not a feature.
+//!
+//! If they stop earning their bundle weight, delete the module and the page
+//! together.
 
 #![forbid(unsafe_code)]
 #![allow(non_snake_case)] // Dioxus components are PascalCase by convention.
@@ -39,6 +55,7 @@
 pub mod feedback;
 pub mod form;
 pub mod layout;
+pub mod motion;
 pub mod primitives;
 pub mod site;
 pub mod typography;
@@ -46,6 +63,9 @@ pub mod typography;
 pub use crate::feedback::{Card, EmptyState, ErrorBanner, PageHeader, Skeleton};
 pub use crate::form::{TextArea, TextField};
 pub use crate::layout::{Container, Divider, Grid, Row, Section, Space, Stack, Width};
+pub use crate::motion::{
+    Blob, Crumple, Foil, Fur, GradientBuilder, Hologram, Mood, PullCord, Vacuum,
+};
 pub use crate::primitives::{ArrowLink, Badge, Button, LinkButton, Size, StepMarker, Variant};
 pub use crate::site::{
     Fact, FactList, Faq, FeatureCard, Footer, FooterColumn, Hero, NavBar, NavItem, PricingCard,

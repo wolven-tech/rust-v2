@@ -13,3 +13,9 @@
 
 @source "../src";
 @source "../../../crates/rv2-ui/src";
+
+
+/* `motion.rs` is the playful kit, and `apps/app` renders none of it. Without
+ * this the dashboard still pays for every class those components name, because
+ * the @source glob above covers the whole kit. */
+@source not "../../../crates/rv2-ui/src/motion.rs";
