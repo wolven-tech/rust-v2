@@ -133,9 +133,9 @@ checksum = "683d7910e743518b0e34f1186f92494becacb047c7b6bf616c96772180fef923"
 
 [[package]]
 name = "allsource"
-version = "0.23.0"
+version = "0.24.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9ac608d40938aebd1467fcc65db105fb644a37175381fef06246b2237cb34fab"
+checksum = "2965a62400265eba12277836502e493ccb5568ab7ac7bae964d75af06995b408"
 dependencies = [
  "async-trait",
  "futures-util",

@@ -8,6 +8,27 @@ Nothing here is released yet — the workspace is at `0.1.0` and every crate is
 
 ## [Unreleased]
 
+### Changed — AllSource SDK 0.23.0 → 0.24.0
+
+- A **breaking** bump: `IngestEventInput` gained `expected_version`, which broke
+  the two places that built it as a struct literal. Both now use
+  `IngestEventInput::new(..)` plus `with_*` builders, which is what the SDK's own
+  docs ask for and what would have survived the change untouched.
+- **Verified against a real Core 0.23.0**, because `allsource-core` has not
+  shipped 0.24 — the SDK and the server are on different versions by necessity.
+  `cargo xtask live` passes: 13 contract assertions and 3 vertical-slice tests.
+  Skew is proven, not assumed.
+- **`expected_version` is deliberately not adopted yet.** It is a
+  compare-and-swap guard that would close two real races in `apps/api` —
+  `create` asserting version `0`, and the read-authorize-append window in
+  `update`/`delete` that today resolves as a silent last-write-wins. Wiring it
+  needs a version threaded out of the fold, a retry policy, and a `409` arm on
+  `ApiError`. Recorded as a `SEAM` in `rv2-allsource/src/writer.rs`.
+- Re-checked at 0.24.0 and **still true**: `QueryEventsParams` has no
+  `tenant_id`, so `tenant_query` is not deletable; and `CoreClient::ingest_event`
+  still normalizes event types unconditionally, so the fixed-point check in
+  `EventWriter::append` still earns its place.
+
 ### Added — observability and jobs
 
 - **Prometheus metrics**, opt-in via `METRICS_ADDR`, served from a listener of

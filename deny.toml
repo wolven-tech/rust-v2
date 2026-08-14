@@ -64,7 +64,7 @@ allow-wildcard-paths = true
 
 skip = [
   # R7, verified this session:
-  #   reqwest 0.13.x <- allsource 0.23
+  #   reqwest 0.13.x <- allsource 0.24
   #   reqwest 0.12.x <- better-auth-api 0.10, dioxus-fullstack 0.7,
   #                     and our vendored better-auth-allsource
   # Two TLS stacks and two HTTP clients in one binary: slower builds, bigger
