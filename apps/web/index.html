@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<!-- Custom shell, for one reason: `lang`.
+     dx generates `<html>` with no language, which fails WCAG 3.1.1 (Language of
+     Page) — a screen reader then guesses the pronunciation of every word on the
+     page from the user's locale rather than the document's. There is no
+     Dioxus.toml setting for it, and no Rust-side API, so the template is the
+     supported way to say it.
+     Keep this minimal. Every bit of dx's shell restated here is a bit of dx's
+     internals pinned — and an unrecognised placeholder does not error, it
+     renders as literal text on the page. `{script_include}` was in this file
+     briefly and shipped the string "{script_include}" to the bottom of every
+     page: dx 0.7 injects the module script itself and has no such placeholder.
+     `{style_include}` and `{app_title}` are real and do substitute. -->
+<html lang="en">
+  <head>
+    <title>{app_title}</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    {style_include}
+  </head>
+  <body>
+    <div id="main"></div>
+  </body>
+</html>
