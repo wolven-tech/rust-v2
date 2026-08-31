@@ -5,6 +5,7 @@ members = [
   "apps/web",
   "crates/better-auth-allsource",
   "crates/rv2-allsource",
+  "crates/rv2-ai",
   "crates/rv2-analytics",
   "crates/rv2-api-types",
   "crates/rv2-client",
@@ -162,6 +163,7 @@ tracing-opentelemetry = "0.33"
 
 # ── Internal ─────────────────────────────────────────────────────────────────
 rv2-allsource = { path = "crates/rv2-allsource" }
+rv2-ai = { path = "crates/rv2-ai" }
 rv2-analytics = { path = "crates/rv2-analytics" }
 rv2-api-types = { path = "crates/rv2-api-types" }
 rv2-client = { path = "crates/rv2-client" }

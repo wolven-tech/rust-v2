@@ -13,8 +13,9 @@ TypeScript, and no JavaScript package manager.
 - `apps/api` — Axum HTTP API. The only server process.
 - `apps/app` — Dioxus CSR SPA, the authenticated dashboard.
 - `apps/web` — Dioxus marketing site.
-- `crates/` — the shared graph: events, domain, DTOs, UI kit, client, AllSource
-  integration, analytics, email, jobs.
+- `crates/` — the shared graph: events, domain, grounded generative-AI
+  contracts, DTOs, UI kit, client, AllSource integration, analytics, email,
+  jobs.
 - `tooling/xtask` — the gate.
 
 ## One command
@@ -41,7 +42,7 @@ The SDK's own `QueryEventsParams` has no field for it; that is why
 `crates/rv2-allsource/src/tenant_query.rs` exists. Use it.
 
 **2. The WASM boundary is real and is enforced by cross-compile.** `rv2-events`,
-`rv2-domain`, `rv2-api-types`, `rv2-ui`, `rv2-client` and both apps compile to
+`rv2-domain`, `rv2-ai`, `rv2-api-types`, `rv2-ui`, `rv2-client` and both apps compile to
 `wasm32-unknown-unknown`. Nothing that pulls `reqwest`, `tokio` with `net`,
 native TLS, or `getrandom` may be reachable from them. Server-only crates —
 `rv2-allsource`, `rv2-shared`, `better-auth-allsource`, `rv2-analytics`,
@@ -61,10 +62,11 @@ explicit rustls feature. Assume the next one does too.
 ## Where the *why* lives
 
 `docs/architecture/001-rust-v2-allsource-foundation.md` — 21 numbered decisions
-(`D1`–`D21`), risks (`R*`) and open questions (`OQ-*`). Code comments cite them
-by number, so `§2.2 trap 1` and `R6` point at real paragraphs. **If you overturn
-a decision, edit the decision** — a code change that silently contradicts one
-leaves two sources of truth.
+(`D1`–`D21`), risks (`R*`) and open questions (`OQ-*`).
+`docs/architecture/002-generative-ai-contract.md` adds grounded-draft and runtime
+boundaries (`AI1`–`AI5`). Code comments cite these identifiers. **If you
+overturn a decision, edit the decision** — a code change that silently
+contradicts one leaves two sources of truth.
 
 Also:
 
@@ -116,6 +118,10 @@ and click the thing. The suite will not tell you.
 
 ## Things deliberately not built
 
+- **A bundled AI model or remote model provider.** `rv2-ai` supplies grounded
+  request, review, and validation contracts only. Product crates choose a
+  runtime when one serves a real customer gate; local-only is default and
+  deterministic core value must remain available.
 - **A durable job queue.** The seam is a leased queue over AllSource
   (`job.claimed` / `job.finished` events); it needs a real workload first.
 - **Google OAuth.** Marked with a `SEAM` comment. Wiring it without the

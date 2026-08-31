@@ -6,7 +6,7 @@ One datastore, one language, no TypeScript in the data path.
 - `apps/api` — Axum HTTP API. The only server process.
 - `apps/app` — Dioxus CSR SPA, the authenticated dashboard.
 - `apps/web` — Dioxus marketing site, built SSG.
-- `crates/` — the shared crate graph (events, domain, DTOs, UI kit, client, AllSource integration, analytics, email, jobs).
+- `crates/` — the shared crate graph (events, domain, grounded generative-AI contracts, DTOs, UI kit, client, AllSource integration, analytics, email, jobs).
 - `tooling/xtask` — the gate: `cargo xtask ci`, and the Tailwind compile.
 
 The design and every decision behind it live in
@@ -199,6 +199,19 @@ directions: the WASM-safe crates must compile for `wasm32-unknown-unknown`, and
 the server-only crates must not be reachable from either app. A crate that
 accidentally pulls `tokio` with `net`, `reqwest`, or native TLS fails in seconds
 instead of during a `dx build` three weeks later.
+
+### Generative AI foundation
+
+`crates/rv2-ai` is a provider-neutral, WASM-safe contract for grounded drafts.
+It defaults requests to local-only, rejects unknown citations and oversized
+output, and leaves accept, edit, or reject choice to a person. It deliberately
+ships no model, network adapter, API key, background inference, or automatic
+write path. Product repositories wire only the runtime their validated customer
+job needs and keep deterministic or manual value available when inference fails.
+
+See
+[`docs/plans/2026-08-31-generative-ai-foundation-design.md`](docs/plans/2026-08-31-generative-ai-foundation-design.md)
+for data flow and weekly-bet evidence rules.
 
 **The live tests are `#[ignore]`d**, so a plain `cargo test` skips them in
 silence — which is indistinguishable from passing. `cargo xtask live` is what

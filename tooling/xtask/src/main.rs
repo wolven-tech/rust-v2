@@ -218,6 +218,8 @@ fn wasm_boundary() -> Fallible {
             "-p",
             "rv2-domain",
             "-p",
+            "rv2-ai",
+            "-p",
             "rv2-api-types",
             "-p",
             "rv2-ui",
