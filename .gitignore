@@ -10,6 +10,7 @@ Cargo.lock.bak
 .dioxus/
 **/.dioxus/
 public/
+/.fly-artifacts/
 
 # AllSource local data (docker-compose volume fallback + native Core)
 .allsource-data/

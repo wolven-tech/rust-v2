@@ -1,6 +1,6 @@
 //! The public marketing site.
 //!
-//! **D8: Dioxus fullstack in SSG mode**, built with `dx bundle --web --ssg` and
+//! **D8: Dioxus fullstack in SSG mode**, built with `dx build --web --ssg` and
 //! deployed as static files. It is different from `apps/app` because it is
 //! public and needs crawlable HTML — a CSR SPA hands a search engine an empty
 //! `<div>`.
@@ -18,15 +18,8 @@
 //! removed, this page stops compiling — which is the cheapest possible test for
 //! a component library whose output is otherwise only checkable by eye.
 //!
-//! ## Honest status (R1, OQ-10)
-//!
-//! The doc flags Dioxus as the least-charted decision and records OQ-10: the
-//! exact `dx bundle --web --ssg` invocation **with `--package`** in a
-//! multi-app workspace was never verified. This crate is therefore built to the
-//! point where `cargo build` and the `wasm32` cross-compile both pass, with the
-//! content real. The `IncrementalRendererConfig` + `static_routes`
-//! server-function wiring that turns that into pre-rendered HTML is **not**
-//! present — see the SSG SEAM below.
+//! OQ-10 is resolved: exact workspace invocation, static route discovery, and
+//! release staging are exercised by `cargo xtask stage-web`.
 
 #![allow(non_snake_case)]
 
@@ -39,6 +32,27 @@ use rv2_ui::{
 };
 
 const TAILWIND: Asset = asset!("/assets/tailwind.css");
+const FAVICON: Asset = asset!("/assets/favicon.svg");
+const PUBLIC_SITE_URL: &str = match option_env!("PUBLIC_SITE_URL") {
+    Some(url) => url,
+    None => "http://localhost:4401",
+};
+const PUBLIC_APP_URL: &str = match option_env!("PUBLIC_APP_URL") {
+    Some(url) => url,
+    None => "http://localhost:4402",
+};
+const PUBLIC_PRODUCT_NAME: &str = match option_env!("PUBLIC_PRODUCT_NAME") {
+    Some(name) => name,
+    None => "rust-v2",
+};
+const PUBLIC_PRODUCT_SUMMARY: &str = match option_env!("PUBLIC_PRODUCT_SUMMARY") {
+    Some(summary) => summary,
+    None => "All-Rust product foundation with Dioxus, Axum, and AllSource.",
+};
+const PUBLIC_SOCIAL_IMAGE_URL: &str = match option_env!("PUBLIC_SOCIAL_IMAGE_URL") {
+    Some(url) => url,
+    None => "http://localhost:4401/og.png",
+};
 
 #[derive(Clone, Debug, PartialEq, Routable)]
 enum Route {
@@ -51,7 +65,31 @@ enum Route {
 }
 
 fn main() {
-    dioxus::launch(App);
+    dioxus::LaunchBuilder::new()
+        .with_cfg(server_only! {
+            dioxus::server::ServeConfig::builder()
+                .incremental(
+                    dioxus::server::IncrementalRendererConfig::new()
+                        .static_dir(
+                            std::env::current_exe()
+                                .expect("SSG build has a current executable")
+                                .parent()
+                                .expect("SSG executable has a parent directory")
+                                .join("public"),
+                        )
+                        .clear_cache(false),
+                )
+                .enable_out_of_order_streaming()
+        })
+        .launch(App);
+}
+
+#[server(endpoint = "static_routes", output = server_fn::codec::Json)]
+async fn static_routes() -> Result<Vec<String>, ServerFnError> {
+    Ok(Route::static_routes()
+        .iter()
+        .map(ToString::to_string)
+        .collect())
 }
 
 #[component]
@@ -62,21 +100,68 @@ fn App() -> Element {
     }
 }
 
-// ── SSG SEAM ─────────────────────────────────────────────────────────────────
-// To finish D8, add a server function at endpoint "static_routes" returning
-// `Route::static_routes()`, and configure
-// `ServeConfig::builder().incremental(IncrementalRendererConfig::new()
-//     .static_dir(...))`. Both are documented at
-// dioxuslabs.com/learn/0.7/essentials/fullstack/static_site_generation, and
-// both are gated behind the `server` feature so they never reach the wasm
-// bundle. Left unimplemented rather than guessed at — see OQ-10.
+#[component]
+fn DiscoveryHead(title: String, description: String, path: &'static str) -> Element {
+    let origin = PUBLIC_SITE_URL.trim_end_matches('/');
+    let canonical = if path == "/" {
+        format!("{origin}/")
+    } else {
+        format!("{origin}{path}")
+    };
+    let website_id = format!("{origin}/#website");
+    let social_image_alt = format!("{PUBLIC_PRODUCT_NAME} product preview");
+    let schema = serde_json::json!({
+        "@context": "https://schema.org",
+        "@graph": [
+            {
+                "@type": "WebSite",
+                "@id": website_id,
+                "name": PUBLIC_PRODUCT_NAME,
+                "url": format!("{origin}/"),
+                "inLanguage": "en-GB"
+            },
+            {
+                "@type": "WebPage",
+                "@id": format!("{canonical}#webpage"),
+                "name": title,
+                "url": canonical,
+                "description": description,
+                "isPartOf": { "@id": format!("{origin}/#website") },
+                "inLanguage": "en-GB"
+            }
+        ]
+    })
+    .to_string();
+
+    rsx! {
+        document::Title { "{title}" }
+        document::Meta { name: "description", content: description.clone() }
+        document::Meta { name: "application-name", content: PUBLIC_PRODUCT_NAME }
+        document::Meta { property: "og:title", content: title.clone() }
+        document::Meta { property: "og:description", content: description.clone() }
+        document::Meta { property: "og:type", content: "website" }
+        document::Meta { property: "og:site_name", content: PUBLIC_PRODUCT_NAME }
+        document::Meta { property: "og:locale", content: "en_GB" }
+        document::Meta { property: "og:url", content: canonical.clone() }
+        document::Meta { property: "og:image", content: PUBLIC_SOCIAL_IMAGE_URL }
+        document::Meta { property: "og:image:alt", content: social_image_alt.clone() }
+        document::Meta { name: "twitter:card", content: "summary_large_image" }
+        document::Meta { name: "twitter:title", content: title }
+        document::Meta { name: "twitter:description", content: description }
+        document::Meta { name: "twitter:image", content: PUBLIC_SOCIAL_IMAGE_URL }
+        document::Meta { name: "twitter:image:alt", content: social_image_alt }
+        document::Link { rel: "canonical", href: canonical }
+        document::Link { rel: "icon", r#type: "image/svg+xml", href: FAVICON }
+        document::Script { r#type: "application/ld+json", "{schema}" }
+    }
+}
 
 #[component]
 fn Shell(children: Element) -> Element {
     rsx! {
         div { class: "min-h-screen bg-white text-slate-900",
             NavBar {
-                brand: "rust-v2",
+                brand: PUBLIC_PRODUCT_NAME,
                 items: vec![
                     NavItem::new("How it works", "/#how-it-works"),
                     NavItem::new("Pricing", "/#pricing"),
@@ -84,7 +169,7 @@ fn Shell(children: Element) -> Element {
                     NavItem::new("About", "/about"),
                 ],
                 action: rsx! {
-                    LinkButton { href: "/#pricing", "Get started" }
+                    LinkButton { href: PUBLIC_APP_URL, "Open app" }
                 },
             }
             main { {children} }
@@ -121,6 +206,11 @@ fn Shell(children: Element) -> Element {
 #[component]
 fn Home() -> Element {
     rsx! {
+        DiscoveryHead {
+            title: PUBLIC_PRODUCT_NAME.to_string(),
+            description: PUBLIC_PRODUCT_SUMMARY.to_string(),
+            path: "/",
+        }
         Shell {
             Section { space: Space::Loose,
                 Container {
@@ -293,6 +383,11 @@ fn Motion() -> Element {
     let mut lights_on = use_signal(|| true);
 
     rsx! {
+        DiscoveryHead {
+            title: format!("Motion component coverage | {PUBLIC_PRODUCT_NAME}"),
+            description: "Interactive Dioxus motion components used to verify starter rendering, input behaviour, and reduced-motion support.".to_string(),
+            path: "/motion",
+        }
         Shell {
             Section {
                 Container { width: Width::Prose,
@@ -329,7 +424,10 @@ fn Motion() -> Element {
                                 Text { tone: Tone::Muted, "“That is enough, thank you.”" }
                             }
                         }
-                        div { class: "space-y-3",
+                        form {
+                            class: "space-y-3",
+                            aria_label: "Blob mood demonstration",
+                            onsubmit: move |event| event.prevent_default(),
                             label { class: "block space-y-1",
                                 span { class: "text-sm font-medium text-slate-700", "Email" }
                                 input {
@@ -505,6 +603,11 @@ fn Motion() -> Element {
 #[component]
 fn About() -> Element {
     rsx! {
+        DiscoveryHead {
+            title: format!("About | {PUBLIC_PRODUCT_NAME}"),
+            description: format!("Architecture and boundaries of the {PUBLIC_PRODUCT_NAME} AllSource, Axum, and Dioxus product foundation."),
+            path: "/about",
+        }
         Shell {
             Section {
                 Container { width: Width::Prose,

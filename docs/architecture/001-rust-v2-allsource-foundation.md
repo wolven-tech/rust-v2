@@ -20,8 +20,8 @@ not verify are in [§10 Open Questions](#102-open-questions), never patched over
 | D4 | Deployment mode | **Remote Core** — `CoreClient` → `:3900`, `QueryClient` → `:3902`, both URLs from env | User decision. `allsource-core` (embedded, longhand's mode) is **not** a rust-v2 dependency. |
 | D5 | `allframe` role | `allframe 0.1.28` for router / health / openapi / resilience / rate-limit **only**. Not `cqrs-allsource`. | The `allsource` SDK owns event I/O; layering allframe's CQRS on top would give two competing event abstractions. |
 | D6 | API shape | **`apps/api` stays a separate Axum service.** Dioxus apps are clients over REST. Server functions are **not** used for business endpoints. | better-auth mounts its own Axum router (OAuth callbacks, cookie scoping); allframe already owns routing; a stable REST+OpenAPI contract survives a future Tauri/mobile client. |
-| D7 | `apps/app` (dashboard) | **Dioxus 0.7.10 web CSR SPA** (`features = ["web","router"]`), no `fullstack`, no SSR | Authenticated dashboard — SEO irrelevant; keeps the crate 100% `wasm32` and out of `dioxus-server`. |
-| D8 | `apps/web` (marketing) | **Dioxus 0.7.10 fullstack in SSG mode**, built with `dx bundle --web --ssg`, deployed as static files | Marketing pages need crawlable HTML. SSG uses the server binary at *build* time only — nothing extra to run in prod. |
+| D7 | `apps/app` (dashboard) | **Dioxus 0.7.10 web CSR SPA** (`features = ["web","router"]`), no `fullstack`, no SSR; `cargo xtask stage-app` validates compiled public site/API identity and noindex policy | Authenticated dashboard — SEO irrelevant; keeps the crate 100% `wasm32` and out of `dioxus-server` while preventing localhost production links. |
+| D8 | `apps/web` (marketing) | **Dioxus 0.7.10 fullstack in SSG mode**, built with `dx build --package web --platform web --release --ssg --fullstack true`, validated by `cargo xtask stage-web`, and deployed as static files | Marketing pages need crawlable HTML. SSG uses the server binary at *build* time only — nothing extra to run in prod. |
 | D9 | `better-auth-allsource` | **Vendor `crates/better-auth-allsource/` from getformlab.** Do **not** use the crates.io release. | The published `better-auth-allsource 0.14.12` declares `better-auth-core ^0.8`; `better-auth 0.10.0` needs `better-auth-core 0.10.0`. Two incompatible trait copies → will not compile. Proof in [§5.1](#51-the-better-auth-allsource-port). |
 | D10 | `event_type` wire format | `<domain>.<entity>.<action>`, lowercase dot-notation, e.g. `identity.user.registered` | AllSource validates event types as "lowercase, dot-notation" (`docs/current/EVENT_STORE_FEATURES.md:53`). |
 | D11 | Variant↔wire mapping | Explicit `DomainEvent::event_type(&self) -> &'static str` + `from_wire`, enforced by an exhaustive round-trip test. **No `decode_event` fallback, no `normalize_event_type`.** | getformlab's fallback silently mis-decodes; the SDK's normalizer is lossy (`TwoFactorCreated` → `two.factor.created`). See [§3.2](#32-eventtype-naming-and-the-serde-tag-reconciliation). |
@@ -1100,15 +1100,16 @@ it generated. That is ~1 function per endpoint and it is the price of the bounda
 
 | App | Kind | Dioxus features | Build | Replaces |
 |---|---|---|---|---|
-| `apps/app` | CSR SPA, authenticated dashboard | `["web", "router"]` | `dx serve --package app --platform web` / `dx bundle --package app --platform web --release` | rust-v1 `apps/app` (Next.js) |
-| `apps/web` | Static marketing site | `["web", "router", "fullstack"]` + `server` feature | `dx bundle --package web --web --ssg` | rust-v1 `apps/web` (Next.js) |
+| `apps/app` | CSR SPA, authenticated dashboard | `["web", "router"]` | `dx serve --package app --platform web` / `dx build --package app --platform web --release --debug-symbols false` then `cargo xtask stage-app` | rust-v1 `apps/app` (Next.js) |
+| `apps/web` | Static marketing site | `["web", "router", "fullstack"]` + `server` feature | `dx build --package web --platform web --release --ssg --fullstack true --force-sequential true --debug-symbols false` then `cargo xtask stage-web` | rust-v1 `apps/web` (Next.js) |
 
 **Why `apps/web` is different.** It is public and needs crawlable HTML; a CSR SPA gives search
 engines an empty `<div>`. Dioxus 0.7 SSG works by running the app locally, asking it for a
 sitemap, rendering each route, and caching the HTML to a `public/` directory. It needs
 `ServeConfig::builder().incremental(IncrementalRendererConfig::new().static_dir(…))` and a
 server function at endpoint `"static_routes"` returning `Route::static_routes()`. Output:
-`dx bundle --web --ssg` → a `public/` folder deployable to any static host.
+the verified `dx build ... --ssg` command → a `public/` folder; `cargo xtask
+stage-web` turns it into a validated static-host artifact.
 
 The `server` feature therefore exists in `apps/web` **for the build only**; nothing runs it in
 production. This keeps "one server process" true.
@@ -1225,8 +1226,9 @@ features, and post-processing (wasm-bindgen, asset collection, Tailwind), then s
   want from `meta build` and CI: cheap, fast breakage detection.
 - `cargo test --workspace` runs all non-WASM tests, including every folder and event test.
 - `dx serve --package app --platform web` is the *only* way to get a running frontend.
-- `dx bundle --package web --web --ssg --release` is the *only* way to produce the marketing
-  site.
+- `dx build --package web --platform web --release --ssg --fullstack true
+  --force-sequential true --debug-symbols false` is the verified way to render
+  marketing routes; `cargo xtask stage-web` is the release boundary.
 - `dx serve @client --package app @server --package api` is 0.7's multi-package syntax (0.7
   release post). We do **not** use it: our server is a plain Axum binary run by `bacon`, not a
   `dioxus-server` app, so `meta dev` runs `bacon` and `dx` as independent processes — the same
@@ -1445,10 +1447,11 @@ them or route around them, and must not invent an answer.
   `cqrs-allsource = [allframe-core/cqrs-allsource]`, but the all-frame README does not document
   it and I did not read its source. D5 sidesteps it in favour of the `allsource` SDK. If it
   turns out to be a first-class, maintained integration, D5 deserves a second look.
-- **OQ-10 — Dioxus SSG mechanics in a workspace.** `dx bundle --web --ssg` and the
-  `IncrementalRendererConfig` + `static_routes` server-function requirement are documented, but
-  I did not verify the exact invocation **with `--package`** in a multi-app workspace, nor
-  whether the SSG server function coexists with an app that otherwise defines none.
+- **OQ-10 — Dioxus SSG mechanics in a workspace — RESOLVED 2026-09-02.**
+  `dx build --package web --platform web --release --ssg --fullstack true
+  --force-sequential true --debug-symbols false` rendered `/`, `/about`, and
+  `/motion` through the `static_routes` server function. `cargo xtask stage-web`
+  now enforces discovery identity and explicit static-versus-hydrated runtime.
 
 ---
 
@@ -1750,11 +1753,10 @@ because cargo forbids a member from overriding an inherited
 - **OQ-1 (`getrandom 0.4` on wasm) — moot, as predicted.** No WASM crate pulls
   `getrandom`; the workspace-level `uuid` has no `v4`, and ids are minted
   server-side.
-- **OQ-10 (Dioxus SSG in a workspace) — still open.** `dx bundle --package web
-  --platform web --release` works and produces a bundle. The `--ssg` path was
-  not wired: it needs a `static_routes` server function plus
-  `IncrementalRendererConfig`, and that is left as a marked SEAM rather than
-  guessed at. `apps/web` currently renders CSR, which is R1's stated fallback.
+- **OQ-10 (Dioxus SSG in a workspace) — RESOLVED 2026-09-02.** Exact
+  multi-package command rendered all three routes. `static_routes`,
+  `IncrementalRendererConfig`, runtime staging, crawl files, and Fly static
+  serving are implemented and exercised. See `docs/DISCOVERY_RELEASE.md`.
 - **OQ-3, OQ-4, OQ-5, OQ-6, OQ-7, OQ-9 — untouched.** None was reachable from a
   scaffold.
 
@@ -1766,7 +1768,6 @@ silent one.
 | Gap | Where |
 |---|---|
 | Google OAuth (needs the HMAC-signed pending-origin cookie; without it the callback is an open redirect) | `apps/api/src/infrastructure/auth/better.rs` |
-| `apps/web` SSG wiring | `apps/web/src/main.rs` |
 | The ≤30s session cache for R5 | `apps/api/src/infrastructure/auth/middleware.rs` |
 | Transactional email (`tera`) | not present |
 | i18n — English only, OQ-5 | not present |

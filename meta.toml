@@ -76,7 +76,7 @@ type = "rust"
 path = "apps/app"
 [projects.app.tasks]
 dev = { tool = "dx", command = "serve --package app --platform web --port 4402" }
-build = { tool = "dx", command = "bundle --package app --platform web --release" }
+build = { tool = "dx", command = "build --package app --platform web --release --debug-symbols false" }
 test = { tool = "cargo", command = "test -p app" }
 clippy = { tool = "cargo", command = "clippy -p app --all-targets -- -D warnings" }
 
@@ -85,7 +85,7 @@ type = "rust"
 path = "apps/web"
 [projects.web.tasks]
 dev = { tool = "dx", command = "serve --package web --platform web --port 4401" }
-build = { tool = "dx", command = "bundle --package web --platform web --release" }
+build = { tool = "dx", command = "build --package web --platform web --release --ssg --fullstack true --force-sequential true --debug-symbols false" }
 test = { tool = "cargo", command = "test -p web" }
 clippy = { tool = "cargo", command = "clippy -p web --all-targets -- -D warnings" }
 

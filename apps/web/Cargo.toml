@@ -15,15 +15,16 @@ path = "src/main.rs"
 [features]
 default = ["web"]
 # The `server` feature exists for the SSG BUILD ONLY (D8). Nothing runs it in
-# production — `dx bundle --web --ssg` uses it at build time to render each
+# production — `dx build --web --ssg --fullstack true` uses it at build time to render each
 # route to static HTML, and the output is a `public/` folder on a static host.
 # That is what keeps "one server process" true.
-server = ["dioxus/fullstack", "dioxus/server"]
+server = ["dioxus/server"]
 web = ["dioxus/web"]
 
 [dependencies]
-dioxus = { workspace = true, features = ["launch", "lib", "router"] }
+dioxus = { workspace = true, features = ["fullstack", "launch", "lib", "router"] }
 rv2-ui.workspace = true
+serde_json.workspace = true
 # `dioxus-web` calls `Window::location()` but relies on another dioxus crate to
 # enable the web-sys feature that provides it. That crate arrived via
 # `fullstack`; with fullstack now opt-in (see `server`), this app must enable it.

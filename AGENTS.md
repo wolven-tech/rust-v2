@@ -126,6 +126,8 @@ and click the thing. The suite will not tell you.
   (`job.claimed` / `job.finished` events); it needs a real workload first.
 - **Google OAuth.** Marked with a `SEAM` comment. Wiring it without the
   HMAC-signed pending-origin cookie glue produces an open redirect.
-- **`apps/web` SSG.** It renders CSR today.
+- **Product-specific discovery credentials.** SSG, release staging, sitemap,
+  IndexNow, and static Fly serving are built. Search Console verification files,
+  canonical domains, and product identity belong in each product repository.
 
 Do not quietly fill one of these in as a side effect of another change.

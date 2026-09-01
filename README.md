@@ -148,10 +148,30 @@ docker build -t rust-v2-api .
 docker run --rm -p 4400:4400 --env-file .env rust-v2-api
 ```
 
-The image builds `apps/api` only. The Dioxus frontends compile to static wasm
-bundles (`dx bundle --package web --platform web --release`) and belong on a CDN
-or a static file server — putting them inside the API image would couple a
-frontend deploy to an API deploy for no reason.
+The image builds `apps/api` only. `apps/web` has a separate verified SSG release
+boundary:
+
+```console
+CARGO_INCREMENTAL=0 dx build --package web --platform web --release --ssg --fullstack true --force-sequential true --debug-symbols false
+cargo xtask stage-web
+```
+
+Both commands require product-specific `PUBLIC_*` values. Staged output lands
+in `.fly-artifacts/web`; `deploy/static.Dockerfile` serves it without coupling a
+marketing release to API deployment. See
+[`docs/DISCOVERY_RELEASE.md`](docs/DISCOVERY_RELEASE.md) for required values,
+runtime policy, Fly configuration, Search Console, IndexNow, accessibility,
+and production checks.
+
+`apps/app` uses a parallel CSR boundary:
+
+```console
+CARGO_INCREMENTAL=0 dx build --package app --platform web --release --debug-symbols false
+cargo xtask stage-app
+```
+
+It requires compiled product/site/API identity and rejects localhost before
+deployment. See [`docs/APP_RELEASE.md`](docs/APP_RELEASE.md).
 
 It runs as a non-root user, ships no toolchain, and sets `LOG_FORMAT=json` so
 logs arrive at an aggregator as fields rather than as text to re-parse.
@@ -343,7 +363,7 @@ These are marked, not hidden. Each has a `SEAM` comment at the site.
 | Gap | Where | Why |
 |---|---|---|
 | Google OAuth is not wired | `apps/api/src/infrastructure/auth/better.rs` | The plugin needs the HMAC-signed pending-origin cookie glue; without it the callback is an open redirect. Credential auth is complete end to end. |
-| `apps/web` SSG is not wired | `apps/web/src/main.rs` | Needs the `static_routes` server function + `IncrementalRendererConfig`. The app builds and cross-compiles; it currently renders CSR. |
+| Browser verification remains manual | `docs/DISCOVERY_RELEASE.md` | SSG and release staging are automated. A real browser, keyboard, zoom, reduced-motion, CSP console, and public PageSpeed run still close the visual/runtime gap. |
 | No session cache | `apps/api/src/infrastructure/auth/middleware.rs` | Authenticated requests cost two AllSource round-trips. Measure p99 before adding the cache. |
 | English only | — | No Rust i18n crate has been evaluated. rust-v1 shipped `en` + `fr`; this is a product regression that needs sign-off. |
 | Rate limits are per-instance | `apps/api/src/infrastructure/rate_limit.rs` | In-memory, so N instances allow N× the limit, and a restart clears them. Correct for now (§9.2: a counter is not an event); a shared limiter needs a store this workspace does not have. |

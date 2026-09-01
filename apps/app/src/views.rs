@@ -15,6 +15,7 @@ use uuid::Uuid;
 use crate::post_card::PostCard;
 
 use crate::routes::Route;
+use crate::{PUBLIC_PRODUCT_NAME, PUBLIC_SITE_URL};
 
 /// The session, provided by [`Shell`] to everything under it.
 #[derive(Clone, Copy)]
@@ -45,7 +46,13 @@ pub fn Shell() -> Element {
         div { class: "min-h-screen bg-slate-50 text-slate-900",
             nav { class: "border-b border-slate-200 bg-white",
                 div { class: "mx-auto flex max-w-4xl items-center gap-6 px-6 py-3",
-                    Link { class: "font-semibold", to: Route::Dashboard {}, "rust-v2" }
+                    a {
+                        class: "font-semibold",
+                        href: PUBLIC_SITE_URL,
+                        aria_label: "{PUBLIC_PRODUCT_NAME} website",
+                        "{PUBLIC_PRODUCT_NAME}"
+                    }
+                    Link { class: "text-sm text-slate-600", to: Route::Dashboard {}, "Dashboard" }
                     Link { class: "text-sm text-slate-600", to: Route::Posts {}, "Posts" }
                     div { class: "flex-1" }
                     if let Some(current) = session.read().as_ref() {

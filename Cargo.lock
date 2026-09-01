@@ -5997,6 +5997,7 @@ version = "0.1.0"
 dependencies = [
  "dioxus",
  "rv2-ui",
+ "serde_json",
  "web-sys",
 ]
 
@@ -6329,6 +6330,9 @@ checksum = "1ffae5123b2d3fc086436f8834ae3ab053a283cfac8fe0a0b8eaae044768a4c4"
 [[package]]
 name = "xtask"
 version = "0.1.0"
+dependencies = [
+ "sha2",
+]
 
 [[package]]
 name = "xxhash-rust"

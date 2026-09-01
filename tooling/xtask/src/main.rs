@@ -18,10 +18,14 @@
 //! - `cargo xtask styles` — compile each app's Tailwind stylesheet.
 //! - `cargo xtask live` — run the tests that need a live Core.
 //! - `cargo xtask core` — run AllSource Core with the dev settings.
+//! - `cargo xtask stage-web` — validate and stage an SSG release bundle.
+//! - `cargo xtask stage-app` — validate and stage the CSR application bundle.
+//! - `cargo xtask indexnow` — notify IndexNow after a successful deploy.
 //!
 //! Not covered here: `cargo deny` (its own job, needs a separate tool install)
 //! and the release bundle (slow, and `meta build` owns it).
 
+mod discovery;
 mod styles;
 
 use std::process::{Command, Stdio};
@@ -37,11 +41,14 @@ fn main() -> std::process::ExitCode {
         }),
         Some("live") => live(),
         Some("core") => core(),
+        Some("stage-web") => discovery::stage(),
+        Some("stage-app") => discovery::stage_app(),
+        Some("indexnow") => discovery::notify_indexnow(),
         other => {
             if let Some(name) = other {
                 eprintln!("unknown task: {name}\n");
             }
-            eprintln!("usage: cargo xtask <ci|styles|live|core>");
+            eprintln!("usage: cargo xtask <ci|styles|live|core|stage-web|stage-app|indexnow>");
             return std::process::ExitCode::FAILURE;
         }
     };

@@ -14,3 +14,12 @@ pub mod routes;
 pub mod views;
 
 pub use crate::routes::Route;
+
+pub const PUBLIC_SITE_URL: &str = match option_env!("PUBLIC_SITE_URL") {
+    Some(url) => url,
+    None => "http://localhost:4401",
+};
+pub const PUBLIC_PRODUCT_NAME: &str = match option_env!("PUBLIC_PRODUCT_NAME") {
+    Some(name) => name,
+    None => "rust-v2",
+};

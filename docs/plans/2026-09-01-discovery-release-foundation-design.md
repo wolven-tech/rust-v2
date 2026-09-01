@@ -20,7 +20,8 @@ WebSite/WebPage structured data derived from compile-time public configuration.
 `cargo xtask stage-web` becomes release boundary. It copies only generated
 public output, rejects localhost or placeholder configuration, promotes
 `robots.txt`, `sitemap.xml`, and `llms.txt` to root, and creates stable public
-IndexNow ownership file. Dioxus SSG always emits inline hydration bootstrap. If
+IndexNow ownership file. Same-origin social image URL is required so Open Graph
+and Twitter previews cannot silently ship blank. Dioxus SSG always emits inline hydration bootstrap. If
 generated routes contain no client event handlers, staging removes bootstrap,
 module loader, and unused runtime. If any route is interactive, staging moves
 inline executable scripts into content-addressed same-origin assets so CSP can
@@ -32,9 +33,15 @@ endpoint. Search Console ownership, sitemap submission, URL inspection,
 PageSpeed, and CrUX remain explicit launch checks. CrUX absence is unknown field
 evidence, never failure or fabricated pass.
 
+`cargo xtask stage-app` applies same production-identity rule to authenticated
+CSR bundle. Product name, website origin, and API origin must be compiled into
+WASM; localhost rejects staging. App brand links to public website, dashboard
+keeps separate internal link, inline bootstrap scripts are externalised, and
+app stays `noindex,nofollow,noarchive`.
+
 ## Deployment and failure behaviour
 
-Pinned Nginx image serves ignored staged bundle with immutable asset caching,
+Pinned Nginx image serves ignored staged bundle with one-year asset caching,
 no-cache HTML, UTF-8, privacy-minimised logs, HSTS, restrictive permissions,
 frame denial, and CSP. Fly configuration remains template because app names and
 owner organisation belong to each bet.
@@ -61,10 +68,16 @@ customer evidence.
 
 - `apps/web/src/main.rs`
 - `apps/web/index.html`
-- `apps/web/assets/seo/`
+- `apps/web/assets/favicon.svg`
+- `apps/app/src/lib.rs`
+- `apps/app/src/views.rs`
+- `apps/app/assets/favicon.svg`
 - `tooling/xtask/src/main.rs`
 - `deploy/nginx.static.conf`
+- `deploy/nginx.spa.conf`
 - `deploy/static.Dockerfile`
 - `deploy/fly.web.toml.example`
+- `deploy/fly.app.toml.example`
 - `docs/DISCOVERY_RELEASE.md`
+- `docs/APP_RELEASE.md`
 - `docs/architecture/001-rust-v2-allsource-foundation.md`
