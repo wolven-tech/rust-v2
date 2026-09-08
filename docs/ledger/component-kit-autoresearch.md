@@ -171,5 +171,19 @@ Deliberate choices worth keeping:
   condition (2 consecutive discards) unmet. Cheapest remaining candidates: `wasm-opt`, trimming
   `dioxus` features further, and auditing what actually dominates the 423 KB — no size profiler
   (`twiggy`, `cargo-bloat`) was ever run, so the composition of the bundle is still unknown.
+
+## Product-shell extension — 9 September 2026
+
+Later Logo Handoff Card UK evidence justified four new shared patterns:
+`ProductHeader`, `NavigationRail`, `ProcessRail`, and `PageEntrance`. They live
+in additive `rv2_ui::product_shell`; shared styling lives in
+`assets/product-shell.css`. Starter website and app both consume header; About
+page exercises navigation and process rails. Product copy, legal identity,
+route enums, and illustration remain outside kit. Legacy internal `NavBar` was
+removed after all starter uses migrated.
+
+This extension does not rewrite original frozen corpus or scalar. Its checks
+are recorded in `docs/plans/2026-09-09-product-shell-patterns-design.md` and
+`docs/design-system/product-shell.md`.
 - **Dark mode is absent**, matching the audited page. Adding it later means touching every colour
   class in the kit.

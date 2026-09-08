@@ -14,6 +14,10 @@
 @source "../src";
 @source "../../../crates/rv2-ui/src";
 
+/* Stable product navigation, process, and editorial-index patterns. Product
+ * repos theme semantic --rv2-shell-* hooks instead of copying component CSS. */
+@import "../../../crates/rv2-ui/assets/product-shell.css";
+
 /* Motion primitives for `rv2_ui::motion` — keyframes and easing tokens.
  * Imported rather than duplicated: Tailwind runs once per app, so both need it
  * in their graph, and one copy is the only way they cannot drift. */

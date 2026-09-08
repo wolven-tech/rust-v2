@@ -27,8 +27,9 @@ use dioxus::prelude::*;
 use rv2_ui::{
     ArrowLink, Blob, Container, Crumple, Divider, Eyebrow, Fact, FactList, Faq, FeatureCard, Foil,
     Footer, FooterColumn, Fur, GradientBuilder, Grid, Heading, HeadingSize, Hero, Hologram,
-    LinkButton, Mood, NavBar, NavItem, PricingCard, PullCord, QandA, Section, Size, Space, Step,
-    StepList, Text, Tone, Vacuum, Width,
+    LinkButton, Mood, NavItem, NavigationRail, PageEntrance, PricingCard, ProcessRail, ProcessStep,
+    ProductHeader, ProductHeaderAction, ProductNavItem, PullCord, QandA, Section, Size, Space,
+    Step, StepList, Text, Tone, Vacuum, Width,
 };
 
 const TAILWIND: Asset = asset!("/assets/tailwind.css");
@@ -157,22 +158,21 @@ fn DiscoveryHead(title: String, description: String, path: &'static str) -> Elem
 }
 
 #[component]
-fn Shell(children: Element) -> Element {
+fn Shell(current: &'static str, children: Element) -> Element {
     rsx! {
         div { class: "min-h-screen bg-white text-slate-900",
-            NavBar {
+            ProductHeader {
                 brand: PUBLIC_PRODUCT_NAME,
+                brand_subtitle: "Rust product foundation",
                 items: vec![
-                    NavItem::new("How it works", "/#how-it-works"),
-                    NavItem::new("Pricing", "/#pricing"),
-                    NavItem::new("Motion", "/motion"),
-                    NavItem::new("About", "/about"),
+                    ProductNavItem::new("home", "Home", "/"),
+                    ProductNavItem::new("motion", "Motion", "/motion"),
+                    ProductNavItem::new("about", "About", "/about"),
                 ],
-                action: rsx! {
-                    LinkButton { href: PUBLIC_APP_URL, "Open app" }
-                },
+                current: current,
+                action: ProductHeaderAction::new("Open app", PUBLIC_APP_URL),
             }
-            main { {children} }
+            main { PageEntrance { {children} } }
             Footer {
                 columns: vec![
                     FooterColumn::new(
@@ -211,7 +211,7 @@ fn Home() -> Element {
             description: PUBLIC_PRODUCT_SUMMARY.to_string(),
             path: "/",
         }
-        Shell {
+        Shell { current: "home",
             Section { space: Space::Loose,
                 Container {
                     Hero {
@@ -388,7 +388,7 @@ fn Motion() -> Element {
             description: "Interactive Dioxus motion components used to verify starter rendering, input behaviour, and reduced-motion support.".to_string(),
             path: "/motion",
         }
-        Shell {
+        Shell { current: "motion",
             Section {
                 Container { width: Width::Prose,
                     Eyebrow { "Component kit" }
@@ -608,13 +608,58 @@ fn About() -> Element {
             description: format!("Architecture and boundaries of the {PUBLIC_PRODUCT_NAME} AllSource, Axum, and Dioxus product foundation."),
             path: "/about",
         }
-        Shell {
+        Shell { current: "about",
             Section {
                 Container { width: Width::Prose,
-                    Heading { level: 1, size: HeadingSize::Display, "About" }
-                    Text { class: "mt-4",
-                        "rust-v2 is a Cargo workspace: \
-                         an Axum API, two Dioxus frontends, and AllSource underneath."
+                    Eyebrow { "Product foundation" }
+                    Heading { level: 1, size: HeadingSize::Display, "About rust-v2" }
+                    Text { class: "mt-4", tone: Tone::Muted,
+                        "One Cargo workspace: Axum API, public Dioxus site, browser app, and \
+                         AllSource underneath. Product identity stays outside shared crates."
+                    }
+                    NavigationRail {
+                        label: "About sections",
+                        items: vec![
+                            ProductNavItem::new("foundation", "01 Foundation", "#foundation"),
+                            ProductNavItem::new("boundary", "02 Browser boundary", "#boundary"),
+                            ProductNavItem::new("release", "03 Release gate", "#release"),
+                        ],
+                    }
+                }
+            }
+            Divider {}
+            Section { id: "foundation",
+                Container { width: Width::Prose,
+                    Heading { level: 2, size: HeadingSize::Section, "Foundation" }
+                    Text { class: "mt-3", tone: Tone::Muted,
+                        "Events are immutable, read models are replayable, and one Rust type \
+                         graph crosses server and browser boundaries."
+                    }
+                }
+            }
+            Section { id: "boundary", class: "bg-slate-50",
+                Container { width: Width::Prose,
+                    Heading { level: 2, size: HeadingSize::Section, "Browser boundary" }
+                    Text { class: "mt-3", tone: Tone::Muted,
+                        "UI, domain, API types, client, and grounded AI contracts compile to \
+                         wasm32. Server-only transport remains unreachable from both apps."
+                    }
+                }
+            }
+            Section { id: "release",
+                Container {
+                    Heading { level: 2, size: HeadingSize::Section, "Release gate" }
+                    Text { class: "mt-3 mb-6", tone: Tone::Muted,
+                        "Starter release moves through explicit build, stage, and production proof."
+                    }
+                    ProcessRail {
+                        label: "Release process",
+                        steps: vec![
+                            ProcessStep::new("Build", "Compile Rust and CSS"),
+                            ProcessStep::new("Stage", "Validate product identity"),
+                            ProcessStep::new("Deploy", "Use checked-in provider config"),
+                            ProcessStep::new("Prove", "Check routes and real task"),
+                        ],
                     }
                 }
             }

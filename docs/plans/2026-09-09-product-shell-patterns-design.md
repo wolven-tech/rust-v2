@@ -46,9 +46,9 @@ cross-document transition is part of default contract.
 ## Starter migration and verification
 
 Marketing and app shells consume `ProductHeader`, proving both renderer paths.
-Marketing “how it works” consumes `ProcessRail`; About consumes
-`NavigationRail` and anchored editorial sections. Existing `NavBar` and
-`StepList` remain for compatibility and existing component coverage.
+About consumes `ProcessRail`, `NavigationRail`, and anchored editorial
+sections. `ProductHeader` replaces unused internal `NavBar`; `StepList` remains
+in its existing process-list coverage.
 
 Tests cover current-route and active-step class decisions. `cargo xtask styles`
 must regenerate committed CSS; `cargo xtask ci` must pass native and WASM

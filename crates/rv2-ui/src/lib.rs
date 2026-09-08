@@ -7,8 +7,9 @@
 //! deliberately: a component library must not decide the renderer. `apps/app`
 //! adds `web`, `apps/web` adds `fullstack`.
 //!
-//! Styling is Tailwind utility classes. `dx` has automatic Tailwind detection in
-//! 0.7, so each app owns an `assets/tailwind.css` and `dx serve` runs the build.
+//! Styling uses Tailwind utility classes plus small shared CSS contracts for
+//! motion and product-shell behaviour. Each app owns a compiled
+//! `assets/tailwind.css`; `cargo xtask styles` keeps committed output current.
 //!
 //! ## Scope
 //!
@@ -57,6 +58,7 @@ pub mod form;
 pub mod layout;
 pub mod motion;
 pub mod primitives;
+pub mod product_shell;
 pub mod site;
 pub mod typography;
 
@@ -67,8 +69,12 @@ pub use crate::motion::{
     Blob, Crumple, Foil, Fur, GradientBuilder, Hologram, Mood, PullCord, Vacuum,
 };
 pub use crate::primitives::{ArrowLink, Badge, Button, LinkButton, Size, StepMarker, Variant};
+pub use crate::product_shell::{
+    NavigationRail, PageEntrance, ProcessRail, ProcessStep, ProductHeader, ProductHeaderAction,
+    ProductNavItem,
+};
 pub use crate::site::{
-    Fact, FactList, Faq, FeatureCard, Footer, FooterColumn, Hero, NavBar, NavItem, PricingCard,
-    QandA, Step, StepList,
+    Fact, FactList, Faq, FeatureCard, Footer, FooterColumn, Hero, NavItem, PricingCard, QandA,
+    Step, StepList,
 };
 pub use crate::typography::{Eyebrow, Heading, HeadingSize, Text, Tone};

@@ -394,7 +394,7 @@ configured but absent is worse than one that is obviously not there.
 | Traces | — (rust-v1 had none) | OTLP export on `OTEL_EXPORTER_OTLP_ENDPOINT` | **Done**, opt-in. Verified against a live collector |
 | Rate limiting / KV | `packages/kv` (Upstash Redis) | `allframe`'s `KeyedRateLimiter` in `AppState` | **Done**, in-memory. A counter is deliberately not an event (§9.2) |
 | Server state / caching | `packages/react-query` | Dioxus `use_resource` | **Done** |
-| UI kit | `packages/ui` (shadcn/React) | `crates/rv2-ui` (Dioxus) | **Done** — 29 components |
+| UI kit | `packages/ui` (shadcn/React) | `crates/rv2-ui` (Dioxus) | **Done** — 39 components, including shared product shell and motion patterns |
 | Background jobs | `packages/jobs` (trigger.dev) | `crates/rv2-jobs` | **Periodic work only.** Not a durable queue — read the caveat below before adding a job |
 
 ### Analytics is off the request path, in both halves

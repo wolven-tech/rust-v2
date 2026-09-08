@@ -8,7 +8,8 @@
 use dioxus::prelude::*;
 use rv2_api_types::{CreatePostRequest, PostView, SessionView};
 use rv2_ui::{
-    Button, Card, EmptyState, ErrorBanner, PageHeader, Skeleton, TextArea, TextField, Variant,
+    Button, Card, EmptyState, ErrorBanner, PageHeader, ProductHeader, ProductNavItem, Skeleton,
+    TextArea, TextField, Variant,
 };
 use uuid::Uuid;
 
@@ -26,6 +27,12 @@ pub struct Session(pub Signal<Option<SessionView>>);
 pub fn Shell() -> Element {
     let mut session = use_signal(|| None::<SessionView>);
     use_context_provider(|| Session(session));
+    let route = use_route::<Route>();
+    let current = match route {
+        Route::Dashboard {} => "dashboard",
+        Route::Posts {} | Route::PostDetail { .. } => "posts",
+        Route::Login {} => "login",
+    };
 
     let navigator = use_navigator();
     let bootstrap = use_resource(move || async move { rv2_client::get_session().await });
@@ -44,21 +51,18 @@ pub fn Shell() -> Element {
 
     rsx! {
         div { class: "min-h-screen bg-slate-50 text-slate-900",
-            nav { class: "border-b border-slate-200 bg-white",
-                div { class: "mx-auto flex max-w-4xl items-center gap-6 px-6 py-3",
-                    a {
-                        class: "font-semibold",
-                        href: PUBLIC_SITE_URL,
-                        aria_label: "{PUBLIC_PRODUCT_NAME} website",
-                        "{PUBLIC_PRODUCT_NAME}"
-                    }
-                    Link { class: "text-sm text-slate-600", to: Route::Dashboard {}, "Dashboard" }
-                    Link { class: "text-sm text-slate-600", to: Route::Posts {}, "Posts" }
-                    div { class: "flex-1" }
-                    if let Some(current) = session.read().as_ref() {
-                        span { class: "text-sm text-slate-500", "{current.email}" }
-                    }
-                }
+            ProductHeader {
+                brand: PUBLIC_PRODUCT_NAME,
+                brand_href: PUBLIC_SITE_URL,
+                brand_subtitle: "Application",
+                items: vec![
+                    ProductNavItem::new("dashboard", "Dashboard", "/"),
+                    ProductNavItem::new("posts", "Posts", "/posts"),
+                ],
+                current,
+                tail: session.read().as_ref().map(|current| rsx! {
+                    span { "{current.email}" }
+                }),
             }
             main { class: "mx-auto max-w-4xl px-6 py-8", Outlet::<Route> {} }
         }

@@ -14,6 +14,10 @@
 @source "../src";
 @source "../../../crates/rv2-ui/src";
 
+/* Same shell contract as public site: header geometry and route semantics must
+ * not drift when a product separates website and app deployments. */
+@import "../../../crates/rv2-ui/assets/product-shell.css";
+
 
 /* `motion.rs` is the playful kit, and `apps/app` renders none of it. Without
  * this the dashboard still pays for every class those components name, because

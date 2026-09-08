@@ -1,16 +1,15 @@
 //! Marketing-site composites.
 //!
 //! Scope was set by auditing a real target page (chargewindow-web.fly.dev):
-//! nav, hero, feature-card grid, step list, pricing block, cost breakdown, FAQ,
-//! footer. That page uses no modal, tab, tooltip or carousel, so this kit has
-//! none — an unused component is a maintenance cost and bundle weight with no
-//! offsetting benefit. Add them when a page actually needs them.
+//! hero, feature-card grid, step list, pricing block, cost breakdown, FAQ, and
+//! footer. Stable responsive navigation now lives in [`crate::product_shell`].
+//! This module has no modal, tab, tooltip or carousel because no page needs one.
 
 use dioxus::prelude::*;
 
 use crate::primitives::StepMarker;
 
-/// One entry in a [`NavBar`] or [`Footer`] column.
+/// One entry in a [`Footer`] column.
 #[derive(Debug, Clone, PartialEq)]
 pub struct NavItem {
     pub label: String,
@@ -33,47 +32,6 @@ impl NavItem {
             label: label.into(),
             href: href.into(),
             external: true,
-        }
-    }
-}
-
-/// Site header: brand, links, and a call-to-action slot.
-///
-/// The nav is wrapped in `<nav aria-label>` so a screen-reader user can jump
-/// to it, and the link list is a real `<ul>` — assistive technology announces
-/// "list, 3 items", which a row of bare `<a>`s does not.
-#[component]
-pub fn NavBar(
-    brand: String,
-    #[props(default = "/".to_string())] brand_href: String,
-    #[props(default)] items: Vec<NavItem>,
-    /// Trailing call-to-action, e.g. a `LinkButton`.
-    #[props(default)]
-    action: Option<Element>,
-) -> Element {
-    rsx! {
-        header { class: "border-b border-slate-200 bg-white",
-            div { class: "mx-auto flex max-w-5xl items-center justify-between gap-6 px-6 py-4",
-                a { class: "text-sm font-semibold tracking-tight text-slate-900", href: "{brand_href}", "{brand}" }
-                nav { "aria-label": "Main",
-                    ul { class: "flex flex-wrap items-center gap-6",
-                        for item in items.iter() {
-                            li {
-                                a {
-                                    class: "text-sm text-slate-600 hover:text-slate-900",
-                                    href: "{item.href}",
-                                    target: item.external.then_some("_blank"),
-                                    rel: item.external.then_some("noopener noreferrer"),
-                                    "{item.label}"
-                                }
-                            }
-                        }
-                    }
-                }
-                if let Some(action) = action {
-                    div { {action} }
-                }
-            }
         }
     }
 }
