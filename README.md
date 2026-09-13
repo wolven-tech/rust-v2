@@ -17,6 +17,10 @@ only records *what*.
 New here? [`AGENTS.md`](AGENTS.md) is the short orientation — what this is, the
 one command, and the four things most likely to catch you out.
 
+Placing a new product bet? [`docs/NEXT_BET_START.md`](docs/NEXT_BET_START.md)
+records the lean surface decisions, receipt trace, cost profile, and fixed
+autoresearch check used before copying this foundation.
+
 ---
 
 ## Prerequisites

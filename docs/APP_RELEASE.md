@@ -34,6 +34,12 @@ existing Fly app name and region, then deploy only through that configuration:
 fly deploy --config fly.app.toml --remote-only
 ```
 
+The example keeps zero Machines warm while idle and autostarts a suspended
+Machine on demand. App HTML and non-200 responses are `private, no-store`;
+only content-hashed assets receive long public caching. Do not configure a
+shared CDN rule for app routes. Measure first uncached navigation and the
+commitment/fulfilment path before deciding whether a warm floor is needed.
+
 ## Verify
 
 - `/`, `/login`, and each app route load without hydration, CSP, WASM, or
@@ -46,6 +52,10 @@ fly deploy --config fly.app.toml --remote-only
   CSS-pixel reflow, reduced motion, and contrast meet WCAG 2.2 AA.
 - Missing paths follow product router behaviour; static host never disguises
   missing assets as HTML.
+- App HTML, login routes, and missing responses are never shared-cached;
+  fingerprinted assets may be immutable, and security headers remain present.
+- A suspended-resume request reaches the product safely; a payment or form
+  action is not treated as complete until authoritative receipt exists.
 
 Record deployed commit, Fly release, route checks, browser console, and mobile
 reflow in bet evidence. These are readiness artifacts, not promotion evidence.

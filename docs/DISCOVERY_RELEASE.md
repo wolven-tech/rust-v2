@@ -86,14 +86,27 @@ fly deploy --config fly.web.toml --remote-only
 
 Deployment serves staged files through pinned Nginx with:
 
-- content-hashed assets cached for one year;
-- HTML revalidated instead of cached forever;
+- content-hashed assets cached for one year; unversioned assets receive a short
+  shared lifetime so a corrected 3D render cannot remain stale for a year;
+- public 200 HTML available to a guarded CDN cache for one day, with browser
+  revalidation and a documented purge on price, legal, or factual correction;
+- non-200 responses and `/health` marked `private, no-store`;
 - clean nested-route fallback, never a blanket SPA `200`;
 - privacy-minimized access logs;
 - CSP without inline scripts, framing disabled, and restrictive permissions;
   hydrated Dioxus retains required `unsafe-eval` and inline-style allowances,
   while `static` releases ship no JavaScript or WASM;
-- one warm machine for stable first-byte latency.
+- zero guaranteed warm Machines by default. Fly suspends idle Nginx and
+  autostarts on a miss; retain a warm floor only after measuring that resume
+  latency damages qualified first-value completion.
+
+The new bet must configure an edge rule for **public GET/HEAD only**. Exclude
+authorisation headers, session cookies, `/api/`, `/auth/`, `/checkout/`,
+`/webhooks/`, private app hosts, submissions, receipts, and personalised
+responses. The origin header alone does not prove a Cloudflare hit. Verify one
+uncached request and repeated `CF-Cache-Status: HIT` requests; confirm neither
+private responses nor errors enter the shared cache. If public HTML becomes
+personalised, replace its shared-cache policy before deployment.
 
 Deploy only through existing Fly.io configuration after product repository has
 its own app and domains.
@@ -114,6 +127,10 @@ Required checks:
 
 - root, each sitemap route, discovery files, CSS, JS, and WASM return expected
   status and content type;
+- cache headers distinguish public HTML, fingerprinted assets, unversioned
+  assets, health, and missing routes; security headers remain on each;
+- a public edge hit avoids origin wake-up, and an uncached suspended-resume
+  request still reaches the first-value route within the bet's measured limit;
 - canonical, Open Graph, description, WebSite, and WebPage metadata use public
   domain;
 - Open Graph image returns `200`, uses a social-crawler-compatible raster

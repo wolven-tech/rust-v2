@@ -68,6 +68,10 @@ boundaries (`AI1`–`AI5`). Code comments cite these identifiers. **If you
 overturn a decision, edit the decision** — a code change that silently
 contradicts one leaves two sources of truth.
 
+`docs/NEXT_BET_START.md` is the placement handoff: choose active versus parked
+surfaces, specify the authoritative success/failure trace, keep idle static
+hosts low-cost, and prove bespoke 3D assets before a new bet calls itself ready.
+
 Also:
 
 - `docs/review/001-bootstrap-readiness.md` — an outside review of this repo as a
