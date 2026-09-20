@@ -99,6 +99,13 @@ tera = "2.1.1"
 # `rv2-ui` needs the renderer-agnostic `lib` set; the apps add `web` /
 # `fullstack` and re-enable what they need.
 dioxus = { version = "0.7.10", default-features = false }
+# The STANDALONE renderer, not `dioxus`'s own `ssr` feature, and the difference
+# is not cosmetic. Cargo unifies a dependency's features across every workspace
+# member built together, so switching `dioxus/ssr` on for one crate's tests
+# switched it on everywhere — and that turned `dioxus::server` off, breaking
+# `apps/web`'s SSG entry point with `cannot find 'server' in 'dioxus'`. Taking
+# the renderer as its own crate touches no `dioxus` feature at all.
+dioxus-ssr = { version = "0.7.10", default-features = false }
 gloo-net = { version = "0.7", default-features = false, features = [
   "http",
   "json",

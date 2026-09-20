@@ -93,7 +93,7 @@ const CROSS_FUNCTION: &[&str] = &[
 ];
 
 /// One reader's answers. Every field empty means the axis is off.
-#[derive(Serialize, Deserialize, Clone, Default, Debug)]
+#[derive(Serialize, Deserialize, Clone, Default, Debug, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct LitmusFilter {
     pub levels: Vec<LevelBand>,

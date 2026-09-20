@@ -265,7 +265,7 @@ fn wasm_boundary() -> Fallible {
     // only on the app, so the nested loop this replaced ran the same two
     // commands five times each — ten resolutions for two distinct answers, on
     // every CI run and every local gate.
-    for wasm_app in ["app", "web"] {
+    for wasm_app in ["app", "web", "hiring"] {
         let tree = Command::new("cargo")
             .args([
                 "tree",

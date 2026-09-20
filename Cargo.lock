@@ -2530,6 +2530,7 @@ name = "hiring"
 version = "0.1.0"
 dependencies = [
  "dioxus",
+ "dioxus-ssr",
  "rv2-hiring",
  "rv2-ui",
  "serde_json",

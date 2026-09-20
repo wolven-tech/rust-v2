@@ -33,6 +33,17 @@ rv2-ui.workspace = true
 serde_json.workspace = true
 web-sys = { workspace = true, features = ["Location", "Storage", "Url"] }
 
+[dev-dependencies]
+# Renders the component tree to a string on the host, so a test can assert the
+# page actually produced its controls. AGENTS.md records why this earns its
+# place: the login screen shipped unable to submit anything while every test
+# stayed green, because nothing in the suite ever rendered a view. Dev-only, so
+# it is absent from the wasm32 build entirely.
+#
+# The standalone crate rather than `dioxus`'s `ssr` feature — see the note in
+# the workspace manifest. The feature route breaks `apps/web`.
+dioxus-ssr.workspace = true
+
 [package.metadata.cargo-machete]
 # `web-sys` is used for the URL hash that keeps every filter in the address bar,
 # through features cargo-machete cannot see from the source alone.

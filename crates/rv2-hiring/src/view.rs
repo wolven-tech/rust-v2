@@ -113,7 +113,7 @@ fn group_rank(key: &str) -> usize {
 }
 
 /// Everything the reader has switched on.
-#[derive(Serialize, Deserialize, Clone, Default, Debug)]
+#[derive(Serialize, Deserialize, Clone, Default, Debug, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct Filters {
     pub q: String,
