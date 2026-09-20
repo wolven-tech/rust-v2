@@ -615,6 +615,9 @@ fn RoleLine(role: Role, show_evidence: bool) -> Element {
                     Badge { "{m.strength.label()}" }
                     Badge { "{m.level.label()}" }
                 }
+                if !role.applied_on.is_empty() {
+                    Badge { class: "bg-takeable-soft text-takeable-ink", "Applied {role.applied_on}" }
+                }
             }
             if !role.work_pattern_note.is_empty() {
                 p { class: "mt-1 text-[0.6875rem] leading-snug text-ink-muted",

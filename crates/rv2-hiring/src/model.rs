@@ -517,6 +517,13 @@ pub struct Role {
     pub engagement_note: String,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub mandate: Option<Mandate>,
+    /// When this role was applied to, if it was.
+    ///
+    /// A role that has been applied to is a different state from one merely
+    /// listed, and the register is the only place that survives the session
+    /// where the decision was made.
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub applied_on: String,
 }
 
 impl Role {
@@ -660,6 +667,7 @@ mod tests {
             engagement: Engagement::Unknown,
             engagement_note: String::new(),
             mandate: None,
+            applied_on: String::new(),
         };
         r.classify(
             "A newly formed unit. You will bridge applied research and production MVPs and \

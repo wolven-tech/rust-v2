@@ -10,7 +10,7 @@
 //! disagree with it.
 
 use dioxus::prelude::*;
-use rv2_hiring::litmus::{Challenge, Situation, Timing};
+use rv2_hiring::litmus::{Axis, Challenge, Situation, Timing};
 use rv2_hiring::mandate::LevelBand;
 use rv2_hiring::model::{MarketReach, OrgScale};
 use rv2_hiring::view::{self, FACET_PREVIEW, group_colour};
@@ -162,15 +162,6 @@ const CHALLENGES: &[(Challenge, &str)] = &[
     ),
 ];
 
-/// What each derived axis reduces to, shown beside its legend so nobody has to
-/// read the source to find out what "Immediately" filters on.
-const SITUATION_BASIS: &str = "Chooses which title bands are worth showing.";
-const TIMING_BASIS: &str = "Reduces to whether there is a route to apply today.";
-const CHALLENGE_BASIS: &str = "Arranges the list around the obstacle you named.";
-const SCALE_BASIS: &str = "Derived from recorded headcount and listing, not from revenue.";
-const MARKET_BASIS: &str =
-    "Derived from the exchange a company is listed on and where its roles are.";
-
 #[component]
 fn Litmus(page: Page) -> Element {
     let filters = page.filters.read().clone();
@@ -179,62 +170,74 @@ fn Litmus(page: Page) -> Element {
     rsx! {
         FieldSet {
             legend: "Litmus Submission",
-            note: "The eight questions from the 9-to-6 questionnaire. Four read the register directly; four are derived, and each says from what.",
+            note: "Your questionnaire answers, as filters. Each one says whether it reads the register directly or was derived, and from what.",
             active,
-
-            Axis { title: "What level of role are you considering?", basis: "Read from the role's title.",
-                for (band , label) in LEVELS.iter().copied() {
-                    LevelBox { band, label, page }
-                }
-            }
-            Axis { title: "Which markets are you positioning yourself in?", basis: MARKET_BASIS,
-                for (reach , label) in MARKETS.iter().copied() {
-                    MarketBox { reach, label, page }
-                }
-            }
-            Axis { title: "What is the typical scale of the organisations you are targeting?", basis: SCALE_BASIS,
-                for (scale , label) in SCALES.iter().copied() {
-                    ScaleBox { scale, label, page }
-                }
-            }
-            Axis { title: "Which of the following best describes your current situation?", basis: SITUATION_BASIS,
-                for (situation , label) in SITUATIONS.iter().copied() {
-                    SituationBox { situation, label, page }
-                }
-            }
-            Axis { title: "How soon are you looking to make a move?", basis: TIMING_BASIS,
-                for (timing , label) in TIMINGS.iter().copied() {
-                    TimingBox { timing, label, page }
-                }
-            }
-            Axis { title: "What is the main challenge you're facing?", basis: CHALLENGE_BASIS,
-                for (challenge , label) in CHALLENGES.iter().copied() {
-                    ChallengeBox { challenge, label, page }
-                }
-            }
-            FreeText {
-                title: "Which countries are you focused on?",
-                basis: "Matched against each role's location.",
-                page,
-                countries: true,
-            }
-            FreeText {
-                title: "Which industries are relevant to your background?",
-                basis: "Matched against each company's sector.",
-                page,
-                countries: false,
+            for axis in Axis::ALL {
+                AxisBlock { key: "{axis:?}", axis, page }
             }
         }
     }
 }
 
+/// One question, the provenance of its answer, and its controls.
+///
+/// Driven off `Axis::ALL` rather than written out eight times, so the questions
+/// and the controls cannot drift apart: a ninth question fails to compile until
+/// this match handles it, and the group's note never claims a count that has
+/// stopped being true.
+///
+/// The basis line is required by the type — `Basis::Derived` has no form
+/// without a `from` — so an axis cannot render a derivation it refuses to
+/// explain. Derived answers are tinted, because a reader deciding whether to
+/// trust "Global corporates" needs to see at a glance that nobody recorded it.
 #[component]
-fn Axis(title: String, basis: String, children: Element) -> Element {
+fn AxisBlock(axis: Axis, page: Page) -> Element {
+    let basis = axis.basis();
     rsx! {
         div { class: "pt-2",
-            p { class: "text-xs font-medium text-ink", "{title}" }
-            p { class: "pb-1 text-[0.6875rem] leading-snug text-ink-muted", "{basis}" }
-            {children}
+            p { class: "text-xs font-medium text-ink", "{axis.title()}" }
+            p {
+                class: if basis.is_derived() { "pb-1 text-[0.6875rem] leading-snug text-caution-ink" } else { "pb-1 text-[0.6875rem] leading-snug text-ink-muted" },
+                "{basis.label()}"
+            }
+            match axis {
+                Axis::Level => rsx! {
+                    for (band , label) in LEVELS.iter().copied() {
+                        LevelBox { key: "{label}", band, label, page }
+                    }
+                },
+                Axis::Markets => rsx! {
+                    for (reach , label) in MARKETS.iter().copied() {
+                        MarketBox { key: "{label}", reach, label, page }
+                    }
+                },
+                Axis::Scale => rsx! {
+                    for (scale , label) in SCALES.iter().copied() {
+                        ScaleBox { key: "{label}", scale, label, page }
+                    }
+                },
+                Axis::Situation => rsx! {
+                    for (situation , label) in SITUATIONS.iter().copied() {
+                        SituationBox { key: "{label}", situation, label, page }
+                    }
+                },
+                Axis::Timing => rsx! {
+                    for (timing , label) in TIMINGS.iter().copied() {
+                        TimingBox { key: "{label}", timing, label, page }
+                    }
+                },
+                Axis::Challenge => rsx! {
+                    for (challenge , label) in CHALLENGES.iter().copied() {
+                        ChallengeBox { key: "{label}", challenge, label, page }
+                    }
+                },
+                Axis::Countries => rsx! {
+                    FreeText { page, countries: true }
+                },
+                Axis::Industries => rsx! {
+                    FreeText { page, countries: false }
+                },
+            }
         }
     }
 }
@@ -275,7 +278,7 @@ axis_box!(ChallengeBox, Challenge, challenge, challenges);
 /// The two free-text axes. Comma-separated, because the questionnaire asks for
 /// a list and a reader writing "UK, Ireland" means two countries.
 #[component]
-fn FreeText(title: String, basis: String, page: Page, countries: bool) -> Element {
+fn FreeText(page: Page, countries: bool) -> Element {
     let filters = page.filters.read().clone();
     let value = if countries {
         filters.litmus.countries.join(", ")
@@ -285,9 +288,7 @@ fn FreeText(title: String, basis: String, page: Page, countries: bool) -> Elemen
     let mut f = page.filters;
 
     rsx! {
-        div { class: "pt-2",
-            p { class: "text-xs font-medium text-ink", "{title}" }
-            p { class: "pb-1 text-[0.6875rem] leading-snug text-ink-muted", "{basis}" }
+        div {
             input {
                 r#type: "text",
                 value: "{value}",

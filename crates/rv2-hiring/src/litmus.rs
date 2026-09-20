@@ -504,3 +504,220 @@ mod tests {
         assert_eq!(f.active_axes(), 8);
     }
 }
+
+/// Where an axis gets its answer.
+///
+/// Both variants carry a source, and that symmetry is the whole point. You
+/// cannot write `Basis::Derived {}` — the compiler demands `from` — so a
+/// derived control that does not say what it was derived from will not build.
+/// Nor can a recorded one claim a derivation it does not have.
+///
+/// The same shape as `RemoteState<T>` in the UI rules: make the honest thing
+/// the only expressible thing, rather than a convention the next author has to
+/// remember. Provenance written into prose rots the moment someone changes the
+/// derivation and not the sentence.
+#[derive(Clone, Copy, PartialEq, Eq, Debug)]
+pub enum Basis {
+    /// Reads a field the register stores, named here as a reader would say it.
+    Recorded { field: &'static str },
+    /// Computed from something else, which this names.
+    ///
+    /// "Global corporates" came from a headcount band, not from revenue. A
+    /// reader who cannot see that cannot disagree with it.
+    Derived { from: &'static str },
+}
+
+impl Basis {
+    /// The sentence shown under the axis.
+    #[must_use]
+    pub fn label(self) -> String {
+        match self {
+            Self::Recorded { field } => format!("Reads {field}."),
+            Self::Derived { from } => format!("Derived from {from}."),
+        }
+    }
+
+    #[must_use]
+    pub fn is_derived(self) -> bool {
+        matches!(self, Self::Derived { .. })
+    }
+
+    /// What this axis reads, either way.
+    #[must_use]
+    pub fn source(self) -> &'static str {
+        match self {
+            Self::Recorded { field } => field,
+            Self::Derived { from } => from,
+        }
+    }
+}
+
+/// The eight questions the questionnaire asks, as filter axes.
+///
+/// One table rather than eight hand-written blocks, so the group's own summary
+/// counts itself. A sentence reading "the eight questions — four read the
+/// register directly, four are derived" is true the day it is typed and wrong
+/// the day an axis changes, and nobody re-reads prose to check.
+#[derive(Clone, Copy, PartialEq, Eq, Debug)]
+pub enum Axis {
+    Level,
+    Markets,
+    Scale,
+    Situation,
+    Timing,
+    Challenge,
+    Countries,
+    Industries,
+}
+
+impl Axis {
+    pub const ALL: [Self; 8] = [
+        Self::Level,
+        Self::Markets,
+        Self::Scale,
+        Self::Situation,
+        Self::Timing,
+        Self::Challenge,
+        Self::Countries,
+        Self::Industries,
+    ];
+
+    /// The question, as the questionnaire words it.
+    #[must_use]
+    pub fn title(self) -> &'static str {
+        match self {
+            Self::Level => "What level of role are you considering?",
+            Self::Markets => "Which markets are you positioning yourself in?",
+            Self::Scale => "What is the typical scale of the organisations you are targeting?",
+            Self::Situation => "Which of the following best describes your current situation?",
+            Self::Timing => "How soon are you looking to make a move?",
+            Self::Challenge => "What is the main challenge you're facing?",
+            Self::Countries => "Which countries are you focused on?",
+            Self::Industries => "Which industries are relevant to your background?",
+        }
+    }
+
+    /// Where this axis gets its answer. Required, so no axis can render without
+    /// declaring one.
+    #[must_use]
+    pub fn basis(self) -> Basis {
+        match self {
+            Self::Level => Basis::Recorded {
+                field: "the role's title",
+            },
+            Self::Countries => Basis::Recorded {
+                field: "each role's location",
+            },
+            Self::Industries => Basis::Recorded {
+                field: "each company's sector",
+            },
+            Self::Markets => Basis::Derived {
+                from: "the exchange a company is listed on and where its roles are",
+            },
+            Self::Scale => Basis::Derived {
+                from: "recorded headcount and listing, not from revenue",
+            },
+            Self::Situation => Basis::Derived {
+                from: "which title bands are worth showing you",
+            },
+            Self::Timing => Basis::Derived {
+                from: "whether there is a route to apply today",
+            },
+            Self::Challenge => Basis::Derived {
+                from: "the obstacle you named, which decides how the list is arranged",
+            },
+        }
+    }
+
+    /// Whether this axis takes free text rather than a fixed set of options.
+    #[must_use]
+    pub fn is_free_text(self) -> bool {
+        matches!(self, Self::Countries | Self::Industries)
+    }
+}
+
+#[cfg(test)]
+mod basis_tests {
+    use super::{Axis, Basis};
+
+    #[test]
+    fn every_axis_declares_where_its_answer_comes_from() {
+        for axis in Axis::ALL {
+            let source = match axis.basis() {
+                Basis::Recorded { field } => field,
+                Basis::Derived { from } => from,
+            };
+            assert!(
+                !source.trim().is_empty(),
+                "{axis:?} declares a basis with no source"
+            );
+        }
+    }
+
+    #[test]
+    fn a_derived_axis_says_what_it_was_derived_from() {
+        for axis in Axis::ALL {
+            if let Basis::Derived { from } = axis.basis() {
+                assert!(
+                    from.split_whitespace().count() >= 3,
+                    "{axis:?} is derived but its source is too terse to argue with: {from:?}"
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn the_scale_axis_admits_it_came_from_headcount_rather_than_revenue() {
+        let Basis::Derived { from } = Axis::Scale.basis() else {
+            panic!("organisation scale is derived, not recorded");
+        };
+        assert!(
+            from.contains("not from revenue"),
+            "the question asks in euros of revenue and the register holds headcount; \
+             the axis must say so"
+        );
+    }
+
+    #[test]
+    fn the_questionnaires_eight_questions_are_all_present() {
+        assert_eq!(Axis::ALL.len(), 8);
+        let titles: Vec<&str> = Axis::ALL.iter().map(|a| a.title()).collect();
+        assert!(
+            titles.iter().all(|t| t.ends_with('?')),
+            "every axis is a question"
+        );
+        let mut sorted = titles.clone();
+        sorted.sort_unstable();
+        sorted.dedup();
+        assert_eq!(sorted.len(), titles.len(), "two axes share a question");
+    }
+
+    #[test]
+    fn a_label_reads_as_a_sentence_either_way() {
+        assert_eq!(
+            Basis::Recorded {
+                field: "the role's title"
+            }
+            .label(),
+            "Reads the role's title."
+        );
+        assert_eq!(
+            Basis::Derived {
+                from: "recorded headcount"
+            }
+            .label(),
+            "Derived from recorded headcount."
+        );
+    }
+
+    #[test]
+    fn the_split_between_recorded_and_derived_is_counted_not_claimed() {
+        let derived = Axis::ALL.iter().filter(|a| a.basis().is_derived()).count();
+        let recorded = Axis::ALL.len() - derived;
+        assert_eq!(derived + recorded, Axis::ALL.len());
+        assert!(
+            derived > 0 && recorded > 0,
+            "the group's note describes both kinds"
+        );
+    }
+}

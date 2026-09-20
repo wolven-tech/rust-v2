@@ -2024,7 +2024,7 @@
       "rust": true,
       "rustDepth": "adjacent",
       "rustDepthCheckedOn": "2026-09-17",
-      "rustDepthNote": "Rust appears once, in a list: “strong programming skills in Go, Python, C++, Rust, or a comparable language”. The Model Deployment role is platform and infrastructure work — deployment orchestration, config management, capacity planning for the GPU fleet. Explicitly says GPU or low-level hardware experience is not needed. £194K–£280K, London office three days a week.",
+      "rustDepthNote": "Rust appears once, in a list: \u201cstrong programming skills in Go, Python, C++, Rust, or a comparable language\u201d. The Model Deployment role is platform and infrastructure work \u2014 deployment orchestration, config management, capacity planning for the GPU fleet. Explicitly says GPU or low-level hardware experience is not needed. \u00a3194K\u2013\u00a3280K, London office three days a week.",
       "sector": "AI and developer infrastructure",
       "techStackNote": "Model deployment and inference infrastructure; Rust appears in parts of the stack, including the Codex CLI.",
       "ukLocations": "London"
@@ -2200,7 +2200,7 @@
       "rust": true,
       "rustDepth": "mixed",
       "rustDepthCheckedOn": "2026-09-17",
-      "rustDepthNote": "Stack described as “a mix of Rust and Python, with Python mainly used in the ML-heavy sections”, so Rust is the systems language. Staff role architects backend systems for edge hardware and expects the holder to run “topical office hours (e.g. on Rust)”. A separate Software Engineer, Rust opening also exists.",
+      "rustDepthNote": "Stack described as \u201ca mix of Rust and Python, with Python mainly used in the ML-heavy sections\u201d, so Rust is the systems language. Staff role architects backend systems for edge hardware and expects the holder to run \u201ctopical office hours (e.g. on Rust)\u201d. A separate Software Engineer, Rust opening also exists.",
       "sector": "Defence tech",
       "techStackNote": "Defence AI; Rust across its systems and edge software.",
       "ukLocations": "London"
@@ -2394,7 +2394,7 @@
       "rust": true,
       "rustDepth": "first",
       "rustDepthCheckedOn": "2026-09-17",
-      "rustDepthNote": "Job titled Senior Rust Engineer (Foundation): “Lead the design and development of Rust libraries shared across web and mobile.” Requires “strong expertise in Rust language features, concurrency, and ownership model”. Bonus points for DDD, WebAssembly and cryptography concepts. Four separate London Rust roles open (Foundation, Payments, Drive, Account).",
+      "rustDepthNote": "Job titled Senior Rust Engineer (Foundation): \u201cLead the design and development of Rust libraries shared across web and mobile.\u201d Requires \u201cstrong expertise in Rust language features, concurrency, and ownership model\u201d. Bonus points for DDD, WebAssembly and cryptography concepts. Four separate London Rust roles open (Foundation, Payments, Drive, Account).",
       "sector": "Cybersecurity and identity",
       "techStackNote": "Privacy products; Rust in cryptography and shared client libraries.",
       "ukLocations": "London"
@@ -2800,7 +2800,7 @@
       "mark": "CAL",
       "rustDepth": "secondary",
       "rustDepthCheckedOn": "2026-09-17",
-      "rustDepthNote": "“Deep Python expertise plus proficiency in a systems language such as Rust, C++, or Go” — Rust is the secondary requirement. Wants contributions to Ray, Temporal, Kafka, Erlang/BEAM, PyTorch or JAX, and experience building production runtimes, workflow engines or orchestration platforms. £101k–£192k, fully in person in London.",
+      "rustDepthNote": "\u201cDeep Python expertise plus proficiency in a systems language such as Rust, C++, or Go\u201d \u2014 Rust is the secondary requirement. Wants contributions to Ray, Temporal, Kafka, Erlang/BEAM, PyTorch or JAX, and experience building production runtimes, workflow engines or orchestration platforms. \u00a3101k\u2013\u00a3192k, fully in person in London.",
       "sector": "AI and developer infrastructure",
       "techStackNote": "Agent runtime and systems roles, seen in your LinkedIn search.",
       "ukLocations": "London"
@@ -4395,7 +4395,8 @@
               ],
               "level": "head-lead",
               "strength": "strong"
-            }
+            },
+            "appliedOn": "2026-09-20"
           },
           {
             "title": "Lead Integration Architect",

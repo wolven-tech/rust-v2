@@ -321,3 +321,38 @@ fn the_sort_control_offers_every_order_including_rust_depth() {
         assert!(html.contains(label), "sort lost the {label} option");
     }
 }
+
+#[test]
+fn every_axis_renders_the_provenance_its_type_forced_it_to_declare() {
+    // Entities decoded first, so the test pins the sentence rather than
+    // whichever characters happened not to need escaping.
+    let html = render_with(Filters::default(), Part::Rail).replace("&#39;", "'");
+    for axis in rv2_hiring::litmus::Axis::ALL {
+        let label = axis.basis().label();
+        assert!(
+            html.contains(&label),
+            "{axis:?} declares {label:?} and the rail does not show it"
+        );
+    }
+}
+
+#[test]
+fn the_litmus_note_states_the_contract_without_a_count_that_can_go_stale() {
+    let html = render_with(Filters::default(), Part::Rail);
+    assert!(html.contains("reads the register directly or was derived"));
+    for stale in ["eight questions", "Four read", "four are derived"] {
+        assert!(
+            !html.contains(stale),
+            "the group note hardcodes {stale:?}, which stops being true when an axis changes"
+        );
+    }
+}
+
+#[test]
+fn a_role_that_was_applied_to_says_so_on_the_page() {
+    let html = render_with(Filters::default(), Part::Results);
+    assert!(
+        html.contains("Applied 2026-09-20"),
+        "the Head of AI application is recorded in the register but not shown"
+    );
+}
