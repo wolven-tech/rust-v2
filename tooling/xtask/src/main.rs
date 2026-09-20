@@ -245,6 +245,10 @@ fn wasm_boundary() -> Fallible {
             "app",
             "-p",
             "web",
+            "-p",
+            "rv2-hiring",
+            "-p",
+            "hiring",
         ],
     )?;
 

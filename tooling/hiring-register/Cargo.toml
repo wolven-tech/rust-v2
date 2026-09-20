@@ -1,0 +1,22 @@
+[package]
+name = "hiring-register"
+description = "Keeps crates/rv2-hiring/data/companies.json current: reads job boards, checks careers links, and writes each role's classification. Server-side, never on the wasm path."
+edition.workspace = true
+license.workspace = true
+version.workspace = true
+# Never published: internal workspace crate. Also what makes cargo-deny's
+# `allow-wildcard-paths` apply — it is skipped for publishable crates.
+publish = false
+
+[[bin]]
+name = "hiring-register"
+path = "src/main.rs"
+
+[dependencies]
+# `default-features = false` plus an explicit `rustls`: reqwest 0.13 renamed
+# the feature from `rustls-tls`, and deny.toml bans native-tls and openssl-sys.
+reqwest.workspace = true
+rv2-hiring.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+tokio.workspace = true

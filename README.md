@@ -6,8 +6,10 @@ One datastore, one language, no TypeScript in the data path.
 - `apps/api` — Axum HTTP API. The only server process.
 - `apps/app` — Dioxus CSR SPA, the authenticated dashboard.
 - `apps/web` — Dioxus marketing site, built SSG.
-- `crates/` — the shared crate graph (events, domain, grounded generative-AI contracts, DTOs, UI kit, client, AllSource integration, analytics, email, jobs).
+- `apps/hiring` — Dioxus CSR page over the UK tech hiring register. File-backed: the register is compiled in, so there is no API behind it.
+- `crates/` — the shared crate graph (events, domain, grounded generative-AI contracts, DTOs, UI kit, client, AllSource integration, analytics, email, jobs, hiring register).
 - `tooling/xtask` — the gate: `cargo xtask ci`, and the Tailwind compile.
+- `tooling/hiring-register` — reads job boards, checks careers links, and writes each role's work pattern, engagement and mandate into the register.
 
 The design and every decision behind it live in
 [`docs/architecture/001-rust-v2-allsource-foundation.md`](docs/architecture/001-rust-v2-allsource-foundation.md).
@@ -141,6 +143,7 @@ gone stale.
 | `apps/api` | 4400 |
 | `apps/web` | 4401 |
 | `apps/app` | 4402 |
+| `apps/hiring` | 4403 |
 
 Ports 4400–4402 preserve rust-v1's allocation, so existing `.env` files and
 bookmarks carry over.

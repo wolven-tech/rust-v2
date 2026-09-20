@@ -8,6 +8,43 @@ Nothing here is released yet — the workspace is at `0.1.0` and every crate is
 
 ## [Unreleased]
 
+### Added — the UK tech hiring register
+
+- **`crates/rv2-hiring`**, WASM-safe and file-backed, holding what a role is.
+  Three classifiers, because three questions decide whether a role is worth an
+  application and a job title answers none of them:
+  - **Work pattern**, against a ceiling of 25% in-office. Cadence is part of the
+    judgement: "2 days a week" is 40% and fails, "2 days a month" is 9% and
+    passes. A bare "hybrid" with no number fails and records that the number was
+    missing, which is the usual way a three-day office week goes unsaid.
+  - **Engagement**, permanent against B2B. A title never states an IR35
+    determination, so this reads descriptions — and where the text is silent the
+    board it came from is the evidence. An employer applicant-tracking system
+    advertises employment; a specialist outside-IR35 board admits nothing else.
+  - **Mandate**, whether the holder builds a function and teaches. Every senior
+    posting says "mentor junior engineers", so each signal has strong phrasing
+    that counts and weak phrasing that is recorded and does not.
+- **`apps/hiring`**, a Dioxus CSR page over it. The register is compiled into
+  the binary, so there is no API, no loading state, and no failure mode where
+  the data is missing.
+- **`tooling/hiring-register`**, which reads the job boards and writes the
+  verdicts. It is the only place holding a description, which is what makes it
+  the only place that can classify properly — the page reads what it writes and
+  never recomputes.
+- **`rv2-ui` gains `Checkbox`, `Select` and `FieldSet`.** The kit had
+  `TextField` and `TextArea` and nothing else in `form`, and a filter rail is
+  about thirty checkboxes. `Checkbox` carries an option's match count, because a
+  facet with no count makes the reader click it to discover it matches nothing.
+
+### Fixed — the predecessor-stack check could fail unactionably
+
+- It now skips binary files. Its only remedy is a `predecessor-mention-ok`
+  marker on the offending line, and a binary file has no line to mark, so a
+  match there left no way forward but deleting the file or deleting the check.
+  It fired on a task tracker's compressed event store, which had recorded a task
+  describing this very grep.
+
+
 ### Changed — AllSource SDK 0.23.0 → 0.24.0
 
 - A **breaking** bump: `IngestEventInput` gained `expected_version`, which broke

@@ -2526,6 +2526,28 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2304e00983f87ffb38b55b444b5e3b60a884b5d30c0fca7d82fe33449bbe55ea"
 
 [[package]]
+name = "hiring"
+version = "0.1.0"
+dependencies = [
+ "dioxus",
+ "rv2-hiring",
+ "rv2-ui",
+ "serde_json",
+ "web-sys",
+]
+
+[[package]]
+name = "hiring-register"
+version = "0.1.0"
+dependencies = [
+ "reqwest 0.13.4",
+ "rv2-hiring",
+ "serde",
+ "serde_json",
+ "tokio",
+]
+
+[[package]]
 name = "hkdf"
 version = "0.12.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"

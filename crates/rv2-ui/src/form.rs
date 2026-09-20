@@ -79,3 +79,119 @@ pub fn TextArea(
         }
     }
 }
+
+/// A labelled checkbox, optionally carrying a count of what it would match.
+///
+/// The count is the reason this is a component rather than a bare `input`. A
+/// filter rail that shows a facet with no count forces the reader to click it
+/// to discover it matches nothing, and a rail whose zero-count options vanish
+/// makes the list flicker as selections change. Showing the number, and dimming
+/// rather than hiding a zero, keeps the set of options stable while still
+/// saying which ones are worth choosing.
+#[component]
+pub fn Checkbox(
+    label: String,
+    checked: bool,
+    /// How many records this option would match right now. Rendered to the
+    /// right, dimmed when nought.
+    #[props(default)]
+    count: Option<usize>,
+    /// Where the value came from, when it was derived rather than recorded —
+    /// "headcount band, not revenue". Rendered as a title so the reader can
+    /// disagree with a judgement the data did not actually make.
+    #[props(default)]
+    basis: Option<String>,
+    #[props(default = false)] disabled: bool,
+    onchange: EventHandler<bool>,
+) -> Element {
+    let empty = count == Some(0);
+    let tone = if empty {
+        "text-slate-400"
+    } else {
+        "text-slate-700"
+    };
+    rsx! {
+        label {
+            class: "flex items-center gap-2 py-1 text-sm cursor-pointer {tone}",
+            title: basis.clone().unwrap_or_default(),
+            input {
+                r#type: "checkbox",
+                class: "h-4 w-4 rounded border-slate-300 text-slate-900 focus:ring-2 focus:ring-slate-900",
+                checked,
+                disabled,
+                onchange: move |event| onchange.call(event.checked()),
+            }
+            span { class: "flex-1", "{label}" }
+            if let Some(n) = count {
+                span { class: "tabular-nums text-xs text-slate-500", "{n}" }
+            }
+            if basis.is_some() {
+                span { class: "text-xs text-slate-400", aria_hidden: "true", "·" }
+            }
+        }
+    }
+}
+
+/// A labelled select.
+///
+/// `options` is `(value, label)` because the value is what goes in a URL and
+/// the label is what a person reads, and the two are never the same string once
+/// the copy is written in plain English.
+#[component]
+pub fn Select(
+    label: String,
+    value: String,
+    options: Vec<(String, String)>,
+    #[props(default)] name: Option<String>,
+    onchange: EventHandler<String>,
+) -> Element {
+    rsx! {
+        label { class: "block space-y-1",
+            span { class: "text-sm font-medium text-slate-700", "{label}" }
+            select {
+                class: "{FIELD_BASE} bg-white",
+                name: name.unwrap_or_default(),
+                onchange: move |event| onchange.call(event.value()),
+                for (key , text) in options {
+                    option { value: "{key}", selected: key == value, "{text}" }
+                }
+            }
+        }
+    }
+}
+
+/// A group of controls under a legend, with the count of how many are on.
+///
+/// `native` fieldset and legend rather than a styled div: a screen reader
+/// announces the legend with every control inside it, which is the only thing
+/// that tells someone tabbing through thirty checkboxes which group they are
+/// in.
+#[component]
+pub fn FieldSet(
+    legend: String,
+    /// A sentence under the legend saying what the group does, for a group
+    /// whose meaning is not obvious from its title alone.
+    #[props(default)]
+    note: Option<String>,
+    /// How many controls in this group are switched on.
+    #[props(default)]
+    active: usize,
+    children: Element,
+) -> Element {
+    rsx! {
+        fieldset { class: "border-t border-slate-200 pt-3",
+            legend { class: "flex items-baseline gap-2 pr-2 text-xs font-semibold uppercase tracking-wide text-slate-600",
+                "{legend}"
+                if active > 0 {
+                    span { class: "font-normal normal-case tracking-normal text-slate-500",
+                        "({active} on)"
+                    }
+                }
+            }
+            if let Some(text) = note {
+                p { class: "pb-1 text-xs text-slate-500", "{text}" }
+            }
+            {children}
+        }
+    }
+}

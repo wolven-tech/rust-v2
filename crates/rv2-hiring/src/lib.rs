@@ -29,9 +29,35 @@ pub mod litmus;
 pub mod mandate;
 pub mod model;
 pub mod text;
+pub mod view;
 pub mod work_pattern;
+
+/// The register, compiled in.
+///
+/// File-backed rather than fetched: the page has no API behind it, so shipping
+/// the data inside the binary is one download instead of two and removes the
+/// loading state entirely. The cost is that refreshing the register means
+/// rebuilding the page, which is the right trade for a file that changes when
+/// somebody runs `hiring-register check`, not when somebody opens a tab.
+pub const REGISTER_JSON: &str = include_str!("../data/companies.json");
+
+/// Parse the compiled-in register and fill any role that has no stored verdict.
+///
+/// # Panics
+///
+/// If the compiled-in register does not parse. That is a build-time fact about
+/// a file in this crate, not a runtime condition: there is no state in which
+/// the page could usefully carry on without it, and a silent empty register
+/// would read as "nobody is hiring".
+#[must_use]
+pub fn embedded_register() -> Register {
+    serde_json::from_str::<Register>(REGISTER_JSON)
+        .expect("the compiled-in register must parse")
+        .classified()
+}
 
 pub use engagement::Engagement;
 pub use mandate::{LevelBand, Mandate, MandateSignal};
 pub use model::{Company, Openings, Register, Role};
+pub use view::{Filters, Layout, Sort};
 pub use work_pattern::WorkPattern;

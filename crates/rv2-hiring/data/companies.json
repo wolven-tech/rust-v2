@@ -73,56 +73,136 @@
             "location": "London, GB",
             "url": "https://jobs.smartrecruiters.com/Experian/744000139866919",
             "rust": false,
-            "rustInTitle": false
+            "rustInTitle": false,
+            "workPattern": "onsite",
+            "workPatternNote": "names \"London, GB\" with no remote wording",
+            "engagement": "permanent",
+            "engagementNote": "silent on engagement, and advertised through an employer applicant-tracking board",
+            "mandate": {
+              "signals": [],
+              "quotes": [],
+              "level": "director",
+              "strength": "none"
+            }
           },
           {
             "title": "Head of Software Engineering - C#.NET, Java, AWS, AI",
             "location": "Nottingham, GB",
             "url": "https://jobs.smartrecruiters.com/Experian/744000149512499",
             "rust": false,
-            "rustInTitle": false
+            "rustInTitle": false,
+            "workPattern": "onsite",
+            "workPatternNote": "names \"Nottingham, GB\" with no remote wording",
+            "engagement": "permanent",
+            "engagementNote": "silent on engagement, and advertised through an employer applicant-tracking board",
+            "mandate": {
+              "signals": [],
+              "quotes": [],
+              "level": "head-lead",
+              "strength": "none"
+            }
           },
           {
             "title": "Lead Data Platform Engineer",
             "location": "Nottingham, GB",
             "url": "https://jobs.smartrecruiters.com/Experian/744000139121720",
             "rust": false,
-            "rustInTitle": false
+            "rustInTitle": false,
+            "workPattern": "onsite",
+            "workPatternNote": "names \"Nottingham, GB\" with no remote wording",
+            "engagement": "permanent",
+            "engagementNote": "silent on engagement, and advertised through an employer applicant-tracking board",
+            "mandate": {
+              "signals": [],
+              "quotes": [],
+              "level": "other",
+              "strength": "none"
+            }
           },
           {
             "title": "Platform Engineer",
             "location": "Nottingham, GB",
             "url": "https://jobs.smartrecruiters.com/Experian/744000142806335",
             "rust": false,
-            "rustInTitle": false
+            "rustInTitle": false,
+            "workPattern": "onsite",
+            "workPatternNote": "names \"Nottingham, GB\" with no remote wording",
+            "engagement": "permanent",
+            "engagementNote": "silent on engagement, and advertised through an employer applicant-tracking board",
+            "mandate": {
+              "signals": [],
+              "quotes": [],
+              "level": "other",
+              "strength": "none"
+            }
           },
           {
             "title": "Senior FullStack Engineer - TypeScript - Python",
             "location": "London, GB",
             "url": "https://jobs.smartrecruiters.com/Experian/744000147161569",
             "rust": false,
-            "rustInTitle": false
+            "rustInTitle": false,
+            "workPattern": "onsite",
+            "workPatternNote": "names \"London, GB\" with no remote wording",
+            "engagement": "permanent",
+            "engagementNote": "silent on engagement, and advertised through an employer applicant-tracking board",
+            "mandate": {
+              "signals": [],
+              "quotes": [],
+              "level": "other",
+              "strength": "none"
+            }
           },
           {
             "title": "Senior Software Engineer",
             "location": "Nottingham, GB",
             "url": "https://jobs.smartrecruiters.com/Experian/744000144345163",
             "rust": false,
-            "rustInTitle": false
+            "rustInTitle": false,
+            "workPattern": "onsite",
+            "workPatternNote": "names \"Nottingham, GB\" with no remote wording",
+            "engagement": "permanent",
+            "engagementNote": "silent on engagement, and advertised through an employer applicant-tracking board",
+            "mandate": {
+              "signals": [],
+              "quotes": [],
+              "level": "other",
+              "strength": "none"
+            }
           },
           {
             "title": "Senior Software Engineer - Python",
             "location": "London, GB",
             "url": "https://jobs.smartrecruiters.com/Experian/744000147162210",
             "rust": false,
-            "rustInTitle": false
+            "rustInTitle": false,
+            "workPattern": "onsite",
+            "workPatternNote": "names \"London, GB\" with no remote wording",
+            "engagement": "permanent",
+            "engagementNote": "silent on engagement, and advertised through an employer applicant-tracking board",
+            "mandate": {
+              "signals": [],
+              "quotes": [],
+              "level": "other",
+              "strength": "none"
+            }
           },
           {
             "title": "Staff Software Engineer - React, Typescript",
             "location": "Nottingham, GB",
             "url": "https://jobs.smartrecruiters.com/Experian/744000138815980",
             "rust": false,
-            "rustInTitle": false
+            "rustInTitle": false,
+            "workPattern": "onsite",
+            "workPatternNote": "names \"Nottingham, GB\" with no remote wording",
+            "engagement": "permanent",
+            "engagementNote": "silent on engagement, and advertised through an employer applicant-tracking board",
+            "mandate": {
+              "signals": [],
+              "quotes": [],
+              "level": "head-lead",
+              "strength": "none"
+            }
           }
         ]
       },
@@ -206,42 +286,102 @@
             "location": "Manchester",
             "url": "https://job-boards.eu.greenhouse.io/autotrader/jobs/4526394101",
             "rust": false,
-            "rustInTitle": false
+            "rustInTitle": false,
+            "workPattern": "onsite",
+            "workPatternNote": "names \"Manchester\" with no remote wording",
+            "engagement": "permanent",
+            "engagementNote": "silent on engagement, and advertised through an employer applicant-tracking board",
+            "mandate": {
+              "signals": [],
+              "quotes": [],
+              "level": "head-lead",
+              "strength": "none"
+            }
           },
           {
             "title": "Principal Mobile Apps Platform Engineer",
             "location": "Manchester",
             "url": "https://job-boards.eu.greenhouse.io/autotrader/jobs/4871975101",
             "rust": false,
-            "rustInTitle": false
+            "rustInTitle": false,
+            "workPattern": "onsite",
+            "workPatternNote": "names \"Manchester\" with no remote wording",
+            "engagement": "permanent",
+            "engagementNote": "silent on engagement, and advertised through an employer applicant-tracking board",
+            "mandate": {
+              "signals": [],
+              "quotes": [],
+              "level": "head-lead",
+              "strength": "none"
+            }
           },
           {
             "title": "Principal Software Engineer, Backend - Full or Part Time",
             "location": "Manchester",
             "url": "https://job-boards.eu.greenhouse.io/autotrader/jobs/4021746101",
             "rust": false,
-            "rustInTitle": false
+            "rustInTitle": false,
+            "workPattern": "onsite",
+            "workPatternNote": "names \"Manchester\" with no remote wording",
+            "engagement": "permanent",
+            "engagementNote": "silent on engagement, and advertised through an employer applicant-tracking board",
+            "mandate": {
+              "signals": [],
+              "quotes": [],
+              "level": "head-lead",
+              "strength": "none"
+            }
           },
           {
             "title": "Senior Data Scientist",
             "location": "Manchester",
             "url": "https://job-boards.eu.greenhouse.io/autotrader/jobs/4904348101",
             "rust": false,
-            "rustInTitle": false
+            "rustInTitle": false,
+            "workPattern": "onsite",
+            "workPatternNote": "names \"Manchester\" with no remote wording",
+            "engagement": "permanent",
+            "engagementNote": "silent on engagement, and advertised through an employer applicant-tracking board",
+            "mandate": {
+              "signals": [],
+              "quotes": [],
+              "level": "other",
+              "strength": "none"
+            }
           },
           {
             "title": "Senior Full Stack Engineer - Full or Part Time",
             "location": "Manchester",
             "url": "https://job-boards.eu.greenhouse.io/autotrader/jobs/4526385101",
             "rust": false,
-            "rustInTitle": false
+            "rustInTitle": false,
+            "workPattern": "onsite",
+            "workPatternNote": "names \"Manchester\" with no remote wording",
+            "engagement": "permanent",
+            "engagementNote": "silent on engagement, and advertised through an employer applicant-tracking board",
+            "mandate": {
+              "signals": [],
+              "quotes": [],
+              "level": "other",
+              "strength": "none"
+            }
           },
           {
             "title": "Senior Software Engineer, Backend - Full or Part Time",
             "location": "Manchester",
             "url": "https://job-boards.eu.greenhouse.io/autotrader/jobs/4021726101",
             "rust": false,
-            "rustInTitle": false
+            "rustInTitle": false,
+            "workPattern": "onsite",
+            "workPatternNote": "names \"Manchester\" with no remote wording",
+            "engagement": "permanent",
+            "engagementNote": "silent on engagement, and advertised through an employer applicant-tracking board",
+            "mandate": {
+              "signals": [],
+              "quotes": [],
+              "level": "other",
+              "strength": "none"
+            }
           }
         ]
       },
@@ -405,42 +545,102 @@
             "location": "London",
             "url": "https://jobs.ashbyhq.com/fundingcircle/e97e0bd0-0c97-42cc-98a7-e74ce6a544d9",
             "rust": false,
-            "rustInTitle": false
+            "rustInTitle": false,
+            "workPattern": "onsite",
+            "workPatternNote": "names \"London\" with no remote wording",
+            "engagement": "permanent",
+            "engagementNote": "silent on engagement, and advertised through an employer applicant-tracking board",
+            "mandate": {
+              "signals": [],
+              "quotes": [],
+              "level": "other",
+              "strength": "none"
+            }
           },
           {
             "title": "Lead Analytics Engineer",
             "location": "London",
             "url": "https://jobs.ashbyhq.com/fundingcircle/ba799393-c80e-4af9-8200-5c4c1ef3f967",
             "rust": false,
-            "rustInTitle": false
+            "rustInTitle": false,
+            "workPattern": "onsite",
+            "workPatternNote": "names \"London\" with no remote wording",
+            "engagement": "permanent",
+            "engagementNote": "silent on engagement, and advertised through an employer applicant-tracking board",
+            "mandate": {
+              "signals": [],
+              "quotes": [],
+              "level": "other",
+              "strength": "none"
+            }
           },
           {
             "title": "Lead Engineer",
             "location": "London",
             "url": "https://jobs.ashbyhq.com/fundingcircle/704ed535-7192-495f-8512-84186994f6e0",
             "rust": false,
-            "rustInTitle": false
+            "rustInTitle": false,
+            "workPattern": "onsite",
+            "workPatternNote": "names \"London\" with no remote wording",
+            "engagement": "permanent",
+            "engagementNote": "silent on engagement, and advertised through an employer applicant-tracking board",
+            "mandate": {
+              "signals": [],
+              "quotes": [],
+              "level": "head-lead",
+              "strength": "none"
+            }
           },
           {
             "title": "Senior Engineer (Servicing)",
             "location": "London",
             "url": "https://jobs.ashbyhq.com/fundingcircle/d11b7925-acc8-4aeb-8010-37d48cb7b470",
             "rust": false,
-            "rustInTitle": false
+            "rustInTitle": false,
+            "workPattern": "onsite",
+            "workPatternNote": "names \"London\" with no remote wording",
+            "engagement": "permanent",
+            "engagementNote": "silent on engagement, and advertised through an employer applicant-tracking board",
+            "mandate": {
+              "signals": [],
+              "quotes": [],
+              "level": "other",
+              "strength": "none"
+            }
           },
           {
             "title": "Senior Mobile Engineer",
             "location": "London",
             "url": "https://jobs.ashbyhq.com/fundingcircle/998131e5-972f-41f0-b2ee-7791b84650de",
             "rust": false,
-            "rustInTitle": false
+            "rustInTitle": false,
+            "workPattern": "onsite",
+            "workPatternNote": "names \"London\" with no remote wording",
+            "engagement": "permanent",
+            "engagementNote": "silent on engagement, and advertised through an employer applicant-tracking board",
+            "mandate": {
+              "signals": [],
+              "quotes": [],
+              "level": "other",
+              "strength": "none"
+            }
           },
           {
             "title": "Staff Software Engineer (Platform Capabilities)",
             "location": "London",
             "url": "https://jobs.ashbyhq.com/fundingcircle/3d1f342b-c373-492a-a997-912951dd1d87",
             "rust": false,
-            "rustInTitle": false
+            "rustInTitle": false,
+            "workPattern": "onsite",
+            "workPatternNote": "names \"London\" with no remote wording",
+            "engagement": "permanent",
+            "engagementNote": "silent on engagement, and advertised through an employer applicant-tracking board",
+            "mandate": {
+              "signals": [],
+              "quotes": [],
+              "level": "head-lead",
+              "strength": "none"
+            }
           }
         ]
       },
@@ -543,21 +743,51 @@
             "location": "London",
             "url": "https://jobs.lever.co/moonpig/947cbd4a-2183-47d2-a266-824f12f298ac",
             "rust": false,
-            "rustInTitle": false
+            "rustInTitle": false,
+            "workPattern": "onsite",
+            "workPatternNote": "names \"London\" with no remote wording",
+            "engagement": "permanent",
+            "engagementNote": "silent on engagement, and advertised through an employer applicant-tracking board",
+            "mandate": {
+              "signals": [],
+              "quotes": [],
+              "level": "head-lead",
+              "strength": "none"
+            }
           },
           {
             "title": "Data Scientist",
             "location": "London; Manchester",
             "url": "https://jobs.lever.co/moonpig/fc3b9db9-906b-4586-bef3-6398a0d8c42c",
             "rust": false,
-            "rustInTitle": false
+            "rustInTitle": false,
+            "workPattern": "onsite",
+            "workPatternNote": "names \"London; Manchester\" with no remote wording",
+            "engagement": "permanent",
+            "engagementNote": "silent on engagement, and advertised through an employer applicant-tracking board",
+            "mandate": {
+              "signals": [],
+              "quotes": [],
+              "level": "other",
+              "strength": "none"
+            }
           },
           {
             "title": "Software Engineering Manager",
             "location": "London; Manchester",
             "url": "https://jobs.lever.co/moonpig/e76c2132-f916-46fc-b786-c778540e90d2",
             "rust": false,
-            "rustInTitle": false
+            "rustInTitle": false,
+            "workPattern": "onsite",
+            "workPatternNote": "names \"London; Manchester\" with no remote wording",
+            "engagement": "permanent",
+            "engagementNote": "silent on engagement, and advertised through an employer applicant-tracking board",
+            "mandate": {
+              "signals": [],
+              "quotes": [],
+              "level": "head-lead",
+              "strength": "none"
+            }
           }
         ]
       },
@@ -620,35 +850,85 @@
             "location": "Erith, United Kingdom",
             "url": "https://careers.ocadogroup.com/jobs/details?gh_jid=4601470101&gh_jid=4601470101",
             "rust": false,
-            "rustInTitle": false
+            "rustInTitle": false,
+            "workPattern": "onsite",
+            "workPatternNote": "names \"Erith, United Kingdom\" with no remote wording",
+            "engagement": "permanent",
+            "engagementNote": "silent on engagement, and advertised through an employer applicant-tracking board",
+            "mandate": {
+              "signals": [],
+              "quotes": [],
+              "level": "other",
+              "strength": "none"
+            }
           },
           {
             "title": "Engineer",
             "location": "Bicester, Oxfordshire, UK",
             "url": "https://careers.ocadogroup.com/jobs/details?gh_jid=4970998101&gh_jid=4970998101",
             "rust": false,
-            "rustInTitle": false
+            "rustInTitle": false,
+            "workPattern": "onsite",
+            "workPatternNote": "names \"Bicester, Oxfordshire, UK\" with no remote wording",
+            "engagement": "permanent",
+            "engagementNote": "silent on engagement, and advertised through an employer applicant-tracking board",
+            "mandate": {
+              "signals": [],
+              "quotes": [],
+              "level": "other",
+              "strength": "none"
+            }
           },
           {
             "title": "Engineering Team Manager",
             "location": "Erith, United Kingdom",
             "url": "https://careers.ocadogroup.com/jobs/details?gh_jid=4923588101&gh_jid=4923588101",
             "rust": false,
-            "rustInTitle": false
+            "rustInTitle": false,
+            "workPattern": "onsite",
+            "workPatternNote": "names \"Erith, United Kingdom\" with no remote wording",
+            "engagement": "permanent",
+            "engagementNote": "silent on engagement, and advertised through an employer applicant-tracking board",
+            "mandate": {
+              "signals": [],
+              "quotes": [],
+              "level": "other",
+              "strength": "none"
+            }
           },
           {
             "title": "Engineering Technician",
             "location": "Erith, United Kingdom",
             "url": "https://careers.ocadogroup.com/jobs/details?gh_jid=4671532101&gh_jid=4671532101",
             "rust": false,
-            "rustInTitle": false
+            "rustInTitle": false,
+            "workPattern": "onsite",
+            "workPatternNote": "names \"Erith, United Kingdom\" with no remote wording",
+            "engagement": "permanent",
+            "engagementNote": "silent on engagement, and advertised through an employer applicant-tracking board",
+            "mandate": {
+              "signals": [],
+              "quotes": [],
+              "level": "other",
+              "strength": "none"
+            }
           },
           {
             "title": "Engineering Technician",
             "location": "Andover, South East, United Kingdom",
             "url": "https://careers.ocadogroup.com/jobs/details?gh_jid=4629180101&gh_jid=4629180101",
             "rust": false,
-            "rustInTitle": false
+            "rustInTitle": false,
+            "workPattern": "onsite",
+            "workPatternNote": "names \"Andover, South East, United Kingdom\" with no remote wording",
+            "engagement": "permanent",
+            "engagementNote": "silent on engagement, and advertised through an employer applicant-tracking board",
+            "mandate": {
+              "signals": [],
+              "quotes": [],
+              "level": "other",
+              "strength": "none"
+            }
           }
         ]
       },
@@ -733,7 +1013,17 @@
             "location": "London, GB",
             "url": "https://jobs.smartrecruiters.com/Playtech/744000149581599",
             "rust": false,
-            "rustInTitle": false
+            "rustInTitle": false,
+            "workPattern": "onsite",
+            "workPatternNote": "names \"London, GB\" with no remote wording",
+            "engagement": "permanent",
+            "engagementNote": "silent on engagement, and advertised through an employer applicant-tracking board",
+            "mandate": {
+              "signals": [],
+              "quotes": [],
+              "level": "other",
+              "strength": "none"
+            }
           }
         ]
       },
@@ -1492,14 +1782,34 @@
             "location": "London",
             "url": "https://boards.greenhouse.io/boku/jobs/6187905004?gh_jid=6187905004",
             "rust": false,
-            "rustInTitle": false
+            "rustInTitle": false,
+            "workPattern": "onsite",
+            "workPatternNote": "names \"London\" with no remote wording",
+            "engagement": "permanent",
+            "engagementNote": "silent on engagement, and advertised through an employer applicant-tracking board",
+            "mandate": {
+              "signals": [],
+              "quotes": [],
+              "level": "other",
+              "strength": "none"
+            }
           },
           {
             "title": "Senior Enterprise Infrastructure Engineer",
             "location": "London",
             "url": "https://boards.greenhouse.io/boku/jobs/6192826004?gh_jid=6192826004",
             "rust": false,
-            "rustInTitle": false
+            "rustInTitle": false,
+            "workPattern": "onsite",
+            "workPatternNote": "names \"London\" with no remote wording",
+            "engagement": "permanent",
+            "engagementNote": "silent on engagement, and advertised through an employer applicant-tracking board",
+            "mandate": {
+              "signals": [],
+              "quotes": [],
+              "level": "other",
+              "strength": "none"
+            }
           }
         ]
       },
@@ -1566,56 +1876,136 @@
             "location": "San Francisco; New York City; Seattle; London, UK",
             "url": "https://jobs.ashbyhq.com/openai/7ade7a12-845c-4e3a-af23-c028420bd181",
             "rust": true,
-            "rustInTitle": false
+            "rustInTitle": false,
+            "workPattern": "onsite",
+            "workPatternNote": "names \"San Francisco; New York City; Seattle; London, UK\" with no remote wording",
+            "engagement": "permanent",
+            "engagementNote": "silent on engagement, and advertised through an employer applicant-tracking board",
+            "mandate": {
+              "signals": [],
+              "quotes": [],
+              "level": "other",
+              "strength": "none"
+            }
           },
           {
             "title": "Software Engineer, Model Deployment- ChatGPT Engineering",
             "location": "London, UK",
             "url": "https://jobs.ashbyhq.com/openai/f8b84ae5-743b-41c9-8432-02dff9993d6b",
             "rust": true,
-            "rustInTitle": false
+            "rustInTitle": false,
+            "workPattern": "onsite",
+            "workPatternNote": "names \"London, UK\" with no remote wording",
+            "engagement": "permanent",
+            "engagementNote": "silent on engagement, and advertised through an employer applicant-tracking board",
+            "mandate": {
+              "signals": [],
+              "quotes": [],
+              "level": "other",
+              "strength": "none"
+            }
           },
           {
             "title": "Applied AI Architect, Education",
             "location": "London, UK",
             "url": "https://jobs.ashbyhq.com/openai/98bffd0e-05cf-4748-93f1-b115c84e37b4",
             "rust": false,
-            "rustInTitle": false
+            "rustInTitle": false,
+            "workPattern": "onsite",
+            "workPatternNote": "names \"London, UK\" with no remote wording",
+            "engagement": "permanent",
+            "engagementNote": "silent on engagement, and advertised through an employer applicant-tracking board",
+            "mandate": {
+              "signals": [],
+              "quotes": [],
+              "level": "other",
+              "strength": "none"
+            }
           },
           {
             "title": "Applied AI Engineer, Codex",
             "location": "London, UK",
             "url": "https://jobs.ashbyhq.com/openai/32425ea6-a64b-408d-ae54-38342b83c875",
             "rust": false,
-            "rustInTitle": false
+            "rustInTitle": false,
+            "workPattern": "onsite",
+            "workPatternNote": "names \"London, UK\" with no remote wording",
+            "engagement": "permanent",
+            "engagementNote": "silent on engagement, and advertised through an employer applicant-tracking board",
+            "mandate": {
+              "signals": [],
+              "quotes": [],
+              "level": "other",
+              "strength": "none"
+            }
           },
           {
             "title": "Applied AI Engineer, Codex Core Agent",
             "location": "San Francisco; New York City; Seattle; London, UK",
             "url": "https://jobs.ashbyhq.com/openai/577e6673-0a4a-491b-9a0d-facbdd3bdf3c",
             "rust": false,
-            "rustInTitle": false
+            "rustInTitle": false,
+            "workPattern": "onsite",
+            "workPatternNote": "names \"San Francisco; New York City; Seattle; London, UK\" with no remote wording",
+            "engagement": "permanent",
+            "engagementNote": "silent on engagement, and advertised through an employer applicant-tracking board",
+            "mandate": {
+              "signals": [],
+              "quotes": [],
+              "level": "other",
+              "strength": "none"
+            }
           },
           {
             "title": "Applied AI Engineer, Digital Natives",
             "location": "London, UK",
             "url": "https://jobs.ashbyhq.com/openai/7be58f3a-6005-42ed-86fa-77773ebfb294",
             "rust": false,
-            "rustInTitle": false
+            "rustInTitle": false,
+            "workPattern": "onsite",
+            "workPatternNote": "names \"London, UK\" with no remote wording",
+            "engagement": "permanent",
+            "engagementNote": "silent on engagement, and advertised through an employer applicant-tracking board",
+            "mandate": {
+              "signals": [],
+              "quotes": [],
+              "level": "other",
+              "strength": "none"
+            }
           },
           {
             "title": "Applied AI Engineer, Government, International",
             "location": "London, UK",
             "url": "https://jobs.ashbyhq.com/openai/6c01266f-6ddb-42d1-a529-84736ae8587a",
             "rust": false,
-            "rustInTitle": false
+            "rustInTitle": false,
+            "workPattern": "onsite",
+            "workPatternNote": "names \"London, UK\" with no remote wording",
+            "engagement": "permanent",
+            "engagementNote": "silent on engagement, and advertised through an employer applicant-tracking board",
+            "mandate": {
+              "signals": [],
+              "quotes": [],
+              "level": "other",
+              "strength": "none"
+            }
           },
           {
             "title": "Forward Deployed Engineer - London (Spanish-speaking)",
             "location": "London, UK",
             "url": "https://jobs.ashbyhq.com/openai/7ce64627-b273-48e1-b3bc-ef4be0444706",
             "rust": false,
-            "rustInTitle": false
+            "rustInTitle": false,
+            "workPattern": "onsite",
+            "workPatternNote": "names \"London, UK\" with no remote wording",
+            "engagement": "permanent",
+            "engagementNote": "silent on engagement, and advertised through an employer applicant-tracking board",
+            "mandate": {
+              "signals": [],
+              "quotes": [],
+              "level": "other",
+              "strength": "none"
+            }
           }
         ]
       },
@@ -1632,12 +2022,12 @@
       ],
       "mark": "OAI",
       "rust": true,
+      "rustDepth": "adjacent",
+      "rustDepthCheckedOn": "2026-09-17",
+      "rustDepthNote": "Rust appears once, in a list: “strong programming skills in Go, Python, C++, Rust, or a comparable language”. The Model Deployment role is platform and infrastructure work — deployment orchestration, config management, capacity planning for the GPU fleet. Explicitly says GPU or low-level hardware experience is not needed. £194K–£280K, London office three days a week.",
       "sector": "AI and developer infrastructure",
       "techStackNote": "Model deployment and inference infrastructure; Rust appears in parts of the stack, including the Codex CLI.",
-      "ukLocations": "London",
-      "rustDepth": "adjacent",
-      "rustDepthNote": "Rust appears once, in a list: \u201cstrong programming skills in Go, Python, C++, Rust, or a comparable language\u201d. The Model Deployment role is platform and infrastructure work \u2014 deployment orchestration, config management, capacity planning for the GPU fleet. Explicitly says GPU or low-level hardware experience is not needed. \u00a3194K\u2013\u00a3280K, London office three days a week.",
-      "rustDepthCheckedOn": "2026-09-17"
+      "ukLocations": "London"
     },
     {
       "name": "Helsing",
@@ -1662,56 +2052,136 @@
             "location": "Berlin; London; Munich; Paris",
             "url": "https://helsing.ai/jobs/4911999101?gh_jid=4911999101",
             "rust": true,
-            "rustInTitle": false
+            "rustInTitle": false,
+            "workPattern": "onsite",
+            "workPatternNote": "names \"Berlin; London; Munich; Paris\" with no remote wording",
+            "engagement": "permanent",
+            "engagementNote": "silent on engagement, and advertised through an employer applicant-tracking board",
+            "mandate": {
+              "signals": [],
+              "quotes": [],
+              "level": "other",
+              "strength": "none"
+            }
           },
           {
             "title": "AI Research Engineer -  Computer Vision",
             "location": "Berlin; London; Munich",
             "url": "https://helsing.ai/jobs/4334842101?gh_jid=4334842101",
             "rust": true,
-            "rustInTitle": false
+            "rustInTitle": false,
+            "workPattern": "onsite",
+            "workPatternNote": "names \"Berlin; London; Munich\" with no remote wording",
+            "engagement": "permanent",
+            "engagementNote": "silent on engagement, and advertised through an employer applicant-tracking board",
+            "mandate": {
+              "signals": [],
+              "quotes": [],
+              "level": "other",
+              "strength": "none"
+            }
           },
           {
             "title": "AI Research Engineer - AI Safety",
             "location": "Berlin; London; Munich",
             "url": "https://helsing.ai/jobs/4334849101?gh_jid=4334849101",
             "rust": true,
-            "rustInTitle": false
+            "rustInTitle": false,
+            "workPattern": "onsite",
+            "workPatternNote": "names \"Berlin; London; Munich\" with no remote wording",
+            "engagement": "permanent",
+            "engagementNote": "silent on engagement, and advertised through an employer applicant-tracking board",
+            "mandate": {
+              "signals": [],
+              "quotes": [],
+              "level": "other",
+              "strength": "none"
+            }
           },
           {
             "title": "AI Research Engineer - GPU Simulation",
             "location": "Munich - Berlin - London - Paris",
             "url": "https://helsing.ai/jobs/4953387101?gh_jid=4953387101",
             "rust": true,
-            "rustInTitle": false
+            "rustInTitle": false,
+            "workPattern": "onsite",
+            "workPatternNote": "names \"Munich - Berlin - London - Paris\" with no remote wording",
+            "engagement": "permanent",
+            "engagementNote": "silent on engagement, and advertised through an employer applicant-tracking board",
+            "mandate": {
+              "signals": [],
+              "quotes": [],
+              "level": "other",
+              "strength": "none"
+            }
           },
           {
             "title": "AI Research Engineer - ML & Signal Processing",
             "location": "Berlin; Munich",
             "url": "https://helsing.ai/jobs/4372802101?gh_jid=4372802101",
             "rust": true,
-            "rustInTitle": false
+            "rustInTitle": false,
+            "workPattern": "onsite",
+            "workPatternNote": "names \"Berlin; Munich\" with no remote wording",
+            "engagement": "permanent",
+            "engagementNote": "silent on engagement, and advertised through an employer applicant-tracking board",
+            "mandate": {
+              "signals": [],
+              "quotes": [],
+              "level": "other",
+              "strength": "none"
+            }
           },
           {
             "title": "AI Research Engineer - Reinforcement Learning",
             "location": "Barcelona; Berlin; London; Munich; Paris",
             "url": "https://helsing.ai/jobs/4676357101?gh_jid=4676357101",
             "rust": true,
-            "rustInTitle": false
+            "rustInTitle": false,
+            "workPattern": "onsite",
+            "workPatternNote": "names \"Barcelona; Berlin; London; Munich; Paris\" with no remote wording",
+            "engagement": "permanent",
+            "engagementNote": "silent on engagement, and advertised through an employer applicant-tracking board",
+            "mandate": {
+              "signals": [],
+              "quotes": [],
+              "level": "other",
+              "strength": "none"
+            }
           },
           {
             "title": "AI Research Engineer - Robotics",
             "location": "Barcelona; Paris",
             "url": "https://helsing.ai/jobs/4423924101?gh_jid=4423924101",
             "rust": true,
-            "rustInTitle": false
+            "rustInTitle": false,
+            "workPattern": "onsite",
+            "workPatternNote": "names \"Barcelona; Paris\" with no remote wording",
+            "engagement": "permanent",
+            "engagementNote": "silent on engagement, and advertised through an employer applicant-tracking board",
+            "mandate": {
+              "signals": [],
+              "quotes": [],
+              "level": "other",
+              "strength": "none"
+            }
           },
           {
             "title": "Camera Engineer",
             "location": "Berlin; London; Munich",
             "url": "https://helsing.ai/jobs/4939591101?gh_jid=4939591101",
             "rust": true,
-            "rustInTitle": false
+            "rustInTitle": false,
+            "workPattern": "onsite",
+            "workPatternNote": "names \"Berlin; London; Munich\" with no remote wording",
+            "engagement": "permanent",
+            "engagementNote": "silent on engagement, and advertised through an employer applicant-tracking board",
+            "mandate": {
+              "signals": [],
+              "quotes": [],
+              "level": "other",
+              "strength": "none"
+            }
           }
         ]
       },
@@ -1728,12 +2198,12 @@
       ],
       "mark": "HEL",
       "rust": true,
+      "rustDepth": "mixed",
+      "rustDepthCheckedOn": "2026-09-17",
+      "rustDepthNote": "Stack described as “a mix of Rust and Python, with Python mainly used in the ML-heavy sections”, so Rust is the systems language. Staff role architects backend systems for edge hardware and expects the holder to run “topical office hours (e.g. on Rust)”. A separate Software Engineer, Rust opening also exists.",
       "sector": "Defence tech",
       "techStackNote": "Defence AI; Rust across its systems and edge software.",
-      "ukLocations": "London",
-      "rustDepth": "mixed",
-      "rustDepthNote": "Stack described as \u201ca mix of Rust and Python, with Python mainly used in the ML-heavy sections\u201d, so Rust is the systems language. Staff role architects backend systems for edge hardware and expects the holder to run \u201ctopical office hours (e.g. on Rust)\u201d. A separate Software Engineer, Rust opening also exists.",
-      "rustDepthCheckedOn": "2026-09-17"
+      "ukLocations": "London"
     },
     {
       "name": "GitHub",
@@ -1776,56 +2246,136 @@
             "location": "London; Geneva;",
             "url": "https://job-boards.eu.greenhouse.io/proton/jobs/4777667101",
             "rust": true,
-            "rustInTitle": true
+            "rustInTitle": true,
+            "workPattern": "onsite",
+            "workPatternNote": "names \"London; Geneva;\" with no remote wording",
+            "engagement": "permanent",
+            "engagementNote": "silent on engagement, and advertised through an employer applicant-tracking board",
+            "mandate": {
+              "signals": [],
+              "quotes": [],
+              "level": "other",
+              "strength": "none"
+            }
           },
           {
             "title": "Senior Android Software Engineer - London",
             "location": "London",
             "url": "https://job-boards.eu.greenhouse.io/proton/jobs/4932164101",
             "rust": true,
-            "rustInTitle": false
+            "rustInTitle": false,
+            "workPattern": "onsite",
+            "workPatternNote": "names \"London\" with no remote wording",
+            "engagement": "permanent",
+            "engagementNote": "silent on engagement, and advertised through an employer applicant-tracking board",
+            "mandate": {
+              "signals": [],
+              "quotes": [],
+              "level": "other",
+              "strength": "none"
+            }
           },
           {
             "title": "Senior Backend Engineer (Foundation)",
             "location": "London; Paris",
             "url": "https://job-boards.eu.greenhouse.io/proton/jobs/4954545101",
             "rust": true,
-            "rustInTitle": false
+            "rustInTitle": false,
+            "workPattern": "onsite",
+            "workPatternNote": "names \"London; Paris\" with no remote wording",
+            "engagement": "permanent",
+            "engagementNote": "silent on engagement, and advertised through an employer applicant-tracking board",
+            "mandate": {
+              "signals": [],
+              "quotes": [],
+              "level": "other",
+              "strength": "none"
+            }
           },
           {
             "title": "Senior Backend Engineer (Payments)",
             "location": "Barcelona; London",
             "url": "https://job-boards.eu.greenhouse.io/proton/jobs/4845404101",
             "rust": true,
-            "rustInTitle": false
+            "rustInTitle": false,
+            "workPattern": "onsite",
+            "workPatternNote": "names \"Barcelona; London\" with no remote wording",
+            "engagement": "permanent",
+            "engagementNote": "silent on engagement, and advertised through an employer applicant-tracking board",
+            "mandate": {
+              "signals": [],
+              "quotes": [],
+              "level": "other",
+              "strength": "none"
+            }
           },
           {
             "title": "Senior Foundation Engineer (Drive)",
             "location": "Geneva; London;",
             "url": "https://job-boards.eu.greenhouse.io/proton/jobs/4630103101",
             "rust": true,
-            "rustInTitle": false
+            "rustInTitle": false,
+            "workPattern": "onsite",
+            "workPatternNote": "names \"Geneva; London;\" with no remote wording",
+            "engagement": "permanent",
+            "engagementNote": "silent on engagement, and advertised through an employer applicant-tracking board",
+            "mandate": {
+              "signals": [],
+              "quotes": [],
+              "level": "other",
+              "strength": "none"
+            }
           },
           {
             "title": "Senior Software Engineer (Inbox Desktop)",
             "location": "London; Geneva",
             "url": "https://job-boards.eu.greenhouse.io/proton/jobs/4766179101",
             "rust": true,
-            "rustInTitle": false
+            "rustInTitle": false,
+            "workPattern": "onsite",
+            "workPatternNote": "names \"London; Geneva\" with no remote wording",
+            "engagement": "permanent",
+            "engagementNote": "silent on engagement, and advertised through an employer applicant-tracking board",
+            "mandate": {
+              "signals": [],
+              "quotes": [],
+              "level": "other",
+              "strength": "none"
+            }
           },
           {
             "title": "Senior iOS Software Engineer - London",
             "location": "London",
             "url": "https://job-boards.eu.greenhouse.io/proton/jobs/4881689101",
             "rust": true,
-            "rustInTitle": false
+            "rustInTitle": false,
+            "workPattern": "onsite",
+            "workPatternNote": "names \"London\" with no remote wording",
+            "engagement": "permanent",
+            "engagementNote": "silent on engagement, and advertised through an employer applicant-tracking board",
+            "mandate": {
+              "signals": [],
+              "quotes": [],
+              "level": "other",
+              "strength": "none"
+            }
           },
           {
             "title": "Software Engineer (Linux)",
             "location": "London UK, Geneva CH",
             "url": "https://job-boards.eu.greenhouse.io/proton/jobs/4836677101",
             "rust": true,
-            "rustInTitle": false
+            "rustInTitle": false,
+            "workPattern": "onsite",
+            "workPatternNote": "names \"London UK, Geneva CH\" with no remote wording",
+            "engagement": "permanent",
+            "engagementNote": "silent on engagement, and advertised through an employer applicant-tracking board",
+            "mandate": {
+              "signals": [],
+              "quotes": [],
+              "level": "other",
+              "strength": "none"
+            }
           }
         ]
       },
@@ -1842,12 +2392,12 @@
       ],
       "mark": "PRO",
       "rust": true,
+      "rustDepth": "first",
+      "rustDepthCheckedOn": "2026-09-17",
+      "rustDepthNote": "Job titled Senior Rust Engineer (Foundation): “Lead the design and development of Rust libraries shared across web and mobile.” Requires “strong expertise in Rust language features, concurrency, and ownership model”. Bonus points for DDD, WebAssembly and cryptography concepts. Four separate London Rust roles open (Foundation, Payments, Drive, Account).",
       "sector": "Cybersecurity and identity",
       "techStackNote": "Privacy products; Rust in cryptography and shared client libraries.",
-      "ukLocations": "London",
-      "rustDepth": "first",
-      "rustDepthNote": "Job titled Senior Rust Engineer (Foundation): \u201cLead the design and development of Rust libraries shared across web and mobile.\u201d Requires \u201cstrong expertise in Rust language features, concurrency, and ownership model\u201d. Bonus points for DDD, WebAssembly and cryptography concepts. Four separate London Rust roles open (Foundation, Payments, Drive, Account).",
-      "rustDepthCheckedOn": "2026-09-17"
+      "ukLocations": "London"
     },
     {
       "name": "Grafana Labs",
@@ -1872,56 +2422,136 @@
             "location": "United Kingdom (Remote)",
             "url": "https://job-boards.greenhouse.io/grafanalabs/jobs/6123193004",
             "rust": true,
-            "rustInTitle": false
+            "rustInTitle": false,
+            "workPattern": "remote-uk",
+            "workPatternNote": "says \"remote\" and ties the role to the UK",
+            "engagement": "permanent",
+            "engagementNote": "silent on engagement, and advertised through an employer applicant-tracking board",
+            "mandate": {
+              "signals": [],
+              "quotes": [],
+              "level": "other",
+              "strength": "none"
+            }
           },
           {
             "title": "Senior Backend Engineer - Databases Pyroscope | UK | Remote",
             "location": "United Kingdom (Remote)",
             "url": "https://job-boards.greenhouse.io/grafanalabs/jobs/6126889004",
             "rust": true,
-            "rustInTitle": false
+            "rustInTitle": false,
+            "workPattern": "remote-uk",
+            "workPatternNote": "says \"remote\" and ties the role to the UK",
+            "engagement": "permanent",
+            "engagementNote": "silent on engagement, and advertised through an employer applicant-tracking board",
+            "mandate": {
+              "signals": [],
+              "quotes": [],
+              "level": "other",
+              "strength": "none"
+            }
           },
           {
             "title": "Staff Backend Engineer - Alerting | Germany | Remote",
             "location": "Germany (Remote)",
             "url": "https://job-boards.greenhouse.io/grafanalabs/jobs/6105872004",
             "rust": true,
-            "rustInTitle": false
+            "rustInTitle": false,
+            "workPattern": "remote-anywhere",
+            "workPatternNote": "says \"remote\"",
+            "engagement": "permanent",
+            "engagementNote": "silent on engagement, and advertised through an employer applicant-tracking board",
+            "mandate": {
+              "signals": [],
+              "quotes": [],
+              "level": "head-lead",
+              "strength": "none"
+            }
           },
           {
             "title": "Staff Backend Engineer - Alerting | Ireland | Remote",
             "location": "Republic of Ireland (Remote)",
             "url": "https://job-boards.greenhouse.io/grafanalabs/jobs/6105874004",
             "rust": true,
-            "rustInTitle": false
+            "rustInTitle": false,
+            "workPattern": "remote-anywhere",
+            "workPatternNote": "says \"remote\"",
+            "engagement": "permanent",
+            "engagementNote": "silent on engagement, and advertised through an employer applicant-tracking board",
+            "mandate": {
+              "signals": [],
+              "quotes": [],
+              "level": "head-lead",
+              "strength": "none"
+            }
           },
           {
             "title": "Staff Backend Engineer - Alerting | Spain | Remote",
             "location": "Spain (Remote)",
             "url": "https://job-boards.greenhouse.io/grafanalabs/jobs/6105873004",
             "rust": true,
-            "rustInTitle": false
+            "rustInTitle": false,
+            "workPattern": "remote-anywhere",
+            "workPatternNote": "says \"remote\"",
+            "engagement": "permanent",
+            "engagementNote": "silent on engagement, and advertised through an employer applicant-tracking board",
+            "mandate": {
+              "signals": [],
+              "quotes": [],
+              "level": "head-lead",
+              "strength": "none"
+            }
           },
           {
             "title": "Staff Backend Engineer - Alerting | UK | Remote",
             "location": "United Kingdom (Remote)",
             "url": "https://job-boards.greenhouse.io/grafanalabs/jobs/6105876004",
             "rust": true,
-            "rustInTitle": false
+            "rustInTitle": false,
+            "workPattern": "remote-uk",
+            "workPatternNote": "says \"remote\" and ties the role to the UK",
+            "engagement": "permanent",
+            "engagementNote": "silent on engagement, and advertised through an employer applicant-tracking board",
+            "mandate": {
+              "signals": [],
+              "quotes": [],
+              "level": "head-lead",
+              "strength": "none"
+            }
           },
           {
             "title": "Staff Software Engineer - Databases, Tempo | Germany | Remote",
             "location": "Germany (Remote)",
             "url": "https://job-boards.greenhouse.io/grafanalabs/jobs/6112829004",
             "rust": true,
-            "rustInTitle": false
+            "rustInTitle": false,
+            "workPattern": "remote-anywhere",
+            "workPatternNote": "says \"remote\"",
+            "engagement": "permanent",
+            "engagementNote": "silent on engagement, and advertised through an employer applicant-tracking board",
+            "mandate": {
+              "signals": [],
+              "quotes": [],
+              "level": "head-lead",
+              "strength": "none"
+            }
           },
           {
             "title": "Staff Software Engineer - Databases, Tempo | Ireland | Remote",
             "location": "Republic of Ireland (Remote)",
             "url": "https://job-boards.greenhouse.io/grafanalabs/jobs/6112828004",
             "rust": true,
-            "rustInTitle": false
+            "rustInTitle": false,
+            "workPattern": "remote-anywhere",
+            "workPatternNote": "says \"remote\"",
+            "engagement": "permanent",
+            "engagementNote": "silent on engagement, and advertised through an employer applicant-tracking board",
+            "mandate": {
+              "signals": [],
+              "quotes": [],
+              "level": "head-lead",
+              "strength": "none"
+            }
           }
         ]
       },
@@ -2005,56 +2635,136 @@
             "location": "Stockholm; London",
             "url": "https://jobs.ashbyhq.com/lovable/22169279-acc3-4133-96ab-6f525b16fc8e",
             "rust": true,
-            "rustInTitle": false
+            "rustInTitle": false,
+            "workPattern": "onsite",
+            "workPatternNote": "names \"Stockholm; London\" with no remote wording",
+            "engagement": "permanent",
+            "engagementNote": "silent on engagement, and advertised through an employer applicant-tracking board",
+            "mandate": {
+              "signals": [],
+              "quotes": [],
+              "level": "other",
+              "strength": "none"
+            }
           },
           {
             "title": "Software Engineer, Growth",
             "location": "London",
             "url": "https://jobs.ashbyhq.com/lovable/581951b9-537e-49d5-89fb-dd74cdf3256c",
             "rust": true,
-            "rustInTitle": false
+            "rustInTitle": false,
+            "workPattern": "onsite",
+            "workPatternNote": "names \"London\" with no remote wording",
+            "engagement": "permanent",
+            "engagementNote": "silent on engagement, and advertised through an employer applicant-tracking board",
+            "mandate": {
+              "signals": [],
+              "quotes": [],
+              "level": "other",
+              "strength": "none"
+            }
           },
           {
             "title": "Software Engineer, Platform (Developer Experience)",
             "location": "Stockholm; London",
             "url": "https://jobs.ashbyhq.com/lovable/99f2854e-4937-4227-b96a-81269b5f871d",
             "rust": true,
-            "rustInTitle": false
+            "rustInTitle": false,
+            "workPattern": "onsite",
+            "workPatternNote": "names \"Stockholm; London\" with no remote wording",
+            "engagement": "permanent",
+            "engagementNote": "silent on engagement, and advertised through an employer applicant-tracking board",
+            "mandate": {
+              "signals": [],
+              "quotes": [],
+              "level": "other",
+              "strength": "none"
+            }
           },
           {
             "title": "Software Engineer, Platform (Enterprise)",
             "location": "London",
             "url": "https://jobs.ashbyhq.com/lovable/722d4ea3-9aa7-460f-802e-ae1ec31170f4",
             "rust": true,
-            "rustInTitle": false
+            "rustInTitle": false,
+            "workPattern": "onsite",
+            "workPatternNote": "names \"London\" with no remote wording",
+            "engagement": "permanent",
+            "engagementNote": "silent on engagement, and advertised through an employer applicant-tracking board",
+            "mandate": {
+              "signals": [],
+              "quotes": [],
+              "level": "other",
+              "strength": "none"
+            }
           },
           {
             "title": "Staff / Principal Design Engineer, Web",
             "location": "New York City; London",
             "url": "https://jobs.ashbyhq.com/lovable/51885ae5-4f4c-46c4-abd3-d7aad1c8d9c0",
             "rust": true,
-            "rustInTitle": false
+            "rustInTitle": false,
+            "workPattern": "onsite",
+            "workPatternNote": "names \"New York City; London\" with no remote wording",
+            "engagement": "permanent",
+            "engagementNote": "silent on engagement, and advertised through an employer applicant-tracking board",
+            "mandate": {
+              "signals": [],
+              "quotes": [],
+              "level": "head-lead",
+              "strength": "none"
+            }
           },
           {
             "title": "Staff / Principal Software Engineer, Product",
             "location": "Stockholm; London",
             "url": "https://jobs.ashbyhq.com/lovable/45db5790-4305-4fad-b96b-1fbdf42b88f2",
             "rust": true,
-            "rustInTitle": false
+            "rustInTitle": false,
+            "workPattern": "onsite",
+            "workPatternNote": "names \"Stockholm; London\" with no remote wording",
+            "engagement": "permanent",
+            "engagementNote": "silent on engagement, and advertised through an employer applicant-tracking board",
+            "mandate": {
+              "signals": [],
+              "quotes": [],
+              "level": "head-lead",
+              "strength": "none"
+            }
           },
           {
             "title": "Staff Software Engineer, Platform (Enterprise)",
             "location": "London",
             "url": "https://jobs.ashbyhq.com/lovable/6971bf2b-5873-4817-b886-ad6d63358a71",
             "rust": true,
-            "rustInTitle": false
+            "rustInTitle": false,
+            "workPattern": "onsite",
+            "workPatternNote": "names \"London\" with no remote wording",
+            "engagement": "permanent",
+            "engagementNote": "silent on engagement, and advertised through an employer applicant-tracking board",
+            "mandate": {
+              "signals": [],
+              "quotes": [],
+              "level": "head-lead",
+              "strength": "none"
+            }
           },
           {
             "title": "AI Research Engineer, Post-Training",
             "location": "Stockholm; London",
             "url": "https://jobs.ashbyhq.com/lovable/59d85cf1-104b-48cb-956c-bed73ef934c9",
             "rust": false,
-            "rustInTitle": false
+            "rustInTitle": false,
+            "workPattern": "onsite",
+            "workPatternNote": "names \"Stockholm; London\" with no remote wording",
+            "engagement": "permanent",
+            "engagementNote": "silent on engagement, and advertised through an employer applicant-tracking board",
+            "mandate": {
+              "signals": [],
+              "quotes": [],
+              "level": "other",
+              "strength": "none"
+            }
           }
         ]
       },
@@ -2080,6 +2790,7 @@
         "status": "missing",
         "checkedOn": "2026-09-15"
       },
+      "careersUrlSource": "role listing found via research, 2026-09-17; no company careers page located",
       "confidence": "water",
       "exchange": "Private",
       "hiresEngineersInUk": true,
@@ -2087,13 +2798,12 @@
         "targets"
       ],
       "mark": "CAL",
+      "rustDepth": "secondary",
+      "rustDepthCheckedOn": "2026-09-17",
+      "rustDepthNote": "“Deep Python expertise plus proficiency in a systems language such as Rust, C++, or Go” — Rust is the secondary requirement. Wants contributions to Ray, Temporal, Kafka, Erlang/BEAM, PyTorch or JAX, and experience building production runtimes, workflow engines or orchestration platforms. £101k–£192k, fully in person in London.",
       "sector": "AI and developer infrastructure",
       "techStackNote": "Agent runtime and systems roles, seen in your LinkedIn search.",
-      "ukLocations": "London",
-      "rustDepth": "secondary",
-      "rustDepthNote": "\u201cDeep Python expertise plus proficiency in a systems language such as Rust, C++, or Go\u201d \u2014 Rust is the secondary requirement. Wants contributions to Ray, Temporal, Kafka, Erlang/BEAM, PyTorch or JAX, and experience building production runtimes, workflow engines or orchestration platforms. \u00a3101k\u2013\u00a3192k, fully in person in London.",
-      "rustDepthCheckedOn": "2026-09-17",
-      "careersUrlSource": "role listing found via research, 2026-09-17; no company careers page located"
+      "ukLocations": "London"
     },
     {
       "name": "Catapult",
@@ -2154,56 +2864,136 @@
             "location": "Cardiff, London or Remote (UK)",
             "url": "https://job-boards.greenhouse.io/monzo/jobs/6635595",
             "rust": false,
-            "rustInTitle": false
+            "rustInTitle": false,
+            "workPattern": "remote-uk",
+            "workPatternNote": "says \"remote\" and ties the role to the UK",
+            "engagement": "permanent",
+            "engagementNote": "silent on engagement, and advertised through an employer applicant-tracking board",
+            "mandate": {
+              "signals": [],
+              "quotes": [],
+              "level": "other",
+              "strength": "none"
+            }
           },
           {
             "title": "Engineering Director, EU",
             "location": "Cardiff, London or Remote (UK)",
             "url": "https://job-boards.greenhouse.io/monzo/jobs/8025854",
             "rust": false,
-            "rustInTitle": false
+            "rustInTitle": false,
+            "workPattern": "remote-uk",
+            "workPatternNote": "says \"remote\" and ties the role to the UK",
+            "engagement": "permanent",
+            "engagementNote": "silent on engagement, and advertised through an employer applicant-tracking board",
+            "mandate": {
+              "signals": [],
+              "quotes": [],
+              "level": "director",
+              "strength": "none"
+            }
           },
           {
             "title": "Engineering Manager",
             "location": "Cardiff, London or Remote (UK)",
             "url": "https://job-boards.greenhouse.io/monzo/jobs/5018066",
             "rust": false,
-            "rustInTitle": false
+            "rustInTitle": false,
+            "workPattern": "remote-uk",
+            "workPatternNote": "says \"remote\" and ties the role to the UK",
+            "engagement": "permanent",
+            "engagementNote": "silent on engagement, and advertised through an employer applicant-tracking board",
+            "mandate": {
+              "signals": [],
+              "quotes": [],
+              "level": "head-lead",
+              "strength": "none"
+            }
           },
           {
             "title": "Lead Data Scientist",
             "location": "Cardiff, London or Remote (UK)",
             "url": "https://job-boards.greenhouse.io/monzo/jobs/6369658",
             "rust": false,
-            "rustInTitle": false
+            "rustInTitle": false,
+            "workPattern": "remote-uk",
+            "workPatternNote": "says \"remote\" and ties the role to the UK",
+            "engagement": "permanent",
+            "engagementNote": "silent on engagement, and advertised through an employer applicant-tracking board",
+            "mandate": {
+              "signals": [],
+              "quotes": [],
+              "level": "other",
+              "strength": "none"
+            }
           },
           {
             "title": "Senior Analytics Engineer",
             "location": "Cardiff, London or Remote (UK)",
             "url": "https://job-boards.greenhouse.io/monzo/jobs/6076740",
             "rust": false,
-            "rustInTitle": false
+            "rustInTitle": false,
+            "workPattern": "remote-uk",
+            "workPatternNote": "says \"remote\" and ties the role to the UK",
+            "engagement": "permanent",
+            "engagementNote": "silent on engagement, and advertised through an employer applicant-tracking board",
+            "mandate": {
+              "signals": [],
+              "quotes": [],
+              "level": "other",
+              "strength": "none"
+            }
           },
           {
             "title": "Senior Backend Engineer",
             "location": "Cardiff, London or Remote (UK)",
             "url": "https://job-boards.greenhouse.io/monzo/jobs/6635837",
             "rust": false,
-            "rustInTitle": false
+            "rustInTitle": false,
+            "workPattern": "remote-uk",
+            "workPatternNote": "says \"remote\" and ties the role to the UK",
+            "engagement": "permanent",
+            "engagementNote": "silent on engagement, and advertised through an employer applicant-tracking board",
+            "mandate": {
+              "signals": [],
+              "quotes": [],
+              "level": "other",
+              "strength": "none"
+            }
           },
           {
             "title": "Senior Engineering Manager",
             "location": "Cardiff, London or Remote (UK)",
             "url": "https://job-boards.greenhouse.io/monzo/jobs/6394676",
             "rust": false,
-            "rustInTitle": false
+            "rustInTitle": false,
+            "workPattern": "remote-uk",
+            "workPatternNote": "says \"remote\" and ties the role to the UK",
+            "engagement": "permanent",
+            "engagementNote": "silent on engagement, and advertised through an employer applicant-tracking board",
+            "mandate": {
+              "signals": [],
+              "quotes": [],
+              "level": "head-lead",
+              "strength": "none"
+            }
           },
           {
             "title": "Senior Staff Backend Engineer",
             "location": "Cardiff, London or Remote (UK)",
             "url": "https://job-boards.greenhouse.io/monzo/jobs/6036797",
             "rust": false,
-            "rustInTitle": false
+            "rustInTitle": false,
+            "workPattern": "remote-uk",
+            "workPatternNote": "says \"remote\" and ties the role to the UK",
+            "engagement": "permanent",
+            "engagementNote": "silent on engagement, and advertised through an employer applicant-tracking board",
+            "mandate": {
+              "signals": [],
+              "quotes": [],
+              "level": "head-lead",
+              "strength": "none"
+            }
           }
         ]
       },
@@ -2265,56 +3055,136 @@
             "location": "Atlanta, GA, Austin, TX, Denver, CO, Lisbon, Portugal, London, United Kingdom, Seattle, WA, Washington, DC",
             "url": "https://boards.greenhouse.io/cloudflare/jobs/7462801?gh_jid=7462801",
             "rust": true,
-            "rustInTitle": false
+            "rustInTitle": false,
+            "workPattern": "onsite",
+            "workPatternNote": "names \"Atlanta, GA, Austin, TX, Denver, CO, Lisbon, Portugal, London, United Kingdom, Seattle, WA, Washington, DC\" with no remote wording",
+            "engagement": "permanent",
+            "engagementNote": "silent on engagement, and advertised through an employer applicant-tracking board",
+            "mandate": {
+              "signals": [],
+              "quotes": [],
+              "level": "other",
+              "strength": "none"
+            }
           },
           {
             "title": "Engineering Manager - Workers Runtime, Edge Team",
             "location": "In-Office",
             "url": "https://boards.greenhouse.io/cloudflare/jobs/7653558?gh_jid=7653558",
             "rust": true,
-            "rustInTitle": false
+            "rustInTitle": false,
+            "workPattern": "onsite",
+            "workPatternNote": "says \"in office\"",
+            "engagement": "permanent",
+            "engagementNote": "silent on engagement, and advertised through an employer applicant-tracking board",
+            "mandate": {
+              "signals": [],
+              "quotes": [],
+              "level": "head-lead",
+              "strength": "none"
+            }
           },
           {
             "title": "Senior Infrastructure Engineer, Storage Platform",
             "location": "In-Office",
             "url": "https://boards.greenhouse.io/cloudflare/jobs/7629805?gh_jid=7629805",
             "rust": true,
-            "rustInTitle": false
+            "rustInTitle": false,
+            "workPattern": "onsite",
+            "workPatternNote": "says \"in office\"",
+            "engagement": "permanent",
+            "engagementNote": "silent on engagement, and advertised through an employer applicant-tracking board",
+            "mandate": {
+              "signals": [],
+              "quotes": [],
+              "level": "other",
+              "strength": "none"
+            }
           },
           {
             "title": "Senior Software Engineer - Addressing Team",
             "location": "Austin, TX, Lisbon, Portugal, London, United Kingdom",
             "url": "https://boards.greenhouse.io/cloudflare/jobs/8164694?gh_jid=8164694",
             "rust": true,
-            "rustInTitle": false
+            "rustInTitle": false,
+            "workPattern": "onsite",
+            "workPatternNote": "names \"Austin, TX, Lisbon, Portugal, London, United Kingdom\" with no remote wording",
+            "engagement": "permanent",
+            "engagementNote": "silent on engagement, and advertised through an employer applicant-tracking board",
+            "mandate": {
+              "signals": [],
+              "quotes": [],
+              "level": "other",
+              "strength": "none"
+            }
           },
           {
             "title": "Senior Software Engineer - Network Platforms",
             "location": "Austin, TX, Lisbon, Portugal, London, United Kingdom",
             "url": "https://boards.greenhouse.io/cloudflare/jobs/7541032?gh_jid=7541032",
             "rust": true,
-            "rustInTitle": false
+            "rustInTitle": false,
+            "workPattern": "onsite",
+            "workPatternNote": "names \"Austin, TX, Lisbon, Portugal, London, United Kingdom\" with no remote wording",
+            "engagement": "permanent",
+            "engagementNote": "silent on engagement, and advertised through an employer applicant-tracking board",
+            "mandate": {
+              "signals": [],
+              "quotes": [],
+              "level": "other",
+              "strength": "none"
+            }
           },
           {
             "title": "Senior Software Engineer, Distributed Databases",
             "location": "In-Office",
             "url": "https://boards.greenhouse.io/cloudflare/jobs/7896462?gh_jid=7896462",
             "rust": true,
-            "rustInTitle": false
+            "rustInTitle": false,
+            "workPattern": "onsite",
+            "workPatternNote": "says \"in office\"",
+            "engagement": "permanent",
+            "engagementNote": "silent on engagement, and advertised through an employer applicant-tracking board",
+            "mandate": {
+              "signals": [],
+              "quotes": [],
+              "level": "other",
+              "strength": "none"
+            }
           },
           {
             "title": "Senior Software Engineer, R2 Gateway",
             "location": "In-Office",
             "url": "https://boards.greenhouse.io/cloudflare/jobs/8174207?gh_jid=8174207",
             "rust": true,
-            "rustInTitle": false
+            "rustInTitle": false,
+            "workPattern": "onsite",
+            "workPatternNote": "says \"in office\"",
+            "engagement": "permanent",
+            "engagementNote": "silent on engagement, and advertised through an employer applicant-tracking board",
+            "mandate": {
+              "signals": [],
+              "quotes": [],
+              "level": "other",
+              "strength": "none"
+            }
           },
           {
             "title": "Senior Software Engineer, Security Rules",
             "location": "Lisbon, Portugal, London, United Kingdom",
             "url": "https://boards.greenhouse.io/cloudflare/jobs/8184838?gh_jid=8184838",
             "rust": true,
-            "rustInTitle": false
+            "rustInTitle": false,
+            "workPattern": "onsite",
+            "workPatternNote": "names \"Lisbon, Portugal, London, United Kingdom\" with no remote wording",
+            "engagement": "permanent",
+            "engagementNote": "silent on engagement, and advertised through an employer applicant-tracking board",
+            "mandate": {
+              "signals": [],
+              "quotes": [],
+              "level": "other",
+              "strength": "none"
+            }
           }
         ]
       },
@@ -2358,56 +3228,136 @@
             "location": "Bordeaux, France; Grenoble, France; Lyon, France; Madrid, Spain; Montpellier, France; Nantes, France; Paris, France; Sophia Antipolis, France; Tel Aviv, Israel",
             "url": "https://careers.datadoghq.com/detail/4599111/?gh_jid=4599111",
             "rust": true,
-            "rustInTitle": false
+            "rustInTitle": false,
+            "workPattern": "onsite",
+            "workPatternNote": "names \"Bordeaux, France; Grenoble, France; Lyon, France; Madrid, Spain; Montpellier, France; Nantes, France; Paris, France; Sophia Antipolis, France; Tel Aviv, Israel\" with no remote wording",
+            "engagement": "permanent",
+            "engagementNote": "silent on engagement, and advertised through an employer applicant-tracking board",
+            "mandate": {
+              "signals": [],
+              "quotes": [],
+              "level": "other",
+              "strength": "none"
+            }
           },
           {
             "title": "Senior Software Engineer - REDAPL Graph Engine",
             "location": "France, Remote; Germany, Remote; Italy, Remote; Spain, Remote; Switzerland, Remote; United Kingdom, Remote",
             "url": "https://careers.datadoghq.com/detail/7959966/?gh_jid=7959966",
             "rust": false,
-            "rustInTitle": false
+            "rustInTitle": false,
+            "workPattern": "remote-uk",
+            "workPatternNote": "says \"remote\" and ties the role to the UK",
+            "engagement": "permanent",
+            "engagementNote": "silent on engagement, and advertised through an employer applicant-tracking board",
+            "mandate": {
+              "signals": [],
+              "quotes": [],
+              "level": "other",
+              "strength": "none"
+            }
           },
           {
             "title": "Staff Engineer - Data Platform Experience",
             "location": "Lisbon, Portugal",
             "url": "https://careers.datadoghq.com/detail/8119496/?gh_jid=8119496",
             "rust": false,
-            "rustInTitle": false
+            "rustInTitle": false,
+            "workPattern": "onsite",
+            "workPatternNote": "names \"Lisbon, Portugal\" with no remote wording",
+            "engagement": "permanent",
+            "engagementNote": "silent on engagement, and advertised through an employer applicant-tracking board",
+            "mandate": {
+              "signals": [],
+              "quotes": [],
+              "level": "head-lead",
+              "strength": "none"
+            }
           },
           {
             "title": "Staff Engineer - Data Platform Experience",
             "location": "Dublin, Ireland; Madrid, Spain; Paris, France",
             "url": "https://careers.datadoghq.com/detail/8119493/?gh_jid=8119493",
             "rust": false,
-            "rustInTitle": false
+            "rustInTitle": false,
+            "workPattern": "onsite",
+            "workPatternNote": "names \"Dublin, Ireland; Madrid, Spain; Paris, France\" with no remote wording",
+            "engagement": "permanent",
+            "engagementNote": "silent on engagement, and advertised through an employer applicant-tracking board",
+            "mandate": {
+              "signals": [],
+              "quotes": [],
+              "level": "head-lead",
+              "strength": "none"
+            }
           },
           {
             "title": "Staff Engineer - Data Semantics",
             "location": "Madrid, Spain; Paris, France",
             "url": "https://careers.datadoghq.com/detail/8043560/?gh_jid=8043560",
             "rust": false,
-            "rustInTitle": false
+            "rustInTitle": false,
+            "workPattern": "onsite",
+            "workPatternNote": "names \"Madrid, Spain; Paris, France\" with no remote wording",
+            "engagement": "permanent",
+            "engagementNote": "silent on engagement, and advertised through an employer applicant-tracking board",
+            "mandate": {
+              "signals": [],
+              "quotes": [],
+              "level": "head-lead",
+              "strength": "none"
+            }
           },
           {
             "title": "Staff Engineer, Compute",
             "location": "Dublin, Ireland; Madrid, Spain; Paris, France",
             "url": "https://careers.datadoghq.com/detail/8139277/?gh_jid=8139277",
             "rust": false,
-            "rustInTitle": false
+            "rustInTitle": false,
+            "workPattern": "onsite",
+            "workPatternNote": "names \"Dublin, Ireland; Madrid, Spain; Paris, France\" with no remote wording",
+            "engagement": "permanent",
+            "engagementNote": "silent on engagement, and advertised through an employer applicant-tracking board",
+            "mandate": {
+              "signals": [],
+              "quotes": [],
+              "level": "head-lead",
+              "strength": "none"
+            }
           },
           {
             "title": "Staff Engineer, Compute",
             "location": "Lisbon, Portugal",
             "url": "https://careers.datadoghq.com/detail/8139279/?gh_jid=8139279",
             "rust": false,
-            "rustInTitle": false
+            "rustInTitle": false,
+            "workPattern": "onsite",
+            "workPatternNote": "names \"Lisbon, Portugal\" with no remote wording",
+            "engagement": "permanent",
+            "engagementNote": "silent on engagement, and advertised through an employer applicant-tracking board",
+            "mandate": {
+              "signals": [],
+              "quotes": [],
+              "level": "head-lead",
+              "strength": "none"
+            }
           },
           {
             "title": "Staff Software Engineer - Security Agent",
             "location": "France, Remote; Germany, Remote; Ireland, Remote; Italy, Remote; Spain, Remote",
             "url": "https://careers.datadoghq.com/detail/8007598/?gh_jid=8007598",
             "rust": false,
-            "rustInTitle": false
+            "rustInTitle": false,
+            "workPattern": "remote-anywhere",
+            "workPatternNote": "says \"remote\"",
+            "engagement": "permanent",
+            "engagementNote": "silent on engagement, and advertised through an employer applicant-tracking board",
+            "mandate": {
+              "signals": [],
+              "quotes": [],
+              "level": "head-lead",
+              "strength": "none"
+            }
           }
         ]
       },
@@ -2565,56 +3515,136 @@
             "location": "London; Sunnyvale",
             "url": "https://wayve.firststage.co/jobs?gh_jid=8749904002",
             "rust": false,
-            "rustInTitle": false
+            "rustInTitle": false,
+            "workPattern": "onsite",
+            "workPatternNote": "names \"London; Sunnyvale\" with no remote wording",
+            "engagement": "permanent",
+            "engagementNote": "silent on engagement, and advertised through an employer applicant-tracking board",
+            "mandate": {
+              "signals": [],
+              "quotes": [],
+              "level": "other",
+              "strength": "none"
+            }
           },
           {
             "title": "Controls Engineer",
             "location": "London",
             "url": "https://wayve.firststage.co/jobs?gh_jid=8761847002",
             "rust": false,
-            "rustInTitle": false
+            "rustInTitle": false,
+            "workPattern": "onsite",
+            "workPatternNote": "names \"London\" with no remote wording",
+            "engagement": "permanent",
+            "engagementNote": "silent on engagement, and advertised through an employer applicant-tracking board",
+            "mandate": {
+              "signals": [],
+              "quotes": [],
+              "level": "other",
+              "strength": "none"
+            }
           },
           {
             "title": "DevOps Engineer",
             "location": "London",
             "url": "https://wayve.firststage.co/jobs?gh_jid=8745282002",
             "rust": false,
-            "rustInTitle": false
+            "rustInTitle": false,
+            "workPattern": "onsite",
+            "workPatternNote": "names \"London\" with no remote wording",
+            "engagement": "permanent",
+            "engagementNote": "silent on engagement, and advertised through an employer applicant-tracking board",
+            "mandate": {
+              "signals": [],
+              "quotes": [],
+              "level": "other",
+              "strength": "none"
+            }
           },
           {
             "title": "Director AV Product Engineering",
             "location": "London; Sunnyvale",
             "url": "https://wayve.firststage.co/jobs?gh_jid=8561338002",
             "rust": false,
-            "rustInTitle": false
+            "rustInTitle": false,
+            "workPattern": "onsite",
+            "workPatternNote": "names \"London; Sunnyvale\" with no remote wording",
+            "engagement": "permanent",
+            "engagementNote": "silent on engagement, and advertised through an employer applicant-tracking board",
+            "mandate": {
+              "signals": [],
+              "quotes": [],
+              "level": "director",
+              "strength": "none"
+            }
           },
           {
             "title": "Embedded Automotive Platforms Software Engineer",
             "location": "London",
             "url": "https://wayve.firststage.co/jobs?gh_jid=8585251002",
             "rust": false,
-            "rustInTitle": false
+            "rustInTitle": false,
+            "workPattern": "onsite",
+            "workPatternNote": "names \"London\" with no remote wording",
+            "engagement": "permanent",
+            "engagementNote": "silent on engagement, and advertised through an employer applicant-tracking board",
+            "mandate": {
+              "signals": [],
+              "quotes": [],
+              "level": "other",
+              "strength": "none"
+            }
           },
           {
             "title": "Engineering Manager, Runtime Platform, Robot Software",
             "location": "London",
             "url": "https://wayve.firststage.co/jobs?gh_jid=8708581002",
             "rust": false,
-            "rustInTitle": false
+            "rustInTitle": false,
+            "workPattern": "onsite",
+            "workPatternNote": "names \"London\" with no remote wording",
+            "engagement": "permanent",
+            "engagementNote": "silent on engagement, and advertised through an employer applicant-tracking board",
+            "mandate": {
+              "signals": [],
+              "quotes": [],
+              "level": "head-lead",
+              "strength": "none"
+            }
           },
           {
             "title": "Engineering Technician",
             "location": "London",
             "url": "https://wayve.firststage.co/jobs?gh_jid=8600235002",
             "rust": false,
-            "rustInTitle": false
+            "rustInTitle": false,
+            "workPattern": "onsite",
+            "workPatternNote": "names \"London\" with no remote wording",
+            "engagement": "permanent",
+            "engagementNote": "silent on engagement, and advertised through an employer applicant-tracking board",
+            "mandate": {
+              "signals": [],
+              "quotes": [],
+              "level": "other",
+              "strength": "none"
+            }
           },
           {
             "title": "Full-Stack Software Engineer, Model Development Platform",
             "location": "London; Sunnyvale",
             "url": "https://wayve.firststage.co/jobs?gh_jid=8725207002",
             "rust": false,
-            "rustInTitle": false
+            "rustInTitle": false,
+            "workPattern": "onsite",
+            "workPatternNote": "names \"London; Sunnyvale\" with no remote wording",
+            "engagement": "permanent",
+            "engagementNote": "silent on engagement, and advertised through an employer applicant-tracking board",
+            "mandate": {
+              "signals": [],
+              "quotes": [],
+              "level": "other",
+              "strength": "none"
+            }
           }
         ]
       },
@@ -2663,14 +3693,19 @@
         "targets"
       ],
       "sector": "Social and AI platforms",
-      "techStackNote": "Bookmarked Software Engineering Manager roles for Product Generalist and Systems Generalist. Own careers system, no public feed.",
-      "ukLocations": "London",
       "source": "bookmarks export, 17 Sep 2026",
-      "ticker": "META"
+      "techStackNote": "Bookmarked Software Engineering Manager roles for Product Generalist and Systems Generalist. Own careers system, no public feed.",
+      "ticker": "META",
+      "ukLocations": "London"
     },
     {
       "name": "Coinbase",
       "careersUrl": "https://www.coinbase.com/careers",
+      "ats": {
+        "provider": "greenhouse",
+        "slug": "cdpjobs",
+        "source": "bookmarked job board"
+      },
       "confidence": "sand",
       "exchange": "NASDAQ",
       "hiresEngineersInUk": true,
@@ -2678,15 +3713,10 @@
         "targets"
       ],
       "sector": "Crypto exchange and developer platform",
-      "techStackNote": "Bookmarked Engineering Manager, TLM (Commerce) on the Coinbase Developer Platform board. Rust and Go in the protocol stack.",
-      "ukLocations": "London",
       "source": "bookmarks export, 17 Sep 2026",
+      "techStackNote": "Bookmarked Engineering Manager, TLM (Commerce) on the Coinbase Developer Platform board. Rust and Go in the protocol stack.",
       "ticker": "COIN",
-      "ats": {
-        "provider": "greenhouse",
-        "slug": "cdpjobs",
-        "source": "bookmarked job board"
-      }
+      "ukLocations": "London"
     },
     {
       "name": "BlackRock",
@@ -2698,10 +3728,10 @@
         "targets"
       ],
       "sector": "Asset management technology (Aladdin)",
-      "techStackNote": "Aladdin platform engineering in London. Bookmarked via a jobs aggregator; applies through Workday.",
-      "ukLocations": "London",
       "source": "bookmarks export, 17 Sep 2026",
-      "ticker": "BLK"
+      "techStackNote": "Aladdin platform engineering in London. Bookmarked via a jobs aggregator; applies through Workday.",
+      "ticker": "BLK",
+      "ukLocations": "London"
     },
     {
       "name": "Block",
@@ -2713,10 +3743,10 @@
         "targets"
       ],
       "sector": "Payments and bitcoin infrastructure",
-      "techStackNote": "Square, Cash App and Spiral. Rust in the bitcoin stack. Bookmarked careers page.",
-      "ukLocations": "London",
       "source": "bookmarks export, 17 Sep 2026",
-      "ticker": "XYZ"
+      "techStackNote": "Square, Cash App and Spiral. Rust in the bitcoin stack. Bookmarked careers page.",
+      "ticker": "XYZ",
+      "ukLocations": "London"
     },
     {
       "name": "Alphabet (Google DeepMind)",
@@ -2728,50 +3758,50 @@
         "targets"
       ],
       "sector": "AI research and infrastructure",
-      "techStackNote": "DeepMind is London-headquartered. Bookmarked careers page.",
-      "ukLocations": "London",
       "source": "bookmarks export, 17 Sep 2026",
-      "ticker": "GOOGL"
+      "techStackNote": "DeepMind is London-headquartered. Bookmarked careers page.",
+      "ticker": "GOOGL",
+      "ukLocations": "London"
     },
     {
       "name": "PolyAI",
       "careersUrl": "https://poly.ai/careers/",
-      "confidence": "sand",
-      "exchange": "Private",
-      "hiresEngineersInUk": true,
-      "indices": [
-        "targets"
-      ],
-      "sector": "Conversational AI",
-      "techStackNote": "London-headquartered voice AI. Bookmarked job board.",
-      "ukLocations": "London",
-      "source": "bookmarks export, 17 Sep 2026",
-      "mark": "POL",
       "ats": {
         "provider": "greenhouse",
         "slug": "polyai",
         "source": "bookmarked job board"
-      }
-    },
-    {
-      "name": "OakNorth",
-      "careersUrl": "https://jobs.lever.co/oaknorth.ai",
+      },
       "confidence": "sand",
       "exchange": "Private",
       "hiresEngineersInUk": true,
       "indices": [
         "targets"
       ],
-      "sector": "Fintech lending",
-      "techStackNote": "London bank and lending platform. Bookmarked job board.",
-      "ukLocations": "London",
+      "mark": "POL",
+      "sector": "Conversational AI",
       "source": "bookmarks export, 17 Sep 2026",
-      "mark": "OAK",
+      "techStackNote": "London-headquartered voice AI. Bookmarked job board.",
+      "ukLocations": "London"
+    },
+    {
+      "name": "OakNorth",
+      "careersUrl": "https://jobs.lever.co/oaknorth.ai",
       "ats": {
         "provider": "lever",
         "slug": "oaknorth.ai",
         "source": "bookmarked job board"
-      }
+      },
+      "confidence": "sand",
+      "exchange": "Private",
+      "hiresEngineersInUk": true,
+      "indices": [
+        "targets"
+      ],
+      "mark": "OAK",
+      "sector": "Fintech lending",
+      "source": "bookmarks export, 17 Sep 2026",
+      "techStackNote": "London bank and lending platform. Bookmarked job board.",
+      "ukLocations": "London"
     },
     {
       "name": "Ripjar",
@@ -2782,31 +3812,31 @@
       "indices": [
         "targets"
       ],
+      "mark": "RIP",
       "sector": "Data intelligence and risk",
-      "techStackNote": "Founded by GCHQ alumni. London. Bookmarked job board.",
-      "ukLocations": "London",
       "source": "bookmarks export, 17 Sep 2026",
-      "mark": "RIP"
+      "techStackNote": "Founded by GCHQ alumni. London. Bookmarked job board.",
+      "ukLocations": "London"
     },
     {
       "name": "Legora",
       "careersUrl": "https://jobs.ashbyhq.com/legora",
+      "ats": {
+        "provider": "ashby",
+        "slug": "legora",
+        "source": "bookmarked job board"
+      },
       "confidence": "water",
       "exchange": "Private",
       "hiresEngineersInUk": true,
       "indices": [
         "targets"
       ],
-      "sector": "Legal AI",
-      "techStackNote": "Stockholm-founded legal AI with a London office. Bookmarked a software engineer role.",
-      "ukLocations": "London",
-      "source": "bookmarks export, 17 Sep 2026",
       "mark": "LEG",
-      "ats": {
-        "provider": "ashby",
-        "slug": "legora",
-        "source": "bookmarked job board"
-      }
+      "sector": "Legal AI",
+      "source": "bookmarks export, 17 Sep 2026",
+      "techStackNote": "Stockholm-founded legal AI with a London office. Bookmarked a software engineer role.",
+      "ukLocations": "London"
     },
     {
       "name": "Metomic",
@@ -2817,240 +3847,220 @@
       "indices": [
         "targets"
       ],
+      "mark": "MET",
       "sector": "Data security",
-      "techStackNote": "London data security startup. Bookmarked a founding engineer role.",
-      "ukLocations": "London",
       "source": "bookmarks export, 17 Sep 2026",
-      "mark": "MET"
+      "techStackNote": "London data security startup. Bookmarked a founding engineer role.",
+      "ukLocations": "London"
     },
     {
       "name": "Threads Styling",
       "careersUrl": "https://apply.workable.com/threadsstyling/",
+      "ats": {
+        "provider": "workable",
+        "slug": "threadsstyling",
+        "source": "bookmarked job board"
+      },
       "confidence": "water",
       "exchange": "Private",
       "hiresEngineersInUk": true,
       "indices": [
         "targets"
       ],
-      "sector": "Luxury commerce",
-      "techStackNote": "Bookmarked a Head of Engineering role. London.",
-      "ukLocations": "London",
-      "source": "bookmarks export, 17 Sep 2026",
       "mark": "THR",
-      "ats": {
-        "provider": "workable",
-        "slug": "threadsstyling",
-        "source": "bookmarked job board"
-      }
+      "sector": "Luxury commerce",
+      "source": "bookmarks export, 17 Sep 2026",
+      "techStackNote": "Bookmarked a Head of Engineering role. London.",
+      "ukLocations": "London"
     },
     {
       "name": "Ebury",
       "careersUrl": "https://boards.eu.greenhouse.io/ebury",
+      "ats": {
+        "provider": "greenhouse",
+        "slug": "ebury",
+        "source": "bookmarked job board"
+      },
       "confidence": "rock",
       "exchange": "Private",
       "hiresEngineersInUk": true,
       "indices": [
         "targets"
       ],
-      "sector": "FX and payments",
-      "techStackNote": "Majority owned by Santander and IPO-tracked. You worked here in 2025.",
-      "ukLocations": "London",
-      "source": "bookmarks export, 17 Sep 2026",
       "mark": "EBU",
-      "ats": {
-        "provider": "greenhouse",
-        "slug": "ebury",
-        "source": "bookmarked job board"
-      }
+      "sector": "FX and payments",
+      "source": "bookmarks export, 17 Sep 2026",
+      "techStackNote": "Majority owned by Santander and IPO-tracked. You worked here in 2025.",
+      "ukLocations": "London"
     },
     {
       "name": "Mercury",
       "careersUrl": "https://mercury.com/jobs",
-      "confidence": "water",
-      "exchange": "Private",
-      "hiresEngineersInUk": true,
-      "indices": [
-        "targets"
-      ],
-      "sector": "Banking for startups",
-      "techStackNote": "Bookmarked VP of Engineering, Product. Check UK eligibility before applying.",
-      "ukLocations": "Remote (US-centric)",
-      "source": "bookmarks export, 17 Sep 2026",
-      "mark": "MER",
       "ats": {
         "provider": "greenhouse",
         "slug": "mercury",
         "source": "bookmarked job board"
-      }
-    },
-    {
-      "name": "Netlify",
-      "careersUrl": "https://www.netlify.com/careers/",
+      },
       "confidence": "water",
       "exchange": "Private",
       "hiresEngineersInUk": true,
       "indices": [
         "targets"
       ],
-      "sector": "Developer platform",
-      "techStackNote": "Bookmarked a staff developer tooling role. Remote-first.",
-      "ukLocations": "Remote",
+      "mark": "MER",
+      "sector": "Banking for startups",
       "source": "bookmarks export, 17 Sep 2026",
-      "mark": "NET",
+      "techStackNote": "Bookmarked VP of Engineering, Product. Check UK eligibility before applying.",
+      "ukLocations": "Remote (US-centric)"
+    },
+    {
+      "name": "Netlify",
+      "careersUrl": "https://www.netlify.com/careers/",
       "ats": {
         "provider": "greenhouse",
         "slug": "netlify",
         "source": "bookmarked job board"
-      }
+      },
+      "confidence": "water",
+      "exchange": "Private",
+      "hiresEngineersInUk": true,
+      "indices": [
+        "targets"
+      ],
+      "mark": "NET",
+      "sector": "Developer platform",
+      "source": "bookmarks export, 17 Sep 2026",
+      "techStackNote": "Bookmarked a staff developer tooling role. Remote-first.",
+      "ukLocations": "Remote"
     },
     {
       "name": "Pulumi",
       "careersUrl": "https://www.pulumi.com/careers/",
+      "ats": {
+        "provider": "greenhouse",
+        "slug": "pulumicorporation",
+        "source": "bookmarked job board"
+      },
       "confidence": "sand",
       "exchange": "Private",
       "hiresEngineersInUk": true,
       "indices": [
         "targets"
       ],
-      "sector": "Infrastructure as code",
-      "techStackNote": "You use Pulumi in production. Remote-first, Go and TypeScript.",
-      "ukLocations": "Remote",
-      "source": "bookmarks export, 17 Sep 2026",
       "mark": "PUL",
-      "ats": {
-        "provider": "greenhouse",
-        "slug": "pulumicorporation",
-        "source": "bookmarked job board"
-      }
+      "sector": "Infrastructure as code",
+      "source": "bookmarks export, 17 Sep 2026",
+      "techStackNote": "You use Pulumi in production. Remote-first, Go and TypeScript.",
+      "ukLocations": "Remote"
     },
     {
       "name": "Runway",
       "careersUrl": "https://runwayml.com/careers",
-      "confidence": "water",
-      "exchange": "Private",
-      "hiresEngineersInUk": true,
-      "indices": [
-        "targets"
-      ],
-      "sector": "Generative video",
-      "techStackNote": "Bookmarked job board. Has a London presence.",
-      "ukLocations": "London, New York",
-      "source": "bookmarks export, 17 Sep 2026",
-      "mark": "RUN",
       "ats": {
         "provider": "greenhouse",
         "slug": "runwayml",
         "source": "bookmarked job board"
-      }
+      },
+      "confidence": "water",
+      "exchange": "Private",
+      "hiresEngineersInUk": true,
+      "indices": [
+        "targets"
+      ],
+      "mark": "RUN",
+      "sector": "Generative video",
+      "source": "bookmarks export, 17 Sep 2026",
+      "techStackNote": "Bookmarked job board. Has a London presence.",
+      "ukLocations": "London, New York"
     },
     {
       "name": "Modern Treasury",
       "careersUrl": "https://jobs.ashbyhq.com/moderntreasury",
-      "confidence": "water",
-      "exchange": "Private",
-      "hiresEngineersInUk": true,
-      "indices": [
-        "targets"
-      ],
-      "sector": "Payment operations",
-      "techStackNote": "Bookmarked job board. Check UK eligibility.",
-      "ukLocations": "Remote (US-centric)",
-      "source": "bookmarks export, 17 Sep 2026",
-      "mark": "MTR",
       "ats": {
         "provider": "ashby",
         "slug": "moderntreasury",
         "source": "bookmarked job board"
-      }
+      },
+      "confidence": "water",
+      "exchange": "Private",
+      "hiresEngineersInUk": true,
+      "indices": [
+        "targets"
+      ],
+      "mark": "MTR",
+      "sector": "Payment operations",
+      "source": "bookmarks export, 17 Sep 2026",
+      "techStackNote": "Bookmarked job board. Check UK eligibility.",
+      "ukLocations": "Remote (US-centric)"
     },
     {
       "name": "Checkly",
       "careersUrl": "https://jobs.ashbyhq.com/checkly",
-      "confidence": "water",
-      "exchange": "Private",
-      "hiresEngineersInUk": true,
-      "indices": [
-        "targets"
-      ],
-      "sector": "Monitoring and developer tooling",
-      "techStackNote": "Bookmarked a staff platform engineer role. Remote Europe.",
-      "ukLocations": "Remote (Europe)",
-      "source": "bookmarks export, 17 Sep 2026",
-      "mark": "CHK",
       "ats": {
         "provider": "ashby",
         "slug": "checkly",
         "source": "bookmarked job board"
-      }
+      },
+      "confidence": "water",
+      "exchange": "Private",
+      "hiresEngineersInUk": true,
+      "indices": [
+        "targets"
+      ],
+      "mark": "CHK",
+      "sector": "Monitoring and developer tooling",
+      "source": "bookmarks export, 17 Sep 2026",
+      "techStackNote": "Bookmarked a staff platform engineer role. Remote Europe.",
+      "ukLocations": "Remote (Europe)"
     },
     {
       "name": "Culture Amp",
       "careersUrl": "https://www.cultureamp.com/company/careers",
-      "confidence": "water",
-      "exchange": "Private",
-      "hiresEngineersInUk": true,
-      "indices": [
-        "targets"
-      ],
-      "sector": "People analytics",
-      "techStackNote": "Bookmarked job board.",
-      "ukLocations": "Remote, London",
-      "source": "bookmarks export, 17 Sep 2026",
-      "mark": "CAM",
       "ats": {
         "provider": "greenhouse",
         "slug": "cultureamp",
         "source": "bookmarked job board"
-      }
-    },
-    {
-      "name": "Mollie",
-      "careersUrl": "https://jobs.lever.co/mollie",
+      },
       "confidence": "water",
       "exchange": "Private",
       "hiresEngineersInUk": true,
       "indices": [
         "targets"
       ],
-      "sector": "Payments",
-      "techStackNote": "Bookmarked a senior software engineer role. European payments.",
-      "ukLocations": "Amsterdam, London",
+      "mark": "CAM",
+      "sector": "People analytics",
       "source": "bookmarks export, 17 Sep 2026",
-      "mark": "MOL",
+      "techStackNote": "Bookmarked job board.",
+      "ukLocations": "Remote, London"
+    },
+    {
+      "name": "Mollie",
+      "careersUrl": "https://jobs.lever.co/mollie",
       "ats": {
         "provider": "lever",
         "slug": "mollie",
         "source": "bookmarked job board"
-      }
+      },
+      "confidence": "water",
+      "exchange": "Private",
+      "hiresEngineersInUk": true,
+      "indices": [
+        "targets"
+      ],
+      "mark": "MOL",
+      "sector": "Payments",
+      "source": "bookmarks export, 17 Sep 2026",
+      "techStackNote": "Bookmarked a senior software engineer role. European payments.",
+      "ukLocations": "Amsterdam, London"
     },
     {
       "name": "Thunes",
       "careersUrl": "https://www.thunes.com/careers/",
-      "website": "https://www.thunes.com/",
       "evidence": "https://boards-api.greenhouse.io/v1/boards/thunes/jobs",
       "ats": {
         "provider": "greenhouse",
         "slug": "thunes",
         "source": "user-supplied-posting"
-      },
-      "confidence": "rock",
-      "employeeScale": "500-1k",
-      "exchange": "Private",
-      "hiresEngineersInUk": true,
-      "indices": [
-        "targets"
-      ],
-      "sector": "Cross-border payments",
-      "techStackNote": "Go services over relational stores, event-driven with Kafka and AWS SNS/SQS.",
-      "ukLocations": "London",
-      "source": "user-supplied 2026-09-20",
-      "marketReach": "multi-region",
-      "orgScale": "500m-plus",
-      "engagesB2b": false,
-      "derivedFrom": {
-        "orgScale": "headcount band \"500-1k\" and 14 offices worldwide, not revenue",
-        "marketReach": "14 offices across 13 countries, 130 payout markets",
-        "engagesB2b": "all six UK roles advertised through Greenhouse as employment"
       },
       "openings": {
         "total": 45,
@@ -3066,16 +4076,601 @@
             "location": "London, England, United Kingdom",
             "url": "https://www.thunes.com/jobs/7785515003?gh_jid=7785515003",
             "rust": false,
-            "rustInTitle": false
+            "rustInTitle": false,
+            "workPattern": "onsite",
+            "workPatternNote": "names \"London, England, United Kingdom\" with no remote wording",
+            "engagement": "permanent",
+            "engagementNote": "silent on engagement, and advertised through an employer applicant-tracking board",
+            "mandate": {
+              "signals": [],
+              "quotes": [],
+              "level": "other",
+              "strength": "none"
+            }
           }
         ]
-      }
+      },
+      "marketReach": "multi-region",
+      "orgScale": "500m-plus",
+      "engagesB2b": false,
+      "derivedFrom": {
+        "engagesB2b": "all six UK roles advertised through Greenhouse as employment",
+        "marketReach": "14 offices across 13 countries, 130 payout markets",
+        "orgScale": "headcount band \"500-1k\" and 14 offices worldwide, not revenue"
+      },
+      "confidence": "rock",
+      "employeeScale": "500-1k",
+      "exchange": "Private",
+      "hiresEngineersInUk": true,
+      "indices": [
+        "targets"
+      ],
+      "sector": "Cross-border payments",
+      "source": "user-supplied 2026-09-20",
+      "techStackNote": "Go services over relational stores, event-driven with Kafka and AWS SNS/SQS.",
+      "ukLocations": "London",
+      "website": "https://www.thunes.com/"
     },
     {
       "name": "Outside IR35 Tech Jobs (board)",
       "careersUrl": "https://outsideir35.org.uk/",
-      "website": "https://outsideir35.org.uk/",
       "evidence": "https://outsideir35.org.uk/",
+      "openings": {
+        "total": 30,
+        "uk": 30,
+        "ukEngineering": 15,
+        "ukRust": 0,
+        "ukRustInTitle": 0,
+        "rust": 0,
+        "checkedOn": "2026-09-20",
+        "roles": [
+          {
+            "title": "IFS Technical Consultant",
+            "location": "United Kingdom (Remote)",
+            "url": "https://outsideir35.org.uk/jobs/ifs-technical-consultant/dqti3wuoFl",
+            "rust": false,
+            "rustInTitle": false,
+            "workPattern": "remote-uk",
+            "workPatternNote": "says \"remote\" and ties the role to the UK",
+            "engagement": "outside-ir35",
+            "engagementNote": "silent on engagement, and listed on a board that admits outside-IR35 roles only",
+            "mandate": {
+              "signals": [],
+              "quotes": [],
+              "level": "other",
+              "strength": "none"
+            }
+          },
+          {
+            "title": "QA Engineer",
+            "location": "United Kingdom (Remote)",
+            "url": "https://outsideir35.org.uk/jobs/qa-engineer/5hlFXmNb8G",
+            "rust": false,
+            "rustInTitle": false,
+            "workPattern": "remote-uk",
+            "workPatternNote": "says \"remote\" and ties the role to the UK",
+            "engagement": "outside-ir35",
+            "engagementNote": "silent on engagement, and listed on a board that admits outside-IR35 roles only",
+            "mandate": {
+              "signals": [],
+              "quotes": [],
+              "boilerplate": [
+                "mentor junior engineers",
+                "mentor junior"
+              ],
+              "level": "other",
+              "strength": "boilerplate"
+            }
+          },
+          {
+            "title": "Quality Assurance Engineer",
+            "location": "England (Remote)",
+            "url": "https://outsideir35.org.uk/jobs/quality-assurance-engineer/1EzL3EeQ82",
+            "rust": false,
+            "rustInTitle": false,
+            "workPattern": "remote-uk",
+            "workPatternNote": "says \"remote\" and ties the role to the UK",
+            "engagement": "outside-ir35",
+            "engagementNote": "silent on engagement, and listed on a board that admits outside-IR35 roles only",
+            "mandate": {
+              "signals": [],
+              "quotes": [],
+              "level": "other",
+              "strength": "none"
+            }
+          },
+          {
+            "title": "RAID Lead / Programme Planner",
+            "location": "United Kingdom (Remote)",
+            "url": "https://outsideir35.org.uk/jobs/raid-lead-programme-planner/eaePutKi4T",
+            "rust": false,
+            "rustInTitle": false,
+            "workPattern": "remote-uk",
+            "workPatternNote": "says \"remote\" and ties the role to the UK",
+            "engagement": "outside-ir35",
+            "engagementNote": "silent on engagement, and listed on a board that admits outside-IR35 roles only",
+            "mandate": {
+              "signals": [],
+              "quotes": [],
+              "level": "other",
+              "strength": "none"
+            }
+          },
+          {
+            "title": "Software Developer",
+            "location": "Cardiff (Remote)",
+            "url": "https://outsideir35.org.uk/jobs/software-developer/pO7NIvEqmP",
+            "rust": false,
+            "rustInTitle": false,
+            "workPattern": "remote-anywhere",
+            "workPatternNote": "says \"remote\"",
+            "engagement": "outside-ir35",
+            "engagementNote": "silent on engagement, and listed on a board that admits outside-IR35 roles only",
+            "mandate": {
+              "signals": [],
+              "quotes": [],
+              "level": "other",
+              "strength": "none"
+            }
+          },
+          {
+            "title": "Software Engineer",
+            "location": "United Kingdom (Remote)",
+            "url": "https://outsideir35.org.uk/jobs/software-engineer/LMikIIdVX6",
+            "rust": false,
+            "rustInTitle": false,
+            "workPattern": "remote-anywhere",
+            "workPatternNote": "says \"work from anywhere\"",
+            "engagement": "outside-ir35",
+            "engagementNote": "silent on engagement, and listed on a board that admits outside-IR35 roles only",
+            "mandate": {
+              "signals": [],
+              "quotes": [],
+              "level": "other",
+              "strength": "none"
+            }
+          },
+          {
+            "title": "Application Support Engineer",
+            "location": "London Area (Hybrid)",
+            "url": "https://outsideir35.org.uk/jobs/application-support-engineer/V10zwNmnrs",
+            "rust": false,
+            "rustInTitle": false,
+            "workPattern": "hybrid-two-plus",
+            "workPatternNote": "says \"hybrid\" with no stated office day count",
+            "engagement": "outside-ir35",
+            "engagementNote": "silent on engagement, and listed on a board that admits outside-IR35 roles only",
+            "mandate": {
+              "signals": [],
+              "quotes": [],
+              "level": "other",
+              "strength": "none"
+            }
+          },
+          {
+            "title": "Bi/GCP Analyst",
+            "location": "City Of London (On-site)",
+            "url": "https://outsideir35.org.uk/jobs/bi-gcp-analyst/v11BfOGHKg",
+            "rust": false,
+            "rustInTitle": false,
+            "workPattern": "onsite",
+            "workPatternNote": "says \"on site\"",
+            "engagement": "b2b-day-rate",
+            "engagementNote": "says \"contract position\"",
+            "mandate": {
+              "signals": [],
+              "quotes": [],
+              "boilerplate": [
+                "collaborate with stakeholders"
+              ],
+              "level": "other",
+              "strength": "boilerplate"
+            }
+          },
+          {
+            "title": "D365 ERP Project Manager",
+            "location": "London Area (Hybrid)",
+            "url": "https://outsideir35.org.uk/jobs/d365-erp-project-manager/trlCAsOiiu",
+            "rust": false,
+            "rustInTitle": false,
+            "workPattern": "hybrid-two-plus",
+            "workPatternNote": "says \"hybrid\" with no stated office day count",
+            "engagement": "outside-ir35",
+            "engagementNote": "silent on engagement, and listed on a board that admits outside-IR35 roles only",
+            "mandate": {
+              "signals": [],
+              "quotes": [],
+              "level": "other",
+              "strength": "none"
+            }
+          },
+          {
+            "title": "Data Lead",
+            "location": "London Area (Hybrid)",
+            "url": "https://outsideir35.org.uk/jobs/data-lead/8qfdhVAoaf",
+            "rust": false,
+            "rustInTitle": false,
+            "workPattern": "hybrid-two-plus",
+            "workPatternNote": "says \"hybrid\" with no stated office day count",
+            "engagement": "outside-ir35",
+            "engagementNote": "silent on engagement, and listed on a board that admits outside-IR35 roles only",
+            "mandate": {
+              "signals": [],
+              "quotes": [],
+              "level": "other",
+              "strength": "none"
+            }
+          },
+          {
+            "title": "Data Scientist",
+            "location": "London Area (Hybrid)",
+            "url": "https://outsideir35.org.uk/jobs/data-scientist/TQShSkhK2V",
+            "rust": false,
+            "rustInTitle": false,
+            "workPattern": "hybrid-two-plus",
+            "workPatternNote": "says \"hybrid\" with no stated office day count",
+            "engagement": "b2b-day-rate",
+            "engagementNote": "says \"contract role\"",
+            "mandate": {
+              "signals": [],
+              "quotes": [],
+              "level": "other",
+              "strength": "none"
+            }
+          },
+          {
+            "title": "DevOps Engineer",
+            "location": "England (Hybrid)",
+            "url": "https://outsideir35.org.uk/jobs/devops-engineer/ThR6lBGlKo",
+            "rust": false,
+            "rustInTitle": false,
+            "workPattern": "hybrid-two-plus",
+            "workPatternNote": "says \"hybrid\" with no stated office day count",
+            "engagement": "outside-ir35",
+            "engagementNote": "silent on engagement, and listed on a board that admits outside-IR35 roles only",
+            "mandate": {
+              "signals": [],
+              "quotes": [],
+              "level": "other",
+              "strength": "none"
+            }
+          },
+          {
+            "title": "ERP Business Analyst",
+            "location": "London Area (On-site)",
+            "url": "https://outsideir35.org.uk/jobs/erp-business-analyst/bRRNRgqhQX",
+            "rust": false,
+            "rustInTitle": false,
+            "workPattern": "onsite",
+            "workPatternNote": "says \"on site\"",
+            "engagement": "outside-ir35",
+            "engagementNote": "silent on engagement, and listed on a board that admits outside-IR35 roles only",
+            "mandate": {
+              "signals": [],
+              "quotes": [],
+              "level": "other",
+              "strength": "none"
+            }
+          },
+          {
+            "title": "ERP Data Analyst",
+            "location": "London Area (On-site)",
+            "url": "https://outsideir35.org.uk/jobs/erp-data-analyst/tCe4hlfyfl",
+            "rust": false,
+            "rustInTitle": false,
+            "workPattern": "onsite",
+            "workPatternNote": "says \"on site\"",
+            "engagement": "outside-ir35",
+            "engagementNote": "silent on engagement, and listed on a board that admits outside-IR35 roles only",
+            "mandate": {
+              "signals": [],
+              "quotes": [],
+              "level": "other",
+              "strength": "none"
+            }
+          },
+          {
+            "title": "Head Of Artificial Intelligence",
+            "location": "London Area (Hybrid)",
+            "url": "https://outsideir35.org.uk/jobs/head-of-artificial-intelligence/45gZ5Bds8Z",
+            "rust": false,
+            "rustInTitle": false,
+            "workPattern": "hybrid-two-plus",
+            "workPatternNote": "says \"hybrid\" with no stated office day count",
+            "engagement": "outside-ir35",
+            "engagementNote": "silent on engagement, and listed on a board that admits outside-IR35 roles only",
+            "mandate": {
+              "signals": [
+                "hire-and-grow",
+                "research-to-production",
+                "owns-department"
+              ],
+              "quotes": [
+                "sting ai team while mentoring and guiding future hires develop and demonstrate proofs of concep",
+                "ding future hires develop and demonstrate proofs of concept pocs that showcase potential ai applicat",
+                "ons and legal responsibilities define the strategic direction for ai initiatives across the enterprise"
+              ],
+              "boilerplate": [
+                "mentoring"
+              ],
+              "level": "head-lead",
+              "strength": "strong"
+            }
+          },
+          {
+            "title": "Lead Integration Architect",
+            "location": "London Area (Hybrid)",
+            "url": "https://outsideir35.org.uk/jobs/lead-integration-architect/OOksNDzHtB",
+            "rust": false,
+            "rustInTitle": false,
+            "workPattern": "hybrid-two-plus",
+            "workPatternNote": "says \"hybrid\" with no stated office day count",
+            "engagement": "outside-ir35",
+            "engagementNote": "silent on engagement, and listed on a board that admits outside-IR35 roles only",
+            "mandate": {
+              "signals": [
+                "research-to-production"
+              ],
+              "quotes": [
+                "al design documentation support technical proof of concept and alpha delivery requirements active s"
+              ],
+              "level": "other",
+              "strength": "partial"
+            }
+          },
+          {
+            "title": "Mobile Architect",
+            "location": "City Of London (Hybrid)",
+            "url": "https://outsideir35.org.uk/jobs/mobile-architect/6NGgwDIUQ5",
+            "rust": false,
+            "rustInTitle": false,
+            "workPattern": "hybrid-two-plus",
+            "workPatternNote": "says \"hybrid\" with no stated office day count",
+            "engagement": "outside-ir35",
+            "engagementNote": "silent on engagement, and listed on a board that admits outside-IR35 roles only",
+            "mandate": {
+              "signals": [],
+              "quotes": [],
+              "level": "other",
+              "strength": "none"
+            }
+          },
+          {
+            "title": "Oracle Developer",
+            "location": "United Kingdom (Hybrid)",
+            "url": "https://outsideir35.org.uk/jobs/oracle-developer/dJ2viukEAo",
+            "rust": false,
+            "rustInTitle": false,
+            "workPattern": "hybrid-two-plus",
+            "workPatternNote": "says \"hybrid\" with no stated office day count",
+            "engagement": "b2b-day-rate",
+            "engagementNote": "says \"contract role\"",
+            "mandate": {
+              "signals": [],
+              "quotes": [],
+              "boilerplate": [
+                "knowledge sharing",
+                "collaborate with stakeholders"
+              ],
+              "level": "other",
+              "strength": "boilerplate"
+            }
+          },
+          {
+            "title": "Planning Engineer",
+            "location": "London Area (On-site)",
+            "url": "https://outsideir35.org.uk/jobs/planning-engineer/Dz10JYE09J",
+            "rust": false,
+            "rustInTitle": false,
+            "workPattern": "onsite",
+            "workPatternNote": "says \"on site\"",
+            "engagement": "outside-ir35",
+            "engagementNote": "silent on engagement, and listed on a board that admits outside-IR35 roles only",
+            "mandate": {
+              "signals": [],
+              "quotes": [],
+              "level": "other",
+              "strength": "none"
+            }
+          },
+          {
+            "title": "Planning Manager",
+            "location": "Kent (On-site)",
+            "url": "https://outsideir35.org.uk/jobs/planning-manager/sD7I9AxNNv",
+            "rust": false,
+            "rustInTitle": false,
+            "workPattern": "onsite",
+            "workPatternNote": "says \"on site\"",
+            "engagement": "outside-ir35",
+            "engagementNote": "silent on engagement, and listed on a board that admits outside-IR35 roles only",
+            "mandate": {
+              "signals": [],
+              "quotes": [],
+              "level": "other",
+              "strength": "none"
+            }
+          },
+          {
+            "title": "Platform Engineer",
+            "location": "London Area (Hybrid)",
+            "url": "https://outsideir35.org.uk/jobs/platform-engineer/CLmnbDJ2cx",
+            "rust": false,
+            "rustInTitle": false,
+            "workPattern": "hybrid-two-plus",
+            "workPatternNote": "says \"hybrid\" with no stated office day count",
+            "engagement": "outside-ir35",
+            "engagementNote": "silent on engagement, and listed on a board that admits outside-IR35 roles only",
+            "mandate": {
+              "signals": [],
+              "quotes": [],
+              "level": "other",
+              "strength": "none"
+            }
+          },
+          {
+            "title": "Platform Engineer",
+            "location": "England (Hybrid)",
+            "url": "https://outsideir35.org.uk/jobs/platform-engineer/JBwwsi6piS",
+            "rust": false,
+            "rustInTitle": false,
+            "workPattern": "hybrid-two-plus",
+            "workPatternNote": "says \"hybrid\" with no stated office day count",
+            "engagement": "outside-ir35",
+            "engagementNote": "silent on engagement, and listed on a board that admits outside-IR35 roles only",
+            "mandate": {
+              "signals": [],
+              "quotes": [],
+              "level": "other",
+              "strength": "none"
+            }
+          },
+          {
+            "title": "Project Manager",
+            "location": "Scotland (Hybrid)",
+            "url": "https://outsideir35.org.uk/jobs/project-manager/4VH6uG2N0W",
+            "rust": false,
+            "rustInTitle": false,
+            "workPattern": "hybrid-two-plus",
+            "workPatternNote": "says \"hybrid\" with no stated office day count",
+            "engagement": "outside-ir35",
+            "engagementNote": "silent on engagement, and listed on a board that admits outside-IR35 roles only",
+            "mandate": {
+              "signals": [],
+              "quotes": [],
+              "level": "other",
+              "strength": "none"
+            }
+          },
+          {
+            "title": "Project Manager",
+            "location": "Royal Sutton Coldfield (On-site)",
+            "url": "https://outsideir35.org.uk/jobs/project-manager/K1wq0RCiSA",
+            "rust": false,
+            "rustInTitle": false,
+            "workPattern": "onsite",
+            "workPatternNote": "says \"on site\"",
+            "engagement": "b2b-day-rate",
+            "engagementNote": "says \"contract position\"",
+            "mandate": {
+              "signals": [],
+              "quotes": [],
+              "level": "other",
+              "strength": "none"
+            }
+          },
+          {
+            "title": "Senior Data Engineer",
+            "location": "London (Hybrid)",
+            "url": "https://outsideir35.org.uk/jobs/senior-data-engineer/tOilMLlM1j",
+            "rust": false,
+            "rustInTitle": false,
+            "workPattern": "hybrid-two-plus",
+            "workPatternNote": "says \"hybrid\" with no stated office day count",
+            "engagement": "outside-ir35",
+            "engagementNote": "silent on engagement, and listed on a board that admits outside-IR35 roles only",
+            "mandate": {
+              "signals": [],
+              "quotes": [],
+              "level": "other",
+              "strength": "none"
+            }
+          },
+          {
+            "title": "Senior Java Engineer",
+            "location": "London Area (On-site)",
+            "url": "https://outsideir35.org.uk/jobs/senior-java-engineer/1KRXagF0mC",
+            "rust": false,
+            "rustInTitle": false,
+            "workPattern": "onsite",
+            "workPatternNote": "says \"on site\"",
+            "engagement": "outside-ir35",
+            "engagementNote": "silent on engagement, and listed on a board that admits outside-IR35 roles only",
+            "mandate": {
+              "signals": [
+                "greenfield"
+              ],
+              "quotes": [
+                "ion requires hands on involvement in both greenfield and brownfield development projects and"
+              ],
+              "level": "other",
+              "strength": "partial"
+            }
+          },
+          {
+            "title": "Senior Java/Aeron Engineers",
+            "location": "London Area (Hybrid)",
+            "url": "https://outsideir35.org.uk/jobs/senior-java-aeron-engineers/0M6231hwri",
+            "rust": false,
+            "rustInTitle": false,
+            "workPattern": "hybrid-two-plus",
+            "workPatternNote": "says \"hybrid\" with no stated office day count",
+            "engagement": "outside-ir35",
+            "engagementNote": "silent on engagement, and listed on a board that admits outside-IR35 roles only",
+            "mandate": {
+              "signals": [],
+              "quotes": [],
+              "level": "other",
+              "strength": "none"
+            }
+          },
+          {
+            "title": "Service Delivery Manager",
+            "location": "Basingstoke (On-site)",
+            "url": "https://outsideir35.org.uk/jobs/service-delivery-manager/CwT5FJJhRN",
+            "rust": false,
+            "rustInTitle": false,
+            "workPattern": "onsite",
+            "workPatternNote": "says \"on site\"",
+            "engagement": "b2b-day-rate",
+            "engagementNote": "says \"contract position\"",
+            "mandate": {
+              "signals": [],
+              "quotes": [],
+              "level": "other",
+              "strength": "none"
+            }
+          },
+          {
+            "title": "Technical Architect",
+            "location": "London Area (Hybrid)",
+            "url": "https://outsideir35.org.uk/jobs/technical-architect/qwujxl9Bbl",
+            "rust": false,
+            "rustInTitle": false,
+            "workPattern": "hybrid-two-plus",
+            "workPatternNote": "says \"hybrid\" with no stated office day count",
+            "engagement": "outside-ir35",
+            "engagementNote": "silent on engagement, and listed on a board that admits outside-IR35 roles only",
+            "mandate": {
+              "signals": [],
+              "quotes": [],
+              "level": "other",
+              "strength": "none"
+            }
+          },
+          {
+            "title": "Test Manager",
+            "location": "High Wycombe (Hybrid)",
+            "url": "https://outsideir35.org.uk/jobs/test-manager/0Bg4EnPQHQ",
+            "rust": false,
+            "rustInTitle": false,
+            "workPattern": "hybrid-two-plus",
+            "workPatternNote": "says \"hybrid\" with no stated office day count",
+            "engagement": "b2b-day-rate",
+            "engagementNote": "says \"contract role\"",
+            "mandate": {
+              "signals": [],
+              "quotes": [],
+              "level": "other",
+              "strength": "none"
+            }
+          }
+        ]
+      },
+      "engagesB2b": true,
+      "postingSource": "outside-ir35-board",
+      "derivedFrom": {
+        "engagesB2b": "the board admits outside-IR35 roles only"
+      },
       "confidence": "rock",
       "exchange": "Private",
       "hiresEngineersInUk": true,
@@ -3083,234 +4678,10 @@
         "targets"
       ],
       "sector": "Contract job board",
+      "source": "role-hunt 2026-09-20",
       "techStackNote": "Aggregates UK contract roles whose IR35 determination is outside. The determination is a property of the board, not of the posting text.",
       "ukLocations": "United Kingdom",
-      "source": "role-hunt 2026-09-20",
-      "engagesB2b": true,
-      "derivedFrom": {
-        "engagesB2b": "the board admits outside-IR35 roles only"
-      },
-      "openings": {
-        "total": 30,
-        "uk": 30,
-        "ukEngineering": 11,
-        "ukRust": 2,
-        "ukRustInTitle": 0,
-        "rust": 2,
-        "checkedOn": "2026-09-20",
-        "roles": [
-          {
-            "title": "Application Support Engineer",
-            "location": "London Area (Hybrid)",
-            "url": "https://outsideir35.org.uk/jobs/application-support-engineer/V10zwNmnrs",
-            "rust": false,
-            "rustInTitle": false
-          },
-          {
-            "title": "Bi/GCP Analyst",
-            "location": "City Of London (On-site)",
-            "url": "https://outsideir35.org.uk/jobs/bi-gcp-analyst/v11BfOGHKg",
-            "rust": false,
-            "rustInTitle": false
-          },
-          {
-            "title": "D365 ERP Project Manager",
-            "location": "London Area (Hybrid)",
-            "url": "https://outsideir35.org.uk/jobs/d365-erp-project-manager/trlCAsOiiu",
-            "rust": false,
-            "rustInTitle": false
-          },
-          {
-            "title": "Data Lead",
-            "location": "London Area (Hybrid)",
-            "url": "https://outsideir35.org.uk/jobs/data-lead/8qfdhVAoaf",
-            "rust": false,
-            "rustInTitle": false
-          },
-          {
-            "title": "Data Scientist",
-            "location": "London Area (Hybrid)",
-            "url": "https://outsideir35.org.uk/jobs/data-scientist/TQShSkhK2V",
-            "rust": false,
-            "rustInTitle": false
-          },
-          {
-            "title": "DevOps Engineer",
-            "location": "England (Hybrid)",
-            "url": "https://outsideir35.org.uk/jobs/devops-engineer/ThR6lBGlKo",
-            "rust": false,
-            "rustInTitle": false
-          },
-          {
-            "title": "ERP Business Analyst",
-            "location": "London Area (On-site)",
-            "url": "https://outsideir35.org.uk/jobs/erp-business-analyst/bRRNRgqhQX",
-            "rust": false,
-            "rustInTitle": false
-          },
-          {
-            "title": "ERP Data Analyst",
-            "location": "London Area (On-site)",
-            "url": "https://outsideir35.org.uk/jobs/erp-data-analyst/tCe4hlfyfl",
-            "rust": false,
-            "rustInTitle": false
-          },
-          {
-            "title": "Head Of Artificial Intelligence",
-            "location": "London Area (Hybrid)",
-            "url": "https://outsideir35.org.uk/jobs/head-of-artificial-intelligence/45gZ5Bds8Z",
-            "rust": false,
-            "rustInTitle": false
-          },
-          {
-            "title": "IFS Technical Consultant",
-            "location": "United Kingdom (Remote)",
-            "url": "https://outsideir35.org.uk/jobs/ifs-technical-consultant/dqti3wuoFl",
-            "rust": false,
-            "rustInTitle": false
-          },
-          {
-            "title": "Lead Integration Architect",
-            "location": "London Area (Hybrid)",
-            "url": "https://outsideir35.org.uk/jobs/lead-integration-architect/OOksNDzHtB",
-            "rust": false,
-            "rustInTitle": false
-          },
-          {
-            "title": "Mobile Architect",
-            "location": "City Of London (Hybrid)",
-            "url": "https://outsideir35.org.uk/jobs/mobile-architect/6NGgwDIUQ5",
-            "rust": false,
-            "rustInTitle": false
-          },
-          {
-            "title": "Oracle Developer",
-            "location": "United Kingdom (Hybrid)",
-            "url": "https://outsideir35.org.uk/jobs/oracle-developer/dJ2viukEAo",
-            "rust": false,
-            "rustInTitle": false
-          },
-          {
-            "title": "Planning Engineer",
-            "location": "London Area (On-site)",
-            "url": "https://outsideir35.org.uk/jobs/planning-engineer/Dz10JYE09J",
-            "rust": false,
-            "rustInTitle": false
-          },
-          {
-            "title": "Planning Manager",
-            "location": "Kent (On-site)",
-            "url": "https://outsideir35.org.uk/jobs/planning-manager/sD7I9AxNNv",
-            "rust": false,
-            "rustInTitle": false
-          },
-          {
-            "title": "Platform Engineer",
-            "location": "London Area (Hybrid)",
-            "url": "https://outsideir35.org.uk/jobs/platform-engineer/CLmnbDJ2cx",
-            "rust": false,
-            "rustInTitle": false
-          },
-          {
-            "title": "Platform Engineer",
-            "location": "England (Hybrid)",
-            "url": "https://outsideir35.org.uk/jobs/platform-engineer/JBwwsi6piS",
-            "rust": false,
-            "rustInTitle": false
-          },
-          {
-            "title": "Project Manager",
-            "location": "Scotland (Hybrid)",
-            "url": "https://outsideir35.org.uk/jobs/project-manager/4VH6uG2N0W",
-            "rust": false,
-            "rustInTitle": false
-          },
-          {
-            "title": "Project Manager",
-            "location": "Royal Sutton Coldfield (On-site)",
-            "url": "https://outsideir35.org.uk/jobs/project-manager/K1wq0RCiSA",
-            "rust": false,
-            "rustInTitle": false
-          },
-          {
-            "title": "QA Engineer",
-            "location": "United Kingdom (Remote)",
-            "url": "https://outsideir35.org.uk/jobs/qa-engineer/5hlFXmNb8G",
-            "rust": true,
-            "rustInTitle": false
-          },
-          {
-            "title": "Quality Assurance Engineer",
-            "location": "England (Remote)",
-            "url": "https://outsideir35.org.uk/jobs/quality-assurance-engineer/1EzL3EeQ82",
-            "rust": false,
-            "rustInTitle": false
-          },
-          {
-            "title": "RAID Lead / Programme Planner",
-            "location": "United Kingdom (Remote)",
-            "url": "https://outsideir35.org.uk/jobs/raid-lead-programme-planner/eaePutKi4T",
-            "rust": true,
-            "rustInTitle": false
-          },
-          {
-            "title": "Senior Data Engineer",
-            "location": "London (Hybrid)",
-            "url": "https://outsideir35.org.uk/jobs/senior-data-engineer/tOilMLlM1j",
-            "rust": false,
-            "rustInTitle": false
-          },
-          {
-            "title": "Senior Java/Aeron Engineers",
-            "location": "London Area (Hybrid)",
-            "url": "https://outsideir35.org.uk/jobs/senior-java-aeron-engineers/0M6231hwri",
-            "rust": false,
-            "rustInTitle": false
-          },
-          {
-            "title": "Senior Java Engineer",
-            "location": "London Area (On-site)",
-            "url": "https://outsideir35.org.uk/jobs/senior-java-engineer/1KRXagF0mC",
-            "rust": false,
-            "rustInTitle": false
-          },
-          {
-            "title": "Service Delivery Manager",
-            "location": "Basingstoke (On-site)",
-            "url": "https://outsideir35.org.uk/jobs/service-delivery-manager/CwT5FJJhRN",
-            "rust": false,
-            "rustInTitle": false
-          },
-          {
-            "title": "Software Developer",
-            "location": "Cardiff (Remote)",
-            "url": "https://outsideir35.org.uk/jobs/software-developer/pO7NIvEqmP",
-            "rust": false,
-            "rustInTitle": false
-          },
-          {
-            "title": "Software Engineer",
-            "location": "United Kingdom (Remote)",
-            "url": "https://outsideir35.org.uk/jobs/software-engineer/LMikIIdVX6",
-            "rust": false,
-            "rustInTitle": false
-          },
-          {
-            "title": "Technical Architect",
-            "location": "London Area (Hybrid)",
-            "url": "https://outsideir35.org.uk/jobs/technical-architect/qwujxl9Bbl",
-            "rust": false,
-            "rustInTitle": false
-          },
-          {
-            "title": "Test Manager",
-            "location": "High Wycombe (Hybrid)",
-            "url": "https://outsideir35.org.uk/jobs/test-manager/0Bg4EnPQHQ",
-            "rust": false,
-            "rustInTitle": false
-          }
-        ]
-      }
+      "website": "https://outsideir35.org.uk/"
     }
   ]
 }

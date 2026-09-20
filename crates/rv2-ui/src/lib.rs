@@ -63,7 +63,7 @@ pub mod site;
 pub mod typography;
 
 pub use crate::feedback::{Card, EmptyState, ErrorBanner, PageHeader, Skeleton};
-pub use crate::form::{TextArea, TextField};
+pub use crate::form::{Checkbox, FieldSet, Select, TextArea, TextField};
 pub use crate::layout::{Container, Divider, Grid, Row, Section, Space, Stack, Width};
 pub use crate::motion::{
     Blob, Crumple, Foil, Fur, GradientBuilder, Hologram, Mood, PullCord, Vacuum,

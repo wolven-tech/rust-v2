@@ -14,11 +14,11 @@
 use serde::{Deserialize, Serialize};
 use serde_json::{Map, Value};
 
-use crate::engagement::{Engagement, EngagementVerdict};
+use crate::engagement::{Engagement, EngagementVerdict, PostingSource};
 use crate::mandate::{LevelBand, Mandate};
 use crate::work_pattern::{WorkPattern, WorkPatternVerdict};
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct Register {
     pub generated_on: String,
@@ -31,7 +31,18 @@ pub struct Register {
     pub companies: Vec<Company>,
 }
 
-#[derive(Serialize, Deserialize)]
+impl Register {
+    /// Classify every role in the register, once, at load.
+    #[must_use]
+    pub fn classified(mut self) -> Self {
+        for company in &mut self.companies {
+            company.classify_roles();
+        }
+        self
+    }
+}
+
+#[derive(Serialize, Deserialize, Clone, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct Company {
     pub name: String,
@@ -59,6 +70,10 @@ pub struct Company {
     /// independent of any one posting.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub engages_b2b: Option<bool>,
+    /// Which kind of board this company's roles were read from, when it is not
+    /// the employer applicant-tracking system named in `ats`.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub posting_source: Option<PostingSource>,
     /// What each derived field above was derived from, keyed by field name, so
     /// the page can show its basis beside the value.
     #[serde(default, skip_serializing_if = "Map::is_empty")]
@@ -103,12 +118,178 @@ impl Provider {
     }
 }
 
+impl Company {
+    /// Which kind of board this company's postings came from.
+    ///
+    /// An explicit `postingSource` wins. Otherwise a recorded ATS means an
+    /// employer board, and no ATS at all means nothing is known — which the
+    /// engagement classifier treats as undecided rather than as permanent.
+    #[must_use]
+    pub fn posting_source(&self) -> PostingSource {
+        self.posting_source.unwrap_or(if self.ats.is_some() {
+            PostingSource::PermanentAtsBoard
+        } else {
+            PostingSource::Unknown
+        })
+    }
+
+    /// Classify any role that does not already carry a stored verdict.
+    ///
+    /// A stored verdict wins, and that asymmetry is the whole point. The tool
+    /// that reads a job board has the posting's full description and writes its
+    /// verdicts into the register; the page has only what the register holds.
+    /// Reclassifying at load would silently overwrite a judgement made with the
+    /// description against one made from a title alone — and a title never says
+    /// how many days are in the office or whether a role builds a team.
+    ///
+    /// So this fills gaps for records written before the classifiers existed,
+    /// and never argues with the tool that could see more than it can.
+    pub fn classify_roles(&mut self) {
+        let source = self.posting_source();
+        if let Some(openings) = self.openings.as_mut() {
+            for role in &mut openings.roles {
+                if role.mandate.is_none() {
+                    role.classify("", source);
+                }
+            }
+        }
+    }
+
+    /// Every index this company sits in, defaulting to the target list.
+    #[must_use]
+    pub fn indices(&self) -> Vec<String> {
+        let listed: Vec<String> = self
+            .rest
+            .get("indices")
+            .and_then(Value::as_array)
+            .map(|a| {
+                a.iter()
+                    .filter_map(|v| v.as_str().map(str::to_string))
+                    .collect()
+            })
+            .unwrap_or_default();
+        if listed.is_empty() {
+            vec!["targets".to_string()]
+        } else {
+            listed
+        }
+    }
+
+    #[must_use]
+    pub fn ticker(&self) -> String {
+        self.rest
+            .get("ticker")
+            .and_then(|v| v.as_str())
+            .unwrap_or("")
+            .trim()
+            .to_uppercase()
+    }
+
+    #[must_use]
+    pub fn uk_locations(&self) -> &str {
+        self.rest
+            .get("ukLocations")
+            .and_then(|v| v.as_str())
+            .unwrap_or("")
+    }
+
+    #[must_use]
+    pub fn tech_stack_note(&self) -> &str {
+        self.rest
+            .get("techStackNote")
+            .and_then(|v| v.as_str())
+            .unwrap_or("")
+    }
+
+    /// Listed on a public market, which is where share awards can be sold.
+    #[must_use]
+    pub fn public_equity(&self) -> bool {
+        let x = self.exchange();
+        !x.is_empty() && x != "Private" && x != "Unknown"
+    }
+
+    #[must_use]
+    pub fn known_rust(&self) -> bool {
+        self.rest
+            .get("rust")
+            .and_then(Value::as_bool)
+            .unwrap_or(false)
+    }
+
+    #[must_use]
+    pub fn rust_depth(&self) -> &str {
+        self.rest
+            .get("rustDepth")
+            .and_then(|v| v.as_str())
+            .unwrap_or("")
+    }
+
+    /// The job board's display name, or a statement that there is no feed.
+    #[must_use]
+    pub fn feed(&self) -> &'static str {
+        match self.ats.as_ref().map(|a| a.provider) {
+            Some(Provider::Greenhouse | Provider::GreenhouseEu) => "Greenhouse",
+            Some(Provider::Lever | Provider::LeverEu) => "Lever",
+            Some(Provider::Ashby) => "Ashby",
+            Some(Provider::Smartrecruiters) => "SmartRecruiters",
+            Some(Provider::Workable) => "Workable",
+            None => "No public job feed",
+        }
+    }
+
+    #[must_use]
+    pub fn link_status(&self) -> LinkStatus {
+        self.link.as_ref().map_or(
+            if self.careers_url.is_empty() {
+                LinkStatus::Missing
+            } else {
+                LinkStatus::Unchecked
+            },
+            |l| l.status,
+        )
+    }
+
+    /// Whether the company is hiring UK engineers, preferring a job-board count
+    /// over the research note.
+    #[must_use]
+    pub fn hiring_now(&self) -> bool {
+        self.openings
+            .as_ref()
+            .map_or_else(|| self.hires_engineers_in_uk(), |o| o.uk_engineering > 0)
+    }
+
+    #[must_use]
+    pub fn rust_signal(&self) -> bool {
+        self.known_rust() || self.openings.as_ref().is_some_and(|o| o.uk_rust > 0)
+    }
+}
+
 #[derive(Serialize, Deserialize, Clone, PartialEq, Eq, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct AtsRef {
     pub provider: Provider,
     pub slug: String,
     pub source: String,
+}
+
+impl AtsRef {
+    /// Where a person can see every role on this board.
+    ///
+    /// Lives here rather than in the tool that reads the feeds because the page
+    /// links to it, and the page cannot depend on a server-side crate.
+    #[must_use]
+    pub fn board_url(&self) -> String {
+        let slug = &self.slug;
+        match self.provider {
+            Provider::Greenhouse => format!("https://job-boards.greenhouse.io/{slug}"),
+            Provider::GreenhouseEu => format!("https://job-boards.eu.greenhouse.io/{slug}"),
+            Provider::Lever => format!("https://jobs.lever.co/{slug}"),
+            Provider::LeverEu => format!("https://jobs.eu.lever.co/{slug}"),
+            Provider::Ashby => format!("https://jobs.ashbyhq.com/{slug}"),
+            Provider::Smartrecruiters => format!("https://careers.smartrecruiters.com/{slug}"),
+            Provider::Workable => format!("https://apply.workable.com/{slug}/"),
+        }
+    }
 }
 
 #[derive(Serialize, Deserialize, Clone, Copy, PartialEq, Eq, Debug)]
@@ -139,7 +320,7 @@ pub enum OrgScale {
     Unknown,
 }
 
-#[derive(Serialize, Deserialize, Clone, Default)]
+#[derive(Serialize, Deserialize, Clone, Default, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct Openings {
     pub total: usize,
@@ -158,7 +339,7 @@ pub struct Openings {
     pub last_read_failed: Option<String>,
 }
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, Default, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct Role {
     pub title: String,
@@ -211,7 +392,7 @@ impl Role {
     }
 }
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct LinkCheck {
     pub status: LinkStatus,
@@ -230,6 +411,35 @@ pub enum LinkStatus {
     Broken,
     Unreachable,
     Missing,
+    /// A careers URL is recorded and nothing has probed it yet.
+    Unchecked,
+}
+
+impl LinkStatus {
+    #[must_use]
+    pub fn label(self) -> &'static str {
+        match self {
+            Self::Live => "Careers link live",
+            Self::Blocked => "Site blocks automated checks",
+            Self::Unreachable => "Careers site did not respond",
+            Self::Broken => "Careers link broken",
+            Self::Missing => "No careers link found",
+            Self::Unchecked => "Link not checked yet",
+        }
+    }
+
+    /// Sort order, healthiest first.
+    #[must_use]
+    pub fn rank(self) -> u8 {
+        match self {
+            Self::Live => 1,
+            Self::Blocked => 2,
+            Self::Unreachable => 3,
+            Self::Broken => 4,
+            Self::Missing => 5,
+            Self::Unchecked => 6,
+        }
+    }
 }
 
 #[cfg(test)]

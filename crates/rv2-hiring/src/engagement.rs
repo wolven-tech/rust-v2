@@ -73,7 +73,8 @@ impl Engagement {
 /// fill with an employee, and 103 of the register's 103 roles arrive this way.
 /// Treating that silence as "might be contract" would fill the reader's list
 /// with roles that are not.
-#[derive(Clone, Copy, PartialEq, Eq, Debug, Default)]
+#[derive(Serialize, Deserialize, Clone, Copy, PartialEq, Eq, Debug, Default)]
+#[serde(rename_all = "kebab-case")]
 pub enum PostingSource {
     /// An employer ATS board: Greenhouse, Lever, Ashby, `SmartRecruiters`.
     PermanentAtsBoard,

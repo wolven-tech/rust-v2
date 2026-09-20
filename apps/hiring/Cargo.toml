@@ -1,0 +1,39 @@
+[package]
+name = "hiring"
+description = "Dioxus CSR page over the UK tech hiring register. File-backed: the register is compiled in, not fetched."
+edition.workspace = true
+license.workspace = true
+version.workspace = true
+# Never published: internal workspace crate. Also what makes cargo-deny's
+# `allow-wildcard-paths` apply — it is skipped for publishable crates.
+publish = false
+
+[lib]
+name = "hiring"
+path = "src/lib.rs"
+crate-type = ["cdylib", "rlib"]
+
+[[bin]]
+name = "hiring"
+path = "src/main.rs"
+
+[dependencies]
+# No `fullstack`, no `server`, no `tokio`, no `reqwest`: the register is a file
+# compiled into the binary, so this crate stays 100% wasm32 and the whole page
+# is one download with no API behind it.
+dioxus = { workspace = true, features = [
+  "devtools",
+  "launch",
+  "lib",
+  "logger",
+  "web",
+] }
+rv2-hiring.workspace = true
+rv2-ui.workspace = true
+serde_json.workspace = true
+web-sys = { workspace = true, features = ["Location", "Storage", "Url"] }
+
+[package.metadata.cargo-machete]
+# `web-sys` is used for the URL hash that keeps every filter in the address bar,
+# through features cargo-machete cannot see from the source alone.
+ignored = ["web-sys"]

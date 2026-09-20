@@ -2,6 +2,7 @@
 members = [
   "apps/api",
   "apps/app",
+  "apps/hiring",
   "apps/web",
   "crates/better-auth-allsource",
   "crates/rv2-allsource",
@@ -16,6 +17,7 @@ members = [
   "crates/rv2-jobs",
   "crates/rv2-shared",
   "crates/rv2-ui",
+  "tooling/hiring-register",
   "tooling/xtask",
 ]
 resolver = "3"
