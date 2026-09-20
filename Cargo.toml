@@ -77,7 +77,7 @@ tower-http = { version = "0.7.0", features = ["cors", "trace"] }
 # ── Product analytics & email (server-only) ──────────────────────────────────
 # Both are OFFICIAL SDKs, which is why they are dependencies rather than
 # hand-rolled HTTP: posthog/posthog-rs and resend/resend-rust.
-posthog-rs = "0.23.2"
+posthog-rs = "0.24.0"
 # 0.29.0, not the 0.30.0-rc1 that `cargo add` picks up by default — a release
 # candidate is not a thing to pin a transactional email path to.
 #
