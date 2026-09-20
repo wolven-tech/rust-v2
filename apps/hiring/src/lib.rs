@@ -19,6 +19,9 @@ use dioxus::prelude::*;
 use rv2_hiring::model::Register;
 use rv2_hiring::view::{self, Filters};
 
+/// The id the search box carries, so the `/` shortcut can find it.
+const SEARCH_ID: &str = "q";
+
 /// The register, shared through context rather than passed as a prop.
 ///
 /// Dioxus props are cloned on every render, and this one is 103 companies with
@@ -66,6 +69,7 @@ impl Page {
 
     pub fn clear(&mut self) {
         *self.filters.write() = Filters::default();
+        focus_search();
     }
 }
 
@@ -78,15 +82,57 @@ fn fragment() -> String {
 
 /// Write the fragment back whenever the filters change.
 ///
-/// `set_hash` rather than `replace_state`: this page is served from a static
-/// host and opened from `file://` during development, where some browsers
-/// refuse `history.replaceState` because the origin is opaque. Setting the hash
-/// works in both.
-fn set_fragment(value: &str) {
-    if let Some(window) = web_sys::window() {
+/// `replaceState` rather than setting the hash: assigning to `location.hash`
+/// pushes a history entry, so typing five characters into the search box left
+/// five entries the reader has to press Back through to escape the page.
+///
+/// It falls back to assigning the hash because a page opened from `file://` has
+/// an opaque origin, and some browsers refuse `replaceState` there. Losing the
+/// clean history is better than losing the bookmarkable URL.
+fn write_fragment(value: &str) {
+    let Some(window) = web_sys::window() else {
+        return;
+    };
+    let url = if value.is_empty() {
+        window
+            .location()
+            .pathname()
+            .unwrap_or_else(|_| "/".to_string())
+    } else {
+        format!("#{value}")
+    };
+    if window
+        .history()
+        .and_then(|h| h.replace_state_with_url(&wasm_bindgen::JsValue::NULL, "", Some(&url)))
+        .is_err()
+    {
         let _ = window.location().set_hash(value);
     }
 }
+
+/// Move focus into the search box.
+fn focus_search() {
+    if let Some(element) = web_sys::window()
+        .and_then(|w| w.document())
+        .and_then(|d| d.get_element_by_id(SEARCH_ID))
+        .and_then(|e| e.dyn_into::<web_sys::HtmlElement>().ok())
+    {
+        let _ = element.focus();
+    }
+}
+
+/// Whether the reader is currently typing into something.
+///
+/// The `/` shortcut must not steal a slash from a text field — a reader
+/// searching for "and/or" would lose the character and their place at once.
+fn typing_somewhere() -> bool {
+    web_sys::window()
+        .and_then(|w| w.document())
+        .and_then(|d| d.active_element())
+        .is_some_and(|e| matches!(e.tag_name().as_str(), "INPUT" | "TEXTAREA" | "SELECT"))
+}
+
+use wasm_bindgen::JsCast;
 
 #[component]
 pub fn App() -> Element {
@@ -98,7 +144,7 @@ pub fn App() -> Element {
     };
 
     use_effect(move || {
-        set_fragment(&view::hash::write(&page.filters.read()));
+        write_fragment(&view::hash::write(&page.filters.read()));
     });
 
     let shown = {
@@ -107,11 +153,25 @@ pub fn App() -> Element {
     };
 
     rsx! {
-        div { class: "min-h-screen bg-slate-50 text-slate-900",
+        div {
+            class: "min-h-screen bg-slate-50 text-slate-900",
+            tabindex: "-1",
+            autofocus: true,
+            onkeydown: move |event| {
+                if event.key() == Key::Character("/".to_string()) && !typing_somewhere() {
+                    event.prevent_default();
+                    focus_search();
+                }
+            },
+            a {
+                class: "sr-only focus:not-sr-only focus:absolute focus:left-2 focus:top-2 focus:z-50 focus:rounded-md focus:bg-slate-900 focus:px-3 focus:py-2 focus:text-white",
+                href: "#results",
+                "Skip to results"
+            }
             Masthead { shown, page }
             div { class: "mx-auto flex max-w-[110rem] flex-col gap-6 px-4 pb-16 lg:flex-row lg:items-start",
                 rail::Rail { page }
-                main { id: "results", class: "min-w-0 flex-1",
+                main { id: "results", tabindex: "-1", class: "min-w-0 flex-1",
                     results::Results { page }
                 }
             }
@@ -127,15 +187,22 @@ fn Masthead(shown: usize, page: Page) -> Element {
     let filters = page.filters.read().clone();
     let mut filters_signal = page.filters;
 
-    let tracked: Vec<_> = register
+    let tracked = register
         .companies
         .iter()
         .filter(|c| c.openings.is_some())
-        .collect();
-    let uk_engineering: usize = tracked
+        .count();
+    let uk_engineering: usize = register
+        .companies
         .iter()
         .filter_map(|c| c.openings.as_ref())
         .map(|o| o.uk_engineering)
+        .sum();
+    let uk_rust: usize = register
+        .companies
+        .iter()
+        .filter_map(|c| c.openings.as_ref())
+        .map(|o| o.uk_rust)
         .sum();
     let clears_both = register
         .companies
@@ -143,42 +210,48 @@ fn Masthead(shown: usize, page: Page) -> Element {
         .flat_map(|c| c.openings.iter().flat_map(|o| o.roles.iter()))
         .filter(|r| r.clears_essential_filters())
         .count();
+    let total = register.companies.len();
 
     rsx! {
         header { class: "border-b border-slate-200 bg-white",
             div { class: "mx-auto max-w-[110rem] px-4 py-6",
                 h1 { class: "text-2xl font-semibold tracking-tight", "UK tech hiring register" }
-                p { class: "mt-1 max-w-3xl text-sm text-slate-600",
-                    b { "{register.companies.len()}" }
+                p { class: "mt-1 max-w-4xl text-sm text-slate-600",
+                    b { "{total}" }
                     " employers. Across the "
-                    b { "{tracked.len()}" }
+                    b { "{tracked}" }
                     " job boards read, "
                     b { "{uk_engineering}" }
-                    " UK engineering roles are open, and "
+                    " UK engineering roles are open and "
+                    b { "{uk_rust}" }
+                    " UK postings mention Rust. "
                     b { "{clears_both}" }
                     " of the roles held here are both remote at 25% or less and B2B."
                 }
                 div { class: "mt-4 flex flex-wrap items-center gap-3",
-                    label { class: "flex-1 min-w-64",
+                    label { class: "relative min-w-64 flex-1",
                         span { class: "sr-only", "Search companies" }
                         input {
-                            id: "q",
+                            id: SEARCH_ID,
                             r#type: "search",
                             autocomplete: "off",
                             spellcheck: false,
                             placeholder: "Company, ticker, city or stack",
                             value: "{filters.q}",
-                            class: "w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-900",
+                            class: "w-full rounded-md border border-slate-300 py-2 pl-3 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-slate-900",
                             oninput: move |event| {
                                 filters_signal.write().q = event.value().trim().to_string();
                             },
+                            onkeydown: move |event| {
+                                if event.key() == Key::Escape {
+                                    filters_signal.write().q = String::new();
+                                }
+                            },
                         }
-                    }
-                    p { class: "text-sm tabular-nums text-slate-600",
-                        if shown == register.companies.len() {
-                            "All {register.companies.len()} companies"
-                        } else {
-                            "{shown} of {register.companies.len()} companies"
+                        kbd {
+                            class: "pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 rounded border border-slate-300 px-1.5 text-xs text-slate-400",
+                            aria_hidden: "true",
+                            "/"
                         }
                     }
                 }
@@ -190,17 +263,22 @@ fn Masthead(shown: usize, page: Page) -> Element {
 #[component]
 fn Colophon() -> Element {
     let register = use_context::<SharedRegister>();
-    let checked = register
-        .read()
-        .openings_checked_on
-        .clone()
-        .unwrap_or_default();
+    let register = register.read();
+    let openings = register.openings_checked_on.clone().unwrap_or_default();
+    let links = register.links_checked_on.clone().unwrap_or_default();
+    let live = register
+        .companies
+        .iter()
+        .filter(|c| c.link_status() == rv2_hiring::model::LinkStatus::Live)
+        .count();
+
     rsx! {
         footer { class: "border-t border-slate-200 bg-white",
             div { class: "mx-auto max-w-[110rem] space-y-1 px-4 py-6 text-xs text-slate-500",
                 p {
                     "Index membership comes from FTSE Russell constituent files as at 30 June 2026. \
-                     AIM listings and the target list come from research. Job boards last read {checked}."
+                     AIM listings and the target list come from research. Job boards last read {openings}. \
+                     {live} careers links answered when checked {links}."
                 }
                 p {
                     "Refresh with "

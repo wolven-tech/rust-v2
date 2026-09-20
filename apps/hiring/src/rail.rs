@@ -13,8 +13,8 @@ use dioxus::prelude::*;
 use rv2_hiring::litmus::{Challenge, Situation, Timing};
 use rv2_hiring::mandate::LevelBand;
 use rv2_hiring::model::{MarketReach, OrgScale};
-use rv2_hiring::view::{self, FACET_PREVIEW};
-use rv2_ui::{Checkbox, FieldSet};
+use rv2_hiring::view::{self, FACET_PREVIEW, group_colour};
+use rv2_ui::{Checkbox, FieldSet, Swatch};
 
 use crate::{Page, SharedRegister};
 
@@ -26,23 +26,36 @@ pub fn Rail(page: Page) -> Element {
 
     rsx! {
         aside { class: "w-full shrink-0 lg:sticky lg:top-4 lg:w-80",
-            div { class: "space-y-4 rounded-lg border border-slate-200 bg-white p-4",
-                div { class: "flex items-baseline justify-between",
-                    h2 { class: "text-sm font-semibold", "Filters" }
+            details {
+                class: "rounded-lg border border-slate-200 bg-white p-4 [&[open]>summary>.marker]:rotate-90",
+                open: true,
+                summary { class: "flex cursor-pointer list-none items-baseline justify-between",
+                    span { class: "flex items-baseline gap-2",
+                        span { class: "marker inline-block transition-transform lg:hidden", aria_hidden: "true", "›" }
+                        h2 { class: "text-sm font-semibold", "Filters" }
+                        if active > 0 {
+                            span { class: "text-xs font-normal text-slate-500", "({active} on)" }
+                        }
+                    }
                     if active > 0 {
-                        button {
-                            r#type: "button",
+                        span {
+                            role: "button",
+                            tabindex: "0",
                             class: "text-xs text-slate-600 underline hover:text-slate-900",
-                            onclick: move |_| page_state.clear(),
-                            "Clear all ({active})"
+                            onclick: move |event| {
+                                event.stop_propagation();
+                                page_state.clear();
+                            },
+                            "Clear all"
                         }
                     }
                 }
-
-                Essentials { page }
-                Litmus { page }
-                Register_Facets { page }
-                Toggles { page }
+                div { class: "space-y-4 pt-3",
+                    Essentials { page }
+                    Litmus { page }
+                    Register_Facets { page }
+                    Toggles { page }
+                }
             }
         }
     }
@@ -409,12 +422,20 @@ fn FacetBox(
     page: Page,
 ) -> Element {
     let mut page_state = page;
+    let swatch = (facet == "groups").then(|| group_colour(&value).to_string());
     rsx! {
-        Checkbox {
-            label,
-            checked,
-            count,
-            onchange: move |on| page_state.toggle_facet(&facet, &value, on),
+        div { class: "flex items-center gap-1.5",
+            if let Some(colour) = swatch {
+                Swatch { colour }
+            }
+            div { class: "min-w-0 flex-1",
+                Checkbox {
+                    label,
+                    checked,
+                    count,
+                    onchange: move |on| page_state.toggle_facet(&facet, &value, on),
+                }
+            }
         }
     }
 }

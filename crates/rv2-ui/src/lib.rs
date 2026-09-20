@@ -68,7 +68,10 @@ pub use crate::layout::{Container, Divider, Grid, Row, Section, Space, Stack, Wi
 pub use crate::motion::{
     Blob, Crumple, Foil, Fur, GradientBuilder, Hologram, Mood, PullCord, Vacuum,
 };
-pub use crate::primitives::{ArrowLink, Badge, Button, LinkButton, Size, StepMarker, Variant};
+pub use crate::primitives::{
+    ArrowLink, Badge, Button, Disclosure, LinkButton, Size, Status, StatusTone, StepMarker, Swatch,
+    Variant,
+};
 pub use crate::product_shell::{
     NavigationRail, PageEntrance, ProcessRail, ProcessStep, ProductHeader, ProductHeaderAction,
     ProductNavItem,

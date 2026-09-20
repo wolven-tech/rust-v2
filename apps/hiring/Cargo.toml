@@ -30,8 +30,18 @@ dioxus = { workspace = true, features = [
 ] }
 rv2-hiring.workspace = true
 rv2-ui.workspace = true
+# Only for JsCast and JsValue: the shell casts an Element to HtmlElement to
+# focus it, and passes NULL to replaceState. No bindings are generated here.
+wasm-bindgen = "0.2"
 serde_json.workspace = true
-web-sys = { workspace = true, features = ["Location", "Storage", "Url"] }
+web-sys = { workspace = true, features = [
+  "Document",
+  "Element",
+  "History",
+  "HtmlElement",
+  "Location",
+  "Window",
+] }
 
 [dev-dependencies]
 # Renders the component tree to a string on the host, so a test can assert the

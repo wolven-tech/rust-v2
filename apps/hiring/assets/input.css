@@ -13,3 +13,13 @@
 
 @source "../src";
 @source "../../../crates/rv2-ui/src";
+
+/* Atkinson Hyperlegible is the body face for a reason rather than a taste: it
+ * disambiguates the character pairs that matter in this data — 1/l/I in
+ * headcounts and day rates, 0/O in tickers. Big Shoulders is the display face
+ * on the ticker badges only, where the job is to be scannable at a glance down
+ * a long column. */
+@theme {
+  --font-sans: "Atkinson Hyperlegible Next", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Big Shoulders Display", ui-sans-serif, system-ui, sans-serif;
+}

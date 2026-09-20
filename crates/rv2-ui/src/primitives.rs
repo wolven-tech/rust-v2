@@ -123,12 +123,138 @@ pub fn ArrowLink(href: String, #[props(default)] class: String, children: Elemen
 
 /// Small pill label.
 #[component]
-pub fn Badge(#[props(default)] class: String, children: Element) -> Element {
+pub fn Badge(
+    #[props(default)] class: String,
+    /// A CSS colour this badge takes for its text and border, instead of the
+    /// default grey fill.
+    ///
+    /// Exists so a set of badges can encode a category rather than merely
+    /// label it. A reader scanning a long list sees the colour before they
+    /// read the word, which is the whole reason a category has a colour.
+    #[props(default)]
+    colour: Option<String>,
+    children: Element,
+) -> Element {
+    match colour {
+        Some(colour) => rsx! {
+            span {
+                class: "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium {class}",
+                style: "color:{colour};border-color:{colour}",
+                {children}
+            }
+        },
+        None => rsx! {
+            span {
+                class: "inline-flex items-center rounded-full bg-slate-100 px-2.5 py-0.5 \
+                        text-xs font-medium text-slate-700 {class}",
+                {children}
+            }
+        },
+    }
+}
+
+/// A small filled circle carrying a category's colour.
+///
+/// Sits beside a filter option so the rail and the results agree visually: the
+/// swatch next to "FTSE 250" is the same green as the badge on every FTSE 250
+/// company.
+#[component]
+pub fn Swatch(colour: String, #[props(default)] class: String) -> Element {
     rsx! {
         span {
-            class: "inline-flex items-center rounded-full bg-slate-100 px-2.5 py-0.5 \
-                    text-xs font-medium text-slate-700 {class}",
-            {children}
+            class: "inline-block h-2.5 w-2.5 shrink-0 rounded-full {class}",
+            style: "background:{colour}",
+            aria_hidden: "true",
+        }
+    }
+}
+
+/// How healthy something is, as a dot plus its label.
+///
+/// The dot is what makes a column of these scannable; the label is what makes
+/// it readable when the dot is invisible to you. Both, always — a colour on its
+/// own is not a status anyone can act on.
+#[component]
+pub fn Status(
+    label: String,
+    tone: StatusTone,
+    #[props(default)] detail: Option<String>,
+) -> Element {
+    rsx! {
+        span { class: "inline-flex items-center gap-1.5 text-xs {tone.text()}",
+            span {
+                class: "inline-block h-1.5 w-1.5 rounded-full {tone.dot()}",
+                aria_hidden: "true",
+            }
+            "{label}"
+            if let Some(detail) = detail {
+                span { class: "text-slate-400", "{detail}" }
+            }
+        }
+    }
+}
+
+/// How a [`Status`] reads at a glance.
+///
+/// Named apart from [`crate::typography::Tone`], which grades text emphasis
+/// rather than health.
+#[derive(Clone, Copy, PartialEq, Eq, Debug, Default)]
+pub enum StatusTone {
+    Ok,
+    Warn,
+    Bad,
+    #[default]
+    Muted,
+}
+
+impl StatusTone {
+    #[must_use]
+    pub fn dot(self) -> &'static str {
+        match self {
+            Self::Ok => "bg-emerald-500",
+            Self::Warn => "bg-amber-500",
+            Self::Bad => "bg-red-500",
+            Self::Muted => "bg-slate-400",
+        }
+    }
+
+    #[must_use]
+    pub fn text(self) -> &'static str {
+        match self {
+            Self::Ok => "text-emerald-800",
+            Self::Warn => "text-amber-800",
+            Self::Bad => "text-red-800",
+            Self::Muted => "text-slate-500",
+        }
+    }
+}
+
+/// A native `details`/`summary` disclosure.
+///
+/// Native rather than a signal and a conditional render, because the browser
+/// already gives this keyboard operation, the right ARIA state and find-in-page
+/// that reaches inside a closed section. A hand-rolled one gives up all three.
+#[component]
+pub fn Disclosure(
+    summary: String,
+    #[props(default = false)] open: bool,
+    #[props(default)] class: String,
+    /// A CSS colour for a left rule down the open body, used where the
+    /// disclosure carries a graded judgement rather than plain detail.
+    #[props(default)]
+    accent: Option<String>,
+    children: Element,
+) -> Element {
+    let style = accent
+        .map(|c| format!("border-left:3px solid {c};padding-left:0.75rem"))
+        .unwrap_or_default();
+    rsx! {
+        details { class: "group {class}", open,
+            summary { class: "cursor-pointer list-none text-sm text-slate-700 hover:text-slate-900",
+                span { class: "mr-1 inline-block transition-transform group-open:rotate-90", aria_hidden: "true", "›" }
+                "{summary}"
+            }
+            div { class: "pt-2", style: "{style}", {children} }
         }
     }
 }

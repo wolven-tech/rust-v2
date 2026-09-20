@@ -2534,6 +2534,7 @@ dependencies = [
  "rv2-hiring",
  "rv2-ui",
  "serde_json",
+ "wasm-bindgen",
  "web-sys",
 ]
 

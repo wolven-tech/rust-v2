@@ -258,6 +258,77 @@ impl Company {
             .map_or_else(|| self.hires_engineers_in_uk(), |o| o.uk_engineering > 0)
     }
 
+    /// How far this company's descriptive details were confirmed.
+    #[must_use]
+    pub fn confidence(&self) -> Confidence {
+        self.rest
+            .get("confidence")
+            .and_then(|v| serde_json::from_value(v.clone()).ok())
+            .unwrap_or_default()
+    }
+
+    /// How central Rust is here, where the descriptions were read in full.
+    #[must_use]
+    pub fn depth(&self) -> Option<RustDepth> {
+        self.rest
+            .get("rustDepth")
+            .and_then(|v| serde_json::from_value(v.clone()).ok())
+    }
+
+    /// The sentence explaining the depth judgement, with the date it was read.
+    #[must_use]
+    pub fn depth_note(&self) -> &str {
+        self.rest
+            .get("rustDepthNote")
+            .and_then(|v| v.as_str())
+            .unwrap_or("")
+    }
+
+    #[must_use]
+    pub fn depth_checked_on(&self) -> &str {
+        self.rest
+            .get("rustDepthCheckedOn")
+            .and_then(|v| v.as_str())
+            .unwrap_or("")
+    }
+
+    /// Whether the company sits on a London index, as opposed to being a target
+    /// carried for other reasons.
+    #[must_use]
+    pub fn london_listed(&self) -> bool {
+        self.indices().iter().any(|g| g != "targets")
+    }
+
+    /// The short badge a reader scans for: a ticker where there is one, then a
+    /// recorded mark, then initials.
+    #[must_use]
+    pub fn mark(&self) -> String {
+        let ticker = self.ticker();
+        if !ticker.is_empty() {
+            return ticker;
+        }
+        if let Some(mark) = self.rest.get("mark").and_then(|v| v.as_str())
+            && !mark.is_empty()
+        {
+            return mark.to_string();
+        }
+        let words: Vec<&str> = self
+            .name
+            .split(|c: char| !c.is_ascii_alphanumeric())
+            .filter(|w| !w.is_empty())
+            .collect();
+        if words.len() > 1 {
+            words
+                .iter()
+                .filter_map(|w| w.chars().next())
+                .take(4)
+                .collect::<String>()
+                .to_uppercase()
+        } else {
+            self.name.chars().take(4).collect::<String>().to_uppercase()
+        }
+    }
+
     #[must_use]
     pub fn rust_signal(&self) -> bool {
         self.known_rust() || self.openings.as_ref().is_some_and(|o| o.uk_rust > 0)
@@ -288,6 +359,93 @@ impl AtsRef {
             Provider::Ashby => format!("https://jobs.ashbyhq.com/{slug}"),
             Provider::Smartrecruiters => format!("https://careers.smartrecruiters.com/{slug}"),
             Provider::Workable => format!("https://apply.workable.com/{slug}/"),
+        }
+    }
+}
+
+/// How far a company's descriptive details have actually been confirmed.
+///
+/// Applies to locations, stack notes and headcount — never to index membership
+/// or job-board counts, which are read rather than judged. A reader deciding
+/// whether to trust "Newcastle, London, Manchester" needs to know which of the
+/// three this is.
+#[derive(Serialize, Deserialize, Clone, Copy, PartialEq, Eq, Debug, Default)]
+#[serde(rename_all = "lowercase")]
+pub enum Confidence {
+    /// Confirmed directly.
+    Rock,
+    /// Partly inferred.
+    Sand,
+    /// Mostly unknown.
+    #[default]
+    Water,
+}
+
+impl Confidence {
+    #[must_use]
+    pub fn label(self) -> &'static str {
+        match self {
+            Self::Rock => "Confirmed company details",
+            Self::Sand => "Partly confirmed company details",
+            Self::Water => "Unconfirmed company details",
+        }
+    }
+
+    #[must_use]
+    pub fn rank(self) -> u8 {
+        match self {
+            Self::Rock => 1,
+            Self::Sand => 2,
+            Self::Water => 3,
+        }
+    }
+}
+
+/// How central Rust is to a company's work, where someone has read the job
+/// descriptions in full.
+///
+/// Narrower than the Rust *signal*, which only means the word appeared
+/// somewhere. A company whose standard job-description boilerplate lists its
+/// whole stack mentions Rust in every posting and may not write any.
+#[derive(Serialize, Deserialize, Clone, Copy, PartialEq, Eq, Debug)]
+#[serde(rename_all = "lowercase")]
+pub enum RustDepth {
+    First,
+    Mixed,
+    Adjacent,
+    Secondary,
+}
+
+impl RustDepth {
+    #[must_use]
+    pub fn label(self) -> &'static str {
+        match self {
+            Self::First => "Rust-first",
+            Self::Mixed => "Rust and one other",
+            Self::Adjacent => "Rust one option of several",
+            Self::Secondary => "Rust secondary to another language",
+        }
+    }
+
+    /// The colour this depth carries wherever it is shown, so the scale reads
+    /// as a scale rather than as four unrelated labels.
+    #[must_use]
+    pub fn colour(self) -> &'static str {
+        match self {
+            Self::First => "#7a2e12",
+            Self::Mixed => "#8a5a12",
+            Self::Adjacent => "#4a5568",
+            Self::Secondary => "#5a5a6a",
+        }
+    }
+
+    #[must_use]
+    pub fn rank(self) -> u8 {
+        match self {
+            Self::First => 1,
+            Self::Mixed => 2,
+            Self::Adjacent => 3,
+            Self::Secondary => 4,
         }
     }
 }

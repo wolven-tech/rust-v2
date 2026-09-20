@@ -31,6 +31,7 @@ pub enum Sort {
     Group,
     Roles,
     Rust,
+    Depth,
     Mandate,
     Name,
     Link,
@@ -43,6 +44,7 @@ impl Sort {
             Self::Group => "group",
             Self::Roles => "roles",
             Self::Rust => "rust",
+            Self::Depth => "depth",
             Self::Mandate => "mandate",
             Self::Name => "name",
             Self::Link => "link",
@@ -55,6 +57,7 @@ impl Sort {
             Self::Group => "Index, then open roles",
             Self::Roles => "UK engineering roles",
             Self::Rust => "Rust postings",
+            Self::Depth => "How Rust-first the work is",
             Self::Mandate => "Roles that build a department",
             Self::Name => "Company name",
             Self::Link => "Careers link status",
@@ -70,10 +73,11 @@ impl Sort {
             .unwrap_or_default()
     }
 
-    pub const ALL: [Self; 6] = [
+    pub const ALL: [Self; 7] = [
         Self::Group,
         Self::Roles,
         Self::Rust,
+        Self::Depth,
         Self::Mandate,
         Self::Name,
         Self::Link,
@@ -88,27 +92,43 @@ pub enum Layout {
     Table,
 }
 
-/// The index groups, in the order they are shown.
-pub const GROUPS: [(&str, &str); 5] = [
-    ("ftse100", "FTSE 100"),
-    ("ftse250", "FTSE 250"),
-    ("smallcap", "FTSE SmallCap"),
-    ("aim", "AIM"),
-    ("targets", "Targets outside UK indices"),
+/// The index groups, in the order they are shown, each with the colour it
+/// carries everywhere.
+///
+/// One colour per index, used on the ticker badge, the index chip and the
+/// filter swatch alike. That repetition is the feature: it is what lets a
+/// reader scan a long list and see which market a company sits on without
+/// reading a word.
+pub const GROUPS: [(&str, &str, &str); 5] = [
+    ("ftse100", "FTSE 100", "#24507a"),
+    ("ftse250", "FTSE 250", "#2f6b4f"),
+    ("smallcap", "FTSE SmallCap", "#1f6b6b"),
+    ("aim", "AIM", "#8a6a12"),
+    ("targets", "Targets outside UK indices", "#5b3f7a"),
 ];
 
 #[must_use]
 pub fn group_label(key: &str) -> &str {
     GROUPS
         .iter()
-        .find(|(k, _)| *k == key)
-        .map_or(key, |(_, label)| *label)
+        .find(|(k, _, _)| *k == key)
+        .map_or(key, |(_, label, _)| *label)
+}
+
+/// The colour for an index, falling back to the target-list colour so an
+/// unknown key renders as something rather than as nothing.
+#[must_use]
+pub fn group_colour(key: &str) -> &'static str {
+    GROUPS
+        .iter()
+        .find(|(k, _, _)| *k == key)
+        .map_or("#5b3f7a", |(_, _, colour)| *colour)
 }
 
 fn group_rank(key: &str) -> usize {
     GROUPS
         .iter()
-        .position(|(k, _)| *k == key)
+        .position(|(k, _, _)| *k == key)
         .unwrap_or(GROUPS.len())
 }
 
@@ -321,6 +341,15 @@ pub fn apply<'a>(register: &'a Register, filters: &Filters) -> Vec<&'a Company> 
                 .then_with(|| rust_postings(b).cmp(&rust_postings(a)))
                 .then_with(|| a.name.cmp(&b.name))
         }),
+        Sort::Depth => list.sort_by(|a, b| {
+            // A company nobody has graded sorts below every graded one rather
+            // than above them, which is what a missing value would otherwise do.
+            let depth = |c: &Company| c.depth().map_or(u8::MAX, |d| d.rank());
+            depth(a)
+                .cmp(&depth(b))
+                .then_with(|| rust_titles(b).cmp(&rust_titles(a)))
+                .then_with(|| a.name.cmp(&b.name))
+        }),
         Sort::Mandate => list.sort_by(|a, b| {
             best_mandate(a)
                 .cmp(&best_mandate(b))
@@ -372,7 +401,7 @@ pub fn facet_options(register: &Register, filters: &Filters, facet: &str) -> Vec
     let mut options: Vec<FacetOption> = match facet {
         "groups" => GROUPS
             .iter()
-            .map(|(key, label)| FacetOption {
+            .map(|(key, label, _)| FacetOption {
                 value: (*key).to_string(),
                 label: (*label).to_string(),
                 count: pool

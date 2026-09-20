@@ -24,7 +24,9 @@
 
 #![forbid(unsafe_code)]
 
+pub mod csv;
 pub mod engagement;
+pub mod links;
 pub mod litmus;
 pub mod mandate;
 pub mod model;
@@ -57,6 +59,7 @@ pub fn embedded_register() -> Register {
 }
 
 pub use engagement::Engagement;
+pub use links::safe_url;
 pub use mandate::{LevelBand, Mandate, MandateSignal};
 pub use model::{Company, Openings, Register, Role};
 pub use view::{Filters, Layout, Sort};
