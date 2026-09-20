@@ -854,6 +854,7 @@ pub mod hash {
                 remote_only: true,
                 b2b_only: true,
                 mandate_only: true,
+                applied_only: true,
                 hiring: true,
                 sort: Sort::Mandate,
                 layout: Layout::Table,
@@ -868,7 +869,13 @@ pub mod hash {
             assert_eq!(back.q, f.q);
             assert_eq!(back.groups, f.groups);
             assert_eq!(back.sectors, f.sectors);
-            assert!(back.remote_only && back.b2b_only && back.mandate_only && back.hiring);
+            assert!(
+                back.remote_only
+                    && back.b2b_only
+                    && back.mandate_only
+                    && back.applied_only
+                    && back.hiring
+            );
             assert_eq!(back.sort, Sort::Mandate);
             assert_eq!(back.layout, Layout::Table);
             assert_eq!(back.litmus.levels, f.litmus.levels);

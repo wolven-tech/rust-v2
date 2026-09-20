@@ -225,11 +225,24 @@ fn engagement_buckets() -> Vec<(Engagement, bool)> {
 ///
 /// The pool is whatever `filters` already keeps, so a breakdown always
 /// describes what the reader is looking at rather than the whole register.
+///
+/// Coverage is counted over a wider pool than the buckets. A role-grain filter
+/// can only keep a company that published a board, so counting the gap over the
+/// filtered pool would report nought every time the question was about roles —
+/// which is the one case where the reader most needs it.
 #[must_use]
 pub fn breakdown(register: &Register, filters: &Filters, by: GroupBy) -> Breakdown {
     let companies = crate::view::apply(register, filters);
 
-    let unread = companies
+    let mut company_grain = filters.clone();
+    company_grain.remote_only = false;
+    company_grain.b2b_only = false;
+    company_grain.mandate_only = false;
+    company_grain.applied_only = false;
+    company_grain.litmus = crate::litmus::LitmusFilter::default();
+    let visible = crate::view::apply(register, &company_grain);
+
+    let unread = visible
         .iter()
         .filter(|c| {
             c.openings
@@ -237,7 +250,7 @@ pub fn breakdown(register: &Register, filters: &Filters, by: GroupBy) -> Breakdo
                 .is_some_and(|o| o.error.is_some() || o.last_read_failed.is_some())
         })
         .count();
-    let untracked = companies.iter().filter(|c| c.openings.is_none()).count();
+    let untracked = visible.iter().filter(|c| c.openings.is_none()).count();
 
     let mut buckets: Vec<Bucket> = Vec::new();
     let mut counted = 0;
@@ -418,6 +431,57 @@ mod tests {
             b.counted,
             r.companies.len(),
             "every company sits in exactly one index bucket"
+        );
+    }
+
+    #[test]
+    fn a_role_filter_still_reports_the_companies_it_could_not_see() {
+        let r = register();
+        let blind = r.companies.iter().filter(|c| c.openings.is_none()).count();
+        assert!(
+            blind > 0,
+            "the fixture must contain companies with no board"
+        );
+
+        let b = breakdown(
+            &r,
+            &Filters {
+                b2b_only: true,
+                ..Filters::default()
+            },
+            GroupBy::WorkPattern,
+        );
+
+        assert_eq!(
+            b.untracked, blind,
+            "a role filter keeps only companies that published a board, so counting \
+             the gap over the filtered pool would always report nought"
+        );
+        assert!(
+            b.denominator().contains("publish no board"),
+            "the denominator must name the gap: {}",
+            b.denominator()
+        );
+    }
+
+    #[test]
+    fn a_company_filter_narrows_the_coverage_gap_with_the_view() {
+        let r = register();
+        let whole = breakdown(&r, &Filters::default(), GroupBy::WorkPattern);
+        let narrowed = breakdown(
+            &r,
+            &Filters {
+                groups: vec!["ftse100".to_string()],
+                ..Filters::default()
+            },
+            GroupBy::WorkPattern,
+        );
+        assert!(
+            narrowed.untracked < whole.untracked,
+            "coverage follows the company-grain filters, so FTSE 100 alone cannot \
+             carry the whole register's gap: {} vs {}",
+            narrowed.untracked,
+            whole.untracked
         );
     }
 
