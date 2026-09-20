@@ -503,6 +503,7 @@ line that everyone reads as "no traffic".
 | [`docs/ledger/allsource-integration-corpus.md`](docs/ledger/allsource-integration-corpus.md) | The frozen list of AllSource behaviours this integration depends on (B1–B21), which are asserted, and the loop that asserted them. |
 | [`docs/ledger/component-kit-autoresearch.md`](docs/ledger/component-kit-autoresearch.md) | How `rv2-ui` got its scope and why the bundle is the size it is. |
 | [`docs/review/001-bootstrap-readiness.md`](docs/review/001-bootstrap-readiness.md) | A cold review of this repository as a foundation to start a project from: twelve findings, what each one actually was, and what was done about it. |
+| [`docs/reports/2026-09-20-uk-leadership-role-hunt.md`](docs/reports/2026-09-20-uk-leadership-role-hunt.md) | What `rv2-hiring` was built to answer: which UK roles are remote at 25% or less, outside IR35, and carry a mandate to build a function. Of 30 live listings on the specialist board, six clear both filters, one carries the mandate, and none do both. |
 | [`AGENTS.md`](AGENTS.md) | The short orientation for anyone arriving with no context. `CLAUDE.md` points here. |
 | [`CONTRIBUTING.md`](CONTRIBUTING.md) | The rules, and what enforces each one. |
 | [`SECURITY.md`](SECURITY.md) | How to report a vulnerability, what is in scope, and the limitations stated rather than hidden. |

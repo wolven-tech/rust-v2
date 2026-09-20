@@ -1,0 +1,3316 @@
+{
+  "generatedOn": "2026-09-20",
+  "linksCheckedOn": "2026-09-15",
+  "openingsCheckedOn": "2026-09-20",
+  "sources": [
+    "FTSE 100 constituents, FTSE Russell, data as at 30 June 2026 (published 19 August 2026): https://research.ftserussell.com/Analytics/FactSheets/Home/DownloadConstituentsWeights/?indexdetails=UKX",
+    "FTSE 250 constituents, FTSE Russell, data as at 30 June 2026 (published 19 August 2026): https://research.ftserussell.com/Analytics/FactSheets/Home/DownloadConstituentsWeights/?indexdetails=MCX",
+    "FTSE SmallCap constituents, FTSE Russell, data as at 30 June 2026 (published 19 August 2026): https://research.ftserussell.com/Analytics/FactSheets/Home/DownloadConstituentsWeights/?indexdetails=SMX",
+    "AIM companies and targets outside UK indices: web research, not an index file",
+    "Outside IR35 Tech Jobs board, 30 listings captured 2026-09-20: https://outsideir35.org.uk/"
+  ],
+  "companies": [
+    {
+      "name": "Sage Group",
+      "careersUrl": "https://www.sage.com/en-gb/company/careers/",
+      "link": {
+        "status": "blocked",
+        "httpCode": 403,
+        "checkedOn": "2026-09-15"
+      },
+      "confidence": "sand",
+      "employeeScale": "10k+",
+      "exchange": "LSE",
+      "hiresEngineersInUk": true,
+      "indices": [
+        "ftse100"
+      ],
+      "sector": "Enterprise software",
+      "techStackNote": ".NET and AWS behind its accounting, payroll and HR products.",
+      "ticker": "SGE",
+      "ukLocations": "Newcastle, London, Manchester"
+    },
+    {
+      "name": "Computacenter",
+      "careersUrl": "https://jobs.computacenter.com/",
+      "link": {
+        "status": "live",
+        "httpCode": 200,
+        "checkedOn": "2026-09-15"
+      },
+      "confidence": "sand",
+      "employeeScale": "10k+",
+      "exchange": "LSE",
+      "hiresEngineersInUk": true,
+      "indices": [
+        "ftse100"
+      ],
+      "sector": "IT services",
+      "techStackNote": "Cloud, workplace and infrastructure services across AWS, Azure and GCP.",
+      "ticker": "CCC",
+      "ukLocations": "Hatfield, London, Manchester, Edinburgh, Milton Keynes"
+    },
+    {
+      "name": "Experian",
+      "careersUrl": "https://jobs.experian.com/",
+      "evidence": "https://careers.smartrecruiters.com/Experian",
+      "ats": {
+        "provider": "smartrecruiters",
+        "slug": "Experian",
+        "source": "research-evidence"
+      },
+      "openings": {
+        "total": 425,
+        "uk": 40,
+        "ukEngineering": 8,
+        "ukRust": 0,
+        "ukRustInTitle": 0,
+        "rust": 0,
+        "checkedOn": "2026-09-15",
+        "roles": [
+          {
+            "title": "Engineering Director (ID&F) - Java, .NET, AWS",
+            "location": "London, GB",
+            "url": "https://jobs.smartrecruiters.com/Experian/744000139866919",
+            "rust": false,
+            "rustInTitle": false
+          },
+          {
+            "title": "Head of Software Engineering - C#.NET, Java, AWS, AI",
+            "location": "Nottingham, GB",
+            "url": "https://jobs.smartrecruiters.com/Experian/744000149512499",
+            "rust": false,
+            "rustInTitle": false
+          },
+          {
+            "title": "Lead Data Platform Engineer",
+            "location": "Nottingham, GB",
+            "url": "https://jobs.smartrecruiters.com/Experian/744000139121720",
+            "rust": false,
+            "rustInTitle": false
+          },
+          {
+            "title": "Platform Engineer",
+            "location": "Nottingham, GB",
+            "url": "https://jobs.smartrecruiters.com/Experian/744000142806335",
+            "rust": false,
+            "rustInTitle": false
+          },
+          {
+            "title": "Senior FullStack Engineer - TypeScript - Python",
+            "location": "London, GB",
+            "url": "https://jobs.smartrecruiters.com/Experian/744000147161569",
+            "rust": false,
+            "rustInTitle": false
+          },
+          {
+            "title": "Senior Software Engineer",
+            "location": "Nottingham, GB",
+            "url": "https://jobs.smartrecruiters.com/Experian/744000144345163",
+            "rust": false,
+            "rustInTitle": false
+          },
+          {
+            "title": "Senior Software Engineer - Python",
+            "location": "London, GB",
+            "url": "https://jobs.smartrecruiters.com/Experian/744000147162210",
+            "rust": false,
+            "rustInTitle": false
+          },
+          {
+            "title": "Staff Software Engineer - React, Typescript",
+            "location": "Nottingham, GB",
+            "url": "https://jobs.smartrecruiters.com/Experian/744000138815980",
+            "rust": false,
+            "rustInTitle": false
+          }
+        ]
+      },
+      "link": {
+        "status": "live",
+        "httpCode": 200,
+        "finalUrl": "https://jobs.experian.com/jobs",
+        "checkedOn": "2026-09-15"
+      },
+      "confidence": "sand",
+      "employeeScale": "10k+",
+      "exchange": "LSE",
+      "hiresEngineersInUk": true,
+      "indices": [
+        "ftse100"
+      ],
+      "sector": "Data and analytics",
+      "techStackNote": "Java, .NET and Go services on AWS data platforms.",
+      "ticker": "EXPN",
+      "ukLocations": "London, Nottingham"
+    },
+    {
+      "name": "RELX",
+      "careersUrl": "https://relx.wd3.myworkdayjobs.com/relx",
+      "link": {
+        "status": "live",
+        "httpCode": 200,
+        "checkedOn": "2026-09-15"
+      },
+      "confidence": "sand",
+      "employeeScale": "10k+",
+      "exchange": "LSE",
+      "hiresEngineersInUk": true,
+      "indices": [
+        "ftse100"
+      ],
+      "sector": "Data and analytics",
+      "techStackNote": "Java, Python and AWS behind LexisNexis, Elsevier and ICIS products.",
+      "ticker": "REL",
+      "ukLocations": "London, Oxford, Cambridge, Nottingham"
+    },
+    {
+      "name": "London Stock Exchange Group",
+      "careersUrl": "https://lseg.wd3.myworkdayjobs.com/Careers",
+      "link": {
+        "status": "live",
+        "httpCode": 200,
+        "checkedOn": "2026-09-15"
+      },
+      "confidence": "sand",
+      "employeeScale": "10k+",
+      "exchange": "LSE",
+      "hiresEngineersInUk": true,
+      "indices": [
+        "ftse100"
+      ],
+      "sector": "Data and analytics",
+      "techStackNote": "Trading venues, clearing and market data platforms on Azure and AWS.",
+      "ticker": "LSEG",
+      "ukLocations": "London, Nottingham, Edinburgh, Belfast"
+    },
+    {
+      "name": "Autotrader Group",
+      "careersUrl": "https://careers.autotrader.co.uk/",
+      "ats": {
+        "provider": "greenhouse",
+        "slug": "autotrader",
+        "source": "greenhouse-name-match"
+      },
+      "openings": {
+        "total": 16,
+        "uk": 14,
+        "ukEngineering": 6,
+        "ukRust": 0,
+        "ukRustInTitle": 0,
+        "rust": 0,
+        "checkedOn": "2026-09-15",
+        "roles": [
+          {
+            "title": "Principal Full Stack Engineer - Full or Part Time",
+            "location": "Manchester",
+            "url": "https://job-boards.eu.greenhouse.io/autotrader/jobs/4526394101",
+            "rust": false,
+            "rustInTitle": false
+          },
+          {
+            "title": "Principal Mobile Apps Platform Engineer",
+            "location": "Manchester",
+            "url": "https://job-boards.eu.greenhouse.io/autotrader/jobs/4871975101",
+            "rust": false,
+            "rustInTitle": false
+          },
+          {
+            "title": "Principal Software Engineer, Backend - Full or Part Time",
+            "location": "Manchester",
+            "url": "https://job-boards.eu.greenhouse.io/autotrader/jobs/4021746101",
+            "rust": false,
+            "rustInTitle": false
+          },
+          {
+            "title": "Senior Data Scientist",
+            "location": "Manchester",
+            "url": "https://job-boards.eu.greenhouse.io/autotrader/jobs/4904348101",
+            "rust": false,
+            "rustInTitle": false
+          },
+          {
+            "title": "Senior Full Stack Engineer - Full or Part Time",
+            "location": "Manchester",
+            "url": "https://job-boards.eu.greenhouse.io/autotrader/jobs/4526385101",
+            "rust": false,
+            "rustInTitle": false
+          },
+          {
+            "title": "Senior Software Engineer, Backend - Full or Part Time",
+            "location": "Manchester",
+            "url": "https://job-boards.eu.greenhouse.io/autotrader/jobs/4021726101",
+            "rust": false,
+            "rustInTitle": false
+          }
+        ]
+      },
+      "link": {
+        "status": "live",
+        "httpCode": 200,
+        "checkedOn": "2026-09-15"
+      },
+      "confidence": "sand",
+      "employeeScale": "1k-5k",
+      "exchange": "LSE",
+      "hiresEngineersInUk": true,
+      "indices": [
+        "ftse100"
+      ],
+      "sector": "Marketplaces",
+      "techStackNote": "Java and Kotlin microservices on Google Cloud.",
+      "ticker": "AUTO",
+      "ukLocations": "Manchester, London"
+    },
+    {
+      "name": "Halma",
+      "careersUrl": "https://www.halma.com/careers",
+      "link": {
+        "status": "live",
+        "httpCode": 200,
+        "checkedOn": "2026-09-15"
+      },
+      "confidence": "water",
+      "employeeScale": "5k-10k",
+      "exchange": "LSE",
+      "hiresEngineersInUk": true,
+      "indices": [
+        "ftse100"
+      ],
+      "sector": "Industrial tech",
+      "techStackNote": "Embedded and sensor engineering, hired through its individual operating companies.",
+      "ticker": "HLMA",
+      "ukLocations": "Amersham, plus operating companies across the UK"
+    },
+    {
+      "name": "Pearson",
+      "careersUrl": "https://pearson.jobs/",
+      "link": {
+        "status": "live",
+        "httpCode": 200,
+        "checkedOn": "2026-09-15"
+      },
+      "confidence": "water",
+      "employeeScale": "10k+",
+      "exchange": "LSE",
+      "hiresEngineersInUk": true,
+      "indices": [
+        "ftse100"
+      ],
+      "sector": "Education tech",
+      "ticker": "PSON",
+      "ukLocations": "London, Manchester"
+    },
+    {
+      "name": "IG Group",
+      "careersUrl": "https://www.iggroup.com/careers",
+      "link": {
+        "status": "live",
+        "httpCode": 200,
+        "finalUrl": "https://www.iggroup.com/about-us/careers",
+        "checkedOn": "2026-09-15"
+      },
+      "confidence": "water",
+      "employeeScale": "1k-5k",
+      "exchange": "LSE",
+      "hiresEngineersInUk": true,
+      "indices": [
+        "ftse100"
+      ],
+      "sector": "Fintech",
+      "techStackNote": "Java trading platforms and client apps.",
+      "ticker": "IGG",
+      "ukLocations": "London"
+    },
+    {
+      "name": "Alfa Financial Software",
+      "careersUrl": "https://www.alfasystems.com/careers",
+      "link": {
+        "status": "live",
+        "httpCode": 200,
+        "finalUrl": "https://www.alfasystems.com/en-eu/careers",
+        "checkedOn": "2026-09-15"
+      },
+      "confidence": "water",
+      "employeeScale": "500-1k",
+      "exchange": "LSE",
+      "hiresEngineersInUk": true,
+      "indices": [
+        "ftse250"
+      ],
+      "sector": "Enterprise software",
+      "techStackNote": "Java asset-finance platform, sold to lenders worldwide.",
+      "ticker": "ALFA",
+      "ukLocations": "London"
+    },
+    {
+      "name": "Baltic Classifieds Group",
+      "careersUrl": "",
+      "link": {
+        "status": "missing",
+        "checkedOn": "2026-09-15"
+      },
+      "confidence": "water",
+      "employeeScale": "100-500",
+      "exchange": "LSE",
+      "hiresEngineersInUk": false,
+      "indices": [
+        "ftse250"
+      ],
+      "sector": "Marketplaces",
+      "techStackNote": "Engineering sits in the Baltic states, not the UK.",
+      "ticker": "BCG",
+      "ukLocations": "",
+      "website": "https://www.balticclassifieds.com"
+    },
+    {
+      "name": "Bytes Technology Group",
+      "careersUrl": "https://www.bytesplc.com/careers/",
+      "link": {
+        "status": "live",
+        "httpCode": 200,
+        "checkedOn": "2026-09-15"
+      },
+      "confidence": "sand",
+      "employeeScale": "1k-5k",
+      "exchange": "LSE",
+      "hiresEngineersInUk": true,
+      "indices": [
+        "ftse250"
+      ],
+      "sector": "IT services",
+      "techStackNote": "Microsoft licensing, cloud and security services.",
+      "ticker": "BYIT",
+      "ukLocations": "Leatherhead, Reading, Manchester"
+    },
+    {
+      "name": "Funding Circle",
+      "careersUrl": "https://www.fundingcircle.com/uk/careers/",
+      "ats": {
+        "provider": "ashby",
+        "slug": "fundingcircle",
+        "source": "careers-page"
+      },
+      "openings": {
+        "total": 19,
+        "uk": 19,
+        "ukEngineering": 6,
+        "ukRust": 0,
+        "ukRustInTitle": 0,
+        "rust": 0,
+        "checkedOn": "2026-09-15",
+        "roles": [
+          {
+            "title": "Data Scientist",
+            "location": "London",
+            "url": "https://jobs.ashbyhq.com/fundingcircle/e97e0bd0-0c97-42cc-98a7-e74ce6a544d9",
+            "rust": false,
+            "rustInTitle": false
+          },
+          {
+            "title": "Lead Analytics Engineer",
+            "location": "London",
+            "url": "https://jobs.ashbyhq.com/fundingcircle/ba799393-c80e-4af9-8200-5c4c1ef3f967",
+            "rust": false,
+            "rustInTitle": false
+          },
+          {
+            "title": "Lead Engineer",
+            "location": "London",
+            "url": "https://jobs.ashbyhq.com/fundingcircle/704ed535-7192-495f-8512-84186994f6e0",
+            "rust": false,
+            "rustInTitle": false
+          },
+          {
+            "title": "Senior Engineer (Servicing)",
+            "location": "London",
+            "url": "https://jobs.ashbyhq.com/fundingcircle/d11b7925-acc8-4aeb-8010-37d48cb7b470",
+            "rust": false,
+            "rustInTitle": false
+          },
+          {
+            "title": "Senior Mobile Engineer",
+            "location": "London",
+            "url": "https://jobs.ashbyhq.com/fundingcircle/998131e5-972f-41f0-b2ee-7791b84650de",
+            "rust": false,
+            "rustInTitle": false
+          },
+          {
+            "title": "Staff Software Engineer (Platform Capabilities)",
+            "location": "London",
+            "url": "https://jobs.ashbyhq.com/fundingcircle/3d1f342b-c373-492a-a997-912951dd1d87",
+            "rust": false,
+            "rustInTitle": false
+          }
+        ]
+      },
+      "link": {
+        "status": "live",
+        "httpCode": 200,
+        "checkedOn": "2026-09-15"
+      },
+      "confidence": "water",
+      "employeeScale": "500-1k",
+      "exchange": "LSE",
+      "hiresEngineersInUk": true,
+      "indices": [
+        "ftse250"
+      ],
+      "sector": "Fintech",
+      "ticker": "FCH",
+      "ukLocations": "London"
+    },
+    {
+      "name": "Gamma Communications",
+      "careersUrl": "https://gammagroup.co/company/careers-vacancies/",
+      "link": {
+        "status": "live",
+        "httpCode": 200,
+        "checkedOn": "2026-09-15"
+      },
+      "confidence": "sand",
+      "employeeScale": "1k-5k",
+      "exchange": "LSE",
+      "hiresEngineersInUk": true,
+      "indices": [
+        "ftse250"
+      ],
+      "sector": "Telecoms software",
+      "techStackNote": "Cloud communications platform; Node.js, TypeScript and Python.",
+      "ticker": "GAMA",
+      "ukLocations": "Manchester, Newbury, London"
+    },
+    {
+      "name": "GB Group",
+      "careersUrl": "https://www.gbgplc.com/en/careers/",
+      "link": {
+        "status": "live",
+        "httpCode": 200,
+        "finalUrl": "https://www.gbgplc.com/careers/",
+        "checkedOn": "2026-09-15"
+      },
+      "confidence": "water",
+      "employeeScale": "1k-5k",
+      "exchange": "LSE",
+      "hiresEngineersInUk": true,
+      "indices": [
+        "ftse250"
+      ],
+      "sector": "Cybersecurity and identity",
+      "techStackNote": "Identity verification and fraud prevention platforms.",
+      "ticker": "GBG",
+      "ukLocations": "Chester, London"
+    },
+    {
+      "name": "Kainos Group",
+      "careersUrl": "https://careers.kainos.com/gb/en/",
+      "link": {
+        "status": "live",
+        "httpCode": 200,
+        "checkedOn": "2026-09-15"
+      },
+      "confidence": "sand",
+      "employeeScale": "1k-5k",
+      "exchange": "LSE",
+      "hiresEngineersInUk": true,
+      "indices": [
+        "ftse250"
+      ],
+      "sector": "IT services",
+      "techStackNote": "Digital services delivery in .NET, Java and Python, plus a large Workday practice.",
+      "ticker": "KNOS",
+      "ukLocations": "Belfast, London, Birmingham, Derry"
+    },
+    {
+      "name": "Moonpig Group",
+      "careersUrl": "https://jobs.lever.co/moonpig",
+      "ats": {
+        "provider": "lever",
+        "slug": "moonpig",
+        "source": "careers-url"
+      },
+      "openings": {
+        "total": 13,
+        "uk": 12,
+        "ukEngineering": 3,
+        "ukRust": 0,
+        "ukRustInTitle": 0,
+        "rust": 0,
+        "checkedOn": "2026-09-15",
+        "roles": [
+          {
+            "title": "Analytics Engineering Lead",
+            "location": "London",
+            "url": "https://jobs.lever.co/moonpig/947cbd4a-2183-47d2-a266-824f12f298ac",
+            "rust": false,
+            "rustInTitle": false
+          },
+          {
+            "title": "Data Scientist",
+            "location": "London; Manchester",
+            "url": "https://jobs.lever.co/moonpig/fc3b9db9-906b-4586-bef3-6398a0d8c42c",
+            "rust": false,
+            "rustInTitle": false
+          },
+          {
+            "title": "Software Engineering Manager",
+            "location": "London; Manchester",
+            "url": "https://jobs.lever.co/moonpig/e76c2132-f916-46fc-b786-c778540e90d2",
+            "rust": false,
+            "rustInTitle": false
+          }
+        ]
+      },
+      "link": {
+        "status": "live",
+        "httpCode": 200,
+        "checkedOn": "2026-09-15"
+      },
+      "confidence": "sand",
+      "employeeScale": "1k-5k",
+      "exchange": "LSE",
+      "hiresEngineersInUk": true,
+      "indices": [
+        "ftse250"
+      ],
+      "sector": "Consumer tech",
+      "ticker": "MOON",
+      "ukLocations": "London, Manchester"
+    },
+    {
+      "name": "NCC Group",
+      "careersUrl": "https://www.nccgroup.com/uk/careers/",
+      "link": {
+        "status": "live",
+        "httpCode": 200,
+        "finalUrl": "https://nccgroup.pinpointhq.com/",
+        "checkedOn": "2026-09-15"
+      },
+      "confidence": "water",
+      "employeeScale": "1k-5k",
+      "exchange": "LSE",
+      "hiresEngineersInUk": true,
+      "indices": [
+        "ftse250"
+      ],
+      "sector": "Cybersecurity and identity",
+      "techStackNote": "Security research, penetration testing and software assurance.",
+      "ticker": "NCC",
+      "ukLocations": "Manchester, London, Cheltenham"
+    },
+    {
+      "name": "Ocado Group",
+      "careersUrl": "https://careers.ocadogroup.com/",
+      "ats": {
+        "provider": "greenhouse",
+        "slug": "ocadogroup",
+        "source": "greenhouse-name-match"
+      },
+      "openings": {
+        "total": 50,
+        "uk": 15,
+        "ukEngineering": 5,
+        "ukRust": 0,
+        "ukRustInTitle": 0,
+        "rust": 0,
+        "checkedOn": "2026-09-15",
+        "roles": [
+          {
+            "title": "Engineer",
+            "location": "Erith, United Kingdom",
+            "url": "https://careers.ocadogroup.com/jobs/details?gh_jid=4601470101&gh_jid=4601470101",
+            "rust": false,
+            "rustInTitle": false
+          },
+          {
+            "title": "Engineer",
+            "location": "Bicester, Oxfordshire, UK",
+            "url": "https://careers.ocadogroup.com/jobs/details?gh_jid=4970998101&gh_jid=4970998101",
+            "rust": false,
+            "rustInTitle": false
+          },
+          {
+            "title": "Engineering Team Manager",
+            "location": "Erith, United Kingdom",
+            "url": "https://careers.ocadogroup.com/jobs/details?gh_jid=4923588101&gh_jid=4923588101",
+            "rust": false,
+            "rustInTitle": false
+          },
+          {
+            "title": "Engineering Technician",
+            "location": "Erith, United Kingdom",
+            "url": "https://careers.ocadogroup.com/jobs/details?gh_jid=4671532101&gh_jid=4671532101",
+            "rust": false,
+            "rustInTitle": false
+          },
+          {
+            "title": "Engineering Technician",
+            "location": "Andover, South East, United Kingdom",
+            "url": "https://careers.ocadogroup.com/jobs/details?gh_jid=4629180101&gh_jid=4629180101",
+            "rust": false,
+            "rustInTitle": false
+          }
+        ]
+      },
+      "link": {
+        "status": "live",
+        "httpCode": 200,
+        "checkedOn": "2026-09-15"
+      },
+      "confidence": "water",
+      "employeeScale": "10k+",
+      "exchange": "LSE",
+      "hiresEngineersInUk": true,
+      "indices": [
+        "ftse250"
+      ],
+      "sector": "Robotics and logistics",
+      "techStackNote": "Warehouse robotics, control systems and the Ocado Smart Platform.",
+      "ticker": "OCDO",
+      "ukLocations": "Hatfield, London"
+    },
+    {
+      "name": "Oxford Instruments",
+      "careersUrl": "https://jobs.oxinst.com/",
+      "link": {
+        "status": "live",
+        "httpCode": 200,
+        "checkedOn": "2026-09-15"
+      },
+      "confidence": "sand",
+      "employeeScale": "1k-5k",
+      "exchange": "LSE",
+      "hiresEngineersInUk": true,
+      "indices": [
+        "ftse250"
+      ],
+      "sector": "Health and science tech",
+      "techStackNote": "C++ and C# software for imaging and analysis instruments.",
+      "ticker": "OXIG",
+      "ukLocations": "Oxford, High Wycombe, Belfast, Bristol"
+    },
+    {
+      "name": "Oxford Nanopore Technologies",
+      "careersUrl": "https://nanoporetech.com/about/careers",
+      "link": {
+        "status": "live",
+        "httpCode": 200,
+        "checkedOn": "2026-09-15"
+      },
+      "confidence": "sand",
+      "employeeScale": "1k-5k",
+      "exchange": "LSE",
+      "hiresEngineersInUk": true,
+      "indices": [
+        "ftse250"
+      ],
+      "rust": true,
+      "sector": "Health and science tech",
+      "techStackNote": "Sequencing device software and bioinformatics; some of its open-source tooling is written in Rust.",
+      "ticker": "ONT",
+      "ukLocations": "Oxford, London"
+    },
+    {
+      "name": "Playtech",
+      "careersUrl": "https://www.playtechpeople.com/jobs-our/",
+      "evidence": "https://careers.smartrecruiters.com/Playtech",
+      "ats": {
+        "provider": "smartrecruiters",
+        "slug": "Playtech",
+        "source": "careers-page"
+      },
+      "openings": {
+        "total": 132,
+        "uk": 2,
+        "ukEngineering": 1,
+        "ukRust": 0,
+        "ukRustInTitle": 0,
+        "rust": 0,
+        "checkedOn": "2026-09-15",
+        "roles": [
+          {
+            "title": "AI Solution Engineer",
+            "location": "London, GB",
+            "url": "https://jobs.smartrecruiters.com/Playtech/744000149581599",
+            "rust": false,
+            "rustInTitle": false
+          }
+        ]
+      },
+      "link": {
+        "status": "live",
+        "httpCode": 200,
+        "checkedOn": "2026-09-15"
+      },
+      "confidence": "sand",
+      "employeeScale": "5k-10k",
+      "exchange": "LSE",
+      "hiresEngineersInUk": true,
+      "indices": [
+        "ftse250"
+      ],
+      "sector": "Games",
+      "techStackNote": "Java and Scala gaming and betting platforms.",
+      "ticker": "PTEC",
+      "ukLocations": "London, Hull, Manchester"
+    },
+    {
+      "name": "Plus500",
+      "careersUrl": "https://www.plus500.com/en/careers",
+      "link": {
+        "status": "blocked",
+        "httpCode": 403,
+        "checkedOn": "2026-09-15"
+      },
+      "confidence": "water",
+      "employeeScale": "500-1k",
+      "exchange": "LSE",
+      "hiresEngineersInUk": false,
+      "indices": [
+        "ftse250"
+      ],
+      "sector": "Fintech",
+      "techStackNote": "Most engineering is in Israel and Bulgaria.",
+      "ticker": "PLUS",
+      "ukLocations": "London"
+    },
+    {
+      "name": "QinetiQ Group",
+      "careersUrl": "https://www.qinetiq.com/en/careers",
+      "link": {
+        "status": "live",
+        "httpCode": 200,
+        "checkedOn": "2026-09-15"
+      },
+      "confidence": "water",
+      "employeeScale": "5k-10k",
+      "exchange": "LSE",
+      "hiresEngineersInUk": true,
+      "indices": [
+        "ftse250"
+      ],
+      "sector": "Defence tech",
+      "techStackNote": "Defence research, test and evaluation; most roles need UK security clearance.",
+      "ticker": "QQ",
+      "ukLocations": "Farnborough, Malvern, Portsdown"
+    },
+    {
+      "name": "Raspberry Pi Holdings",
+      "careersUrl": "https://www.raspberrypi.com/jobs/",
+      "link": {
+        "status": "blocked",
+        "httpCode": 403,
+        "checkedOn": "2026-09-15"
+      },
+      "confidence": "sand",
+      "exchange": "LSE",
+      "hiresEngineersInUk": true,
+      "indices": [
+        "ftse250"
+      ],
+      "sector": "Semiconductors and hardware",
+      "techStackNote": "C, embedded Linux and in-house silicon (RP2040, RP2350).",
+      "ticker": "RPI",
+      "ukLocations": "Cambridge"
+    },
+    {
+      "name": "Renishaw",
+      "careersUrl": "https://renishaw.wd3.myworkdayjobs.com/Renishaw",
+      "link": {
+        "status": "live",
+        "httpCode": 200,
+        "checkedOn": "2026-09-15"
+      },
+      "confidence": "sand",
+      "employeeScale": "5k-10k",
+      "exchange": "LSE",
+      "hiresEngineersInUk": true,
+      "indices": [
+        "ftse250"
+      ],
+      "sector": "Industrial tech",
+      "techStackNote": "Embedded, metrology and machine-control software.",
+      "ticker": "RSW",
+      "ukLocations": "Wotton-under-Edge, Miskin"
+    },
+    {
+      "name": "Rightmove",
+      "careersUrl": "https://www.rightmove.co.uk/careers/",
+      "link": {
+        "status": "live",
+        "httpCode": 200,
+        "checkedOn": "2026-09-15"
+      },
+      "careersUrlSource": "probed-from-website",
+      "confidence": "water",
+      "employeeScale": "500-1k",
+      "exchange": "LSE",
+      "hiresEngineersInUk": true,
+      "indices": [
+        "ftse250"
+      ],
+      "sector": "Marketplaces",
+      "ticker": "RMV",
+      "ukLocations": "London, Milton Keynes",
+      "website": "https://plc.rightmove.co.uk"
+    },
+    {
+      "name": "Softcat",
+      "careersUrl": "https://www.softcat.com/careers",
+      "link": {
+        "status": "live",
+        "httpCode": 200,
+        "checkedOn": "2026-09-15"
+      },
+      "confidence": "sand",
+      "employeeScale": "1k-5k",
+      "exchange": "LSE",
+      "hiresEngineersInUk": true,
+      "indices": [
+        "ftse250"
+      ],
+      "sector": "IT services",
+      "ticker": "SCT",
+      "ukLocations": "Marlow, London, Manchester, Leeds, Glasgow"
+    },
+    {
+      "name": "Trainline",
+      "careersUrl": "https://www.trainlinegroup.com/careers/",
+      "evidence": "https://job-boards.greenhouse.io/trainline",
+      "link": {
+        "status": "live",
+        "httpCode": 200,
+        "checkedOn": "2026-09-15"
+      },
+      "careersUrlSource": "checked-by-hand",
+      "confidence": "sand",
+      "employeeScale": "1k-5k",
+      "exchange": "LSE",
+      "hiresEngineersInUk": true,
+      "indices": [
+        "ftse250"
+      ],
+      "sector": "Consumer tech",
+      "techStackNote": ".NET and AWS ticketing platform; Python for machine learning.",
+      "ticker": "TRN",
+      "ukLocations": "London, Edinburgh",
+      "website": "https://www.thetrainline.com"
+    },
+    {
+      "name": "Trustpilot Group",
+      "careersUrl": "https://corporate.trustpilot.com/careers",
+      "ats": {
+        "provider": "greenhouse",
+        "slug": "trustpilot",
+        "source": "greenhouse-name-match"
+      },
+      "openings": {
+        "total": 54,
+        "uk": 17,
+        "ukEngineering": 0,
+        "ukRust": 0,
+        "ukRustInTitle": 0,
+        "rust": 0,
+        "checkedOn": "2026-09-15"
+      },
+      "link": {
+        "status": "live",
+        "httpCode": 200,
+        "checkedOn": "2026-09-15"
+      },
+      "confidence": "sand",
+      "employeeScale": "500-1k",
+      "exchange": "LSE",
+      "hiresEngineersInUk": true,
+      "indices": [
+        "ftse250"
+      ],
+      "sector": "Consumer tech",
+      "ticker": "TRST",
+      "ukLocations": "London, Edinburgh"
+    },
+    {
+      "name": "AJ Bell",
+      "careersUrl": "https://www.ajbell.co.uk/careers",
+      "link": {
+        "status": "live",
+        "httpCode": 200,
+        "finalUrl": "https://www.ajbell.co.uk/group/careers",
+        "checkedOn": "2026-09-15"
+      },
+      "confidence": "water",
+      "employeeScale": "1k-5k",
+      "exchange": "LSE",
+      "hiresEngineersInUk": true,
+      "indices": [
+        "ftse250"
+      ],
+      "sector": "Fintech",
+      "ticker": "AJB",
+      "ukLocations": "Manchester, London"
+    },
+    {
+      "name": "CMC Markets",
+      "careersUrl": "https://www.cmcmarkets.com/group/careers",
+      "link": {
+        "status": "live",
+        "httpCode": 200,
+        "checkedOn": "2026-09-15"
+      },
+      "careersUrlSource": "checked-by-hand",
+      "confidence": "water",
+      "employeeScale": "1k-5k",
+      "exchange": "LSE",
+      "hiresEngineersInUk": true,
+      "indices": [
+        "ftse250"
+      ],
+      "sector": "Fintech",
+      "ticker": "CMCX",
+      "ukLocations": "London",
+      "website": "https://www.cmcmarkets.com"
+    },
+    {
+      "name": "MONY Group",
+      "careersUrl": "https://www.jobs.monygroup.com/",
+      "link": {
+        "status": "live",
+        "httpCode": 200,
+        "checkedOn": "2026-09-15"
+      },
+      "careersUrlSource": "probed-from-website",
+      "confidence": "water",
+      "employeeScale": "500-1k",
+      "exchange": "LSE",
+      "hiresEngineersInUk": true,
+      "indices": [
+        "ftse250"
+      ],
+      "sector": "Consumer tech",
+      "techStackNote": "Runs MoneySuperMarket and related price-comparison sites.",
+      "ticker": "MONY",
+      "ukLocations": "Ewloe, Manchester",
+      "website": "https://www.monygroup.com"
+    },
+    {
+      "name": "Aptitude Software Group",
+      "careersUrl": "https://www.aptitudesoftware.com/careers/",
+      "link": {
+        "status": "live",
+        "httpCode": 200,
+        "checkedOn": "2026-09-15"
+      },
+      "confidence": "water",
+      "employeeScale": "500-1k",
+      "exchange": "LSE",
+      "hiresEngineersInUk": true,
+      "indices": [
+        "smallcap"
+      ],
+      "sector": "Enterprise software",
+      "ticker": "APTD",
+      "ukLocations": "London"
+    },
+    {
+      "name": "Auction Technology Group",
+      "careersUrl": "https://www.auctiontechnologygroup.com/careers/",
+      "link": {
+        "status": "live",
+        "httpCode": 200,
+        "checkedOn": "2026-09-15"
+      },
+      "careersUrlSource": "probed-from-website",
+      "confidence": "water",
+      "employeeScale": "500-1k",
+      "exchange": "LSE",
+      "hiresEngineersInUk": true,
+      "indices": [
+        "smallcap"
+      ],
+      "sector": "Marketplaces",
+      "ticker": "ATG",
+      "ukLocations": "London",
+      "website": "https://www.auctiontechnologygroup.com"
+    },
+    {
+      "name": "Pinewood Technologies Group",
+      "careersUrl": "",
+      "link": {
+        "status": "missing",
+        "checkedOn": "2026-09-15"
+      },
+      "confidence": "water",
+      "employeeScale": "100-500",
+      "exchange": "LSE",
+      "hiresEngineersInUk": true,
+      "indices": [
+        "smallcap"
+      ],
+      "sector": "Enterprise software",
+      "techStackNote": "Cloud dealer-management software for car retailers.",
+      "ticker": "PINE",
+      "ukLocations": "Bromsgrove",
+      "website": "https://www.pinewood.co.uk"
+    },
+    {
+      "name": "Capita",
+      "careersUrl": "https://www.capita.com/careers",
+      "link": {
+        "status": "live",
+        "httpCode": 200,
+        "checkedOn": "2026-09-15"
+      },
+      "confidence": "water",
+      "employeeScale": "10k+",
+      "exchange": "LSE",
+      "hiresEngineersInUk": true,
+      "indices": [
+        "smallcap"
+      ],
+      "sector": "IT services",
+      "ticker": "CPI",
+      "ukLocations": "UK-wide"
+    },
+    {
+      "name": "PayPoint",
+      "careersUrl": "",
+      "link": {
+        "status": "missing",
+        "checkedOn": "2026-09-15"
+      },
+      "confidence": "water",
+      "employeeScale": "1k-5k",
+      "exchange": "LSE",
+      "hiresEngineersInUk": true,
+      "indices": [
+        "smallcap"
+      ],
+      "sector": "Fintech",
+      "ticker": "PAY",
+      "ukLocations": "Welwyn Garden City, London",
+      "website": "https://corporate.paypoint.com"
+    },
+    {
+      "name": "ASOS",
+      "careersUrl": "https://www.asoscareers.com/",
+      "link": {
+        "status": "live",
+        "httpCode": 200,
+        "checkedOn": "2026-09-15"
+      },
+      "confidence": "water",
+      "employeeScale": "1k-5k",
+      "exchange": "LSE",
+      "hiresEngineersInUk": true,
+      "indices": [
+        "smallcap"
+      ],
+      "sector": "Consumer tech",
+      "techStackNote": ".NET and Azure e-commerce platform.",
+      "ticker": "ASC",
+      "ukLocations": "London, Birmingham"
+    },
+    {
+      "name": "Craneware",
+      "careersUrl": "https://craneware.my.salesforce-sites.com/cranewarecareers/",
+      "link": {
+        "status": "live",
+        "httpCode": 200,
+        "checkedOn": "2026-09-15"
+      },
+      "confidence": "sand",
+      "employeeScale": "500-1k",
+      "exchange": "AIM",
+      "hiresEngineersInUk": true,
+      "indices": [
+        "aim"
+      ],
+      "sector": "Health and science tech",
+      "techStackNote": ".NET and Azure healthcare revenue software.",
+      "ticker": "CRW",
+      "ukLocations": "Edinburgh"
+    },
+    {
+      "name": "Cerillion",
+      "careersUrl": "https://www.cerillion.com/careers/",
+      "link": {
+        "status": "live",
+        "httpCode": 200,
+        "checkedOn": "2026-09-15"
+      },
+      "careersUrlSource": "probed-from-website",
+      "confidence": "water",
+      "employeeScale": "100-500",
+      "exchange": "AIM",
+      "hiresEngineersInUk": true,
+      "indices": [
+        "aim"
+      ],
+      "sector": "Telecoms software",
+      "techStackNote": "Billing and customer management software for telecoms operators.",
+      "ticker": "CER",
+      "ukLocations": "London",
+      "website": "https://www.cerillion.com"
+    },
+    {
+      "name": "Netcall",
+      "careersUrl": "https://www.netcall.com/careers/",
+      "link": {
+        "status": "live",
+        "httpCode": 200,
+        "checkedOn": "2026-09-15"
+      },
+      "careersUrlSource": "probed-from-website",
+      "confidence": "water",
+      "employeeScale": "100-500",
+      "exchange": "AIM",
+      "hiresEngineersInUk": true,
+      "indices": [
+        "aim"
+      ],
+      "sector": "Enterprise software",
+      "techStackNote": "Low-code and contact-centre software.",
+      "ticker": "NET",
+      "ukLocations": "Bedford, London",
+      "website": "https://www.netcall.com"
+    },
+    {
+      "name": "Frontier Developments",
+      "careersUrl": "https://www.frontier.co.uk/careers",
+      "link": {
+        "status": "live",
+        "httpCode": 200,
+        "checkedOn": "2026-09-15"
+      },
+      "careersUrlSource": "probed-from-website",
+      "confidence": "sand",
+      "employeeScale": "500-1k",
+      "exchange": "AIM",
+      "hiresEngineersInUk": true,
+      "indices": [
+        "aim"
+      ],
+      "sector": "Games",
+      "techStackNote": "C++ on its in-house Cobra engine.",
+      "ticker": "FDEV",
+      "ukLocations": "Cambridge",
+      "website": "https://www.frontier.co.uk"
+    },
+    {
+      "name": "Redcentric",
+      "careersUrl": "https://careers.redcentricplc.com/careers-at-redcentric/",
+      "link": {
+        "status": "live",
+        "httpCode": 200,
+        "checkedOn": "2026-09-15"
+      },
+      "confidence": "sand",
+      "employeeScale": "500-1k",
+      "exchange": "AIM",
+      "hiresEngineersInUk": true,
+      "indices": [
+        "aim"
+      ],
+      "sector": "IT services",
+      "techStackNote": "Managed cloud, network and security services.",
+      "ticker": "RCN",
+      "ukLocations": "Harrogate, UK-wide"
+    },
+    {
+      "name": "dotdigital Group",
+      "careersUrl": "https://careers.dotdigital.com/",
+      "link": {
+        "status": "live",
+        "httpCode": 200,
+        "checkedOn": "2026-09-15"
+      },
+      "careersUrlSource": "probed-from-website",
+      "confidence": "water",
+      "employeeScale": "500-1k",
+      "exchange": "AIM",
+      "hiresEngineersInUk": true,
+      "indices": [
+        "aim"
+      ],
+      "sector": "Enterprise software",
+      "techStackNote": "Marketing automation and customer data platform.",
+      "ticker": "DOTD",
+      "ukLocations": "London",
+      "website": "https://dotdigital.com"
+    },
+    {
+      "name": "Made Tech Group",
+      "careersUrl": "",
+      "link": {
+        "status": "missing",
+        "checkedOn": "2026-09-15"
+      },
+      "confidence": "water",
+      "employeeScale": "500-1k",
+      "exchange": "AIM",
+      "hiresEngineersInUk": true,
+      "indices": [
+        "aim"
+      ],
+      "sector": "IT services",
+      "techStackNote": "Public-sector digital delivery; stack varies by client.",
+      "ticker": "MTEC",
+      "ukLocations": "London, Manchester, Bristol",
+      "website": "https://www.madetech.com"
+    },
+    {
+      "name": "Intercede Group",
+      "careersUrl": "https://www.intercede.com/careers/",
+      "link": {
+        "status": "live",
+        "httpCode": 200,
+        "checkedOn": "2026-09-15"
+      },
+      "careersUrlSource": "probed-from-website",
+      "confidence": "water",
+      "employeeScale": "100-500",
+      "exchange": "AIM",
+      "hiresEngineersInUk": true,
+      "indices": [
+        "aim"
+      ],
+      "sector": "Cybersecurity and identity",
+      "techStackNote": "Digital identity and PKI credential management.",
+      "ticker": "IGP",
+      "ukLocations": "Lutterworth",
+      "website": "https://www.intercede.com"
+    },
+    {
+      "name": "EnSilica",
+      "careersUrl": "https://www.ensilica.com/job-vacancies/",
+      "link": {
+        "status": "live",
+        "httpCode": 200,
+        "checkedOn": "2026-09-15"
+      },
+      "confidence": "sand",
+      "employeeScale": "100-500",
+      "exchange": "AIM",
+      "hiresEngineersInUk": true,
+      "indices": [
+        "aim"
+      ],
+      "sector": "Semiconductors and hardware",
+      "techStackNote": "Mixed-signal ASIC design and embedded software.",
+      "ticker": "ENSI",
+      "ukLocations": "Wokingham, Oxford, Bristol, Cambridge"
+    },
+    {
+      "name": "accesso Technology Group",
+      "careersUrl": "http://accesso.com/careers/",
+      "link": {
+        "status": "live",
+        "httpCode": 200,
+        "checkedOn": "2026-09-15"
+      },
+      "careersUrlSource": "probed-from-website",
+      "confidence": "water",
+      "employeeScale": "500-1k",
+      "exchange": "AIM",
+      "hiresEngineersInUk": false,
+      "indices": [
+        "aim"
+      ],
+      "sector": "Enterprise software",
+      "techStackNote": "Ticketing and visitor software for attractions.",
+      "ticker": "ACSO",
+      "ukLocations": "",
+      "website": "https://www.accesso.com"
+    },
+    {
+      "name": "iomart Group",
+      "careersUrl": "https://careers-iomart.icims.com/",
+      "link": {
+        "status": "live",
+        "httpCode": 200,
+        "checkedOn": "2026-09-15"
+      },
+      "confidence": "sand",
+      "employeeScale": "500-1k",
+      "exchange": "AIM",
+      "hiresEngineersInUk": true,
+      "indices": [
+        "aim"
+      ],
+      "sector": "IT services",
+      "techStackNote": "Managed cloud, hosting and security services.",
+      "ticker": "IOM",
+      "ukLocations": "Glasgow, London, Manchester"
+    },
+    {
+      "name": "Eagle Eye Solutions",
+      "careersUrl": "https://eagleeye.com/careers",
+      "link": {
+        "status": "live",
+        "httpCode": 200,
+        "checkedOn": "2026-09-15"
+      },
+      "careersUrlSource": "probed-from-website",
+      "confidence": "water",
+      "employeeScale": "100-500",
+      "exchange": "AIM",
+      "hiresEngineersInUk": true,
+      "indices": [
+        "aim"
+      ],
+      "sector": "Enterprise software",
+      "techStackNote": "Loyalty and promotions platform for retailers.",
+      "ticker": "EYE",
+      "ukLocations": "Guildford",
+      "website": "https://eagleeye.com"
+    },
+    {
+      "name": "Focusrite",
+      "careersUrl": "",
+      "link": {
+        "status": "missing",
+        "checkedOn": "2026-09-15"
+      },
+      "confidence": "water",
+      "employeeScale": "500-1k",
+      "exchange": "AIM",
+      "hiresEngineersInUk": true,
+      "indices": [
+        "aim"
+      ],
+      "sector": "Semiconductors and hardware",
+      "techStackNote": "Audio DSP, embedded firmware and desktop apps.",
+      "ticker": "TUNE",
+      "ukLocations": "High Wycombe",
+      "website": "https://focusritegroup.com"
+    },
+    {
+      "name": "Beeks Financial Cloud",
+      "careersUrl": "https://beeksgroup.com/about/careers/",
+      "link": {
+        "status": "live",
+        "httpCode": 200,
+        "checkedOn": "2026-09-15"
+      },
+      "careersUrlSource": "probed-from-website",
+      "confidence": "water",
+      "employeeScale": "100-500",
+      "exchange": "AIM",
+      "hiresEngineersInUk": true,
+      "indices": [
+        "aim"
+      ],
+      "sector": "Fintech",
+      "techStackNote": "Low-latency trading infrastructure and network analytics.",
+      "ticker": "BKS",
+      "ukLocations": "Glasgow, London",
+      "website": "https://beeksgroup.com"
+    },
+    {
+      "name": "Bango",
+      "careersUrl": "https://bango.com/careers/",
+      "link": {
+        "status": "live",
+        "httpCode": 200,
+        "checkedOn": "2026-09-15"
+      },
+      "careersUrlSource": "probed-from-website",
+      "confidence": "water",
+      "employeeScale": "100-500",
+      "exchange": "AIM",
+      "hiresEngineersInUk": true,
+      "indices": [
+        "aim"
+      ],
+      "sector": "Fintech",
+      "techStackNote": "Subscription bundling and payments platform.",
+      "ticker": "BGO",
+      "ukLocations": "Cambridge",
+      "website": "https://www.bango.com"
+    },
+    {
+      "name": "Tracsis",
+      "careersUrl": "",
+      "link": {
+        "status": "missing",
+        "checkedOn": "2026-09-15"
+      },
+      "confidence": "water",
+      "employeeScale": "500-1k",
+      "exchange": "AIM",
+      "hiresEngineersInUk": true,
+      "indices": [
+        "aim"
+      ],
+      "sector": "Enterprise software",
+      "techStackNote": "Rail and transport operations software.",
+      "ticker": "TRCS",
+      "ukLocations": "Leeds",
+      "website": "https://tracsis.com"
+    },
+    {
+      "name": "IQE",
+      "careersUrl": "https://careers.iqep.com/",
+      "link": {
+        "status": "live",
+        "httpCode": 200,
+        "checkedOn": "2026-09-15"
+      },
+      "careersUrlSource": "probed-from-website",
+      "confidence": "water",
+      "employeeScale": "500-1k",
+      "exchange": "AIM",
+      "hiresEngineersInUk": true,
+      "indices": [
+        "aim"
+      ],
+      "sector": "Semiconductors and hardware",
+      "techStackNote": "Compound semiconductor wafer manufacturing; mostly process engineering.",
+      "ticker": "IQE",
+      "ukLocations": "Cardiff",
+      "website": "https://www.iqep.com"
+    },
+    {
+      "name": "Boku",
+      "careersUrl": "https://job-boards.greenhouse.io/boku",
+      "ats": {
+        "provider": "greenhouse",
+        "slug": "boku",
+        "source": "greenhouse-name-match"
+      },
+      "openings": {
+        "total": 8,
+        "uk": 3,
+        "ukEngineering": 2,
+        "ukRust": 0,
+        "ukRustInTitle": 0,
+        "rust": 0,
+        "checkedOn": "2026-09-15",
+        "roles": [
+          {
+            "title": "Enterprise Infrastructure Engineer",
+            "location": "London",
+            "url": "https://boards.greenhouse.io/boku/jobs/6187905004?gh_jid=6187905004",
+            "rust": false,
+            "rustInTitle": false
+          },
+          {
+            "title": "Senior Enterprise Infrastructure Engineer",
+            "location": "London",
+            "url": "https://boards.greenhouse.io/boku/jobs/6192826004?gh_jid=6192826004",
+            "rust": false,
+            "rustInTitle": false
+          }
+        ]
+      },
+      "link": {
+        "status": "live",
+        "httpCode": 200,
+        "finalUrl": "https://www.boku.com/careers/",
+        "checkedOn": "2026-09-15"
+      },
+      "careersUrlSource": "job-board",
+      "confidence": "water",
+      "employeeScale": "500-1k",
+      "exchange": "AIM",
+      "hiresEngineersInUk": true,
+      "indices": [
+        "aim"
+      ],
+      "sector": "Fintech",
+      "techStackNote": "Mobile payments network.",
+      "ticker": "BOKU",
+      "ukLocations": "London",
+      "website": "https://www.boku.com"
+    },
+    {
+      "name": "Concurrent Technologies",
+      "careersUrl": "",
+      "link": {
+        "status": "missing",
+        "checkedOn": "2026-09-15"
+      },
+      "confidence": "water",
+      "employeeScale": "100-500",
+      "exchange": "AIM",
+      "hiresEngineersInUk": true,
+      "indices": [
+        "aim"
+      ],
+      "sector": "Semiconductors and hardware",
+      "techStackNote": "Embedded computing boards, firmware and board support packages.",
+      "ticker": "CNC",
+      "ukLocations": "Colchester",
+      "website": "https://www.gocct.com"
+    },
+    {
+      "name": "OpenAI",
+      "careersUrl": "https://openai.com/careers/",
+      "evidence": "https://jobs.ashbyhq.com/openai",
+      "ats": {
+        "provider": "ashby",
+        "slug": "openai",
+        "source": "research-evidence"
+      },
+      "openings": {
+        "total": 806,
+        "uk": 30,
+        "ukEngineering": 20,
+        "ukRust": 2,
+        "ukRustInTitle": 0,
+        "rust": 58,
+        "checkedOn": "2026-09-15",
+        "roles": [
+          {
+            "title": "Software Engineer, Codex Core Agents",
+            "location": "San Francisco; New York City; Seattle; London, UK",
+            "url": "https://jobs.ashbyhq.com/openai/7ade7a12-845c-4e3a-af23-c028420bd181",
+            "rust": true,
+            "rustInTitle": false
+          },
+          {
+            "title": "Software Engineer, Model Deployment- ChatGPT Engineering",
+            "location": "London, UK",
+            "url": "https://jobs.ashbyhq.com/openai/f8b84ae5-743b-41c9-8432-02dff9993d6b",
+            "rust": true,
+            "rustInTitle": false
+          },
+          {
+            "title": "Applied AI Architect, Education",
+            "location": "London, UK",
+            "url": "https://jobs.ashbyhq.com/openai/98bffd0e-05cf-4748-93f1-b115c84e37b4",
+            "rust": false,
+            "rustInTitle": false
+          },
+          {
+            "title": "Applied AI Engineer, Codex",
+            "location": "London, UK",
+            "url": "https://jobs.ashbyhq.com/openai/32425ea6-a64b-408d-ae54-38342b83c875",
+            "rust": false,
+            "rustInTitle": false
+          },
+          {
+            "title": "Applied AI Engineer, Codex Core Agent",
+            "location": "San Francisco; New York City; Seattle; London, UK",
+            "url": "https://jobs.ashbyhq.com/openai/577e6673-0a4a-491b-9a0d-facbdd3bdf3c",
+            "rust": false,
+            "rustInTitle": false
+          },
+          {
+            "title": "Applied AI Engineer, Digital Natives",
+            "location": "London, UK",
+            "url": "https://jobs.ashbyhq.com/openai/7be58f3a-6005-42ed-86fa-77773ebfb294",
+            "rust": false,
+            "rustInTitle": false
+          },
+          {
+            "title": "Applied AI Engineer, Government, International",
+            "location": "London, UK",
+            "url": "https://jobs.ashbyhq.com/openai/6c01266f-6ddb-42d1-a529-84736ae8587a",
+            "rust": false,
+            "rustInTitle": false
+          },
+          {
+            "title": "Forward Deployed Engineer - London (Spanish-speaking)",
+            "location": "London, UK",
+            "url": "https://jobs.ashbyhq.com/openai/7ce64627-b273-48e1-b3bc-ef4be0444706",
+            "rust": false,
+            "rustInTitle": false
+          }
+        ]
+      },
+      "link": {
+        "status": "live",
+        "httpCode": 200,
+        "checkedOn": "2026-09-15"
+      },
+      "confidence": "sand",
+      "exchange": "Private",
+      "hiresEngineersInUk": true,
+      "indices": [
+        "targets"
+      ],
+      "mark": "OAI",
+      "rust": true,
+      "sector": "AI and developer infrastructure",
+      "techStackNote": "Model deployment and inference infrastructure; Rust appears in parts of the stack, including the Codex CLI.",
+      "ukLocations": "London",
+      "rustDepth": "adjacent",
+      "rustDepthNote": "Rust appears once, in a list: \u201cstrong programming skills in Go, Python, C++, Rust, or a comparable language\u201d. The Model Deployment role is platform and infrastructure work \u2014 deployment orchestration, config management, capacity planning for the GPU fleet. Explicitly says GPU or low-level hardware experience is not needed. \u00a3194K\u2013\u00a3280K, London office three days a week.",
+      "rustDepthCheckedOn": "2026-09-17"
+    },
+    {
+      "name": "Helsing",
+      "careersUrl": "https://helsing.ai/careers",
+      "evidence": "https://job-boards.greenhouse.io/helsing",
+      "ats": {
+        "provider": "greenhouse",
+        "slug": "helsing",
+        "source": "research-evidence"
+      },
+      "openings": {
+        "total": 153,
+        "uk": 36,
+        "ukEngineering": 24,
+        "ukRust": 18,
+        "ukRustInTitle": 0,
+        "rust": 30,
+        "checkedOn": "2026-09-15",
+        "roles": [
+          {
+            "title": "AI Research Engineer -  3D Computer Vision",
+            "location": "Berlin; London; Munich; Paris",
+            "url": "https://helsing.ai/jobs/4911999101?gh_jid=4911999101",
+            "rust": true,
+            "rustInTitle": false
+          },
+          {
+            "title": "AI Research Engineer -  Computer Vision",
+            "location": "Berlin; London; Munich",
+            "url": "https://helsing.ai/jobs/4334842101?gh_jid=4334842101",
+            "rust": true,
+            "rustInTitle": false
+          },
+          {
+            "title": "AI Research Engineer - AI Safety",
+            "location": "Berlin; London; Munich",
+            "url": "https://helsing.ai/jobs/4334849101?gh_jid=4334849101",
+            "rust": true,
+            "rustInTitle": false
+          },
+          {
+            "title": "AI Research Engineer - GPU Simulation",
+            "location": "Munich - Berlin - London - Paris",
+            "url": "https://helsing.ai/jobs/4953387101?gh_jid=4953387101",
+            "rust": true,
+            "rustInTitle": false
+          },
+          {
+            "title": "AI Research Engineer - ML & Signal Processing",
+            "location": "Berlin; Munich",
+            "url": "https://helsing.ai/jobs/4372802101?gh_jid=4372802101",
+            "rust": true,
+            "rustInTitle": false
+          },
+          {
+            "title": "AI Research Engineer - Reinforcement Learning",
+            "location": "Barcelona; Berlin; London; Munich; Paris",
+            "url": "https://helsing.ai/jobs/4676357101?gh_jid=4676357101",
+            "rust": true,
+            "rustInTitle": false
+          },
+          {
+            "title": "AI Research Engineer - Robotics",
+            "location": "Barcelona; Paris",
+            "url": "https://helsing.ai/jobs/4423924101?gh_jid=4423924101",
+            "rust": true,
+            "rustInTitle": false
+          },
+          {
+            "title": "Camera Engineer",
+            "location": "Berlin; London; Munich",
+            "url": "https://helsing.ai/jobs/4939591101?gh_jid=4939591101",
+            "rust": true,
+            "rustInTitle": false
+          }
+        ]
+      },
+      "link": {
+        "status": "blocked",
+        "httpCode": 429,
+        "checkedOn": "2026-09-15"
+      },
+      "confidence": "sand",
+      "exchange": "Private",
+      "hiresEngineersInUk": true,
+      "indices": [
+        "targets"
+      ],
+      "mark": "HEL",
+      "rust": true,
+      "sector": "Defence tech",
+      "techStackNote": "Defence AI; Rust across its systems and edge software.",
+      "ukLocations": "London",
+      "rustDepth": "mixed",
+      "rustDepthNote": "Stack described as \u201ca mix of Rust and Python, with Python mainly used in the ML-heavy sections\u201d, so Rust is the systems language. Staff role architects backend systems for edge hardware and expects the holder to run \u201ctopical office hours (e.g. on Rust)\u201d. A separate Software Engineer, Rust opening also exists.",
+      "rustDepthCheckedOn": "2026-09-17"
+    },
+    {
+      "name": "GitHub",
+      "careersUrl": "https://www.github.careers/careers-home",
+      "link": {
+        "status": "live",
+        "httpCode": 200,
+        "checkedOn": "2026-09-15"
+      },
+      "confidence": "sand",
+      "exchange": "Microsoft",
+      "hiresEngineersInUk": true,
+      "indices": [
+        "targets"
+      ],
+      "mark": "GH",
+      "sector": "AI and developer infrastructure",
+      "techStackNote": "Ruby on Rails core with Go services; CodeQL static analysis engines.",
+      "ukLocations": "UK remote"
+    },
+    {
+      "name": "Proton",
+      "careersUrl": "https://proton.me/careers",
+      "ats": {
+        "provider": "greenhouse",
+        "slug": "proton",
+        "source": "greenhouse-name-match"
+      },
+      "openings": {
+        "total": 69,
+        "uk": 23,
+        "ukEngineering": 10,
+        "ukRust": 8,
+        "ukRustInTitle": 1,
+        "rust": 29,
+        "checkedOn": "2026-09-15",
+        "roles": [
+          {
+            "title": "Senior Rust Engineer - Proton Drive",
+            "location": "London; Geneva;",
+            "url": "https://job-boards.eu.greenhouse.io/proton/jobs/4777667101",
+            "rust": true,
+            "rustInTitle": true
+          },
+          {
+            "title": "Senior Android Software Engineer - London",
+            "location": "London",
+            "url": "https://job-boards.eu.greenhouse.io/proton/jobs/4932164101",
+            "rust": true,
+            "rustInTitle": false
+          },
+          {
+            "title": "Senior Backend Engineer (Foundation)",
+            "location": "London; Paris",
+            "url": "https://job-boards.eu.greenhouse.io/proton/jobs/4954545101",
+            "rust": true,
+            "rustInTitle": false
+          },
+          {
+            "title": "Senior Backend Engineer (Payments)",
+            "location": "Barcelona; London",
+            "url": "https://job-boards.eu.greenhouse.io/proton/jobs/4845404101",
+            "rust": true,
+            "rustInTitle": false
+          },
+          {
+            "title": "Senior Foundation Engineer (Drive)",
+            "location": "Geneva; London;",
+            "url": "https://job-boards.eu.greenhouse.io/proton/jobs/4630103101",
+            "rust": true,
+            "rustInTitle": false
+          },
+          {
+            "title": "Senior Software Engineer (Inbox Desktop)",
+            "location": "London; Geneva",
+            "url": "https://job-boards.eu.greenhouse.io/proton/jobs/4766179101",
+            "rust": true,
+            "rustInTitle": false
+          },
+          {
+            "title": "Senior iOS Software Engineer - London",
+            "location": "London",
+            "url": "https://job-boards.eu.greenhouse.io/proton/jobs/4881689101",
+            "rust": true,
+            "rustInTitle": false
+          },
+          {
+            "title": "Software Engineer (Linux)",
+            "location": "London UK, Geneva CH",
+            "url": "https://job-boards.eu.greenhouse.io/proton/jobs/4836677101",
+            "rust": true,
+            "rustInTitle": false
+          }
+        ]
+      },
+      "link": {
+        "status": "live",
+        "httpCode": 200,
+        "checkedOn": "2026-09-15"
+      },
+      "confidence": "sand",
+      "exchange": "Private",
+      "hiresEngineersInUk": true,
+      "indices": [
+        "targets"
+      ],
+      "mark": "PRO",
+      "rust": true,
+      "sector": "Cybersecurity and identity",
+      "techStackNote": "Privacy products; Rust in cryptography and shared client libraries.",
+      "ukLocations": "London",
+      "rustDepth": "first",
+      "rustDepthNote": "Job titled Senior Rust Engineer (Foundation): \u201cLead the design and development of Rust libraries shared across web and mobile.\u201d Requires \u201cstrong expertise in Rust language features, concurrency, and ownership model\u201d. Bonus points for DDD, WebAssembly and cryptography concepts. Four separate London Rust roles open (Foundation, Payments, Drive, Account).",
+      "rustDepthCheckedOn": "2026-09-17"
+    },
+    {
+      "name": "Grafana Labs",
+      "careersUrl": "https://job-boards.greenhouse.io/grafanalabs",
+      "evidence": "https://job-boards.greenhouse.io/grafanalabs",
+      "ats": {
+        "provider": "greenhouse",
+        "slug": "grafanalabs",
+        "source": "research-evidence"
+      },
+      "openings": {
+        "total": 116,
+        "uk": 34,
+        "ukEngineering": 19,
+        "ukRust": 11,
+        "ukRustInTitle": 0,
+        "rust": 22,
+        "checkedOn": "2026-09-15",
+        "roles": [
+          {
+            "title": "Senior Backend Engineer - Databases - Loki Query | UK | Remote",
+            "location": "United Kingdom (Remote)",
+            "url": "https://job-boards.greenhouse.io/grafanalabs/jobs/6123193004",
+            "rust": true,
+            "rustInTitle": false
+          },
+          {
+            "title": "Senior Backend Engineer - Databases Pyroscope | UK | Remote",
+            "location": "United Kingdom (Remote)",
+            "url": "https://job-boards.greenhouse.io/grafanalabs/jobs/6126889004",
+            "rust": true,
+            "rustInTitle": false
+          },
+          {
+            "title": "Staff Backend Engineer - Alerting | Germany | Remote",
+            "location": "Germany (Remote)",
+            "url": "https://job-boards.greenhouse.io/grafanalabs/jobs/6105872004",
+            "rust": true,
+            "rustInTitle": false
+          },
+          {
+            "title": "Staff Backend Engineer - Alerting | Ireland | Remote",
+            "location": "Republic of Ireland (Remote)",
+            "url": "https://job-boards.greenhouse.io/grafanalabs/jobs/6105874004",
+            "rust": true,
+            "rustInTitle": false
+          },
+          {
+            "title": "Staff Backend Engineer - Alerting | Spain | Remote",
+            "location": "Spain (Remote)",
+            "url": "https://job-boards.greenhouse.io/grafanalabs/jobs/6105873004",
+            "rust": true,
+            "rustInTitle": false
+          },
+          {
+            "title": "Staff Backend Engineer - Alerting | UK | Remote",
+            "location": "United Kingdom (Remote)",
+            "url": "https://job-boards.greenhouse.io/grafanalabs/jobs/6105876004",
+            "rust": true,
+            "rustInTitle": false
+          },
+          {
+            "title": "Staff Software Engineer - Databases, Tempo | Germany | Remote",
+            "location": "Germany (Remote)",
+            "url": "https://job-boards.greenhouse.io/grafanalabs/jobs/6112829004",
+            "rust": true,
+            "rustInTitle": false
+          },
+          {
+            "title": "Staff Software Engineer - Databases, Tempo | Ireland | Remote",
+            "location": "Republic of Ireland (Remote)",
+            "url": "https://job-boards.greenhouse.io/grafanalabs/jobs/6112828004",
+            "rust": true,
+            "rustInTitle": false
+          }
+        ]
+      },
+      "link": {
+        "status": "live",
+        "httpCode": 200,
+        "checkedOn": "2026-09-15"
+      },
+      "careersUrlSource": "job-board",
+      "confidence": "sand",
+      "exchange": "Private",
+      "hiresEngineersInUk": true,
+      "indices": [
+        "targets"
+      ],
+      "mark": "GRAF",
+      "sector": "AI and developer infrastructure",
+      "techStackNote": "Go and TypeScript observability stack (Tempo, Loki, Mimir).",
+      "ukLocations": "UK remote"
+    },
+    {
+      "name": "Microsoft",
+      "careersUrl": "https://jobs.careers.microsoft.com/global/en/search?lc=United%20Kingdom",
+      "link": {
+        "status": "live",
+        "httpCode": 200,
+        "finalUrl": "https://apply.careers.microsoft.com/careers",
+        "checkedOn": "2026-09-15"
+      },
+      "confidence": "sand",
+      "exchange": "Nasdaq",
+      "hiresEngineersInUk": true,
+      "indices": [
+        "targets"
+      ],
+      "rust": true,
+      "sector": "Enterprise software",
+      "techStackNote": "Rust is used in Azure, Windows and security teams.",
+      "ticker": "MSFT",
+      "ukLocations": "London, Reading, Cambridge"
+    },
+    {
+      "name": "Redpanda Data",
+      "careersUrl": "https://www.redpanda.com/careers",
+      "link": {
+        "status": "live",
+        "httpCode": 200,
+        "checkedOn": "2026-09-15"
+      },
+      "confidence": "sand",
+      "exchange": "Private",
+      "hiresEngineersInUk": true,
+      "indices": [
+        "targets"
+      ],
+      "mark": "RPD",
+      "sector": "AI and developer infrastructure",
+      "techStackNote": "C++ streaming engine; forward-deployed engineering roles across EMEA.",
+      "ukLocations": "UK remote"
+    },
+    {
+      "name": "Lovable",
+      "careersUrl": "https://lovable.dev/careers",
+      "evidence": "https://jobs.ashbyhq.com/lovable",
+      "ats": {
+        "provider": "ashby",
+        "slug": "lovable",
+        "source": "research-evidence"
+      },
+      "openings": {
+        "total": 79,
+        "uk": 28,
+        "ukEngineering": 12,
+        "ukRust": 8,
+        "ukRustInTitle": 0,
+        "rust": 20,
+        "checkedOn": "2026-09-15",
+        "roles": [
+          {
+            "title": "Data Scientist",
+            "location": "Stockholm; London",
+            "url": "https://jobs.ashbyhq.com/lovable/22169279-acc3-4133-96ab-6f525b16fc8e",
+            "rust": true,
+            "rustInTitle": false
+          },
+          {
+            "title": "Software Engineer, Growth",
+            "location": "London",
+            "url": "https://jobs.ashbyhq.com/lovable/581951b9-537e-49d5-89fb-dd74cdf3256c",
+            "rust": true,
+            "rustInTitle": false
+          },
+          {
+            "title": "Software Engineer, Platform (Developer Experience)",
+            "location": "Stockholm; London",
+            "url": "https://jobs.ashbyhq.com/lovable/99f2854e-4937-4227-b96a-81269b5f871d",
+            "rust": true,
+            "rustInTitle": false
+          },
+          {
+            "title": "Software Engineer, Platform (Enterprise)",
+            "location": "London",
+            "url": "https://jobs.ashbyhq.com/lovable/722d4ea3-9aa7-460f-802e-ae1ec31170f4",
+            "rust": true,
+            "rustInTitle": false
+          },
+          {
+            "title": "Staff / Principal Design Engineer, Web",
+            "location": "New York City; London",
+            "url": "https://jobs.ashbyhq.com/lovable/51885ae5-4f4c-46c4-abd3-d7aad1c8d9c0",
+            "rust": true,
+            "rustInTitle": false
+          },
+          {
+            "title": "Staff / Principal Software Engineer, Product",
+            "location": "Stockholm; London",
+            "url": "https://jobs.ashbyhq.com/lovable/45db5790-4305-4fad-b96b-1fbdf42b88f2",
+            "rust": true,
+            "rustInTitle": false
+          },
+          {
+            "title": "Staff Software Engineer, Platform (Enterprise)",
+            "location": "London",
+            "url": "https://jobs.ashbyhq.com/lovable/6971bf2b-5873-4817-b886-ad6d63358a71",
+            "rust": true,
+            "rustInTitle": false
+          },
+          {
+            "title": "AI Research Engineer, Post-Training",
+            "location": "Stockholm; London",
+            "url": "https://jobs.ashbyhq.com/lovable/59d85cf1-104b-48cb-956c-bed73ef934c9",
+            "rust": false,
+            "rustInTitle": false
+          }
+        ]
+      },
+      "link": {
+        "status": "live",
+        "httpCode": 200,
+        "checkedOn": "2026-09-15"
+      },
+      "confidence": "water",
+      "exchange": "Private",
+      "hiresEngineersInUk": true,
+      "indices": [
+        "targets"
+      ],
+      "mark": "LOV",
+      "sector": "AI and developer infrastructure",
+      "ukLocations": "London"
+    },
+    {
+      "name": "Callosum",
+      "careersUrl": "https://freehire.me/jobs/agent-runtime-systems-member-of-technical-staff-callosum-k5yo4la3",
+      "link": {
+        "status": "missing",
+        "checkedOn": "2026-09-15"
+      },
+      "confidence": "water",
+      "exchange": "Private",
+      "hiresEngineersInUk": true,
+      "indices": [
+        "targets"
+      ],
+      "mark": "CAL",
+      "sector": "AI and developer infrastructure",
+      "techStackNote": "Agent runtime and systems roles, seen in your LinkedIn search.",
+      "ukLocations": "London",
+      "rustDepth": "secondary",
+      "rustDepthNote": "\u201cDeep Python expertise plus proficiency in a systems language such as Rust, C++, or Go\u201d \u2014 Rust is the secondary requirement. Wants contributions to Ray, Temporal, Kafka, Erlang/BEAM, PyTorch or JAX, and experience building production runtimes, workflow engines or orchestration platforms. \u00a3101k\u2013\u00a3192k, fully in person in London.",
+      "rustDepthCheckedOn": "2026-09-17",
+      "careersUrlSource": "role listing found via research, 2026-09-17; no company careers page located"
+    },
+    {
+      "name": "Catapult",
+      "careersUrl": "",
+      "link": {
+        "status": "missing",
+        "checkedOn": "2026-09-15"
+      },
+      "confidence": "water",
+      "exchange": "Private",
+      "hiresEngineersInUk": true,
+      "indices": [
+        "targets"
+      ],
+      "mark": "CAT",
+      "sector": "Other",
+      "techStackNote": "Founding senior engineer role from your LinkedIn search. Several companies share this name, so check the listing.",
+      "ukLocations": "London"
+    },
+    {
+      "name": "SpaceXAI",
+      "careersUrl": "",
+      "link": {
+        "status": "missing",
+        "checkedOn": "2026-09-15"
+      },
+      "confidence": "water",
+      "exchange": "Private",
+      "hiresEngineersInUk": true,
+      "indices": [
+        "targets"
+      ],
+      "mark": "SXAI",
+      "sector": "AI and developer infrastructure",
+      "techStackNote": "Member of Technical Staff, X Money, from your LinkedIn search.",
+      "ukLocations": "Greater London"
+    },
+    {
+      "name": "Monzo",
+      "careersUrl": "https://monzo.com/careers",
+      "evidence": "https://boards.greenhouse.io/monzo",
+      "ats": {
+        "provider": "greenhouse",
+        "slug": "monzo",
+        "source": "careers-page"
+      },
+      "openings": {
+        "total": 64,
+        "uk": 50,
+        "ukEngineering": 10,
+        "ukRust": 0,
+        "ukRustInTitle": 0,
+        "rust": 0,
+        "checkedOn": "2026-09-15",
+        "roles": [
+          {
+            "title": "Backend Engineer III",
+            "location": "Cardiff, London or Remote (UK)",
+            "url": "https://job-boards.greenhouse.io/monzo/jobs/6635595",
+            "rust": false,
+            "rustInTitle": false
+          },
+          {
+            "title": "Engineering Director, EU",
+            "location": "Cardiff, London or Remote (UK)",
+            "url": "https://job-boards.greenhouse.io/monzo/jobs/8025854",
+            "rust": false,
+            "rustInTitle": false
+          },
+          {
+            "title": "Engineering Manager",
+            "location": "Cardiff, London or Remote (UK)",
+            "url": "https://job-boards.greenhouse.io/monzo/jobs/5018066",
+            "rust": false,
+            "rustInTitle": false
+          },
+          {
+            "title": "Lead Data Scientist",
+            "location": "Cardiff, London or Remote (UK)",
+            "url": "https://job-boards.greenhouse.io/monzo/jobs/6369658",
+            "rust": false,
+            "rustInTitle": false
+          },
+          {
+            "title": "Senior Analytics Engineer",
+            "location": "Cardiff, London or Remote (UK)",
+            "url": "https://job-boards.greenhouse.io/monzo/jobs/6076740",
+            "rust": false,
+            "rustInTitle": false
+          },
+          {
+            "title": "Senior Backend Engineer",
+            "location": "Cardiff, London or Remote (UK)",
+            "url": "https://job-boards.greenhouse.io/monzo/jobs/6635837",
+            "rust": false,
+            "rustInTitle": false
+          },
+          {
+            "title": "Senior Engineering Manager",
+            "location": "Cardiff, London or Remote (UK)",
+            "url": "https://job-boards.greenhouse.io/monzo/jobs/6394676",
+            "rust": false,
+            "rustInTitle": false
+          },
+          {
+            "title": "Senior Staff Backend Engineer",
+            "location": "Cardiff, London or Remote (UK)",
+            "url": "https://job-boards.greenhouse.io/monzo/jobs/6036797",
+            "rust": false,
+            "rustInTitle": false
+          }
+        ]
+      },
+      "link": {
+        "status": "live",
+        "httpCode": 200,
+        "checkedOn": "2026-09-15"
+      },
+      "confidence": "sand",
+      "exchange": "Private",
+      "hiresEngineersInUk": true,
+      "indices": [
+        "targets"
+      ],
+      "mark": "MONZ",
+      "sector": "Fintech",
+      "techStackNote": "Go microservices on Kubernetes.",
+      "ukLocations": "London, Cardiff"
+    },
+    {
+      "name": "Revolut",
+      "careersUrl": "https://www.revolut.com/careers/",
+      "link": {
+        "status": "blocked",
+        "httpCode": 403,
+        "checkedOn": "2026-09-15"
+      },
+      "confidence": "water",
+      "exchange": "Private",
+      "hiresEngineersInUk": true,
+      "indices": [
+        "targets"
+      ],
+      "mark": "REV",
+      "sector": "Fintech",
+      "techStackNote": "Java and Kotlin backend.",
+      "ukLocations": "London"
+    },
+    {
+      "name": "Cloudflare",
+      "careersUrl": "https://www.cloudflare.com/careers/jobs/",
+      "evidence": "https://job-boards.greenhouse.io/cloudflare",
+      "ats": {
+        "provider": "greenhouse",
+        "slug": "cloudflare",
+        "source": "research-evidence"
+      },
+      "openings": {
+        "total": 355,
+        "uk": 57,
+        "ukEngineering": 36,
+        "ukRust": 19,
+        "ukRustInTitle": 0,
+        "rust": 48,
+        "checkedOn": "2026-09-15",
+        "roles": [
+          {
+            "title": "Distributed Systems Engineer - Data Platform (Delivery, Database, Retrieval)",
+            "location": "Atlanta, GA, Austin, TX, Denver, CO, Lisbon, Portugal, London, United Kingdom, Seattle, WA, Washington, DC",
+            "url": "https://boards.greenhouse.io/cloudflare/jobs/7462801?gh_jid=7462801",
+            "rust": true,
+            "rustInTitle": false
+          },
+          {
+            "title": "Engineering Manager - Workers Runtime, Edge Team",
+            "location": "In-Office",
+            "url": "https://boards.greenhouse.io/cloudflare/jobs/7653558?gh_jid=7653558",
+            "rust": true,
+            "rustInTitle": false
+          },
+          {
+            "title": "Senior Infrastructure Engineer, Storage Platform",
+            "location": "In-Office",
+            "url": "https://boards.greenhouse.io/cloudflare/jobs/7629805?gh_jid=7629805",
+            "rust": true,
+            "rustInTitle": false
+          },
+          {
+            "title": "Senior Software Engineer - Addressing Team",
+            "location": "Austin, TX, Lisbon, Portugal, London, United Kingdom",
+            "url": "https://boards.greenhouse.io/cloudflare/jobs/8164694?gh_jid=8164694",
+            "rust": true,
+            "rustInTitle": false
+          },
+          {
+            "title": "Senior Software Engineer - Network Platforms",
+            "location": "Austin, TX, Lisbon, Portugal, London, United Kingdom",
+            "url": "https://boards.greenhouse.io/cloudflare/jobs/7541032?gh_jid=7541032",
+            "rust": true,
+            "rustInTitle": false
+          },
+          {
+            "title": "Senior Software Engineer, Distributed Databases",
+            "location": "In-Office",
+            "url": "https://boards.greenhouse.io/cloudflare/jobs/7896462?gh_jid=7896462",
+            "rust": true,
+            "rustInTitle": false
+          },
+          {
+            "title": "Senior Software Engineer, R2 Gateway",
+            "location": "In-Office",
+            "url": "https://boards.greenhouse.io/cloudflare/jobs/8174207?gh_jid=8174207",
+            "rust": true,
+            "rustInTitle": false
+          },
+          {
+            "title": "Senior Software Engineer, Security Rules",
+            "location": "Lisbon, Portugal, London, United Kingdom",
+            "url": "https://boards.greenhouse.io/cloudflare/jobs/8184838?gh_jid=8184838",
+            "rust": true,
+            "rustInTitle": false
+          }
+        ]
+      },
+      "link": {
+        "status": "live",
+        "httpCode": 200,
+        "checkedOn": "2026-09-15"
+      },
+      "confidence": "sand",
+      "exchange": "NYSE",
+      "hiresEngineersInUk": true,
+      "indices": [
+        "targets"
+      ],
+      "rust": true,
+      "sector": "AI and developer infrastructure",
+      "techStackNote": "Rust in its Pingora proxy, Workers runtime and edge services.",
+      "ticker": "NET",
+      "ukLocations": "London"
+    },
+    {
+      "name": "Datadog",
+      "careersUrl": "https://careers.datadoghq.com/",
+      "evidence": "https://job-boards.greenhouse.io/datadog",
+      "ats": {
+        "provider": "greenhouse",
+        "slug": "datadog",
+        "source": "research-evidence"
+      },
+      "openings": {
+        "total": 448,
+        "uk": 44,
+        "ukEngineering": 12,
+        "ukRust": 1,
+        "ukRustInTitle": 0,
+        "rust": 13,
+        "checkedOn": "2026-09-15",
+        "roles": [
+          {
+            "title": "Senior Software Engineer - Distributed Systems",
+            "location": "Bordeaux, France; Grenoble, France; Lyon, France; Madrid, Spain; Montpellier, France; Nantes, France; Paris, France; Sophia Antipolis, France; Tel Aviv, Israel",
+            "url": "https://careers.datadoghq.com/detail/4599111/?gh_jid=4599111",
+            "rust": true,
+            "rustInTitle": false
+          },
+          {
+            "title": "Senior Software Engineer - REDAPL Graph Engine",
+            "location": "France, Remote; Germany, Remote; Italy, Remote; Spain, Remote; Switzerland, Remote; United Kingdom, Remote",
+            "url": "https://careers.datadoghq.com/detail/7959966/?gh_jid=7959966",
+            "rust": false,
+            "rustInTitle": false
+          },
+          {
+            "title": "Staff Engineer - Data Platform Experience",
+            "location": "Lisbon, Portugal",
+            "url": "https://careers.datadoghq.com/detail/8119496/?gh_jid=8119496",
+            "rust": false,
+            "rustInTitle": false
+          },
+          {
+            "title": "Staff Engineer - Data Platform Experience",
+            "location": "Dublin, Ireland; Madrid, Spain; Paris, France",
+            "url": "https://careers.datadoghq.com/detail/8119493/?gh_jid=8119493",
+            "rust": false,
+            "rustInTitle": false
+          },
+          {
+            "title": "Staff Engineer - Data Semantics",
+            "location": "Madrid, Spain; Paris, France",
+            "url": "https://careers.datadoghq.com/detail/8043560/?gh_jid=8043560",
+            "rust": false,
+            "rustInTitle": false
+          },
+          {
+            "title": "Staff Engineer, Compute",
+            "location": "Dublin, Ireland; Madrid, Spain; Paris, France",
+            "url": "https://careers.datadoghq.com/detail/8139277/?gh_jid=8139277",
+            "rust": false,
+            "rustInTitle": false
+          },
+          {
+            "title": "Staff Engineer, Compute",
+            "location": "Lisbon, Portugal",
+            "url": "https://careers.datadoghq.com/detail/8139279/?gh_jid=8139279",
+            "rust": false,
+            "rustInTitle": false
+          },
+          {
+            "title": "Staff Software Engineer - Security Agent",
+            "location": "France, Remote; Germany, Remote; Ireland, Remote; Italy, Remote; Spain, Remote",
+            "url": "https://careers.datadoghq.com/detail/8007598/?gh_jid=8007598",
+            "rust": false,
+            "rustInTitle": false
+          }
+        ]
+      },
+      "link": {
+        "status": "live",
+        "httpCode": 200,
+        "checkedOn": "2026-09-15"
+      },
+      "confidence": "sand",
+      "exchange": "Nasdaq",
+      "hiresEngineersInUk": true,
+      "indices": [
+        "targets"
+      ],
+      "rust": true,
+      "sector": "AI and developer infrastructure",
+      "techStackNote": "Go and Python platform; Rust in Vector and parts of the agent.",
+      "ticker": "DDOG",
+      "ukLocations": "London"
+    },
+    {
+      "name": "Snyk",
+      "careersUrl": "https://snyk.io/careers/",
+      "link": {
+        "status": "live",
+        "httpCode": 200,
+        "checkedOn": "2026-09-15"
+      },
+      "confidence": "water",
+      "exchange": "Private",
+      "hiresEngineersInUk": true,
+      "indices": [
+        "targets"
+      ],
+      "mark": "SNYK",
+      "sector": "Cybersecurity and identity",
+      "techStackNote": "TypeScript and Go developer security products.",
+      "ukLocations": "London"
+    },
+    {
+      "name": "Improbable",
+      "careersUrl": "https://www.improbable.io/careers",
+      "link": {
+        "status": "live",
+        "httpCode": 200,
+        "checkedOn": "2026-09-15"
+      },
+      "confidence": "water",
+      "exchange": "Private",
+      "hiresEngineersInUk": true,
+      "indices": [
+        "targets"
+      ],
+      "mark": "IMP",
+      "sector": "Defence tech",
+      "techStackNote": "Distributed simulation for defence and virtual worlds.",
+      "ukLocations": "London"
+    },
+    {
+      "name": "Starling Bank",
+      "careersUrl": "https://www.starlingbank.com/careers/",
+      "link": {
+        "status": "live",
+        "httpCode": 200,
+        "checkedOn": "2026-09-15"
+      },
+      "confidence": "sand",
+      "exchange": "Private",
+      "hiresEngineersInUk": true,
+      "indices": [
+        "targets"
+      ],
+      "mark": "STAR",
+      "sector": "Fintech",
+      "techStackNote": "Java and Kotlin on AWS.",
+      "ukLocations": "London, Cardiff, Southampton, Manchester"
+    },
+    {
+      "name": "Wise",
+      "careersUrl": "https://wise.jobs/",
+      "link": {
+        "status": "live",
+        "httpCode": 200,
+        "checkedOn": "2026-09-15"
+      },
+      "confidence": "sand",
+      "exchange": "",
+      "hiresEngineersInUk": true,
+      "indices": [
+        "targets"
+      ],
+      "sector": "Fintech",
+      "techStackNote": "Java and Kotlin. Not in the FTSE 100 or 250 as at 30 June 2026.",
+      "ticker": "WISE",
+      "ukLocations": "London"
+    },
+    {
+      "name": "Arm Holdings",
+      "careersUrl": "https://careers.arm.com/",
+      "link": {
+        "status": "live",
+        "httpCode": 200,
+        "checkedOn": "2026-09-15"
+      },
+      "confidence": "sand",
+      "exchange": "Nasdaq",
+      "hiresEngineersInUk": true,
+      "indices": [
+        "targets"
+      ],
+      "sector": "Semiconductors and hardware",
+      "techStackNote": "CPU and GPU architecture, compilers and low-level software.",
+      "ticker": "ARM",
+      "ukLocations": "Cambridge, Manchester, Sheffield"
+    },
+    {
+      "name": "Hadean",
+      "careersUrl": "https://hadean.com/careers/",
+      "link": {
+        "status": "live",
+        "httpCode": 200,
+        "checkedOn": "2026-09-15"
+      },
+      "confidence": "sand",
+      "exchange": "Private",
+      "hiresEngineersInUk": true,
+      "indices": [
+        "targets"
+      ],
+      "mark": "HAD",
+      "rust": true,
+      "sector": "AI and developer infrastructure",
+      "techStackNote": "Distributed simulation platform built in Rust.",
+      "ukLocations": "London"
+    },
+    {
+      "name": "Wayve",
+      "careersUrl": "https://wayve.ai/careers/",
+      "ats": {
+        "provider": "greenhouse",
+        "slug": "wayve",
+        "source": "greenhouse-name-match"
+      },
+      "openings": {
+        "total": 178,
+        "uk": 77,
+        "ukEngineering": 41,
+        "ukRust": 0,
+        "ukRustInTitle": 0,
+        "rust": 8,
+        "checkedOn": "2026-09-15",
+        "roles": [
+          {
+            "title": "Applied Scientist/Machine Learning Engineer Gaia",
+            "location": "London; Sunnyvale",
+            "url": "https://wayve.firststage.co/jobs?gh_jid=8749904002",
+            "rust": false,
+            "rustInTitle": false
+          },
+          {
+            "title": "Controls Engineer",
+            "location": "London",
+            "url": "https://wayve.firststage.co/jobs?gh_jid=8761847002",
+            "rust": false,
+            "rustInTitle": false
+          },
+          {
+            "title": "DevOps Engineer",
+            "location": "London",
+            "url": "https://wayve.firststage.co/jobs?gh_jid=8745282002",
+            "rust": false,
+            "rustInTitle": false
+          },
+          {
+            "title": "Director AV Product Engineering",
+            "location": "London; Sunnyvale",
+            "url": "https://wayve.firststage.co/jobs?gh_jid=8561338002",
+            "rust": false,
+            "rustInTitle": false
+          },
+          {
+            "title": "Embedded Automotive Platforms Software Engineer",
+            "location": "London",
+            "url": "https://wayve.firststage.co/jobs?gh_jid=8585251002",
+            "rust": false,
+            "rustInTitle": false
+          },
+          {
+            "title": "Engineering Manager, Runtime Platform, Robot Software",
+            "location": "London",
+            "url": "https://wayve.firststage.co/jobs?gh_jid=8708581002",
+            "rust": false,
+            "rustInTitle": false
+          },
+          {
+            "title": "Engineering Technician",
+            "location": "London",
+            "url": "https://wayve.firststage.co/jobs?gh_jid=8600235002",
+            "rust": false,
+            "rustInTitle": false
+          },
+          {
+            "title": "Full-Stack Software Engineer, Model Development Platform",
+            "location": "London; Sunnyvale",
+            "url": "https://wayve.firststage.co/jobs?gh_jid=8725207002",
+            "rust": false,
+            "rustInTitle": false
+          }
+        ]
+      },
+      "link": {
+        "status": "live",
+        "httpCode": 200,
+        "checkedOn": "2026-09-15"
+      },
+      "confidence": "water",
+      "exchange": "Private",
+      "hiresEngineersInUk": true,
+      "indices": [
+        "targets"
+      ],
+      "mark": "WAYV",
+      "sector": "AI and developer infrastructure",
+      "techStackNote": "Embodied AI for autonomous driving.",
+      "ukLocations": "London"
+    },
+    {
+      "name": "Quantexa",
+      "careersUrl": "https://www.quantexa.com/careers/",
+      "link": {
+        "status": "live",
+        "httpCode": 200,
+        "checkedOn": "2026-09-15"
+      },
+      "confidence": "water",
+      "exchange": "Private",
+      "hiresEngineersInUk": true,
+      "indices": [
+        "targets"
+      ],
+      "mark": "QTX",
+      "sector": "Data and analytics",
+      "techStackNote": "Scala and Spark decision-intelligence platform.",
+      "ukLocations": "London"
+    },
+    {
+      "name": "Meta",
+      "careersUrl": "https://www.metacareers.com/jobs",
+      "confidence": "sand",
+      "exchange": "NASDAQ",
+      "hiresEngineersInUk": true,
+      "indices": [
+        "targets"
+      ],
+      "sector": "Social and AI platforms",
+      "techStackNote": "Bookmarked Software Engineering Manager roles for Product Generalist and Systems Generalist. Own careers system, no public feed.",
+      "ukLocations": "London",
+      "source": "bookmarks export, 17 Sep 2026",
+      "ticker": "META"
+    },
+    {
+      "name": "Coinbase",
+      "careersUrl": "https://www.coinbase.com/careers",
+      "confidence": "sand",
+      "exchange": "NASDAQ",
+      "hiresEngineersInUk": true,
+      "indices": [
+        "targets"
+      ],
+      "sector": "Crypto exchange and developer platform",
+      "techStackNote": "Bookmarked Engineering Manager, TLM (Commerce) on the Coinbase Developer Platform board. Rust and Go in the protocol stack.",
+      "ukLocations": "London",
+      "source": "bookmarks export, 17 Sep 2026",
+      "ticker": "COIN",
+      "ats": {
+        "provider": "greenhouse",
+        "slug": "cdpjobs",
+        "source": "bookmarked job board"
+      }
+    },
+    {
+      "name": "BlackRock",
+      "careersUrl": "https://careers.blackrock.com/",
+      "confidence": "water",
+      "exchange": "NYSE",
+      "hiresEngineersInUk": true,
+      "indices": [
+        "targets"
+      ],
+      "sector": "Asset management technology (Aladdin)",
+      "techStackNote": "Aladdin platform engineering in London. Bookmarked via a jobs aggregator; applies through Workday.",
+      "ukLocations": "London",
+      "source": "bookmarks export, 17 Sep 2026",
+      "ticker": "BLK"
+    },
+    {
+      "name": "Block",
+      "careersUrl": "https://block.xyz/careers",
+      "confidence": "water",
+      "exchange": "NYSE",
+      "hiresEngineersInUk": true,
+      "indices": [
+        "targets"
+      ],
+      "sector": "Payments and bitcoin infrastructure",
+      "techStackNote": "Square, Cash App and Spiral. Rust in the bitcoin stack. Bookmarked careers page.",
+      "ukLocations": "London",
+      "source": "bookmarks export, 17 Sep 2026",
+      "ticker": "XYZ"
+    },
+    {
+      "name": "Alphabet (Google DeepMind)",
+      "careersUrl": "https://deepmind.google/about/careers/",
+      "confidence": "water",
+      "exchange": "NASDAQ",
+      "hiresEngineersInUk": true,
+      "indices": [
+        "targets"
+      ],
+      "sector": "AI research and infrastructure",
+      "techStackNote": "DeepMind is London-headquartered. Bookmarked careers page.",
+      "ukLocations": "London",
+      "source": "bookmarks export, 17 Sep 2026",
+      "ticker": "GOOGL"
+    },
+    {
+      "name": "PolyAI",
+      "careersUrl": "https://poly.ai/careers/",
+      "confidence": "sand",
+      "exchange": "Private",
+      "hiresEngineersInUk": true,
+      "indices": [
+        "targets"
+      ],
+      "sector": "Conversational AI",
+      "techStackNote": "London-headquartered voice AI. Bookmarked job board.",
+      "ukLocations": "London",
+      "source": "bookmarks export, 17 Sep 2026",
+      "mark": "POL",
+      "ats": {
+        "provider": "greenhouse",
+        "slug": "polyai",
+        "source": "bookmarked job board"
+      }
+    },
+    {
+      "name": "OakNorth",
+      "careersUrl": "https://jobs.lever.co/oaknorth.ai",
+      "confidence": "sand",
+      "exchange": "Private",
+      "hiresEngineersInUk": true,
+      "indices": [
+        "targets"
+      ],
+      "sector": "Fintech lending",
+      "techStackNote": "London bank and lending platform. Bookmarked job board.",
+      "ukLocations": "London",
+      "source": "bookmarks export, 17 Sep 2026",
+      "mark": "OAK",
+      "ats": {
+        "provider": "lever",
+        "slug": "oaknorth.ai",
+        "source": "bookmarked job board"
+      }
+    },
+    {
+      "name": "Ripjar",
+      "careersUrl": "https://jobs.workable.com/company/hrgQMLCjQHSpef6XN7MfdU/jobs-at-ripjar",
+      "confidence": "water",
+      "exchange": "Private",
+      "hiresEngineersInUk": true,
+      "indices": [
+        "targets"
+      ],
+      "sector": "Data intelligence and risk",
+      "techStackNote": "Founded by GCHQ alumni. London. Bookmarked job board.",
+      "ukLocations": "London",
+      "source": "bookmarks export, 17 Sep 2026",
+      "mark": "RIP"
+    },
+    {
+      "name": "Legora",
+      "careersUrl": "https://jobs.ashbyhq.com/legora",
+      "confidence": "water",
+      "exchange": "Private",
+      "hiresEngineersInUk": true,
+      "indices": [
+        "targets"
+      ],
+      "sector": "Legal AI",
+      "techStackNote": "Stockholm-founded legal AI with a London office. Bookmarked a software engineer role.",
+      "ukLocations": "London",
+      "source": "bookmarks export, 17 Sep 2026",
+      "mark": "LEG",
+      "ats": {
+        "provider": "ashby",
+        "slug": "legora",
+        "source": "bookmarked job board"
+      }
+    },
+    {
+      "name": "Metomic",
+      "careersUrl": "https://metomic.io/careers",
+      "confidence": "water",
+      "exchange": "Private",
+      "hiresEngineersInUk": true,
+      "indices": [
+        "targets"
+      ],
+      "sector": "Data security",
+      "techStackNote": "London data security startup. Bookmarked a founding engineer role.",
+      "ukLocations": "London",
+      "source": "bookmarks export, 17 Sep 2026",
+      "mark": "MET"
+    },
+    {
+      "name": "Threads Styling",
+      "careersUrl": "https://apply.workable.com/threadsstyling/",
+      "confidence": "water",
+      "exchange": "Private",
+      "hiresEngineersInUk": true,
+      "indices": [
+        "targets"
+      ],
+      "sector": "Luxury commerce",
+      "techStackNote": "Bookmarked a Head of Engineering role. London.",
+      "ukLocations": "London",
+      "source": "bookmarks export, 17 Sep 2026",
+      "mark": "THR",
+      "ats": {
+        "provider": "workable",
+        "slug": "threadsstyling",
+        "source": "bookmarked job board"
+      }
+    },
+    {
+      "name": "Ebury",
+      "careersUrl": "https://boards.eu.greenhouse.io/ebury",
+      "confidence": "rock",
+      "exchange": "Private",
+      "hiresEngineersInUk": true,
+      "indices": [
+        "targets"
+      ],
+      "sector": "FX and payments",
+      "techStackNote": "Majority owned by Santander and IPO-tracked. You worked here in 2025.",
+      "ukLocations": "London",
+      "source": "bookmarks export, 17 Sep 2026",
+      "mark": "EBU",
+      "ats": {
+        "provider": "greenhouse",
+        "slug": "ebury",
+        "source": "bookmarked job board"
+      }
+    },
+    {
+      "name": "Mercury",
+      "careersUrl": "https://mercury.com/jobs",
+      "confidence": "water",
+      "exchange": "Private",
+      "hiresEngineersInUk": true,
+      "indices": [
+        "targets"
+      ],
+      "sector": "Banking for startups",
+      "techStackNote": "Bookmarked VP of Engineering, Product. Check UK eligibility before applying.",
+      "ukLocations": "Remote (US-centric)",
+      "source": "bookmarks export, 17 Sep 2026",
+      "mark": "MER",
+      "ats": {
+        "provider": "greenhouse",
+        "slug": "mercury",
+        "source": "bookmarked job board"
+      }
+    },
+    {
+      "name": "Netlify",
+      "careersUrl": "https://www.netlify.com/careers/",
+      "confidence": "water",
+      "exchange": "Private",
+      "hiresEngineersInUk": true,
+      "indices": [
+        "targets"
+      ],
+      "sector": "Developer platform",
+      "techStackNote": "Bookmarked a staff developer tooling role. Remote-first.",
+      "ukLocations": "Remote",
+      "source": "bookmarks export, 17 Sep 2026",
+      "mark": "NET",
+      "ats": {
+        "provider": "greenhouse",
+        "slug": "netlify",
+        "source": "bookmarked job board"
+      }
+    },
+    {
+      "name": "Pulumi",
+      "careersUrl": "https://www.pulumi.com/careers/",
+      "confidence": "sand",
+      "exchange": "Private",
+      "hiresEngineersInUk": true,
+      "indices": [
+        "targets"
+      ],
+      "sector": "Infrastructure as code",
+      "techStackNote": "You use Pulumi in production. Remote-first, Go and TypeScript.",
+      "ukLocations": "Remote",
+      "source": "bookmarks export, 17 Sep 2026",
+      "mark": "PUL",
+      "ats": {
+        "provider": "greenhouse",
+        "slug": "pulumicorporation",
+        "source": "bookmarked job board"
+      }
+    },
+    {
+      "name": "Runway",
+      "careersUrl": "https://runwayml.com/careers",
+      "confidence": "water",
+      "exchange": "Private",
+      "hiresEngineersInUk": true,
+      "indices": [
+        "targets"
+      ],
+      "sector": "Generative video",
+      "techStackNote": "Bookmarked job board. Has a London presence.",
+      "ukLocations": "London, New York",
+      "source": "bookmarks export, 17 Sep 2026",
+      "mark": "RUN",
+      "ats": {
+        "provider": "greenhouse",
+        "slug": "runwayml",
+        "source": "bookmarked job board"
+      }
+    },
+    {
+      "name": "Modern Treasury",
+      "careersUrl": "https://jobs.ashbyhq.com/moderntreasury",
+      "confidence": "water",
+      "exchange": "Private",
+      "hiresEngineersInUk": true,
+      "indices": [
+        "targets"
+      ],
+      "sector": "Payment operations",
+      "techStackNote": "Bookmarked job board. Check UK eligibility.",
+      "ukLocations": "Remote (US-centric)",
+      "source": "bookmarks export, 17 Sep 2026",
+      "mark": "MTR",
+      "ats": {
+        "provider": "ashby",
+        "slug": "moderntreasury",
+        "source": "bookmarked job board"
+      }
+    },
+    {
+      "name": "Checkly",
+      "careersUrl": "https://jobs.ashbyhq.com/checkly",
+      "confidence": "water",
+      "exchange": "Private",
+      "hiresEngineersInUk": true,
+      "indices": [
+        "targets"
+      ],
+      "sector": "Monitoring and developer tooling",
+      "techStackNote": "Bookmarked a staff platform engineer role. Remote Europe.",
+      "ukLocations": "Remote (Europe)",
+      "source": "bookmarks export, 17 Sep 2026",
+      "mark": "CHK",
+      "ats": {
+        "provider": "ashby",
+        "slug": "checkly",
+        "source": "bookmarked job board"
+      }
+    },
+    {
+      "name": "Culture Amp",
+      "careersUrl": "https://www.cultureamp.com/company/careers",
+      "confidence": "water",
+      "exchange": "Private",
+      "hiresEngineersInUk": true,
+      "indices": [
+        "targets"
+      ],
+      "sector": "People analytics",
+      "techStackNote": "Bookmarked job board.",
+      "ukLocations": "Remote, London",
+      "source": "bookmarks export, 17 Sep 2026",
+      "mark": "CAM",
+      "ats": {
+        "provider": "greenhouse",
+        "slug": "cultureamp",
+        "source": "bookmarked job board"
+      }
+    },
+    {
+      "name": "Mollie",
+      "careersUrl": "https://jobs.lever.co/mollie",
+      "confidence": "water",
+      "exchange": "Private",
+      "hiresEngineersInUk": true,
+      "indices": [
+        "targets"
+      ],
+      "sector": "Payments",
+      "techStackNote": "Bookmarked a senior software engineer role. European payments.",
+      "ukLocations": "Amsterdam, London",
+      "source": "bookmarks export, 17 Sep 2026",
+      "mark": "MOL",
+      "ats": {
+        "provider": "lever",
+        "slug": "mollie",
+        "source": "bookmarked job board"
+      }
+    },
+    {
+      "name": "Thunes",
+      "careersUrl": "https://www.thunes.com/careers/",
+      "website": "https://www.thunes.com/",
+      "evidence": "https://boards-api.greenhouse.io/v1/boards/thunes/jobs",
+      "ats": {
+        "provider": "greenhouse",
+        "slug": "thunes",
+        "source": "user-supplied-posting"
+      },
+      "confidence": "rock",
+      "employeeScale": "500-1k",
+      "exchange": "Private",
+      "hiresEngineersInUk": true,
+      "indices": [
+        "targets"
+      ],
+      "sector": "Cross-border payments",
+      "techStackNote": "Go services over relational stores, event-driven with Kafka and AWS SNS/SQS.",
+      "ukLocations": "London",
+      "source": "user-supplied 2026-09-20",
+      "marketReach": "multi-region",
+      "orgScale": "500m-plus",
+      "engagesB2b": false,
+      "derivedFrom": {
+        "orgScale": "headcount band \"500-1k\" and 14 offices worldwide, not revenue",
+        "marketReach": "14 offices across 13 countries, 130 payout markets",
+        "engagesB2b": "all six UK roles advertised through Greenhouse as employment"
+      },
+      "openings": {
+        "total": 45,
+        "uk": 6,
+        "ukEngineering": 1,
+        "ukRust": 0,
+        "ukRustInTitle": 0,
+        "rust": 0,
+        "checkedOn": "2026-09-20",
+        "roles": [
+          {
+            "title": "GO Senior Software Engineer",
+            "location": "London, England, United Kingdom",
+            "url": "https://www.thunes.com/jobs/7785515003?gh_jid=7785515003",
+            "rust": false,
+            "rustInTitle": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "Outside IR35 Tech Jobs (board)",
+      "careersUrl": "https://outsideir35.org.uk/",
+      "website": "https://outsideir35.org.uk/",
+      "evidence": "https://outsideir35.org.uk/",
+      "confidence": "rock",
+      "exchange": "Private",
+      "hiresEngineersInUk": true,
+      "indices": [
+        "targets"
+      ],
+      "sector": "Contract job board",
+      "techStackNote": "Aggregates UK contract roles whose IR35 determination is outside. The determination is a property of the board, not of the posting text.",
+      "ukLocations": "United Kingdom",
+      "source": "role-hunt 2026-09-20",
+      "engagesB2b": true,
+      "derivedFrom": {
+        "engagesB2b": "the board admits outside-IR35 roles only"
+      },
+      "openings": {
+        "total": 30,
+        "uk": 30,
+        "ukEngineering": 11,
+        "ukRust": 2,
+        "ukRustInTitle": 0,
+        "rust": 2,
+        "checkedOn": "2026-09-20",
+        "roles": [
+          {
+            "title": "Application Support Engineer",
+            "location": "London Area (Hybrid)",
+            "url": "https://outsideir35.org.uk/jobs/application-support-engineer/V10zwNmnrs",
+            "rust": false,
+            "rustInTitle": false
+          },
+          {
+            "title": "Bi/GCP Analyst",
+            "location": "City Of London (On-site)",
+            "url": "https://outsideir35.org.uk/jobs/bi-gcp-analyst/v11BfOGHKg",
+            "rust": false,
+            "rustInTitle": false
+          },
+          {
+            "title": "D365 ERP Project Manager",
+            "location": "London Area (Hybrid)",
+            "url": "https://outsideir35.org.uk/jobs/d365-erp-project-manager/trlCAsOiiu",
+            "rust": false,
+            "rustInTitle": false
+          },
+          {
+            "title": "Data Lead",
+            "location": "London Area (Hybrid)",
+            "url": "https://outsideir35.org.uk/jobs/data-lead/8qfdhVAoaf",
+            "rust": false,
+            "rustInTitle": false
+          },
+          {
+            "title": "Data Scientist",
+            "location": "London Area (Hybrid)",
+            "url": "https://outsideir35.org.uk/jobs/data-scientist/TQShSkhK2V",
+            "rust": false,
+            "rustInTitle": false
+          },
+          {
+            "title": "DevOps Engineer",
+            "location": "England (Hybrid)",
+            "url": "https://outsideir35.org.uk/jobs/devops-engineer/ThR6lBGlKo",
+            "rust": false,
+            "rustInTitle": false
+          },
+          {
+            "title": "ERP Business Analyst",
+            "location": "London Area (On-site)",
+            "url": "https://outsideir35.org.uk/jobs/erp-business-analyst/bRRNRgqhQX",
+            "rust": false,
+            "rustInTitle": false
+          },
+          {
+            "title": "ERP Data Analyst",
+            "location": "London Area (On-site)",
+            "url": "https://outsideir35.org.uk/jobs/erp-data-analyst/tCe4hlfyfl",
+            "rust": false,
+            "rustInTitle": false
+          },
+          {
+            "title": "Head Of Artificial Intelligence",
+            "location": "London Area (Hybrid)",
+            "url": "https://outsideir35.org.uk/jobs/head-of-artificial-intelligence/45gZ5Bds8Z",
+            "rust": false,
+            "rustInTitle": false
+          },
+          {
+            "title": "IFS Technical Consultant",
+            "location": "United Kingdom (Remote)",
+            "url": "https://outsideir35.org.uk/jobs/ifs-technical-consultant/dqti3wuoFl",
+            "rust": false,
+            "rustInTitle": false
+          },
+          {
+            "title": "Lead Integration Architect",
+            "location": "London Area (Hybrid)",
+            "url": "https://outsideir35.org.uk/jobs/lead-integration-architect/OOksNDzHtB",
+            "rust": false,
+            "rustInTitle": false
+          },
+          {
+            "title": "Mobile Architect",
+            "location": "City Of London (Hybrid)",
+            "url": "https://outsideir35.org.uk/jobs/mobile-architect/6NGgwDIUQ5",
+            "rust": false,
+            "rustInTitle": false
+          },
+          {
+            "title": "Oracle Developer",
+            "location": "United Kingdom (Hybrid)",
+            "url": "https://outsideir35.org.uk/jobs/oracle-developer/dJ2viukEAo",
+            "rust": false,
+            "rustInTitle": false
+          },
+          {
+            "title": "Planning Engineer",
+            "location": "London Area (On-site)",
+            "url": "https://outsideir35.org.uk/jobs/planning-engineer/Dz10JYE09J",
+            "rust": false,
+            "rustInTitle": false
+          },
+          {
+            "title": "Planning Manager",
+            "location": "Kent (On-site)",
+            "url": "https://outsideir35.org.uk/jobs/planning-manager/sD7I9AxNNv",
+            "rust": false,
+            "rustInTitle": false
+          },
+          {
+            "title": "Platform Engineer",
+            "location": "London Area (Hybrid)",
+            "url": "https://outsideir35.org.uk/jobs/platform-engineer/CLmnbDJ2cx",
+            "rust": false,
+            "rustInTitle": false
+          },
+          {
+            "title": "Platform Engineer",
+            "location": "England (Hybrid)",
+            "url": "https://outsideir35.org.uk/jobs/platform-engineer/JBwwsi6piS",
+            "rust": false,
+            "rustInTitle": false
+          },
+          {
+            "title": "Project Manager",
+            "location": "Scotland (Hybrid)",
+            "url": "https://outsideir35.org.uk/jobs/project-manager/4VH6uG2N0W",
+            "rust": false,
+            "rustInTitle": false
+          },
+          {
+            "title": "Project Manager",
+            "location": "Royal Sutton Coldfield (On-site)",
+            "url": "https://outsideir35.org.uk/jobs/project-manager/K1wq0RCiSA",
+            "rust": false,
+            "rustInTitle": false
+          },
+          {
+            "title": "QA Engineer",
+            "location": "United Kingdom (Remote)",
+            "url": "https://outsideir35.org.uk/jobs/qa-engineer/5hlFXmNb8G",
+            "rust": true,
+            "rustInTitle": false
+          },
+          {
+            "title": "Quality Assurance Engineer",
+            "location": "England (Remote)",
+            "url": "https://outsideir35.org.uk/jobs/quality-assurance-engineer/1EzL3EeQ82",
+            "rust": false,
+            "rustInTitle": false
+          },
+          {
+            "title": "RAID Lead / Programme Planner",
+            "location": "United Kingdom (Remote)",
+            "url": "https://outsideir35.org.uk/jobs/raid-lead-programme-planner/eaePutKi4T",
+            "rust": true,
+            "rustInTitle": false
+          },
+          {
+            "title": "Senior Data Engineer",
+            "location": "London (Hybrid)",
+            "url": "https://outsideir35.org.uk/jobs/senior-data-engineer/tOilMLlM1j",
+            "rust": false,
+            "rustInTitle": false
+          },
+          {
+            "title": "Senior Java/Aeron Engineers",
+            "location": "London Area (Hybrid)",
+            "url": "https://outsideir35.org.uk/jobs/senior-java-aeron-engineers/0M6231hwri",
+            "rust": false,
+            "rustInTitle": false
+          },
+          {
+            "title": "Senior Java Engineer",
+            "location": "London Area (On-site)",
+            "url": "https://outsideir35.org.uk/jobs/senior-java-engineer/1KRXagF0mC",
+            "rust": false,
+            "rustInTitle": false
+          },
+          {
+            "title": "Service Delivery Manager",
+            "location": "Basingstoke (On-site)",
+            "url": "https://outsideir35.org.uk/jobs/service-delivery-manager/CwT5FJJhRN",
+            "rust": false,
+            "rustInTitle": false
+          },
+          {
+            "title": "Software Developer",
+            "location": "Cardiff (Remote)",
+            "url": "https://outsideir35.org.uk/jobs/software-developer/pO7NIvEqmP",
+            "rust": false,
+            "rustInTitle": false
+          },
+          {
+            "title": "Software Engineer",
+            "location": "United Kingdom (Remote)",
+            "url": "https://outsideir35.org.uk/jobs/software-engineer/LMikIIdVX6",
+            "rust": false,
+            "rustInTitle": false
+          },
+          {
+            "title": "Technical Architect",
+            "location": "London Area (Hybrid)",
+            "url": "https://outsideir35.org.uk/jobs/technical-architect/qwujxl9Bbl",
+            "rust": false,
+            "rustInTitle": false
+          },
+          {
+            "title": "Test Manager",
+            "location": "High Wycombe (Hybrid)",
+            "url": "https://outsideir35.org.uk/jobs/test-manager/0Bg4EnPQHQ",
+            "rust": false,
+            "rustInTitle": false
+          }
+        ]
+      }
+    }
+  ]
+}

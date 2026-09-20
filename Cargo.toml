@@ -12,6 +12,7 @@ members = [
   "crates/rv2-domain",
   "crates/rv2-email",
   "crates/rv2-events",
+  "crates/rv2-hiring",
   "crates/rv2-jobs",
   "crates/rv2-shared",
   "crates/rv2-ui",
@@ -171,6 +172,7 @@ rv2-client = { path = "crates/rv2-client" }
 rv2-domain = { path = "crates/rv2-domain" }
 rv2-email = { path = "crates/rv2-email" }
 rv2-events = { path = "crates/rv2-events" }
+rv2-hiring = { path = "crates/rv2-hiring" }
 rv2-jobs = { path = "crates/rv2-jobs" }
 rv2-shared = { path = "crates/rv2-shared" }
 rv2-ui = { path = "crates/rv2-ui" }
