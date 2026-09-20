@@ -100,11 +100,15 @@ pub enum Layout {
 /// reader scan a long list and see which market a company sits on without
 /// reading a word.
 pub const GROUPS: [(&str, &str, &str); 5] = [
-    ("ftse100", "FTSE 100", "#24507a"),
-    ("ftse250", "FTSE 250", "#2f6b4f"),
-    ("smallcap", "FTSE SmallCap", "#1f6b6b"),
-    ("aim", "AIM", "#8a6a12"),
-    ("targets", "Targets outside UK indices", "#5b3f7a"),
+    ("ftse100", "FTSE 100", "var(--color-index-ftse100)"),
+    ("ftse250", "FTSE 250", "var(--color-index-ftse250)"),
+    ("smallcap", "FTSE SmallCap", "var(--color-index-smallcap)"),
+    ("aim", "AIM", "var(--color-index-aim)"),
+    (
+        "targets",
+        "Targets outside UK indices",
+        "var(--color-index-targets)",
+    ),
 ];
 
 #[must_use]
@@ -122,7 +126,7 @@ pub fn group_colour(key: &str) -> &'static str {
     GROUPS
         .iter()
         .find(|(k, _, _)| *k == key)
-        .map_or("#5b3f7a", |(_, _, colour)| *colour)
+        .map_or("var(--color-index-targets)", |(_, _, colour)| *colour)
 }
 
 fn group_rank(key: &str) -> usize {

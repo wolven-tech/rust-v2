@@ -154,7 +154,7 @@ pub fn App() -> Element {
 
     rsx! {
         div {
-            class: "min-h-screen bg-slate-50 text-slate-900",
+            class: "min-h-screen bg-ground text-ink",
             tabindex: "-1",
             autofocus: true,
             onkeydown: move |event| {
@@ -164,7 +164,7 @@ pub fn App() -> Element {
                 }
             },
             a {
-                class: "sr-only focus:not-sr-only focus:absolute focus:left-2 focus:top-2 focus:z-50 focus:rounded-md focus:bg-slate-900 focus:px-3 focus:py-2 focus:text-white",
+                class: "sr-only focus:not-sr-only focus:absolute focus:left-2 focus:top-2 focus:z-50 focus:rounded-md focus:bg-ink focus:px-3 focus:py-2 focus:text-on-ink",
                 href: "#results",
                 "Skip to results"
             }
@@ -213,10 +213,10 @@ fn Masthead(shown: usize, page: Page) -> Element {
     let total = register.companies.len();
 
     rsx! {
-        header { class: "border-b border-slate-200 bg-white",
+        header { class: "border-b border-rule-soft bg-surface",
             div { class: "mx-auto max-w-[110rem] px-4 py-6",
-                h1 { class: "text-2xl font-semibold tracking-tight", "UK tech hiring register" }
-                p { class: "mt-1 max-w-4xl text-sm text-slate-600",
+                h1 { class: "font-display text-5xl font-bold leading-none", "UK tech hiring register" }
+                p { class: "mt-1 max-w-4xl text-sm text-ink-muted",
                     b { "{total}" }
                     " employers. Across the "
                     b { "{tracked}" }
@@ -238,7 +238,7 @@ fn Masthead(shown: usize, page: Page) -> Element {
                             spellcheck: false,
                             placeholder: "Company, ticker, city or stack",
                             value: "{filters.q}",
-                            class: "w-full rounded-md border border-slate-300 py-2 pl-3 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-slate-900",
+                            class: "w-full rounded-md border border-rule py-2 pl-3 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-accent",
                             oninput: move |event| {
                                 filters_signal.write().q = event.value().trim().to_string();
                             },
@@ -249,7 +249,7 @@ fn Masthead(shown: usize, page: Page) -> Element {
                             },
                         }
                         kbd {
-                            class: "pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 rounded border border-slate-300 px-1.5 text-xs text-slate-400",
+                            class: "pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 rounded border border-rule px-1.5 text-xs text-ink-faint",
                             aria_hidden: "true",
                             "/"
                         }
@@ -273,8 +273,8 @@ fn Colophon() -> Element {
         .count();
 
     rsx! {
-        footer { class: "border-t border-slate-200 bg-white",
-            div { class: "mx-auto max-w-[110rem] space-y-1 px-4 py-6 text-xs text-slate-500",
+        footer { class: "border-t border-rule-soft bg-surface",
+            div { class: "mx-auto max-w-[110rem] space-y-1 px-4 py-6 text-xs text-ink-muted",
                 p {
                     "Index membership comes from FTSE Russell constituent files as at 30 June 2026. \
                      AIM listings and the target list come from research. Job boards last read {openings}. \
@@ -282,7 +282,7 @@ fn Colophon() -> Element {
                 }
                 p {
                     "Refresh with "
-                    code { class: "rounded bg-slate-100 px-1", "cargo run -p hiring-register -- check" }
+                    code { class: "rounded bg-raised px-1", "cargo run -p hiring-register -- check" }
                     ", then rebuild the page. Every work pattern, engagement and mandate shown here \
                      was decided when the posting was read, not when the page was opened."
                 }

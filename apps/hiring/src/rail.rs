@@ -27,21 +27,21 @@ pub fn Rail(page: Page) -> Element {
     rsx! {
         aside { class: "w-full shrink-0 lg:sticky lg:top-4 lg:w-80",
             details {
-                class: "rounded-lg border border-slate-200 bg-white p-4 [&[open]>summary>.marker]:rotate-90",
+                class: "rounded-lg border border-rule-soft bg-surface p-4 [&[open]>summary>.marker]:rotate-90",
                 open: true,
                 summary { class: "flex cursor-pointer list-none items-baseline justify-between",
                     span { class: "flex items-baseline gap-2",
                         span { class: "marker inline-block transition-transform lg:hidden", aria_hidden: "true", "›" }
                         h2 { class: "text-sm font-semibold", "Filters" }
                         if active > 0 {
-                            span { class: "text-xs font-normal text-slate-500", "({active} on)" }
+                            span { class: "text-xs font-normal text-ink-muted", "({active} on)" }
                         }
                     }
                     if active > 0 {
                         span {
                             role: "button",
                             tabindex: "0",
-                            class: "text-xs text-slate-600 underline hover:text-slate-900",
+                            class: "text-xs text-ink-muted underline hover:text-ink",
                             onclick: move |event| {
                                 event.stop_propagation();
                                 page_state.clear();
@@ -232,8 +232,8 @@ fn Litmus(page: Page) -> Element {
 fn Axis(title: String, basis: String, children: Element) -> Element {
     rsx! {
         div { class: "pt-2",
-            p { class: "text-xs font-medium text-slate-700", "{title}" }
-            p { class: "pb-1 text-[0.6875rem] leading-snug text-slate-500", "{basis}" }
+            p { class: "text-xs font-medium text-ink", "{title}" }
+            p { class: "pb-1 text-[0.6875rem] leading-snug text-ink-muted", "{basis}" }
             {children}
         }
     }
@@ -286,13 +286,13 @@ fn FreeText(title: String, basis: String, page: Page, countries: bool) -> Elemen
 
     rsx! {
         div { class: "pt-2",
-            p { class: "text-xs font-medium text-slate-700", "{title}" }
-            p { class: "pb-1 text-[0.6875rem] leading-snug text-slate-500", "{basis}" }
+            p { class: "text-xs font-medium text-ink", "{title}" }
+            p { class: "pb-1 text-[0.6875rem] leading-snug text-ink-muted", "{basis}" }
             input {
                 r#type: "text",
                 value: "{value}",
                 placeholder: "Comma separated",
-                class: "w-full rounded-md border border-slate-300 px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-slate-900",
+                class: "w-full rounded-md border border-rule px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-accent",
                 oninput: move |event| {
                     let parsed: Vec<String> = event
                         .value()
@@ -403,7 +403,7 @@ fn Facet(page: Page, facet: String, legend: String) -> Element {
             if !expanded {
                 button {
                     r#type: "button",
-                    class: "pt-1 text-xs text-slate-600 underline hover:text-slate-900",
+                    class: "pt-1 text-xs text-ink-muted underline hover:text-ink",
                     onclick: move |_| page_state.expand(&facet_for_expand),
                     "Show all {total}"
                 }

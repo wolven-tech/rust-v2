@@ -2,8 +2,8 @@
 
 use dioxus::prelude::*;
 
-const FIELD_BASE: &str = "w-full rounded-md border border-slate-300 px-3 py-2 text-sm \
-                          focus:outline-none focus:ring-2 focus:ring-slate-900";
+const FIELD_BASE: &str = "w-full rounded-md border border-rule px-3 py-2 text-sm \
+                          focus:outline-none focus:ring-2 focus:ring-accent";
 
 #[component]
 pub fn TextField(
@@ -36,7 +36,7 @@ pub fn TextField(
 ) -> Element {
     rsx! {
         label { class: "block space-y-1",
-            span { class: "text-sm font-medium text-slate-700", "{label}" }
+            span { class: "text-sm font-medium text-ink", "{label}" }
             input {
                 class: "{FIELD_BASE}",
                 r#type: "{r#type}",
@@ -48,7 +48,7 @@ pub fn TextField(
                 oninput: move |event| oninput.call(event),
             }
             if let Some(message) = error {
-                span { class: "text-xs text-red-600", role: "alert", "{message}" }
+                span { class: "text-xs text-fault-ink", role: "alert", "{message}" }
             }
         }
     }
@@ -65,7 +65,7 @@ pub fn TextArea(
 ) -> Element {
     rsx! {
         label { class: "block space-y-1",
-            span { class: "text-sm font-medium text-slate-700", "{label}" }
+            span { class: "text-sm font-medium text-ink", "{label}" }
             textarea {
                 class: "{FIELD_BASE}",
                 rows: "{rows}",
@@ -74,7 +74,7 @@ pub fn TextArea(
                 oninput: move |event| oninput.call(event),
             }
             if let Some(message) = error {
-                span { class: "text-xs text-red-600", role: "alert", "{message}" }
+                span { class: "text-xs text-fault-ink", role: "alert", "{message}" }
             }
         }
     }
@@ -105,28 +105,24 @@ pub fn Checkbox(
     onchange: EventHandler<bool>,
 ) -> Element {
     let empty = count == Some(0);
-    let tone = if empty {
-        "text-slate-400"
-    } else {
-        "text-slate-700"
-    };
+    let tone = if empty { "text-ink-faint" } else { "text-ink" };
     rsx! {
         label {
             class: "flex items-center gap-2 py-1 text-sm cursor-pointer {tone}",
             title: basis.clone().unwrap_or_default(),
             input {
                 r#type: "checkbox",
-                class: "h-4 w-4 rounded border-slate-300 text-slate-900 focus:ring-2 focus:ring-slate-900",
+                class: "h-4 w-4 rounded border-rule text-ink focus:ring-2 focus:ring-accent",
                 checked,
                 disabled,
                 onchange: move |event| onchange.call(event.checked()),
             }
             span { class: "flex-1", "{label}" }
             if let Some(n) = count {
-                span { class: "tabular-nums text-xs text-slate-500", "{n}" }
+                span { class: "tabular-nums text-xs text-ink-muted", "{n}" }
             }
             if basis.is_some() {
-                span { class: "text-xs text-slate-400", aria_hidden: "true", "·" }
+                span { class: "text-xs text-ink-faint", aria_hidden: "true", "·" }
             }
         }
     }
@@ -147,9 +143,9 @@ pub fn Select(
 ) -> Element {
     rsx! {
         label { class: "block space-y-1",
-            span { class: "text-sm font-medium text-slate-700", "{label}" }
+            span { class: "text-sm font-medium text-ink", "{label}" }
             select {
-                class: "{FIELD_BASE} bg-white",
+                class: "{FIELD_BASE} bg-surface",
                 name: name.unwrap_or_default(),
                 onchange: move |event| onchange.call(event.value()),
                 for (key , text) in options {
@@ -179,17 +175,17 @@ pub fn FieldSet(
     children: Element,
 ) -> Element {
     rsx! {
-        fieldset { class: "border-t border-slate-200 pt-3",
-            legend { class: "flex items-baseline gap-2 pr-2 text-xs font-semibold uppercase tracking-wide text-slate-600",
+        fieldset { class: "border-t border-rule-soft pt-3",
+            legend { class: "flex items-baseline gap-2 pr-2 text-xs font-semibold uppercase tracking-wide text-ink-muted",
                 "{legend}"
                 if active > 0 {
-                    span { class: "font-normal normal-case tracking-normal text-slate-500",
+                    span { class: "font-normal normal-case tracking-normal text-ink-muted",
                         "({active} on)"
                     }
                 }
             }
             if let Some(text) = note {
-                p { class: "pb-1 text-xs text-slate-500", "{text}" }
+                p { class: "pb-1 text-xs text-ink-muted", "{text}" }
             }
             {children}
         }

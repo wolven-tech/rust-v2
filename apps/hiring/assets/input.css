@@ -14,12 +14,121 @@
 @source "../src";
 @source "../../../crates/rv2-ui/src";
 
-/* Atkinson Hyperlegible is the body face for a reason rather than a taste: it
- * disambiguates the character pairs that matter in this data — 1/l/I in
- * headcounts and day rates, 0/O in tickers. Big Shoulders is the display face
- * on the ticker badges only, where the job is to be scannable at a glance down
- * a long column. */
+/* ── Ledger ──────────────────────────────────────────────────────────────────
+ *
+ * A warm, restrained dark reading space where negative results carry no
+ * apology, and the rare match earns its shine in gold.
+ *
+ * The register's job is to say no. Of 30 live contract listings, six are remote
+ * enough, one carries a real mandate, and none are both. A palette for that
+ * page has to make a screen of disqualifications readable for an hour at a
+ * time, and then make the one thing that passes impossible to miss.
+ *
+ * Boldness is spent in exactly one place: the light system's hard zero-blur
+ * offset shadow, in gold, on roles that clear both essential filters and
+ * nowhere else. Everything around it is borderless and quiet. Restraint is
+ * visible through its absence elsewhere.
+ *
+ * Ground is warm charcoal rather than #0B0B0B or #111 — those read as the
+ * default dark theme of any product. This one keeps the light system's thermal
+ * character, so someone who knows the paper theme recognises the same hand.
+ *
+ * Every colour is named for its JOB, never its hue. No component may say
+ * `slate-600` again; `apps/hiring/tests/tokens.rs` fails the build if one does.
+ * A component that hardcodes a hue silently opts out of every future theme, and
+ * the failure is invisible until one paragraph stays light grey on a dark page.
+ *
+ * Three groups are load-bearing rather than decorative:
+ *   --color-takeable   a role clearing BOTH essential filters. The only green
+ *                      on the page, so green always answers one question.
+ *   --color-index-*    which market a company sits on. A reader scans a column
+ *                      by colour without reading a word.
+ *   --color-rust-*     Rust signal, which carries NO hue on purpose: at ten
+ *                      colours the page stops encoding and starts decorating,
+ *                      so Rust is said with fill and weight instead.
+ *
+ * Contrast is measured against the ground unless noted. The 11px evidence
+ * quotes drove `--color-ink-muted` up to 7.5:1 — AA would have allowed 4.5, and
+ * 4.5 at 11px on a dark ground is uncomfortable after twenty minutes.
+ * ─────────────────────────────────────────────────────────────────────────── */
 @theme {
   --font-sans: "Atkinson Hyperlegible Next", ui-sans-serif, system-ui, sans-serif;
-  --font-display: "Big Shoulders Display", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Big Shoulders Display", "Arial Narrow", ui-sans-serif, sans-serif;
+
+  /* Warm charcoal, not template near-black. */
+  --color-ground: #1a1714;
+  /* A whisper of lift, 1.08:1 — a card, not a step. */
+  --color-surface: #2d2622;
+  --color-raised: #34302b;
+
+  /* Warm off-white at 15.8:1. Cream rather than #ffffff, for the same reason
+   * the paper theme is #fbf7ed rather than white. */
+  --color-ink: #e8e5e2;
+  --color-ink-hover: #f5f3f1;
+  /* 7.5:1, set by the 11px evidence quotes rather than by AA. */
+  --color-ink-muted: #c8bfb6;
+  --color-ink-faint: #9a9086;
+  /* Text on an ink-filled control, which on dark is the ground itself. */
+  --color-on-ink: #1a1714;
+
+  --color-rule: #4a4340;
+  --color-rule-soft: #3a3430;
+  /* Focus and controls. Deliberately lighter than the FTSE 100 blue so a focus
+   * ring never reads as market data. */
+  --color-accent: #a8c7fa;
+
+  /* The only green on the page. */
+  --color-takeable: #42d962;
+  --color-takeable-soft: #1d3d25;
+  --color-takeable-wash: #16281c;
+  --color-takeable-ink: #8ff0a5;
+
+  --color-caution: #e0a84a;
+  --color-caution-ink: #f0c98a;
+
+  --color-fault: #ff7159;
+  --color-fault-ink: #ff9d8c;
+
+  /* Rust signal, said without a hue. A filled chip is a Rust role; a quiet one
+   * is a posting that merely mentions it. */
+  --color-rust-strong: #4a4340;
+  --color-rust-soft: #2d2622;
+  --color-rust-ink: #e8e5e2;
+
+  /* Market identity. Five hues that stay apart under protanopia, deuteranopia
+   * and tritanopia, separated by luminance as well as hue so the table survives
+   * a reader who sees none of them.
+   *
+   * No green here, and that is the constraint that shaped the set: green means
+   * takeable. The direction that won this palette proposed #6dd96d for FTSE 250
+   * and would have put a second green on the page. */
+  --color-index-ftse100: #7ab0f0;
+  --color-index-ftse250: #4fc9c9;
+  --color-index-smallcap: #9d8df0;
+  --color-index-aim: #dab644;
+  --color-index-targets: #d98cc4;
+
+  /* The system's signature, inherited from the light theme unchanged. Zero
+   * blur. Gold. Nothing else on the page casts a shadow at all. */
+  --shadow-takeable: 0.5rem 0.5rem 0 #f4c350;
+}
+
+/* The gold shadow is the page's one flourish, so it is also the one thing that
+ * has to survive a reader who cannot tolerate it. Under reduced motion the
+ * offset collapses to an outline in the same gold: the meaning stays, the
+ * displacement goes. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .shadow-takeable {
+    box-shadow: none !important;
+    outline: 2px solid #f4c350;
+    outline-offset: 2px;
+  }
 }

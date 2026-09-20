@@ -22,3 +22,34 @@
  * Imported rather than duplicated: Tailwind runs once per app, so both need it
  * in their graph, and one copy is the only way they cannot drift. */
 @import "../../../crates/rv2-ui/assets/motion.css";
+
+/* Semantic tokens the shared `rv2-ui` components resolve against.
+ *
+ * Tailwind v4 builds utilities per app from its own `@theme`, so a kit
+ * component writing `text-ink-muted` renders unstyled in any app that has not
+ * declared it. These values are the ones the kit's hardcoded palette classes
+ * already resolved to, so nothing here changed how this app looks. */
+@theme {
+  --color-ground: #f8fafc;
+  --color-surface: #ffffff;
+  --color-raised: #f1f5f9;
+
+  --color-ink: #0f172a;
+  --color-ink-hover: #334155;
+  --color-ink-muted: #475569;
+  --color-ink-faint: #94a3b8;
+  --color-on-ink: #ffffff;
+
+  --color-rule: #cbd5e1;
+  --color-rule-soft: #e2e8f0;
+  --color-accent: #0f172a;
+
+  --color-takeable: #10b981;
+  --color-takeable-ink: #064e3b;
+
+  --color-caution: #f59e0b;
+  --color-caution-ink: #92400e;
+
+  --color-fault: #ef4444;
+  --color-fault-ink: #991b1b;
+}

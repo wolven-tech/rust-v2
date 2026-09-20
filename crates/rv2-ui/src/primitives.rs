@@ -15,10 +15,10 @@ pub enum Variant {
 impl Variant {
     fn classes(self) -> &'static str {
         match self {
-            Variant::Primary => "bg-slate-900 text-white hover:bg-slate-700",
-            Variant::Secondary => "bg-slate-100 text-slate-900 hover:bg-slate-200",
-            Variant::Danger => "bg-red-600 text-white hover:bg-red-700",
-            Variant::Ghost => "bg-transparent text-slate-700 hover:bg-slate-100",
+            Variant::Primary => "bg-ink text-on-ink hover:bg-ink-hover",
+            Variant::Secondary => "bg-raised text-ink hover:bg-raised",
+            Variant::Danger => "bg-fault text-on-ink hover:bg-fault-ink",
+            Variant::Ghost => "bg-transparent text-ink hover:bg-raised",
         }
     }
 }
@@ -47,7 +47,7 @@ impl Size {
 /// not get a focus ring, but a keyboard user tabbing to it must.
 const CONTROL_BASE: &str = "inline-flex items-center justify-center gap-2 rounded-md \
                             font-medium transition-colors focus-visible:outline-none \
-                            focus-visible:ring-2 focus-visible:ring-slate-900 \
+                            focus-visible:ring-2 focus-visible:ring-accent \
                             focus-visible:ring-offset-2 disabled:opacity-50 \
                             disabled:pointer-events-none";
 
@@ -112,8 +112,8 @@ pub fn LinkButton(
 pub fn ArrowLink(href: String, #[props(default)] class: String, children: Element) -> Element {
     rsx! {
         a {
-            class: "group inline-flex items-center gap-1 text-sm font-medium text-slate-900 \
-                    hover:text-slate-600 focus-visible:outline-none focus-visible:underline {class}",
+            class: "group inline-flex items-center gap-1 text-sm font-medium text-ink \
+                    hover:text-ink-muted focus-visible:outline-none focus-visible:underline {class}",
             href: "{href}",
             {children}
             span { class: "transition-transform group-hover:translate-x-0.5", "aria-hidden": "true", "→" }
@@ -145,8 +145,8 @@ pub fn Badge(
         },
         None => rsx! {
             span {
-                class: "inline-flex items-center rounded-full bg-slate-100 px-2.5 py-0.5 \
-                        text-xs font-medium text-slate-700 {class}",
+                class: "inline-flex items-center rounded-full bg-raised px-2.5 py-0.5 \
+                        text-xs font-medium text-ink {class}",
                 {children}
             }
         },
@@ -188,7 +188,7 @@ pub fn Status(
             }
             "{label}"
             if let Some(detail) = detail {
-                span { class: "text-slate-400", "{detail}" }
+                span { class: "text-ink-faint", "{detail}" }
             }
         }
     }
@@ -211,20 +211,20 @@ impl StatusTone {
     #[must_use]
     pub fn dot(self) -> &'static str {
         match self {
-            Self::Ok => "bg-emerald-500",
-            Self::Warn => "bg-amber-500",
-            Self::Bad => "bg-red-500",
-            Self::Muted => "bg-slate-400",
+            Self::Ok => "bg-takeable",
+            Self::Warn => "bg-caution",
+            Self::Bad => "bg-fault",
+            Self::Muted => "bg-ink-faint",
         }
     }
 
     #[must_use]
     pub fn text(self) -> &'static str {
         match self {
-            Self::Ok => "text-emerald-800",
-            Self::Warn => "text-amber-800",
-            Self::Bad => "text-red-800",
-            Self::Muted => "text-slate-500",
+            Self::Ok => "text-takeable-ink",
+            Self::Warn => "text-caution-ink",
+            Self::Bad => "text-fault-ink",
+            Self::Muted => "text-ink-muted",
         }
     }
 }
@@ -250,7 +250,7 @@ pub fn Disclosure(
         .unwrap_or_default();
     rsx! {
         details { class: "group {class}", open,
-            summary { class: "cursor-pointer list-none text-sm text-slate-700 hover:text-slate-900",
+            summary { class: "cursor-pointer list-none text-sm text-ink hover:text-ink",
                 span { class: "mr-1 inline-block transition-transform group-open:rotate-90", aria_hidden: "true", "›" }
                 "{summary}"
             }
@@ -267,7 +267,7 @@ pub fn StepMarker(n: u8, #[props(default)] class: String) -> Element {
     rsx! {
         span {
             class: "inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full \
-                    bg-slate-900 text-xs font-semibold tabular-nums text-white {class}",
+                    bg-ink text-xs font-semibold tabular-nums text-on-ink {class}",
             "aria-hidden": "true",
             "{n:02}"
         }
