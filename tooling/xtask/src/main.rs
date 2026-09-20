@@ -181,7 +181,16 @@ const PREDECESSOR_OPT_OUT: &str = "predecessor-mention-ok";
 fn no_predecessor() -> Fallible {
     let output = Command::new("grep")
         .args([
-            "-rinE",
+            // `-I` skips binary files, and the reason is the opt-out rather
+            // than taste: the only remedy this check offers is a
+            // `predecessor-mention-ok` marker on the offending LINE, and a
+            // binary file has no line anyone can mark. A binary match is
+            // therefore unactionable by this check's own instructions, so
+            // failing on one leaves no way forward except deleting the file or
+            // deleting the check. It has already happened once, against a
+            // task-tracker's compressed event store that had recorded a bead
+            // describing this very grep.
+            "-rInE",
             "supabase|postgres|pg2events",
             "--exclude-dir=.git",
             "--exclude-dir=target",
