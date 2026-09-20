@@ -70,7 +70,10 @@ pub fn Rail(page: Page) -> Element {
 fn Essentials(page: Page) -> Element {
     let filters = page.filters.read().clone();
     let mut f = page.filters;
-    let active = usize::from(filters.remote_only) + usize::from(filters.b2b_only);
+    let active = usize::from(filters.remote_only)
+        + usize::from(filters.b2b_only)
+        + usize::from(filters.mandate_only)
+        + usize::from(filters.applied_only);
 
     rsx! {
         FieldSet {
@@ -94,6 +97,12 @@ fn Essentials(page: Page) -> Element {
                 checked: filters.mandate_only,
                 basis: "Stands up a new unit, hires and grows, teaches, or bridges research and production.",
                 onchange: move |on| f.write().mandate_only = on,
+            }
+            Checkbox {
+                label: "Already applied to",
+                checked: filters.applied_only,
+                basis: "Roles the register records an application against.",
+                onchange: move |on| f.write().applied_only = on,
             }
         }
     }

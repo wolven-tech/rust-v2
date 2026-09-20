@@ -311,3 +311,63 @@ mod tests {
         assert_eq!(format!("{:02}", 12u8), "12");
     }
 }
+
+/// One labelled row of a proportional bar chart.
+///
+/// The number is always rendered as text and the bar sits behind it. That
+/// order is deliberate: the bar is the thing a reader scans and the number is
+/// the thing they act on, so the number can never be the part that got
+/// estimated from a pixel width. A reader with the bar hidden — a screen
+/// reader, a high-contrast mode, a printout — loses nothing.
+///
+/// `of` is the largest count in the set rather than the total, because the
+/// question these answer is "which of these is biggest" far more often than
+/// "what share of the whole is this". A bar scaled to a total where one bucket
+/// holds 95% is six invisible slivers and one full bar.
+#[component]
+pub fn Bar(
+    label: String,
+    count: usize,
+    /// The largest count in the set, which sets the full width.
+    of: usize,
+    /// A CSS colour for the fill, where the category already has one the reader
+    /// knows.
+    #[props(default)]
+    colour: Option<String>,
+    /// Whether this row is one the reader is hunting for.
+    #[props(default = false)]
+    emphasis: bool,
+    children: Element,
+) -> Element {
+    // An empty set would otherwise divide by nought and render every bar full.
+    let width = if of == 0 {
+        0
+    } else {
+        (count * 100).div_ceil(of).min(100)
+    };
+    let fill = colour.unwrap_or_else(|| {
+        if emphasis {
+            "var(--color-takeable)".to_string()
+        } else {
+            "var(--color-ink-faint)".to_string()
+        }
+    });
+
+    rsx! {
+        div { class: "grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-2 py-0.5",
+            span {
+                class: if emphasis { "truncate text-xs font-semibold text-ink" } else { "truncate text-xs text-ink-muted" },
+                "{label}"
+            }
+            span { class: "tabular-nums text-xs font-semibold text-ink", "{count}" }
+            div { class: "col-span-2 h-1.5 w-full rounded-sm bg-raised",
+                div {
+                    class: "h-full rounded-sm",
+                    style: "width:{width}%;background:{fill}",
+                    aria_hidden: "true",
+                }
+            }
+            {children}
+        }
+    }
+}

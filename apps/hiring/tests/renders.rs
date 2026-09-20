@@ -356,3 +356,130 @@ fn a_role_that_was_applied_to_says_so_on_the_page() {
         "the Head of AI application is recorded in the register but not shown"
     );
 }
+
+// ── The dashboard ────────────────────────────────────────────────────────────
+
+fn dashboard_html() -> String {
+    render_with(
+        Filters {
+            layout: rv2_hiring::view::Layout::Dashboard,
+            ..Filters::default()
+        },
+        Part::Results,
+    )
+}
+
+#[test]
+fn the_dashboard_renders_every_standing_panel() {
+    let html = dashboard_html();
+    for panel in rv2_hiring::dashboard::Dashboard::standing().panels {
+        assert!(
+            html.contains(&panel.title),
+            "the dashboard is missing the panel {:?}",
+            panel.title
+        );
+    }
+}
+
+#[test]
+fn no_panel_shows_a_number_without_its_denominator() {
+    let html = dashboard_html();
+    let counted = html.matches(" counted").count();
+    assert!(
+        counted >= 5,
+        "expected every panel to state what it counted, found {counted}"
+    );
+    assert!(
+        html.contains("publish no board"),
+        "the denominator must name the companies with nothing to read"
+    );
+}
+
+#[test]
+fn the_two_counterfactual_panels_disagree_on_screen() {
+    let html = dashboard_html();
+    assert!(html.contains("What you gave up by needing remote"));
+    assert!(html.contains("What you gave up by needing a mandate"));
+    assert!(
+        html.contains("Remote, UK-based") || html.contains("Remote, anywhere"),
+        "the working-pattern breakdown renders its buckets"
+    );
+    assert!(
+        html.contains("Builds and teaches") || html.contains("No department-building remit"),
+        "the mandate breakdown renders its buckets"
+    );
+}
+
+#[test]
+fn a_breakdown_bar_carries_its_number_as_text_not_only_as_width() {
+    let html = dashboard_html();
+    assert!(
+        html.contains("tabular-nums"),
+        "counts must render as text beside the bar, never only as a pixel width"
+    );
+}
+
+#[test]
+fn an_empty_panel_says_which_kind_of_empty_it_is() {
+    let html = render_with(
+        Filters {
+            layout: rv2_hiring::view::Layout::Dashboard,
+            ..Filters::default()
+        },
+        Part::Results,
+    );
+    // The applied panel has exactly one role in it, so the register exercises
+    // the populated path; the copy below is what the empty path would show.
+    let b = rv2_hiring::breakdown::breakdown(
+        &rv2_hiring::embedded_register(),
+        &Filters {
+            remote_only: true,
+            b2b_only: true,
+            mandate_only: true,
+            ..Filters::default()
+        },
+        rv2_hiring::breakdown::GroupBy::WorkPattern,
+    );
+    assert!(b.is_empty());
+    assert!(
+        b.empty_copy()
+            .contains("that is the answer rather than a gap")
+            || b.empty_copy().contains("treat this as a floor")
+            || b.empty_copy().contains("cannot answer this"),
+        "an empty panel must name which of the three empties it is: {}",
+        b.empty_copy()
+    );
+    assert!(!html.is_empty());
+}
+
+#[test]
+fn the_applied_role_reaches_the_dashboard() {
+    let html = dashboard_html();
+    assert!(
+        html.contains("What you have applied to"),
+        "the applied panel is present"
+    );
+    assert!(
+        html.contains("Head Of Artificial Intelligence"),
+        "the applied role shows in its panel"
+    );
+}
+
+#[test]
+fn every_panel_offers_a_way_into_the_register() {
+    let html = dashboard_html();
+    let ways = html.matches("Open these in the register").count();
+    assert!(
+        ways >= 5,
+        "a panel that can only be looked at is a dead end; found {ways}"
+    );
+}
+
+#[test]
+fn the_dashboard_is_reachable_from_the_layout_control() {
+    let html = render_with(Filters::default(), Part::Results);
+    assert!(
+        html.contains("Dashboard"),
+        "no control switches to the dashboard"
+    );
+}

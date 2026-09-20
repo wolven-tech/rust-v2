@@ -90,6 +90,8 @@ pub enum Layout {
     #[default]
     Register,
     Table,
+    /// Standing questions, each answered against today's register.
+    Dashboard,
 }
 
 /// The index groups, in the order they are shown, each with the colour it
@@ -158,6 +160,11 @@ pub struct Filters {
     pub b2b_only: bool,
     /// Only roles that carry a department-building mandate.
     pub mandate_only: bool,
+    /// Only roles already applied to.
+    ///
+    /// A separate axis rather than a sort, because "what have I sent" is a
+    /// different question from "what is open" and wants its own answer.
+    pub applied_only: bool,
 
     pub litmus: LitmusFilter,
     pub sort: Sort,
@@ -168,7 +175,11 @@ impl Filters {
     /// Whether any filter operates on roles rather than on companies.
     #[must_use]
     pub fn role_filters_active(&self) -> bool {
-        self.remote_only || self.b2b_only || self.mandate_only || !self.litmus.is_empty()
+        self.remote_only
+            || self.b2b_only
+            || self.mandate_only
+            || self.applied_only
+            || !self.litmus.is_empty()
     }
 
     /// How many controls are on, for the count beside the rail.
@@ -185,6 +196,7 @@ impl Filters {
             + usize::from(self.remote_only)
             + usize::from(self.b2b_only)
             + usize::from(self.mandate_only)
+            + usize::from(self.applied_only)
             + self.litmus.active_axes()
     }
 
@@ -218,6 +230,9 @@ impl Filters {
                         .as_ref()
                         .is_some_and(|m| matches!(m.strength, MandateStrength::Strong))
                 {
+                    return false;
+                }
+                if self.applied_only && role.applied_on.is_empty() {
                     return false;
                 }
                 self.litmus.matches_role(company, role)
@@ -742,6 +757,7 @@ pub mod hash {
             (f.remote_only, "remote"),
             (f.b2b_only, "b2b"),
             (f.mandate_only, "mandate"),
+            (f.applied_only, "applied"),
         ] {
             if on {
                 parts.push(format!("{key}=1"));
@@ -758,8 +774,10 @@ pub mod hash {
         if f.sort != Sort::default() {
             parts.push(format!("sort={}", f.sort.key()));
         }
-        if f.layout == Layout::Table {
-            parts.push("view=table".to_string());
+        match f.layout {
+            Layout::Table => parts.push("view=table".to_string()),
+            Layout::Dashboard => parts.push("view=dashboard".to_string()),
+            Layout::Register => {}
         }
         parts.join("&")
     }
@@ -790,6 +808,7 @@ pub mod hash {
                 "remote" => f.remote_only = on,
                 "b2b" => f.b2b_only = on,
                 "mandate" => f.mandate_only = on,
+                "applied" => f.applied_only = on,
                 "lv" => litmus.levels = uncodes(value, LEVELS),
                 "mk" => litmus.markets = uncodes(value, MARKETS),
                 "sc" => litmus.scales = uncodes(value, SCALES),
@@ -800,10 +819,10 @@ pub mod hash {
                 "in" => litmus.industries = unlist(value),
                 "sort" => f.sort = Sort::from_key(value),
                 "view" => {
-                    f.layout = if value == "table" {
-                        Layout::Table
-                    } else {
-                        Layout::Register
+                    f.layout = match value {
+                        "table" => Layout::Table,
+                        "dashboard" => Layout::Dashboard,
+                        _ => Layout::Register,
                     };
                 }
                 _ => {}

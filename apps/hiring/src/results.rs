@@ -48,7 +48,9 @@ pub fn Results(page: Page) -> Element {
         div { class: "space-y-4",
             Toolbar { page, rows: shown.len(), total: register.companies.len() }
             Legend {}
-            if shown.is_empty() {
+            if filters.layout == Layout::Dashboard {
+                crate::dashboard::DashboardView { page }
+            } else if shown.is_empty() {
                 Empty { page }
             } else if filters.layout == Layout::Table {
                 Table { companies: shown.into_iter().cloned().collect::<Vec<_>>(), page }
@@ -136,6 +138,13 @@ fn Toolbar(page: Page, rows: usize, total: usize) -> Element {
                         aria_pressed: "{layout == Layout::Table}",
                         onclick: move |_| f.write().layout = Layout::Table,
                         "Table"
+                    }
+                    button {
+                        r#type: "button",
+                        class: if layout == Layout::Dashboard { "bg-ink px-3 py-1.5 text-sm text-on-ink" } else { "px-3 py-1.5 text-sm" },
+                        aria_pressed: "{layout == Layout::Dashboard}",
+                        onclick: move |_| f.write().layout = Layout::Dashboard,
+                        "Dashboard"
                     }
                 }
                 ExportButton { page, rows }

@@ -69,8 +69,8 @@ pub use crate::motion::{
     Blob, Crumple, Foil, Fur, GradientBuilder, Hologram, Mood, PullCord, Vacuum,
 };
 pub use crate::primitives::{
-    ArrowLink, Badge, Button, Disclosure, LinkButton, Size, Status, StatusTone, StepMarker, Swatch,
-    Variant,
+    ArrowLink, Badge, Bar, Button, Disclosure, LinkButton, Size, Status, StatusTone, StepMarker,
+    Swatch, Variant,
 };
 pub use crate::product_shell::{
     NavigationRail, PageEntrance, ProcessRail, ProcessStep, ProductHeader, ProductHeaderAction,

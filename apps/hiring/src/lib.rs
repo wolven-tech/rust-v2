@@ -12,6 +12,7 @@
 
 #![allow(non_snake_case)]
 
+pub mod dashboard;
 pub mod rail;
 pub mod results;
 
