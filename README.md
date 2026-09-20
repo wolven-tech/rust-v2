@@ -507,6 +507,7 @@ line that everyone reads as "no traffic".
 | [`docs/ledger/component-kit-autoresearch.md`](docs/ledger/component-kit-autoresearch.md) | How `rv2-ui` got its scope and why the bundle is the size it is. |
 | [`docs/review/001-bootstrap-readiness.md`](docs/review/001-bootstrap-readiness.md) | A cold review of this repository as a foundation to start a project from: twelve findings, what each one actually was, and what was done about it. |
 | [`docs/reports/2026-09-20-uk-leadership-role-hunt.md`](docs/reports/2026-09-20-uk-leadership-role-hunt.md) | What `rv2-hiring` was built to answer: which UK roles are remote at 25% or less, outside IR35, and carry a mandate to build a function. Of 30 live listings on the specialist board, six clear both filters, one carries the mandate, and none do both. |
+| [`docs/design-system/ledger.md`](docs/design-system/ledger.md) | Ledger, the dark identity for `apps/hiring`: what each token is for, the two things overruled in the direction that won it, and why the muted ink sits at 7.5:1 rather than the 4.5:1 AA allows. |
 | [`AGENTS.md`](AGENTS.md) | The short orientation for anyone arriving with no context. `CLAUDE.md` points here. |
 | [`CONTRIBUTING.md`](CONTRIBUTING.md) | The rules, and what enforces each one. |
 | [`SECURITY.md`](SECURITY.md) | How to report a vulnerability, what is in scope, and the limitations stated rather than hidden. |
