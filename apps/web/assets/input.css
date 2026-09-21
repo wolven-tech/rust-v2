@@ -64,4 +64,8 @@
   --color-muted-foreground: var(--color-ink-muted);
   --color-input: var(--color-rule-soft);
   --color-ring: var(--color-accent);
+  /* The filled-control pair, which inverts with the theme rather than picking
+   * a side. */
+  --color-primary: var(--color-ink);
+  --color-primary-foreground: var(--color-on-ink);
 }

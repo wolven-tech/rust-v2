@@ -127,6 +127,12 @@
   --color-muted-foreground: var(--color-ink-muted);
   --color-input: var(--color-rule-soft);
   --color-ring: var(--color-accent);
+  /* The filled-control pair. It inverts with the theme rather than picking a
+   * side: on this dark ground the fill is the light ink and the text is the
+   * ground, and on a light theme both swap. A control that spelled "light
+   * fill" would be right in one theme and invisible in the other. */
+  --color-primary: var(--color-ink);
+  --color-primary-foreground: var(--color-on-ink);
 }
 
 /* Two arms for a breakdown's bars. Every axis in `breakdown.rs` is declared

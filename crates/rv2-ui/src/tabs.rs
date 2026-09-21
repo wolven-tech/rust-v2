@@ -135,15 +135,16 @@ fn TabsTrigger(
     onselect: EventHandler<String>,
     onmove: EventHandler<TabStep>,
 ) -> Element {
-    let tone = if selected {
-        "text-foreground"
-    } else {
-        "text-foreground/60 hover:text-foreground"
-    };
-    let fill = if selected && !line {
-        "bg-background border-input"
-    } else {
-        "border-transparent"
+    // The current tab is the filled control, not a lighter shade of the track.
+    // Upstream fills it with `background`, which on a light theme lifts the tab
+    // out of a grey track — and on a dark one is darker than the track, so the
+    // current tab reads as sunken and the least emphatic thing in the row.
+    // `primary` is the pair that inverts with the theme instead of assuming
+    // one.
+    let tone = match (selected, line) {
+        (true, false) => "bg-primary text-primary-foreground border-transparent",
+        (true, true) => "text-foreground border-transparent",
+        (false, _) => "text-foreground/60 hover:text-foreground border-transparent",
     };
     // The rule is an `::after` rather than a bottom border so that turning it
     // on and off cannot change the trigger's height and shift the row.
@@ -162,7 +163,7 @@ fn TabsTrigger(
     rsx! {
         button {
             r#type: "button",
-            class: "relative inline-flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-md border px-3 py-1.5 font-medium whitespace-nowrap select-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none {tone} {fill} {rule}",
+            class: "relative inline-flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-md border px-3 py-1.5 font-medium whitespace-nowrap select-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none {tone} {rule}",
             role: "tab",
             id: "tab-{tab.value}",
             aria_selected: "{selected}",

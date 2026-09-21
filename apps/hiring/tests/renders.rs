@@ -539,5 +539,13 @@ fn the_layout_tabs_and_the_panel_they_switch_agree() {
             1,
             "{layout:?}: a roving tabindex leaves one stop, so Tab enters the list once"
         );
+        assert_eq!(
+            html.matches("bg-primary").count(),
+            1,
+            "{layout:?}: the current tab is the filled control. Filling it with the \
+             page background instead lifts it out of the track on a light theme and \
+             sinks it into the track on a dark one, leaving the current tab the least \
+             emphatic thing in the row"
+        );
     }
 }
