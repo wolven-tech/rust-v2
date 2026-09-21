@@ -56,11 +56,11 @@ pub fn Hero(
         div { class: "grid items-center gap-10 lg:grid-cols-2",
             div { class: "flex flex-col gap-5",
                 if let Some(eyebrow) = eyebrow {
-                    p { class: "text-xs font-medium uppercase tracking-widest text-slate-500", "{eyebrow}" }
+                    p { class: "text-xs font-medium uppercase tracking-widest text-ink-muted", "{eyebrow}" }
                 }
-                h1 { class: "text-4xl font-semibold tracking-tight text-slate-900 sm:text-5xl", "{headline}" }
+                h1 { class: "text-4xl font-semibold tracking-tight text-ink sm:text-5xl", "{headline}" }
                 if let Some(subheadline) = subheadline {
-                    p { class: "text-lg text-slate-600", "{subheadline}" }
+                    p { class: "text-lg text-ink-muted", "{subheadline}" }
                 }
                 if let Some(actions) = actions {
                     div { class: "flex flex-wrap items-center gap-3 pt-2", {actions} }
@@ -84,12 +84,12 @@ pub fn FeatureCard(
     action: Option<Element>,
 ) -> Element {
     rsx! {
-        div { class: "flex h-full flex-col gap-3 rounded-lg border border-slate-200 bg-white p-6",
+        div { class: "flex h-full flex-col gap-3 rounded-lg border border-rule-soft bg-surface p-6",
             if let Some(step) = step {
                 StepMarker { n: step }
             }
-            h3 { class: "text-base font-semibold text-slate-900", "{title}" }
-            p { class: "flex-1 text-sm text-slate-600", "{body}" }
+            h3 { class: "text-base font-semibold text-ink", "{title}" }
+            p { class: "flex-1 text-sm text-ink-muted", "{body}" }
             if let Some(action) = action {
                 div { class: "pt-1", {action} }
             }
@@ -126,8 +126,8 @@ pub fn StepList(steps: Vec<Step>) -> Element {
                 li { class: "flex gap-4",
                     StepMarker { n: (index + 1) as u8 }
                     div { class: "flex flex-col gap-1",
-                        h3 { class: "text-base font-semibold text-slate-900", "{step.title}" }
-                        p { class: "text-sm text-slate-600", "{step.body}" }
+                        h3 { class: "text-base font-semibold text-ink", "{step.title}" }
+                        p { class: "text-sm text-ink-muted", "{step.body}" }
                     }
                 }
             }
@@ -174,11 +174,11 @@ pub fn FactList(facts: Vec<Fact>, #[props(default)] class: String) -> Element {
             for fact in facts.iter() {
                 div {
                     class: if fact.emphasis {
-                        "flex items-baseline justify-between gap-4 border-t border-slate-200 pt-2 font-semibold text-slate-900"
+                        "flex items-baseline justify-between gap-4 border-t border-rule-soft pt-2 font-semibold text-ink"
                     } else {
                         "flex items-baseline justify-between gap-4"
                     },
-                    dt { class: "text-sm text-slate-600", "{fact.label}" }
+                    dt { class: "text-sm text-ink-muted", "{fact.label}" }
                     dd { class: "text-sm tabular-nums", "{fact.value}" }
                 }
             }
@@ -197,21 +197,21 @@ pub fn PricingCard(
     #[props(default)] note: Option<String>,
 ) -> Element {
     rsx! {
-        div { class: "flex flex-col gap-5 rounded-lg border border-slate-200 bg-white p-8",
+        div { class: "flex flex-col gap-5 rounded-lg border border-rule-soft bg-surface p-8",
             if let Some(title) = title {
-                h3 { class: "text-base font-semibold text-slate-900", "{title}" }
+                h3 { class: "text-base font-semibold text-ink", "{title}" }
             }
             div { class: "flex items-baseline gap-2",
-                span { class: "text-4xl font-semibold tracking-tight tabular-nums text-slate-900", "{price}" }
+                span { class: "text-4xl font-semibold tracking-tight tabular-nums text-ink", "{price}" }
                 if let Some(cadence) = cadence {
-                    span { class: "text-sm text-slate-600", "{cadence}" }
+                    span { class: "text-sm text-ink-muted", "{cadence}" }
                 }
             }
             if !features.is_empty() {
                 ul { class: "flex flex-col gap-2",
                     for feature in features.iter() {
-                        li { class: "flex items-start gap-2 text-sm text-slate-600",
-                            span { class: "text-slate-900", "aria-hidden": "true", "✓" }
+                        li { class: "flex items-start gap-2 text-sm text-ink-muted",
+                            span { class: "text-ink", "aria-hidden": "true", "✓" }
                             "{feature}"
                         }
                     }
@@ -221,7 +221,7 @@ pub fn PricingCard(
                 div { {action} }
             }
             if let Some(note) = note {
-                p { class: "text-xs text-slate-500", "{note}" }
+                p { class: "text-xs text-ink-muted", "{note}" }
             }
         }
     }
@@ -253,21 +253,21 @@ impl QandA {
 #[component]
 pub fn Faq(items: Vec<QandA>) -> Element {
     rsx! {
-        div { class: "divide-y divide-slate-200 border-y border-slate-200",
+        div { class: "divide-y divide-rule-soft border-y border-rule-soft",
             for item in items.iter() {
                 details { class: "group py-4",
                     summary {
                         class: "flex cursor-pointer list-none items-center justify-between gap-4 \
-                                text-base font-medium text-slate-900 focus-visible:outline-none \
+                                text-base font-medium text-ink focus-visible:outline-none \
                                 focus-visible:underline",
                         "{item.question}"
                         span {
-                            class: "shrink-0 text-slate-400 transition-transform group-open:rotate-45",
+                            class: "shrink-0 text-ink-faint transition-transform group-open:rotate-45",
                             "aria-hidden": "true",
                             "+"
                         }
                     }
-                    p { class: "pt-3 text-sm text-slate-600", "{item.answer}" }
+                    p { class: "pt-3 text-sm text-ink-muted", "{item.answer}" }
                 }
             }
         }
@@ -299,20 +299,20 @@ pub fn Footer(
     note: Option<Element>,
 ) -> Element {
     rsx! {
-        footer { class: "border-t border-slate-200 bg-white",
+        footer { class: "border-t border-rule-soft bg-surface",
             div { class: "mx-auto max-w-5xl px-6 py-12",
                 if !columns.is_empty() {
                     div { class: "grid grid-cols-2 gap-8 sm:grid-cols-3 lg:grid-cols-4",
                         for column in columns.iter() {
                             div {
-                                h2 { class: "text-xs font-semibold uppercase tracking-widest text-slate-500",
+                                h2 { class: "text-xs font-semibold uppercase tracking-widest text-ink-muted",
                                     "{column.title}"
                                 }
                                 ul { class: "mt-3 flex flex-col gap-2",
                                     for item in column.items.iter() {
                                         li {
                                             a {
-                                                class: "text-sm text-slate-600 hover:text-slate-900",
+                                                class: "text-sm text-ink-muted hover:text-ink",
                                                 href: "{item.href}",
                                                 target: item.external.then_some("_blank"),
                                                 rel: item.external.then_some("noopener noreferrer"),
@@ -326,7 +326,7 @@ pub fn Footer(
                     }
                 }
                 if let Some(note) = note {
-                    div { class: "mt-10 border-t border-slate-200 pt-6 text-xs text-slate-500", {note} }
+                    div { class: "mt-10 border-t border-rule-soft pt-6 text-xs text-ink-muted", {note} }
                 }
             }
         }

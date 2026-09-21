@@ -25,8 +25,46 @@ const SOURCES: &[&str] = &[
     "src/lib.rs",
     "src/rail.rs",
     "src/results.rs",
+    "../../crates/rv2-ui/src/feedback.rs",
     "../../crates/rv2-ui/src/form.rs",
+    "../../crates/rv2-ui/src/layout.rs",
+    "../../crates/rv2-ui/src/motion.rs",
     "../../crates/rv2-ui/src/primitives.rs",
+    "../../crates/rv2-ui/src/product_shell.rs",
+    "../../crates/rv2-ui/src/site.rs",
+    "../../crates/rv2-ui/src/tabs.rs",
+    "../../crates/rv2-ui/src/typography.rs",
+];
+
+/// The two hues that carry no shade, and so cannot be caught by the
+/// palette-and-shade pattern above.
+///
+/// `bg-white` is the one that actually shipped: it is correct on a light theme
+/// and renders a white card on a dark page, and because it is spelled without a
+/// number it slipped past this scan for as long as the scan only looked for
+/// `{palette}-{shade}`.
+const BARE: &[&str] = &["white", "black"];
+
+/// The prefixes a colour can arrive under. `border` covers `border-x-white` and
+/// friends only loosely, which is why the check below matches the hue rather
+/// than trying to enumerate every prefix Tailwind allows.
+const COLOUR_PREFIXES: &[&str] = &[
+    "bg-",
+    "text-",
+    "border-",
+    "ring-",
+    "fill-",
+    "stroke-",
+    "from-",
+    "to-",
+    "via-",
+    "divide-",
+    "outline-",
+    "shadow-",
+    "decoration-",
+    "accent-",
+    "caret-",
+    "placeholder-",
 ];
 
 fn offenders(source: &str) -> Vec<String> {
@@ -36,6 +74,14 @@ fn offenders(source: &str) -> Vec<String> {
             "50", "100", "200", "300", "400", "500", "600", "700", "800", "900", "950",
         ] {
             let needle = format!("{palette}-{shade}");
+            if source.contains(&needle) {
+                found.push(needle);
+            }
+        }
+    }
+    for hue in BARE {
+        for prefix in COLOUR_PREFIXES {
+            let needle = format!("{prefix}{hue}");
             if source.contains(&needle) {
                 found.push(needle);
             }
@@ -69,9 +115,30 @@ fn no_component_names_a_colour_by_its_hue() {
 fn the_scan_would_actually_catch_something() {
     assert_eq!(
         offenders("class: \"text-slate-600 bg-white\""),
-        vec!["slate-600".to_string()],
+        vec!["slate-600".to_string(), "bg-white".to_string()],
         "the scan must find a palette class when one is present, or the test \
          above passes by never matching anything"
+    );
+}
+
+/// `bg-white` used to pass this scan, and shipped.
+///
+/// A shade-suffixed hue and a bare one are different spellings of the same
+/// defect, and the scan only looked for the first. Each prefix is checked
+/// because `bg-white` and `text-white` are both reachable and neither carries a
+/// number to match on.
+#[test]
+fn a_hue_with_no_shade_is_caught_too() {
+    for spelling in ["bg-white", "text-white", "border-black", "ring-white"] {
+        assert_eq!(
+            offenders(&format!("class: \"p-4 {spelling} rounded\"")),
+            vec![spelling.to_string()],
+            "{spelling} is a hardcoded hue and has to be reported"
+        );
+    }
+    assert!(
+        offenders("class: \"bg-surface text-ink border-rule\"").is_empty(),
+        "a semantic class must not be reported, or the scan cries wolf and gets ignored"
     );
 }
 

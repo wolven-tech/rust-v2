@@ -158,7 +158,7 @@ pub fn Blob(
         button {
             r#type: "button",
             class: "relative inline-block cursor-pointer border-0 bg-transparent p-0 \
-                    focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 \
+                    focus:outline-none focus-visible:ring-2 focus-visible:ring-accent \
                     focus-visible:ring-offset-2 rounded-full",
             style: "width: {size}px; height: {size}px;",
             aria_label: label.unwrap_or_else(|| "Poke the blob".to_string()),
@@ -366,7 +366,7 @@ pub fn Hologram(
             //
             // Painting the light first means it only ever blends the card
             // surface, and the text sits cleanly on top of the result.
-            div { class: "relative isolate overflow-hidden rounded-[14px] bg-slate-900 p-5 text-slate-100",
+            div { class: "relative isolate overflow-hidden rounded-[14px] bg-ink p-5 text-on-ink",
 
                 // Foil, gated by a radial so it is brightest under the light.
                 div {
@@ -396,10 +396,10 @@ pub fn Hologram(
                 // that makes foil look good will brighten a dark backdrop by an
                 // unpredictable amount.
                 //
-                // Solid `bg-slate-900` makes the ratio computable AND fixed, so
+                // A solid `bg-ink` makes the ratio computable AND fixed, so
                 // the same card passes at any foil intensity. It is also how a
                 // real foil card works: the art shimmers, the text box does not.
-                div { class: "relative z-10 rounded-lg bg-slate-900 p-3", {children} }
+                div { class: "relative z-10 rounded-lg bg-ink p-3", {children} }
             }
         }
     }
@@ -484,15 +484,20 @@ pub fn PullCord(
                 style: "--cord-pull: {offset}px; --cord-swing: {swing}deg; \
                         transform: translateY({offset}px);",
 
-                // The cord.
-                div { class: "w-[2px] h-24 bg-gradient-to-b from-slate-400 to-slate-600 rounded-full" }
+                // The cord. Its two stops are the structural tokens rather than
+                // a ramp, because the token set has no gradient scale. Which
+                // way the shading runs therefore follows the theme — lit from
+                // above on a dark ground, from below on a light one — and on a
+                // 2px cord that is a detail, where a stop that ignored the
+                // theme would be the wrong grey on half the apps.
+                div { class: "w-[2px] h-24 bg-gradient-to-b from-ink-faint to-rule rounded-full" }
 
                 // The knob.
                 button {
                     r#type: "button",
-                    class: "h-6 w-6 -mt-[2px] cursor-grab rounded-full bg-slate-700 \
+                    class: "h-6 w-6 -mt-[2px] cursor-grab rounded-full bg-ink \
                             shadow-md active:cursor-grabbing touch-none \
-                            focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 \
+                            focus:outline-none focus-visible:ring-2 focus-visible:ring-accent \
                             focus-visible:ring-offset-2",
                     aria_label: label.unwrap_or_else(|| "Pull the cord".to_string()),
                     onpointerdown: start,
@@ -632,29 +637,29 @@ pub fn GradientBuilder(
     rsx! {
         div { class: "space-y-3",
             div {
-                class: "h-32 w-full rounded-xl border border-slate-200",
+                class: "h-32 w-full rounded-xl border border-rule-soft",
                 style: "background: {css};",
             }
             div { class: "flex flex-wrap items-center gap-4",
-                label { class: "flex items-center gap-2 text-sm text-slate-700",
+                label { class: "flex items-center gap-2 text-sm text-ink-muted",
                     "From"
                     input {
                         r#type: "color",
-                        class: "h-8 w-12 cursor-pointer rounded border border-slate-300",
+                        class: "h-8 w-12 cursor-pointer rounded border border-rule",
                         value: "{from}",
                         oninput: move |event| from.set(event.value()),
                     }
                 }
-                label { class: "flex items-center gap-2 text-sm text-slate-700",
+                label { class: "flex items-center gap-2 text-sm text-ink-muted",
                     "To"
                     input {
                         r#type: "color",
-                        class: "h-8 w-12 cursor-pointer rounded border border-slate-300",
+                        class: "h-8 w-12 cursor-pointer rounded border border-rule",
                         value: "{to}",
                         oninput: move |event| to.set(event.value()),
                     }
                 }
-                label { class: "flex flex-1 items-center gap-2 text-sm text-slate-700",
+                label { class: "flex flex-1 items-center gap-2 text-sm text-ink-muted",
                     "Angle"
                     input {
                         r#type: "range",
@@ -672,7 +677,7 @@ pub fn GradientBuilder(
                 }
             }
             code {
-                class: "block overflow-x-auto rounded-lg bg-slate-900 px-3 py-2 text-xs text-slate-100",
+                class: "block overflow-x-auto rounded-lg bg-ink px-3 py-2 text-xs text-on-ink",
                 "background: {css};"
             }
         }

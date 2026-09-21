@@ -141,6 +141,6 @@ pub fn Row(
 #[component]
 pub fn Divider(#[props(default)] class: String) -> Element {
     rsx! {
-        hr { class: "border-slate-200 {class}", "aria-hidden": "true" }
+        hr { class: "border-rule-soft {class}", "aria-hidden": "true" }
     }
 }

@@ -43,7 +43,7 @@ pub fn Heading(
     children: Element,
 ) -> Element {
     let size = size.classes();
-    let class = format!("{size} text-slate-900 {class}");
+    let class = format!("{size} text-ink {class}");
     match level {
         1 => rsx! { h1 { class, {children} } },
         3 => rsx! { h3 { class, {children} } },
@@ -65,10 +65,10 @@ pub enum Tone {
 impl Tone {
     fn classes(self) -> &'static str {
         match self {
-            Tone::Default => "text-base text-slate-700",
-            Tone::Muted => "text-sm text-slate-600",
-            Tone::Small => "text-xs text-slate-500",
-            Tone::Lead => "text-lg text-slate-600",
+            Tone::Default => "text-base text-ink-muted",
+            Tone::Muted => "text-sm text-ink-muted",
+            Tone::Small => "text-xs text-ink-muted",
+            Tone::Lead => "text-lg text-ink-muted",
         }
     }
 }
@@ -93,6 +93,6 @@ pub fn Text(
 #[component]
 pub fn Eyebrow(#[props(default)] class: String, children: Element) -> Element {
     rsx! {
-        p { class: "text-xs font-medium uppercase tracking-widest text-slate-500 {class}", {children} }
+        p { class: "text-xs font-medium uppercase tracking-widest text-ink-muted {class}", {children} }
     }
 }
