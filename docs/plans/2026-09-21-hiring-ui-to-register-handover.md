@@ -9,6 +9,37 @@ This is the source side of that migration: what changed here on 2026-09-21, what
 it depends on that the destination does not have, and the four frictions that are
 cheaper to know about than to rediscover.
 
+## `rv2-hiring` exists in both, and they have diverged in both directions
+
+This is not a copy waiting to be carried across. `uk-tech-hiring-dashboard`
+took this repo's layout at `b117abd` and has been developing its own register
+since — judging how central Rust is to a posting, attaching three AIM and
+SmallCap boards, recording an application against a role. This repo grew the
+UI side over the same period.
+
+Both copies hold work the other does not:
+
+| `crates/rv2-hiring/src` | here | the register |
+|---|---|---|
+| Files | 12 | 4 |
+| `breakdown`, `dashboard`, `litmus`, `mandate`, `view`, `work_pattern`, `csv`, `engagement` | present | absent |
+| `lib.rs` | 2.6K | **7.4K** |
+| `links.rs` | **4.5K** | 2.3K |
+| `model.rs` | **22.5K** | 16.2K |
+| `text.rs` | **6.9K** | 6.2K |
+
+Every shared file differs, and not in one direction, so neither side is an
+ancestor of the other. Treating this as a copy would silently drop the
+register's own recent work.
+
+**Which means the split this repo should settle into is components, not
+products.** `crates/rv2-ui` is a component kit and belongs here. The register's
+domain and its page are product, they are being actively developed in the
+repository that deploys them, and continuing to grow them here widens a fork
+that somebody has to merge by hand. The UI work recorded below was done here
+and is on the wrong side of that line — it is listed so it can be moved, not as
+a claim that it should have been.
+
 ## The gap, measured
 
 | | `uk-tech-hiring-dashboard` | here |
