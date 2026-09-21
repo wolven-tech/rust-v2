@@ -483,3 +483,61 @@ fn the_dashboard_is_reachable_from_the_layout_control() {
         "no control switches to the dashboard"
     );
 }
+
+/// The switcher's wiring, not its text.
+///
+/// A tab list is four references that have to agree — the tab's `aria-controls`
+/// and the panel's `id`, the panel's `aria-labelledby` and the selected tab's
+/// `id`. Each is a string in a different file, so nothing but a test notices
+/// when one moves, and a screen reader is the only reader that suffers.
+#[test]
+fn the_layout_tabs_and_the_panel_they_switch_agree() {
+    for layout in rv2_hiring::view::Layout::ALL {
+        let html = render_with(
+            Filters {
+                layout,
+                ..Filters::default()
+            },
+            Part::Results,
+        );
+
+        assert_eq!(
+            html.matches(r#"role="tablist""#).count(),
+            1,
+            "{layout:?}: the switcher must announce as one tab list"
+        );
+        assert_eq!(
+            html.matches(r#"role="tab""#).count(),
+            rv2_hiring::view::Layout::ALL.len(),
+            "{layout:?}: every layout needs a tab"
+        );
+        assert_eq!(
+            html.matches(r#"aria-selected="true""#).count(),
+            1,
+            "{layout:?}: exactly one tab is current"
+        );
+        assert_eq!(
+            html.matches(r#"role="tabpanel""#).count(),
+            1,
+            "{layout:?}: the tabs must control exactly one panel"
+        );
+        assert!(
+            html.contains(&format!(r#"aria-labelledby="tab-{}""#, layout.key())),
+            "{layout:?}: the panel must name the tab that is current, not another one"
+        );
+        assert_eq!(
+            html.matches(r#"aria-controls="register-view""#).count(),
+            rv2_hiring::view::Layout::ALL.len(),
+            "{layout:?}: a tab pointing at no panel changes nothing a reader is told about"
+        );
+        assert!(
+            html.contains(r#"id="register-view""#),
+            "{layout:?}: the id every tab points at has to exist"
+        );
+        assert_eq!(
+            html.matches(r#"tabindex="0""#).count(),
+            1,
+            "{layout:?}: a roving tabindex leaves one stop, so Tab enters the list once"
+        );
+    }
+}

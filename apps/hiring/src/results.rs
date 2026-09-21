@@ -17,7 +17,7 @@ use rv2_hiring::links::{careers_search, linkedin_search, safe_url};
 use rv2_hiring::mandate::MandateStrength;
 use rv2_hiring::model::{Company, LinkStatus, Register, Role};
 use rv2_hiring::view::{self, Layout, Sort, group_colour, group_label};
-use rv2_ui::{Badge, Disclosure, Select, Status, StatusTone};
+use rv2_ui::{Badge, Disclosure, Select, Status, StatusTone, Tab, Tabs};
 
 use crate::{Page, SharedRegister};
 
@@ -48,6 +48,10 @@ pub fn Results(page: Page) -> Element {
         div { class: "space-y-4",
             Toolbar { page, rows: shown.len(), total: register.companies.len() }
             Legend {}
+            div {
+                id: "{VIEW_PANEL}",
+                role: "tabpanel",
+                aria_labelledby: "tab-{filters.layout.key()}",
             if filters.layout == Layout::Dashboard {
                 crate::dashboard::DashboardView { page }
             } else if shown.is_empty() {
@@ -61,9 +65,14 @@ pub fn Results(page: Page) -> Element {
                     }
                 }
             }
+            }
         }
     }
 }
+
+/// The id the view switcher's tabs point at, so the tab list and the panel it
+/// controls cannot drift apart.
+const VIEW_PANEL: &str = "register-view";
 
 /// What the ticker badge's two treatments mean.
 ///
@@ -124,28 +133,19 @@ fn Toolbar(page: Page, rows: usize, total: usize) -> Element {
                         "{rows} of {total} companies"
                     }
                 }
-                div { class: "inline-flex overflow-hidden rounded-md border border-rule",
-                    button {
-                        r#type: "button",
-                        class: if layout == Layout::Register { "bg-ink px-3 py-1.5 text-sm text-on-ink" } else { "px-3 py-1.5 text-sm" },
-                        aria_pressed: "{layout == Layout::Register}",
-                        onclick: move |_| f.write().layout = Layout::Register,
-                        "Register"
-                    }
-                    button {
-                        r#type: "button",
-                        class: if layout == Layout::Table { "bg-ink px-3 py-1.5 text-sm text-on-ink" } else { "px-3 py-1.5 text-sm" },
-                        aria_pressed: "{layout == Layout::Table}",
-                        onclick: move |_| f.write().layout = Layout::Table,
-                        "Table"
-                    }
-                    button {
-                        r#type: "button",
-                        class: if layout == Layout::Dashboard { "bg-ink px-3 py-1.5 text-sm text-on-ink" } else { "px-3 py-1.5 text-sm" },
-                        aria_pressed: "{layout == Layout::Dashboard}",
-                        onclick: move |_| f.write().layout = Layout::Dashboard,
-                        "Dashboard"
-                    }
+                Tabs {
+                    label: "How to read the register",
+                    controls: VIEW_PANEL.to_string(),
+                    value: layout.key().to_string(),
+                    tabs: Layout::ALL
+                        .into_iter()
+                        .map(|l| Tab::new(l.key(), l.label()))
+                        .collect::<Vec<_>>(),
+                    onselect: move |key: String| {
+                        if let Some(next) = Layout::from_key(&key) {
+                            f.write().layout = next;
+                        }
+                    },
                 }
                 ExportButton { page, rows }
             }

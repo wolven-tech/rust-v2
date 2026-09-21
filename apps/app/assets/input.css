@@ -53,4 +53,16 @@
 
   --color-fault: #ef4444;
   --color-fault-ink: #991b1b;
+
+  /* shadcn's names pointing at this theme's values, so a component copied from
+   * a shadcn-shaped registry styles itself without its classes being
+   * rewritten. `accent` is deliberately absent: shadcn spends it on a hover
+   * surface and this system spends it on focus, so a component wanting
+   * shadcn's gets `bg-raised` written in instead. */
+  --color-background: var(--color-ground);
+  --color-foreground: var(--color-ink);
+  --color-muted: var(--color-raised);
+  --color-muted-foreground: var(--color-ink-muted);
+  --color-input: var(--color-rule-soft);
+  --color-ring: var(--color-accent);
 }

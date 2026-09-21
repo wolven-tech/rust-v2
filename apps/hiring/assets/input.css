@@ -111,6 +111,22 @@
   /* The system's signature, inherited from the light theme unchanged. Zero
    * blur. Gold. Nothing else on the page casts a shadow at all. */
   --shadow-takeable: 0.5rem 0.5rem 0 #f4c350;
+
+  /* shadcn's names, pointing at this theme's values, so a component copied
+   * from a shadcn-shaped registry styles itself correctly without its classes
+   * being rewritten. Every app defines this block against its own palette.
+   *
+   * `accent` is deliberately absent. shadcn spends it on a subtle hover
+   * SURFACE; this theme spends it on the focus ring, chosen to be lighter than
+   * the FTSE 100 blue so a ring never reads as market data. One name, two
+   * incompatible jobs — so a component wanting shadcn's `accent` gets
+   * `bg-raised` written in instead, and `--color-accent` keeps meaning focus. */
+  --color-background: var(--color-ground);
+  --color-foreground: var(--color-ink);
+  --color-muted: var(--color-raised);
+  --color-muted-foreground: var(--color-ink-muted);
+  --color-input: var(--color-rule-soft);
+  --color-ring: var(--color-accent);
 }
 
 /* Two arms for a breakdown's bars. Every axis in `breakdown.rs` is declared

@@ -60,6 +60,7 @@ pub mod motion;
 pub mod primitives;
 pub mod product_shell;
 pub mod site;
+pub mod tabs;
 pub mod typography;
 
 pub use crate::feedback::{Card, EmptyState, ErrorBanner, PageHeader, Skeleton};
@@ -80,4 +81,5 @@ pub use crate::site::{
     Fact, FactList, Faq, FeatureCard, Footer, FooterColumn, Hero, NavItem, PricingCard, QandA,
     Step, StepList,
 };
+pub use crate::tabs::{Tab, Tabs, TabsVariant};
 pub use crate::typography::{Eyebrow, Heading, HeadingSize, Text, Tone};

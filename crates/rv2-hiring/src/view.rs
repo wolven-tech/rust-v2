@@ -94,6 +94,40 @@ pub enum Layout {
     Dashboard,
 }
 
+impl Layout {
+    /// The order the switcher offers them in, which is also the order a reader
+    /// moves through with the arrow keys.
+    pub const ALL: [Self; 3] = [Self::Register, Self::Table, Self::Dashboard];
+
+    /// The spelling that travels in the URL.
+    ///
+    /// The hash codec and the switcher both read this rather than each
+    /// spelling the values themselves; a switcher whose strings drifted from
+    /// the codec's would silently stop restoring the view from a link.
+    #[must_use]
+    pub fn key(self) -> &'static str {
+        match self {
+            Self::Register => "register",
+            Self::Table => "table",
+            Self::Dashboard => "dashboard",
+        }
+    }
+
+    #[must_use]
+    pub fn label(self) -> &'static str {
+        match self {
+            Self::Register => "Register",
+            Self::Table => "Table",
+            Self::Dashboard => "Dashboard",
+        }
+    }
+
+    #[must_use]
+    pub fn from_key(key: &str) -> Option<Self> {
+        Self::ALL.into_iter().find(|l| l.key() == key)
+    }
+}
+
 /// The index groups, in the order they are shown, each with the colour it
 /// carries everywhere.
 ///
@@ -774,10 +808,8 @@ pub mod hash {
         if f.sort != Sort::default() {
             parts.push(format!("sort={}", f.sort.key()));
         }
-        match f.layout {
-            Layout::Table => parts.push("view=table".to_string()),
-            Layout::Dashboard => parts.push("view=dashboard".to_string()),
-            Layout::Register => {}
+        if f.layout != Layout::default() {
+            parts.push(format!("view={}", f.layout.key()));
         }
         parts.join("&")
     }
@@ -818,13 +850,7 @@ pub mod hash {
                 "co" => litmus.countries = unlist(value),
                 "in" => litmus.industries = unlist(value),
                 "sort" => f.sort = Sort::from_key(value),
-                "view" => {
-                    f.layout = match value {
-                        "table" => Layout::Table,
-                        "dashboard" => Layout::Dashboard,
-                        _ => Layout::Register,
-                    };
-                }
+                "view" => f.layout = Layout::from_key(value).unwrap_or_default(),
                 _ => {}
             }
         }
