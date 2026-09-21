@@ -113,6 +113,44 @@
   --shadow-takeable: 0.5rem 0.5rem 0 #f4c350;
 }
 
+/* Two arms for a breakdown's bars. Every axis in `breakdown.rs` is declared
+ * best to worst, so position means something and the fill has to carry it.
+ * `Bucket.wanted` is the boundary, and each arm is one hue stepped by
+ * lightness.
+ *
+ * Green does not run the whole scale: a six-step green ramp would put green on
+ * Onsite and on Unknown, and green would stop answering one question. The
+ * other arm is not red either — a permanent role is not a fault.
+ *
+ * `clears-1` references its anchor rather than respelling it, so no value here
+ * has two names.
+ *
+ * Both arms pass all four `--ordinal` checks in the dataviz validator against
+ * `--color-raised`, which is the Bar's TRACK and therefore the surface a fill
+ * has to clear. Checked against `--color-ground` instead, a step that sits at
+ * 1.65:1 in the track it renders in passes. Every step also stays at least
+ * dE 8 (OKLab x100) from every token that already means something, so no bar
+ * can be read as a status or a market.
+ *
+ * TWO steps per arm, not one per bucket. Four steps passed every check and
+ * still rendered as one flat colour at 0.068 of OKLCH lightness apart; 0.19
+ * apart reads at the Bar's own 6px height, and raising the bar to 10px did not
+ * rescue the closer spacing. That is about all the headroom an arm has anyway
+ * before it either collides with a reserved token or stops clearing its own
+ * track. The validator's 0.06 floor is necessary and nowhere near sufficient
+ * on a mark this thin.
+ *
+ * `static` because these are read through `var()` in an inline style, never as
+ * a utility class. In a plain `@theme` Tailwind finds no class referencing
+ * them, shakes every one out, and the bars render with no fill at all. */
+@theme static {
+  --color-clears-1: var(--color-takeable);
+  --color-clears-2: #389247;
+
+  --color-misses-1: #afa397;
+  --color-misses-2: #676059;
+}
+
 /* The gold shadow is the page's one flourish, so it is also the one thing that
  * has to survive a reader who cannot tolerate it. Under reduced motion the
  * offset collapses to an outline in the same gold: the meaning stays, the

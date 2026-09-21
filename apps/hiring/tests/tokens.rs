@@ -21,6 +21,7 @@ const PALETTES: &[&str] = &[
 
 /// Files that make up the page's visual surface.
 const SOURCES: &[&str] = &[
+    "src/dashboard.rs",
     "src/lib.rs",
     "src/rail.rs",
     "src/results.rs",

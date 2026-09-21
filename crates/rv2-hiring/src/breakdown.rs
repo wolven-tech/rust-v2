@@ -390,12 +390,47 @@ pub fn breakdown(register: &Register, filters: &Filters, by: GroupBy) -> Breakdo
         }
     }
 
+    paint_arms(&mut buckets);
+
     Breakdown {
         by,
         buckets,
         counted,
         unread,
         untracked,
+    }
+}
+
+/// Give each bucket the step of its arm that matches its position.
+///
+/// Applied once to the finished list rather than inside each arm of the match,
+/// so an axis added later is painted without its author having to know this
+/// exists. A bucket that already carries a colour keeps it: an index bucket's
+/// hue is market identity and outranks position.
+fn paint_arms(buckets: &mut [Bucket]) {
+    // Two steps per arm, not one per bucket. A thin bar needs roughly 0.2 of
+    // OKLCH lightness between fills before a reader sees a step at all, and
+    // each arm has about that much headroom in total before it either collides
+    // with a reserved token or stops clearing its own track. Rendered at four
+    // steps, the neighbours were indistinguishable.
+    const CLEARS: [&str; 2] = ["var(--color-clears-1)", "var(--color-clears-2)"];
+    const MISSES: [&str; 2] = ["var(--color-misses-1)", "var(--color-misses-2)"];
+
+    let mut clears = 0usize;
+    let mut misses = 0usize;
+    for bucket in buckets {
+        let (ramp, at) = if bucket.wanted {
+            clears += 1;
+            (CLEARS.as_slice(), clears - 1)
+        } else {
+            misses += 1;
+            (MISSES.as_slice(), misses - 1)
+        };
+        if bucket.colour.is_none() {
+            // An arm longer than its ramp holds the last step. Wrapping would
+            // put the brightest step on the worst bucket.
+            bucket.colour = Some(ramp[at.min(ramp.len() - 1)].to_string());
+        }
     }
 }
 
@@ -431,6 +466,56 @@ mod tests {
             b.counted,
             r.companies.len(),
             "every company sits in exactly one index bucket"
+        );
+    }
+
+    #[test]
+    fn every_bucket_carries_a_fill_and_the_arms_do_not_share_one() {
+        let r = register();
+        for by in GroupBy::ALL {
+            let b = breakdown(&r, &Filters::default(), by);
+            assert!(
+                b.buckets.iter().all(|x| x.colour.is_some()),
+                "{by:?} left a bucket with no fill, so Bar would fall back and lose the order"
+            );
+
+            let clears: Vec<&str> = b
+                .buckets
+                .iter()
+                .filter(|x| x.wanted)
+                .filter_map(|x| x.colour.as_deref())
+                .collect();
+            let misses: Vec<&str> = b
+                .buckets
+                .iter()
+                .filter(|x| !x.wanted)
+                .filter_map(|x| x.colour.as_deref())
+                .collect();
+            assert!(
+                clears.iter().all(|c| !misses.contains(c)),
+                "{by:?} put one fill on both arms, so the fill stops saying which side a bucket is on"
+            );
+        }
+    }
+
+    #[test]
+    fn the_wanted_arm_descends_from_the_brightest_step() {
+        let r = register();
+        let b = breakdown(&r, &Filters::default(), GroupBy::WorkPattern);
+        let clears: Vec<&str> = b
+            .buckets
+            .iter()
+            .filter(|x| x.wanted)
+            .filter_map(|x| x.colour.as_deref())
+            .collect();
+        assert_eq!(
+            clears.first(),
+            Some(&"var(--color-clears-1)"),
+            "the axis is declared best-first, so the brightest step goes to the first bucket"
+        );
+        assert!(
+            clears.iter().skip(1).all(|c| *c == "var(--color-clears-2)"),
+            "an arm longer than its ramp holds the last step: {clears:?}"
         );
     }
 
