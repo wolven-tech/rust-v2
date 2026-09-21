@@ -115,10 +115,69 @@ fn ci() -> Fallible {
     step("no predecessor database");
     no_predecessor()?;
 
+    step("no hardcoded hues");
+    no_hardcoded_hues()?;
+
     step("wasm32 boundary");
     wasm_boundary()?;
 
     println!("\n\x1b[1;32mall checks passed\x1b[0m");
+    Ok(())
+}
+
+/// Every colour names its job, in every app and in the shared kit.
+///
+/// `apps/hiring` is dark and the other two are light, and all three define the
+/// same token names against their own palettes. A class naming a hue is
+/// therefore correct in at most one of them: `bg-white` on a component in
+/// `rv2-ui` drew a white card on the dark page for as long as nothing checked.
+///
+/// This lives here rather than as a test in one app because it is a scan over
+/// source text. As a test it needed that app's test binary to compile before it
+/// could read a string, and it could only reach the files that app owned —
+/// which is how the other two apps and seven of the kit's files stayed
+/// unscanned. A grep needs neither.
+///
+/// Bare `white` and `black` are included. They carry no shade, so a pattern
+/// built from `{palette}-{shade}` cannot see them, and `bg-white` was the
+/// spelling that actually shipped.
+fn no_hardcoded_hues() -> Fallible {
+    const PALETTES: &str = "slate|gray|zinc|neutral|stone|red|orange|amber|yellow|lime|green|\
+                            emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose";
+    const SHADES: &str = "50|100|200|300|400|500|600|700|800|900|950";
+    const PREFIXES: &str = "bg|text|border|ring|fill|stroke|from|to|via|divide|outline|shadow|\
+                            decoration|placeholder|caret|accent";
+
+    let pattern = format!("({PREFIXES})-(({PALETTES})-({SHADES})|white|black)");
+
+    let output = Command::new("grep")
+        .args([
+            "-rInE",
+            &pattern,
+            "--include=*.rs",
+            "--exclude-dir=target",
+            "--exclude-dir=xtask",
+            "apps",
+            "crates",
+        ])
+        .output()?;
+
+    let offenders: Vec<_> = String::from_utf8_lossy(&output.stdout)
+        .lines()
+        .filter(|line| !line.contains(HUE_OPT_OUT))
+        .map(str::to_string)
+        .collect();
+
+    if !offenders.is_empty() {
+        eprintln!("{}", offenders.join("\n"));
+        return Err(format!(
+            "a colour is named by its hue rather than its job\n         \
+             the token names are in each app's assets/input.css\n         \
+             if a line genuinely needs the word, mark it `{HUE_OPT_OUT}`"
+        )
+        .into());
+    }
+    println!("clean");
     Ok(())
 }
 
@@ -170,6 +229,13 @@ fn styles_are_current() -> Fallible {
 /// It is deliberately ugly and deliberately per-line: an opt-out that is easy
 /// to apply broadly stops being an exception.
 const PREDECESSOR_OPT_OUT: &str = "predecessor-mention-ok";
+
+/// The marker a line may carry to opt out of [`no_hardcoded_hues`].
+///
+/// Same reasoning as [`PREDECESSOR_OPT_OUT`], and the scan's own test fixtures
+/// are the case that forced it: a test asserting that `bg-white` is reported
+/// has to contain the string `bg-white`.
+const HUE_OPT_OUT: &str = "hue-scan-ok";
 
 /// No trace of the predecessor stack, anywhere, documentation included.
 ///

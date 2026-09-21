@@ -50,7 +50,7 @@ pub fn Shell() -> Element {
     });
 
     rsx! {
-        div { class: "min-h-screen bg-slate-50 text-slate-900",
+        div { class: "min-h-screen bg-ground text-ink",
             ProductHeader {
                 brand: PUBLIC_PRODUCT_NAME,
                 brand_href: PUBLIC_SITE_URL,
@@ -77,7 +77,7 @@ pub fn Dashboard() -> Element {
             subtitle: "Everything here is folded from AllSource events. Nothing is fixture data.",
         }
         Card {
-            p { class: "text-sm text-slate-600",
+            p { class: "text-sm text-ink-muted",
                 "The vertical slice lives under Posts: a create appends "
                 code { "content.post.created" }
                 " to AllSource, and the list is served from the "
@@ -171,7 +171,7 @@ pub fn Posts() -> Element {
                             actions: rsx! {
                                 Link {
                                     to: Route::PostDetail { id: post.id },
-                                    class: "text-xs text-slate-500 underline",
+                                    class: "text-xs text-ink-muted underline",
                                     "Open"
                                 }
                             },
@@ -201,7 +201,7 @@ pub fn PostDetail(id: Uuid) -> Element {
 fn PostBody(post: PostView) -> Element {
     rsx! {
         PageHeader { title: post.title.clone() }
-        Card { p { class: "whitespace-pre-wrap text-sm text-slate-700", "{post.content}" } }
+        Card { p { class: "whitespace-pre-wrap text-sm text-ink-muted", "{post.content}" } }
     }
 }
 
@@ -295,7 +295,7 @@ pub fn Login() -> Element {
                     }
                 }
             }
-            p { class: "mt-4 text-xs text-slate-500",
+            p { class: "mt-4 text-xs text-ink-muted",
                 // §5.4 / SEAM in apps/api: OAuth is deliberately not wired in
                 // this scaffold, and saying so beats a button that fails.
                 "Google sign-in is not wired in this scaffold — see the OAuth SEAM note in apps/api."

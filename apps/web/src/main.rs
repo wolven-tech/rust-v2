@@ -160,7 +160,7 @@ fn DiscoveryHead(title: String, description: String, path: &'static str) -> Elem
 #[component]
 fn Shell(current: &'static str, children: Element) -> Element {
     rsx! {
-        div { class: "min-h-screen bg-white text-slate-900",
+        div { class: "min-h-screen bg-surface text-ink",
             ProductHeader {
                 brand: PUBLIC_PRODUCT_NAME,
                 brand_subtitle: "Rust product foundation",
@@ -279,13 +279,13 @@ fn Home() -> Element {
                 }
             }
 
-            Section { class: "bg-slate-50",
+            Section { class: "bg-ground",
                 Container { width: Width::Prose,
                     Heading { "What a write actually costs" }
                     Text { tone: Tone::Muted, class: "mt-2",
                         "Measured on the reference deployment, single node."
                     }
-                    div { class: "mt-6 rounded-lg border border-slate-200 bg-white p-6",
+                    div { class: "mt-6 rounded-lg border border-rule-soft bg-surface p-6",
                         FactList {
                             facts: vec![
                                 Fact::new("Append throughput", "469,000 events/sec"),
@@ -429,12 +429,12 @@ fn Motion() -> Element {
                             aria_label: "Blob mood demonstration",
                             onsubmit: move |event| event.prevent_default(),
                             label { class: "block space-y-1",
-                                span { class: "text-sm font-medium text-slate-700", "Email" }
+                                span { class: "text-sm font-medium text-ink-muted", "Email" }
                                 input {
                                     r#type: "email",
                                     name: "demo_email",
                                     autocomplete: "email",
-                                    class: "w-full rounded-md border border-slate-300 px-3 py-2 text-sm",
+                                    class: "w-full rounded-md border border-rule px-3 py-2 text-sm",
                                     onfocusin: move |_| {
                                         mood.set(Mood::Hmm);
                                         gaze.set((6.0, 3.0));
@@ -442,12 +442,12 @@ fn Motion() -> Element {
                                 }
                             }
                             label { class: "block space-y-1",
-                                span { class: "text-sm font-medium text-slate-700", "Password" }
+                                span { class: "text-sm font-medium text-ink-muted", "Password" }
                                 input {
                                     r#type: "password",
                                     name: "demo_password",
                                     autocomplete: "current-password",
-                                    class: "w-full rounded-md border border-slate-300 px-3 py-2 text-sm",
+                                    class: "w-full rounded-md border border-rule px-3 py-2 text-sm",
                                     onfocusin: move |_| {
                                         mood.set(Mood::Password);
                                         gaze.set((0.0, 0.0));
@@ -465,8 +465,8 @@ fn Motion() -> Element {
                                 ] {
                                     button {
                                         r#type: "button",
-                                        class: "rounded-md border border-slate-300 px-3 py-1 text-xs \
-                                                hover:bg-slate-50",
+                                        class: "rounded-md border border-rule px-3 py-1 text-xs \
+                                                hover:bg-ground",
                                         onclick: move |_| mood.set(value),
                                         "{label}"
                                     }
@@ -491,20 +491,21 @@ fn Motion() -> Element {
                     }
                     Grid { columns: 2, class: "mt-6 items-start gap-8",
                         div { class: "max-w-[320px]",
-                            // Plain elements with explicit light classes, not
-                            // `Heading`/`Text`: those carry their own slate
-                            // colours, which beat the card's inherited
-                            // `text-slate-100` and render dark-on-dark. The card
-                            // is a dark surface, so its contents have to say so.
+                            // Plain elements with explicit on-ink classes, not
+                            // `Heading`/`Text`: those set their own page-scale
+                            // colour, which beats whatever the card inherits and
+                            // renders dark-on-dark. The card is a dark surface
+                            // inside a light app, so its contents take the
+                            // on-ink scale and have to say so themselves.
                             Hologram {
                                 foil: if lights_on() { Foil::Sunburst } else { Foil::Cosmos },
                                 intensity: 0.45,
                                 p {
-                                    class: "text-xs font-semibold uppercase tracking-widest text-slate-300",
+                                    class: "text-xs font-semibold uppercase tracking-widest text-on-ink-faint",
                                     "AllSource"
                                 }
-                                p { class: "mt-1 text-xl font-semibold text-white", "Event, holo rare" }
-                                p { class: "mt-2 text-sm text-slate-200",
+                                p { class: "mt-1 text-xl font-semibold text-on-ink", "Event, holo rare" }
+                                p { class: "mt-2 text-sm text-on-ink-muted",
                                     "Append-only. Folds on read. Never overwrites."
                                 }
                             }
@@ -534,13 +535,13 @@ fn Motion() -> Element {
                     Grid { columns: 3, class: "mt-6 items-start gap-6",
                         div { class: "space-y-3",
                             Crumple { crumpled: crumpled(),
-                                div { class: "rounded-lg border border-slate-200 bg-white p-4 shadow-sm",
+                                div { class: "rounded-lg border border-rule-soft bg-surface p-4 shadow-sm",
                                     Text { "Screw this one up and throw it away." }
                                 }
                             }
                             button {
                                 r#type: "button",
-                                class: "rounded-md border border-slate-300 px-3 py-1 text-xs hover:bg-slate-50",
+                                class: "rounded-md border border-rule px-3 py-1 text-xs hover:bg-ground",
                                 onclick: move |_| crumpled.toggle(),
                                 if crumpled() { "Un-crumple" } else { "Crumple" }
                             }
@@ -549,13 +550,13 @@ fn Motion() -> Element {
                             Vacuum {
                                 active: vacuumed(),
                                 target: ("40px".to_string(), "180px".to_string()),
-                                div { class: "rounded-lg border border-slate-200 bg-white p-4 shadow-sm",
+                                div { class: "rounded-lg border border-rule-soft bg-surface p-4 shadow-sm",
                                     Text { "Sucked toward a point you choose." }
                                 }
                             }
                             button {
                                 r#type: "button",
-                                class: "rounded-md border border-slate-300 px-3 py-1 text-xs hover:bg-slate-50",
+                                class: "rounded-md border border-rule px-3 py-1 text-xs hover:bg-ground",
                                 onclick: move |_| vacuumed.toggle(),
                                 if vacuumed() { "Put it back" } else { "Vacuum" }
                             }
@@ -574,8 +575,8 @@ fn Motion() -> Element {
                         // `class`, which is what left this dark-on-brown before.
                         Fur { tint: "#a16207".to_string(),
                             p {
-                                class: "inline-block rounded-md bg-stone-900 px-3 py-1.5 \
-                                        text-sm font-medium text-amber-50",
+                                class: "inline-block rounded-md bg-ink px-3 py-1.5 \
+                                        text-sm font-medium text-on-ink",
                                 "Hover to ruffle the coat."
                             }
                         }
@@ -637,7 +638,7 @@ fn About() -> Element {
                     }
                 }
             }
-            Section { id: "boundary", class: "bg-slate-50",
+            Section { id: "boundary", class: "bg-ground",
                 Container { width: Width::Prose,
                     Heading { level: 2, size: HeadingSize::Section, "Browser boundary" }
                     Text { class: "mt-3", tone: Tone::Muted,

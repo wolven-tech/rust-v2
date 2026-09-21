@@ -21,10 +21,10 @@ pub fn PostCard(post: PostView, #[props(default)] actions: Option<Element>) -> E
     rsx! {
         Card {
             article {
-                h2 { class: "text-lg font-medium text-slate-900", "{post.title}" }
-                p { class: "mt-1 whitespace-pre-wrap text-sm text-slate-600", "{post.content}" }
+                h2 { class: "text-lg font-medium text-ink", "{post.title}" }
+                p { class: "mt-1 whitespace-pre-wrap text-sm text-ink-muted", "{post.content}" }
                 footer { class: "mt-3 flex items-center justify-between",
-                    time { class: "text-xs text-slate-400", datetime: "{iso}", "{human}" }
+                    time { class: "text-xs text-ink-faint", datetime: "{iso}", "{human}" }
                     div { class: "flex gap-2", {actions} }
                 }
             }
