@@ -12,4 +12,7 @@ publish = false
 # `lib` = macro + html + signals + hooks + document + asset, WITHOUT `launch`,
 # `devtools` or `logger`. A component library must stay renderer-agnostic: the
 # apps pick `web` / `fullstack`, this crate must not pick for them.
-dioxus = { workspace = true, default-features = false, features = ["lib"] }
+dioxus = { workspace = true, default-features = false, features = ["lib", "mounted"] }
+
+[dev-dependencies]
+dioxus-ssr.workspace = true

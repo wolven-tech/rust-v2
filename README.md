@@ -361,6 +361,10 @@ the old state. Do not attempt cursor surgery.
 fork.** Bug-for-bug ports only; never add features. See its `PROVENANCE.md`, and
 the weekly `vendor-check` workflow that opens an issue when it can be deleted.
 
+**`vendor/better-auth` preserves the published 0.10.0 library source.** Its
+manifest removes an unused production YAML dependency and omits upstream
+maintenance tools. [Provenance and removal condition](vendor/better-auth/PROVENANCE.md).
+
 ---
 
 ## Known gaps
@@ -502,6 +506,7 @@ line that everyone reads as "no traffic".
 
 | Document | What it is |
 |---|---|
+| [`docs/plans/2026-10-12-command-select-design.md`](docs/plans/2026-10-12-command-select-design.md) | Shared searchable selection, consumption API, theme variables and keyboard/browser acceptance. |
 | [`docs/architecture/001-rust-v2-allsource-foundation.md`](docs/architecture/001-rust-v2-allsource-foundation.md) | The design. 21 numbered decisions (D1–D21), the risks (R*), and the open questions (OQ-*) that the code comments cite by number. Appendix C records what the scaffold changed; Appendix D corrects D3/D4 on tenant-scoped reads. |
 | [`docs/ledger/allsource-integration-corpus.md`](docs/ledger/allsource-integration-corpus.md) | The frozen list of AllSource behaviours this integration depends on (B1–B21), which are asserted, and the loop that asserted them. |
 | [`docs/ledger/component-kit-autoresearch.md`](docs/ledger/component-kit-autoresearch.md) | How `rv2-ui` got its scope and why the bundle is the size it is. |

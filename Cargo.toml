@@ -21,6 +21,10 @@ members = [
   "tooling/xtask",
 ]
 resolver = "3"
+exclude = ["vendor/better-auth"]
+
+[patch.crates-io]
+better-auth = { path = "vendor/better-auth" }
 
 [workspace.package]
 edition = "2024"
