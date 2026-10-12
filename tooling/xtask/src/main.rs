@@ -269,6 +269,21 @@ fn no_predecessor() -> Fallible {
     let offenders: Vec<_> = String::from_utf8_lossy(&output.stdout)
         .lines()
         .filter(|line| !line.contains(PREDECESSOR_OPT_OUT))
+        .filter(|line| {
+            let mut parts = line.splitn(3, ':');
+            let file = parts.next().unwrap_or("");
+            let _ = parts.next();
+            let text = parts.next().unwrap_or("").trim();
+            // Preserve licensed upstream source; cargo-deny bans the unused adapter.
+            !matches!(
+                (file, text),
+                ("./vendor/better-auth/src/lib.rs", "#[cfg(feature = \"sqlx-postgres\")]")
+                    | ("./vendor/better-auth/Cargo.toml", "sqlx-postgres = [\"dep:sqlx\", \"better-auth-core/sqlx-postgres\"]")
+                    | ("./vendor/better-auth/Cargo.toml", "sqlx = { version = \"0.8\", optional = true, features = [\"runtime-tokio-rustls\", \"postgres\", \"chrono\", \"uuid\", \"json\"] }")
+                    | ("./vendor/better-auth/README.md", "| `sqlx-postgres` | PostgreSQL database support via SQLx |")
+                    | ("./vendor/better-auth/README.md", "cargo run --example postgres_usage --features sqlx-postgres")
+            )
+        })
         .map(str::to_string)
         .collect();
 

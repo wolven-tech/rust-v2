@@ -79,6 +79,7 @@ deny = [
   # reachable from the frontends.
   { name = "openssl-sys" },
   { name = "native-tls" },
+  { name = "sqlx" }, # Optional upstream adapter must stay outside the runtime graph.
 ]
 
 [sources]

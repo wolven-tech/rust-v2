@@ -3,7 +3,7 @@
 //! **Layer 2, WASM-safe.** This is a **rewrite** of rust-v1's `packages/ui`
 //! (shadcn/React), not a port — there is no mechanical path from JSX to RSX.
 //!
-//! The crate takes `dioxus` with `default-features = false, features = ["lib"]`
+//! The crate takes `dioxus` with `default-features = false` and `lib`/`mounted`
 //! deliberately: a component library must not decide the renderer. `apps/app`
 //! adds `web`, `apps/web` adds `fullstack`.
 //!
@@ -53,6 +53,7 @@
 #![forbid(unsafe_code)]
 #![allow(non_snake_case)] // Dioxus components are PascalCase by convention.
 
+pub mod command_select;
 pub mod feedback;
 pub mod form;
 pub mod layout;
@@ -63,6 +64,7 @@ pub mod site;
 pub mod tabs;
 pub mod typography;
 
+pub use crate::command_select::CommandSelect;
 pub use crate::feedback::{Card, EmptyState, ErrorBanner, PageHeader, Skeleton};
 pub use crate::form::{Checkbox, FieldSet, Select, TextArea, TextField};
 pub use crate::layout::{Container, Divider, Grid, Row, Section, Space, Stack, Width};
