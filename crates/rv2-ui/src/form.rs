@@ -1,14 +1,49 @@
 //! Form controls.
 
+use dioxus::core::current_scope_id;
 use dioxus::prelude::*;
 
 const FIELD_BASE: &str = "w-full rounded-md border border-rule px-3 py-2 text-sm \
                           focus:outline-none focus:ring-2 focus:ring-accent";
 
+/// IDs of the nonempty messages rendered by [`FieldShell`].
+pub fn field_description(id: &str, help: Option<&str>, error: Option<&str>) -> Option<String> {
+    let mut ids = Vec::new();
+    if help.is_some_and(|v| !v.trim().is_empty()) {
+        ids.push(format!("{id}-help"));
+    }
+    if error.is_some_and(|v| !v.trim().is_empty()) {
+        ids.push(format!("{id}-error"));
+    }
+    (!ids.is_empty()).then(|| ids.join(" "))
+}
+
+/// Labels a custom control whose ID and description attributes the caller binds.
+#[component]
+pub fn FieldShell(
+    id: String,
+    label: String,
+    #[props(default)] help: Option<String>,
+    #[props(default)] error: Option<String>,
+    children: Element,
+) -> Element {
+    rsx! {
+        div { class: "rv2-field block space-y-1", "data-experience-component": "field",
+            label { r#for: "{id}", class: "text-sm font-medium text-ink", "{label}" }
+            {children}
+            if let Some(text) = help.filter(|s| !s.trim().is_empty()) { p { id: "{id}-help", class: "text-sm text-ink-muted", "{text}" } }
+            if let Some(message) = error.filter(|s| !s.trim().is_empty()) { p { id: "{id}-error", class: "text-sm text-fault-ink", role: "alert", "{message}" } }
+        }
+    }
+}
+
 #[component]
 pub fn TextField(
     label: String,
     value: String,
+    #[props(default)] id: Option<String>,
+    #[props(default)] help: Option<String>,
+    #[props(default = false)] disabled: bool,
     #[props(default)] placeholder: String,
     #[props(default = "text".to_string())] r#type: String,
     /// The `name` attribute.
@@ -34,10 +69,15 @@ pub fn TextField(
     error: Option<String>,
     oninput: EventHandler<FormEvent>,
 ) -> Element {
+    let id = id.unwrap_or_else(|| format!("rv2-field-{}", current_scope_id().0));
+    let description = field_description(&id, help.as_deref(), error.as_deref());
+    let invalid = error.as_ref().is_some_and(|v| !v.trim().is_empty());
     rsx! {
-        label { class: "block space-y-1",
-            span { class: "text-sm font-medium text-ink", "{label}" }
+        FieldShell { id: id.clone(), label, help, error,
             input {
+                id,
+                "aria-describedby": description,
+                "aria-invalid": invalid,
                 class: "{FIELD_BASE}",
                 r#type: "{r#type}",
                 value: "{value}",
@@ -45,10 +85,8 @@ pub fn TextField(
                 name: name.unwrap_or_default(),
                 autocomplete: autocomplete.unwrap_or_default(),
                 required,
+                disabled,
                 oninput: move |event| oninput.call(event),
-            }
-            if let Some(message) = error {
-                span { class: "text-xs text-fault-ink", role: "alert", "{message}" }
             }
         }
     }
@@ -58,23 +96,29 @@ pub fn TextField(
 pub fn TextArea(
     label: String,
     value: String,
+    #[props(default)] id: Option<String>,
+    #[props(default)] help: Option<String>,
+    #[props(default = false)] disabled: bool,
     #[props(default = 6)] rows: u32,
     #[props(default)] placeholder: String,
     #[props(default)] error: Option<String>,
     oninput: EventHandler<FormEvent>,
 ) -> Element {
+    let id = id.unwrap_or_else(|| format!("rv2-field-{}", current_scope_id().0));
+    let description = field_description(&id, help.as_deref(), error.as_deref());
+    let invalid = error.as_ref().is_some_and(|v| !v.trim().is_empty());
     rsx! {
-        label { class: "block space-y-1",
-            span { class: "text-sm font-medium text-ink", "{label}" }
+        FieldShell { id: id.clone(), label, help, error,
             textarea {
+                id,
+                "aria-describedby": description,
+                "aria-invalid": invalid,
+                disabled,
                 class: "{FIELD_BASE}",
                 rows: "{rows}",
                 placeholder: "{placeholder}",
                 value: "{value}",
                 oninput: move |event| oninput.call(event),
-            }
-            if let Some(message) = error {
-                span { class: "text-xs text-fault-ink", role: "alert", "{message}" }
             }
         }
     }

@@ -56,6 +56,7 @@ pub fn Button(
     #[props(default)] variant: Variant,
     #[props(default)] size: Size,
     #[props(default = false)] disabled: bool,
+    #[props(default = false)] busy: bool,
     #[props(default = "button".to_string())] r#type: String,
     #[props(default)] class: String,
     #[props(default)] onclick: Option<EventHandler<MouseEvent>>,
@@ -66,9 +67,10 @@ pub fn Button(
         button {
             class: "{CONTROL_BASE} {variant} {size} {class}",
             r#type: "{r#type}",
-            disabled,
+            disabled: disabled || busy,
+            "aria-busy": busy,
             onclick: move |event| {
-                if let Some(handler) = &onclick {
+                if !disabled && !busy && let Some(handler) = &onclick {
                     handler.call(event);
                 }
             },

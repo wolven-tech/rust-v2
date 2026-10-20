@@ -506,6 +506,7 @@ line that everyone reads as "no traffic".
 
 | Document | What it is |
 |---|---|
+| [`docs/design-system/field-and-action-contracts.md`](docs/design-system/field-and-action-contracts.md) | Shared field labels, help/error associations, typed-control composition, busy actions and verification limits. |
 | [`docs/plans/2026-10-12-command-select-design.md`](docs/plans/2026-10-12-command-select-design.md) | Shared searchable selection, consumption API, theme variables and keyboard/browser acceptance. |
 | [`docs/architecture/001-rust-v2-allsource-foundation.md`](docs/architecture/001-rust-v2-allsource-foundation.md) | The design. 21 numbered decisions (D1–D21), the risks (R*), and the open questions (OQ-*) that the code comments cite by number. Appendix C records what the scaffold changed; Appendix D corrects D3/D4 on tenant-scoped reads. |
 | [`docs/ledger/allsource-integration-corpus.md`](docs/ledger/allsource-integration-corpus.md) | The frozen list of AllSource behaviours this integration depends on (B1–B21), which are asserted, and the loop that asserted them. |

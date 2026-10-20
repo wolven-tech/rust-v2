@@ -15,7 +15,7 @@
 //!
 //! Deliberately shadcn-shaped but **minimal**: the set was fixed by auditing a
 //! real marketing page rather than by porting a component catalogue. Everything
-//! here is used by `apps/web` or `apps/app`. There is no modal, tab, tooltip,
+//! here is used by `apps/web` or `apps/app`. There is no modal, tooltip,
 //! carousel or date picker, because no page needs one yet — an unused component
 //! is bundle weight and maintenance cost with nothing on the other side of the
 //! ledger.
@@ -66,7 +66,9 @@ pub mod typography;
 
 pub use crate::command_select::CommandSelect;
 pub use crate::feedback::{Card, EmptyState, ErrorBanner, PageHeader, Skeleton};
-pub use crate::form::{Checkbox, FieldSet, Select, TextArea, TextField};
+pub use crate::form::{
+    Checkbox, FieldSet, FieldShell, Select, TextArea, TextField, field_description,
+};
 pub use crate::layout::{Container, Divider, Grid, Row, Section, Space, Stack, Width};
 pub use crate::motion::{
     Blob, Crumple, Foil, Fur, GradientBuilder, Hologram, Mood, PullCord, Vacuum,
