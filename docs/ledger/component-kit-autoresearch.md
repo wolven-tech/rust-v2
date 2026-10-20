@@ -193,7 +193,7 @@ are recorded in `docs/plans/2026-09-09-product-shell-patterns-design.md` and
 Two things this ledger states no longer hold, recorded here rather than edited
 above, because the rows above are what was measured at the time.
 
-- **"29 components" and "light-mode only".** `apps/hiring` added a dark theme
+- **"29 components" and "light-mode only".** `apps/hiring` (since removed) added a dark theme
   and the kit grew form controls, `Tabs`, `CommandSelect`, the product shell and
   the motion showcase.
 - **Scope by audit alone.** The kit is now governed by
