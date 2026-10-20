@@ -1,9 +1,17 @@
 //! A tab list, controlled by its caller.
 //!
-//! The visual design — the two variants, the underline drawn as an `::after`
-//! rather than a border, and the orientation groups — is adapted from the
-//! Rust/UI registry (MIT, <https://github.com/rust-ui/ui>). Three things are
+//! The visual design — a raised pill on a filled track — is adapted from the
+//! Rust/UI registry (MIT, <https://github.com/rust-ui/ui>). Four things are
 //! deliberately different here.
+//!
+//! **It speaks this kit's registers.** Upstream writes shadcn's names
+//! (`bg-muted`, `ring-ring`, `text-foreground`). Those stay defined as aliases
+//! for borrowed code, but code the kit owns uses the canonical names (UI4 in
+//! `docs/architecture/003-ui-semantic-isa.md`), so one concept has one spelling
+//! across the crate.
+//!
+//! Upstream's underline variant is gone: nothing used it, and an operand with no
+//! consumer is a code path nobody looks at (UI8).
 //!
 //! **It is controlled.** The upstream component owns the active value in its
 //! own signal. A page whose view lives in the URL would then have two sources
@@ -21,16 +29,6 @@
 //! and the arrow keys are added here, per the WAI-ARIA tabs pattern.
 
 use dioxus::prelude::*;
-
-/// How a tab list draws the current tab.
-#[derive(Clone, Copy, PartialEq, Eq, Default, Debug)]
-pub enum TabsVariant {
-    /// A raised pill on a filled track.
-    #[default]
-    Pill,
-    /// A rule under the current tab, on no track at all.
-    Line,
-}
 
 /// One selectable tab.
 #[derive(Clone, PartialEq, Eq, Debug)]
@@ -66,16 +64,8 @@ pub fn Tabs(
     label: String,
     controls: String,
     onselect: EventHandler<String>,
-    #[props(default)] variant: TabsVariant,
     #[props(default)] class: String,
 ) -> Element {
-    let line = variant == TabsVariant::Line;
-    let track = if line {
-        "gap-1 bg-transparent p-0"
-    } else {
-        "bg-muted rounded-lg p-[3px]"
-    };
-
     // The roving tabindex needs the index of the current tab, and a value no
     // tab carries — a URL naming a view that no longer exists — must still
     // leave one stop reachable.
@@ -83,7 +73,7 @@ pub fn Tabs(
 
     rsx! {
         div {
-            class: "inline-flex w-fit items-center justify-center text-sm text-muted-foreground {track} {class}",
+            class: "inline-flex w-fit items-center justify-center rounded-lg bg-raised p-[3px] text-sm text-ink-muted {class}",
             role: "tablist",
             aria_label: "{label}",
             for (index , tab) in tabs.iter().enumerate() {
@@ -92,7 +82,6 @@ pub fn Tabs(
                     tab: tab.clone(),
                     selected: index == current,
                     focusable: index == current,
-                    line,
                     controls: controls.clone(),
                     onselect,
                     onmove: {
@@ -130,7 +119,6 @@ fn TabsTrigger(
     tab: Tab,
     selected: bool,
     focusable: bool,
-    line: bool,
     controls: String,
     onselect: EventHandler<String>,
     onmove: EventHandler<TabStep>,
@@ -139,23 +127,12 @@ fn TabsTrigger(
     // Upstream fills it with `background`, which on a light theme lifts the tab
     // out of a grey track — and on a dark one is darker than the track, so the
     // current tab reads as sunken and the least emphatic thing in the row.
-    // `primary` is the pair that inverts with the theme instead of assuming
-    // one.
-    let tone = match (selected, line) {
-        (true, false) => "bg-primary text-primary-foreground border-transparent",
-        (true, true) => "text-foreground border-transparent",
-        (false, _) => "text-foreground/60 hover:text-foreground border-transparent",
-    };
-    // The rule is an `::after` rather than a bottom border so that turning it
-    // on and off cannot change the trigger's height and shift the row.
-    let rule = if line {
-        if selected {
-            "after:absolute after:inset-x-0 after:-bottom-px after:h-0.5 after:bg-foreground"
-        } else {
-            "after:absolute after:inset-x-0 after:-bottom-px after:h-0.5 after:bg-transparent"
-        }
+    // `ink` / `on-ink` is the pair that inverts with the theme instead of
+    // assuming one.
+    let tone = if selected {
+        "bg-ink text-on-ink border-transparent"
     } else {
-        ""
+        "text-ink/60 hover:text-ink border-transparent"
     };
 
     let value = tab.value.clone();
@@ -163,7 +140,7 @@ fn TabsTrigger(
     rsx! {
         button {
             r#type: "button",
-            class: "relative inline-flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-md border px-3 py-1.5 font-medium whitespace-nowrap select-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none {tone} {rule}",
+            class: "relative inline-flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-md border px-3 py-1.5 font-medium whitespace-nowrap select-none focus-visible:border-accent focus-visible:ring-[3px] focus-visible:ring-accent/50 focus-visible:outline-none {tone}",
             role: "tab",
             id: "tab-{tab.value}",
             aria_selected: "{selected}",

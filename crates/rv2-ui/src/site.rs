@@ -4,37 +4,21 @@
 //! hero, feature-card grid, step list, pricing block, cost breakdown, FAQ, and
 //! footer. Stable responsive navigation now lives in [`crate::product_shell`].
 //! This module has no modal, tab, tooltip or carousel because no page needs one.
+//!
+//! Every composite here is built from the kit's own atoms — [`Heading`],
+//! [`Text`], [`Eyebrow`], [`Card`], [`Container`] — and never restates their
+//! classes (UI6 in `docs/architecture/003-ui-semantic-isa.md`). They used to:
+//! `Hero` re-typed the display heading, and the two cards were hand-made
+//! surfaces at their own paddings, so changing an atom changed only half its
+//! uses.
 
 use dioxus::prelude::*;
 
+use crate::feedback::{Card, Pad};
+use crate::layout::Container;
 use crate::primitives::StepMarker;
-
-/// One entry in a [`Footer`] column.
-#[derive(Debug, Clone, PartialEq)]
-pub struct NavItem {
-    pub label: String,
-    pub href: String,
-    /// Opens in a new tab with `rel="noopener noreferrer"`.
-    pub external: bool,
-}
-
-impl NavItem {
-    pub fn new(label: impl Into<String>, href: impl Into<String>) -> Self {
-        Self {
-            label: label.into(),
-            href: href.into(),
-            external: false,
-        }
-    }
-
-    pub fn external(label: impl Into<String>, href: impl Into<String>) -> Self {
-        Self {
-            label: label.into(),
-            href: href.into(),
-            external: true,
-        }
-    }
-}
+use crate::product_shell::NavLink;
+use crate::typography::{Eyebrow, Heading, HeadingSize, Text, Tone};
 
 /// Above-the-fold headline block.
 ///
@@ -56,11 +40,11 @@ pub fn Hero(
         div { class: "grid items-center gap-10 lg:grid-cols-2",
             div { class: "flex flex-col gap-5",
                 if let Some(eyebrow) = eyebrow {
-                    p { class: "text-xs font-medium uppercase tracking-widest text-ink-muted", "{eyebrow}" }
+                    Eyebrow { "{eyebrow}" }
                 }
-                h1 { class: "text-4xl font-semibold tracking-tight text-ink sm:text-5xl", "{headline}" }
+                Heading { level: 1, size: HeadingSize::Display, "{headline}" }
                 if let Some(subheadline) = subheadline {
-                    p { class: "text-lg text-ink-muted", "{subheadline}" }
+                    Text { tone: Tone::Lead, "{subheadline}" }
                 }
                 if let Some(actions) = actions {
                     div { class: "flex flex-wrap items-center gap-3 pt-2", {actions} }
@@ -84,12 +68,12 @@ pub fn FeatureCard(
     action: Option<Element>,
 ) -> Element {
     rsx! {
-        div { class: "flex h-full flex-col gap-3 rounded-lg border border-rule-soft bg-surface p-6",
+        Card { pad: Pad::Roomy, class: "flex h-full flex-col gap-3",
             if let Some(step) = step {
                 StepMarker { n: step }
             }
-            h3 { class: "text-base font-semibold text-ink", "{title}" }
-            p { class: "flex-1 text-sm text-ink-muted", "{body}" }
+            Heading { level: 3, size: HeadingSize::Card, "{title}" }
+            Text { tone: Tone::Muted, class: "flex-1", "{body}" }
             if let Some(action) = action {
                 div { class: "pt-1", {action} }
             }
@@ -126,8 +110,8 @@ pub fn StepList(steps: Vec<Step>) -> Element {
                 li { class: "flex gap-4",
                     StepMarker { n: (index + 1) as u8 }
                     div { class: "flex flex-col gap-1",
-                        h3 { class: "text-base font-semibold text-ink", "{step.title}" }
-                        p { class: "text-sm text-ink-muted", "{step.body}" }
+                        Heading { level: 3, size: HeadingSize::Card, "{step.title}" }
+                        Text { tone: Tone::Muted, "{step.body}" }
                     }
                 }
             }
@@ -197,9 +181,9 @@ pub fn PricingCard(
     #[props(default)] note: Option<String>,
 ) -> Element {
     rsx! {
-        div { class: "flex flex-col gap-5 rounded-lg border border-rule-soft bg-surface p-8",
+        Card { pad: Pad::Roomy, class: "flex flex-col gap-5",
             if let Some(title) = title {
-                h3 { class: "text-base font-semibold text-ink", "{title}" }
+                Heading { level: 3, size: HeadingSize::Card, "{title}" }
             }
             div { class: "flex items-baseline gap-2",
                 span { class: "text-4xl font-semibold tracking-tight tabular-nums text-ink", "{price}" }
@@ -221,7 +205,7 @@ pub fn PricingCard(
                 div { {action} }
             }
             if let Some(note) = note {
-                p { class: "text-xs text-ink-muted", "{note}" }
+                Text { tone: Tone::Small, "{note}" }
             }
         }
     }
@@ -278,11 +262,11 @@ pub fn Faq(items: Vec<QandA>) -> Element {
 #[derive(Debug, Clone, PartialEq)]
 pub struct FooterColumn {
     pub title: String,
-    pub items: Vec<NavItem>,
+    pub items: Vec<NavLink>,
 }
 
 impl FooterColumn {
-    pub fn new(title: impl Into<String>, items: Vec<NavItem>) -> Self {
+    pub fn new(title: impl Into<String>, items: Vec<NavLink>) -> Self {
         Self {
             title: title.into(),
             items,
@@ -300,7 +284,7 @@ pub fn Footer(
 ) -> Element {
     rsx! {
         footer { class: "border-t border-rule-soft bg-surface",
-            div { class: "mx-auto max-w-5xl px-6 py-12",
+            Container { class: "py-12",
                 if !columns.is_empty() {
                     div { class: "grid grid-cols-2 gap-8 sm:grid-cols-3 lg:grid-cols-4",
                         for column in columns.iter() {

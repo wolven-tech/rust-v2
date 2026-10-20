@@ -9,6 +9,12 @@
 use dioxus::prelude::*;
 
 /// Visual size of a [`Heading`], independent of its semantic level.
+///
+/// The three larger sizes set `font-display` and `font-heading`, which the
+/// kit's theme points at the body family at semibold. An app with a display
+/// face — `apps/hiring`'s condensed one — sets `--font-display` and
+/// `--font-weight-heading` and every heading follows, instead of each call site
+/// spelling the family and weight.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum HeadingSize {
     /// Hero headline.
@@ -16,6 +22,8 @@ pub enum HeadingSize {
     #[default]
     /// Section heading.
     Section,
+    /// The name of one entry in a list of them, or of a single item's page.
+    Title,
     /// Card or sub-section heading.
     Card,
 }
@@ -23,8 +31,9 @@ pub enum HeadingSize {
 impl HeadingSize {
     fn classes(self) -> &'static str {
         match self {
-            HeadingSize::Display => "text-4xl sm:text-5xl font-semibold tracking-tight",
-            HeadingSize::Section => "text-2xl sm:text-3xl font-semibold tracking-tight",
+            HeadingSize::Display => "font-display font-heading text-4xl sm:text-5xl tracking-tight",
+            HeadingSize::Section => "font-display font-heading text-2xl sm:text-3xl tracking-tight",
+            HeadingSize::Title => "font-display font-heading text-xl sm:text-2xl leading-tight",
             HeadingSize::Card => "text-base font-semibold",
         }
     }
@@ -53,6 +62,13 @@ pub fn Heading(
 }
 
 /// Body text tone.
+///
+/// The tone owns the paragraph's colour, and a `class` passed to [`Text`]
+/// cannot override it reliably: two colour utilities on one element resolve by
+/// stylesheet order, not by which was written last. So a paragraph that needs
+/// a different colour needs a tone, not a class (UI5). `OnInk` is the one that
+/// was missing — secondary text on an ink-filled plate, which `apps/web` had
+/// been writing by hand because `Text` kept painting it dark-on-dark.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum Tone {
     #[default]
@@ -60,6 +76,7 @@ pub enum Tone {
     Muted,
     Small,
     Lead,
+    OnInk,
 }
 
 impl Tone {
@@ -69,6 +86,7 @@ impl Tone {
             Tone::Muted => "text-sm text-ink-muted",
             Tone::Small => "text-xs text-ink-muted",
             Tone::Lead => "text-lg text-ink-muted",
+            Tone::OnInk => "text-sm text-on-ink-muted",
         }
     }
 }

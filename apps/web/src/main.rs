@@ -25,11 +25,11 @@
 
 use dioxus::prelude::*;
 use rv2_ui::{
-    ArrowLink, Blob, Container, Crumple, Divider, Eyebrow, Fact, FactList, Faq, FeatureCard, Foil,
-    Footer, FooterColumn, Fur, GradientBuilder, Grid, Heading, HeadingSize, Hero, Hologram,
-    LinkButton, Mood, NavItem, NavigationRail, PageEntrance, PricingCard, ProcessRail, ProcessStep,
-    ProductHeader, ProductHeaderAction, ProductNavItem, PullCord, QandA, Section, Size, Space,
-    Step, StepList, Text, Tone, Vacuum, Width,
+    ArrowLink, Blob, Button, Card, Container, Crumple, Divider, Eyebrow, Fact, FactList, Faq,
+    FeatureCard, Foil, Footer, FooterColumn, Fur, GradientBuilder, Grid, Heading, HeadingSize,
+    Hero, Hologram, LinkButton, Mood, NavLink, NavigationRail, Pad, PageEntrance, PricingCard,
+    ProcessRail, ProcessStep, ProductHeader, PullCord, QandA, Section, Size, Space, Step, StepList,
+    Text, TextField, Tone, Vacuum, Variant, Width,
 };
 
 const TAILWIND: Asset = asset!("/assets/tailwind.css");
@@ -165,12 +165,12 @@ fn Shell(current: &'static str, children: Element) -> Element {
                 brand: PUBLIC_PRODUCT_NAME,
                 brand_subtitle: "Rust product foundation",
                 items: vec![
-                    ProductNavItem::new("home", "Home", "/"),
-                    ProductNavItem::new("motion", "Motion", "/motion"),
-                    ProductNavItem::new("about", "About", "/about"),
+                    NavLink::route("home", "Home", "/"),
+                    NavLink::route("motion", "Motion", "/motion"),
+                    NavLink::route("about", "About", "/about"),
                 ],
                 current: current,
-                action: ProductHeaderAction::new("Open app", PUBLIC_APP_URL),
+                action: NavLink::new("Open app", PUBLIC_APP_URL),
             }
             main { PageEntrance { {children} } }
             Footer {
@@ -178,21 +178,21 @@ fn Shell(current: &'static str, children: Element) -> Element {
                     FooterColumn::new(
                         "Product",
                         vec![
-                            NavItem::new("How it works", "/#how-it-works"),
-                            NavItem::new("Pricing", "/#pricing"),
-                            NavItem::new("FAQ", "/#faq"),
+                            NavLink::new("How it works", "/#how-it-works"),
+                            NavLink::new("Pricing", "/#pricing"),
+                            NavLink::new("FAQ", "/#faq"),
                         ],
                     ),
                     FooterColumn::new(
                         "Legal",
                         vec![
-                            NavItem::new("Privacy", "/privacy"),
-                            NavItem::new("Terms", "/terms"),
+                            NavLink::new("Privacy", "/privacy"),
+                            NavLink::new("Terms", "/terms"),
                         ],
                     ),
                     FooterColumn::new(
                         "Elsewhere",
-                        vec![NavItem::external("AllSource", "https://github.com/all-source-os/all-source")],
+                        vec![NavLink::new("AllSource", "https://github.com/all-source-os/all-source").external()],
                     ),
                 ],
                 note: rsx! {
@@ -285,7 +285,7 @@ fn Home() -> Element {
                     Text { tone: Tone::Muted, class: "mt-2",
                         "Measured on the reference deployment, single node."
                     }
-                    div { class: "mt-6 rounded-lg border border-rule-soft bg-surface p-6",
+                    Card { pad: Pad::Roomy, class: "mt-6",
                         FactList {
                             facts: vec![
                                 Fact::new("Append throughput", "469,000 events/sec"),
@@ -373,6 +373,9 @@ fn Motion() -> Element {
     let mut mood = use_signal(|| Mood::Neutral);
     let mut gaze = use_signal(|| (0.0_f32, 0.0_f32));
     let mut fed_up = use_signal(|| false);
+    // Held only so the demo fields are controlled, like every `TextField`.
+    let mut demo_email = use_signal(String::new);
+    let mut demo_password = use_signal(String::new);
 
     // Dismissal demos.
     let mut crumpled = use_signal(|| false);
@@ -428,31 +431,32 @@ fn Motion() -> Element {
                             class: "space-y-3",
                             aria_label: "Blob mood demonstration",
                             onsubmit: move |event| event.prevent_default(),
-                            label { class: "block space-y-1",
-                                span { class: "text-sm font-medium text-ink-muted", "Email" }
-                                input {
-                                    r#type: "email",
-                                    name: "demo_email",
-                                    autocomplete: "email",
-                                    class: "w-full rounded-md border border-rule px-3 py-2 text-sm",
-                                    onfocusin: move |_| {
-                                        mood.set(Mood::Hmm);
-                                        gaze.set((6.0, 3.0));
-                                    },
-                                }
+                            // `TextField`, not hand-made inputs: the copies these
+                            // replaced had dropped the field's focus ring, on a
+                            // demo whose whole point is reacting to focus.
+                            TextField {
+                                label: "Email",
+                                r#type: "email",
+                                name: "demo_email",
+                                autocomplete: "email",
+                                value: demo_email(),
+                                oninput: move |event: FormEvent| demo_email.set(event.value()),
+                                onfocusin: move |_| {
+                                    mood.set(Mood::Hmm);
+                                    gaze.set((6.0, 3.0));
+                                },
                             }
-                            label { class: "block space-y-1",
-                                span { class: "text-sm font-medium text-ink-muted", "Password" }
-                                input {
-                                    r#type: "password",
-                                    name: "demo_password",
-                                    autocomplete: "current-password",
-                                    class: "w-full rounded-md border border-rule px-3 py-2 text-sm",
-                                    onfocusin: move |_| {
-                                        mood.set(Mood::Password);
-                                        gaze.set((0.0, 0.0));
-                                    },
-                                }
+                            TextField {
+                                label: "Password",
+                                r#type: "password",
+                                name: "demo_password",
+                                autocomplete: "current-password",
+                                value: demo_password(),
+                                oninput: move |event: FormEvent| demo_password.set(event.value()),
+                                onfocusin: move |_| {
+                                    mood.set(Mood::Password);
+                                    gaze.set((0.0, 0.0));
+                                },
                             }
                             div { class: "flex flex-wrap gap-2 pt-2",
                                 for (label , value) in [
@@ -463,10 +467,9 @@ fn Motion() -> Element {
                                     ("Hmm", Mood::Hmm),
                                     ("Side eye", Mood::SideEye),
                                 ] {
-                                    button {
-                                        r#type: "button",
-                                        class: "rounded-md border border-rule px-3 py-1 text-xs \
-                                                hover:bg-ground",
+                                    Button {
+                                        variant: Variant::Outline,
+                                        size: Size::Small,
                                         onclick: move |_| mood.set(value),
                                         "{label}"
                                     }
@@ -491,12 +494,14 @@ fn Motion() -> Element {
                     }
                     Grid { columns: 2, class: "mt-6 items-start gap-8",
                         div { class: "max-w-[320px]",
-                            // Plain elements with explicit on-ink classes, not
-                            // `Heading`/`Text`: those set their own page-scale
-                            // colour, which beats whatever the card inherits and
-                            // renders dark-on-dark. The card is a dark surface
-                            // inside a light app, so its contents take the
-                            // on-ink scale and have to say so themselves.
+                            // The card is a dark surface inside a light app, so
+                            // its contents take the on-ink scale. `Heading` and
+                            // `Text` set their own page-scale colour, which beats
+                            // whatever the card inherits and once rendered this
+                            // dark-on-dark, so the body takes `Tone::OnInk` — the
+                            // operand that was missing — and the two lines above
+                            // it stay plain: one card is not yet a reason for an
+                            // on-ink eyebrow and heading in the kit (UI8).
                             Hologram {
                                 foil: if lights_on() { Foil::Sunburst } else { Foil::Cosmos },
                                 intensity: 0.45,
@@ -505,7 +510,7 @@ fn Motion() -> Element {
                                     "AllSource"
                                 }
                                 p { class: "mt-1 text-xl font-semibold text-on-ink", "Event, holo rare" }
-                                p { class: "mt-2 text-sm text-on-ink-muted",
+                                Text { tone: Tone::OnInk, class: "mt-2",
                                     "Append-only. Folds on read. Never overwrites."
                                 }
                             }
@@ -535,13 +540,13 @@ fn Motion() -> Element {
                     Grid { columns: 3, class: "mt-6 items-start gap-6",
                         div { class: "space-y-3",
                             Crumple { crumpled: crumpled(),
-                                div { class: "rounded-lg border border-rule-soft bg-surface p-4 shadow-sm",
+                                Card {
                                     Text { "Screw this one up and throw it away." }
                                 }
                             }
-                            button {
-                                r#type: "button",
-                                class: "rounded-md border border-rule px-3 py-1 text-xs hover:bg-ground",
+                            Button {
+                                variant: Variant::Outline,
+                                size: Size::Small,
                                 onclick: move |_| crumpled.toggle(),
                                 if crumpled() { "Un-crumple" } else { "Crumple" }
                             }
@@ -550,13 +555,13 @@ fn Motion() -> Element {
                             Vacuum {
                                 active: vacuumed(),
                                 target: ("40px".to_string(), "180px".to_string()),
-                                div { class: "rounded-lg border border-rule-soft bg-surface p-4 shadow-sm",
+                                Card {
                                     Text { "Sucked toward a point you choose." }
                                 }
                             }
-                            button {
-                                r#type: "button",
-                                class: "rounded-md border border-rule px-3 py-1 text-xs hover:bg-ground",
+                            Button {
+                                variant: Variant::Outline,
+                                size: Size::Small,
                                 onclick: move |_| vacuumed.toggle(),
                                 if vacuumed() { "Put it back" } else { "Vacuum" }
                             }
@@ -571,8 +576,9 @@ fn Motion() -> Element {
                         // ruffles. A caption whose legibility depends on which
                         // strand it lands on is not AA at any moment.
                         //
-                        // `Text` is not used: its tone classes beat a passed
-                        // `class`, which is what left this dark-on-brown before.
+                        // A plain `p`, not `Text`: this is a filled chip — an
+                        // `ink` plate with `on-ink` text — not body copy, and
+                        // `Text`'s tone colour once left it dark-on-brown.
                         Fur { tint: "#a16207".to_string(),
                             p {
                                 class: "inline-block rounded-md bg-ink px-3 py-1.5 \
@@ -621,9 +627,9 @@ fn About() -> Element {
                     NavigationRail {
                         label: "About sections",
                         items: vec![
-                            ProductNavItem::new("foundation", "01 Foundation", "#foundation"),
-                            ProductNavItem::new("boundary", "02 Browser boundary", "#boundary"),
-                            ProductNavItem::new("release", "03 Release gate", "#release"),
+                            NavLink::new("01 Foundation", "#foundation"),
+                            NavLink::new("02 Browser boundary", "#boundary"),
+                            NavLink::new("03 Release gate", "#release"),
                         ],
                     }
                 }

@@ -1,17 +1,30 @@
 /* Shared product-shell contract. Products override semantic custom properties
- * at their shell boundary; component geometry and accessibility stay shared. */
+ * at their shell boundary; component geometry and accessibility stay shared.
+ *
+ * Each hook that has a register defaults to it (UI3 in
+ * docs/architecture/003-ui-semantic-isa.md). They used to default to their own
+ * hex values, and no app in this repo overrode them, so one page carried two
+ * palettes: the header's focus ring was #2347c6 while every Button's beside it
+ * was the theme's accent. The hex stays as the fallback for a product that
+ * copies this file without the kit's theme.
+ *
+ * `accent`, `accent-soft` and `highlight` have no register on purpose. They are
+ * the shell's decoration — the current-page rule and the process highlight —
+ * not focus, and the theme's `accent` means focus only. */
 
 .rv2-product-header,
 .rv2-navigation-rail,
 .rv2-process-rail {
-  --rv2-shell-paper: #ffffff;
-  --rv2-shell-ink: #172033;
-  --rv2-shell-muted: #526079;
-  --rv2-shell-rule: #cbd3e1;
+  --rv2-shell-paper: var(--color-surface, #ffffff);
+  --rv2-shell-ink: var(--color-ink, #172033);
+  --rv2-shell-muted: var(--color-ink-muted, #526079);
+  --rv2-shell-rule: var(--color-rule, #cbd3e1);
   --rv2-shell-accent: #3156d9;
   --rv2-shell-accent-soft: #e8edff;
   --rv2-shell-highlight: #f5c451;
-  --rv2-shell-focus: #2347c6;
+  --rv2-shell-focus: var(--color-accent, #2347c6);
+  --rv2-shell-done: var(--color-takeable, #087f5b);
+  --rv2-shell-done-ink: var(--color-takeable-ink, #07684b);
   --rv2-shell-width: 80rem;
   --rv2-shell-shadow: 0.5rem 0.5rem 0 var(--rv2-shell-highlight);
 }
@@ -281,11 +294,11 @@
 }
 
 .rv2-process-step.is-complete {
-  background: color-mix(in oklch, #087f5b 9%, var(--rv2-shell-paper));
+  background: color-mix(in oklch, var(--rv2-shell-done) 9%, var(--rv2-shell-paper));
 }
 
 .rv2-process-step.is-complete span {
-  color: #07684b;
+  color: var(--rv2-shell-done-ink);
 }
 
 .rv2-process-step.is-complete span::after {

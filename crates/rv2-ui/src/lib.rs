@@ -11,13 +11,32 @@
 //! motion and product-shell behaviour. Each app owns a compiled
 //! `assets/tailwind.css`; `cargo xtask styles` keeps committed output current.
 //!
+//! ## The instruction set
+//!
+//! Apps state intent through this crate rather than writing markup and
+//! classes: **registers** (the tokens in `assets/theme.css`), **operands** (the
+//! enums — [`Variant`], [`Size`], [`Tone`], [`Width`] …) and **instructions**
+//! (the components). `docs/architecture/003-ui-semantic-isa.md` records the
+//! rules, `UI1`–`UI9`; `cargo xtask ci` fails an app that writes a raw control,
+//! heading or link instead of using one.
+//!
+//! Two of those rules shape every signature here. `class` is for layout —
+//! margins, widths, flex and grid placement — and never for colour or type,
+//! because a second colour utility on an element wins or loses by stylesheet
+//! order (UI5): a caller that needs a different look has found a missing
+//! operand. And composites are built from atoms, never by restating their
+//! classes (UI6).
+//!
 //! ## Scope
 //!
 //! Deliberately shadcn-shaped but **minimal**: the set was fixed by auditing a
-//! real marketing page rather than by porting a component catalogue. Everything
-//! here is used by `apps/web` or `apps/app`. There is no modal, tab, tooltip,
-//! carousel or date picker, because no page needs one yet — an unused component
-//! is bundle weight and maintenance cost with nothing on the other side of the
+//! real marketing page rather than by porting a component catalogue, and has
+//! grown only where an app needed something twice (UI8). Everything here is
+//! used by `apps/web`, `apps/app` or `apps/hiring`, with one named exception:
+//! [`CommandSelect`]'s consumer is A Place Ahead, outside this repo, and its
+//! preview lives in `apps/app/examples`. There is no modal, tooltip, carousel
+//! or date picker, because no page needs one yet — an unused component is
+//! bundle weight and maintenance cost with nothing on the other side of the
 //! ledger.
 //!
 //! ## Dependencies
@@ -65,23 +84,22 @@ pub mod tabs;
 pub mod typography;
 
 pub use crate::command_select::CommandSelect;
-pub use crate::feedback::{Card, EmptyState, ErrorBanner, PageHeader, Skeleton};
-pub use crate::form::{Checkbox, FieldSet, Select, TextArea, TextField};
-pub use crate::layout::{Container, Divider, Grid, Row, Section, Space, Stack, Width};
+pub use crate::feedback::{Card, EmptyState, ErrorBanner, Pad, PageHeader, Skeleton};
+pub use crate::form::{Checkbox, FieldSet, Input, Select, TextArea, TextField};
+pub use crate::layout::{Container, Divider, Grid, Section, Space, Width};
 pub use crate::motion::{
     Blob, Crumple, Foil, Fur, GradientBuilder, Hologram, Mood, PullCord, Vacuum,
 };
 pub use crate::primitives::{
-    ArrowLink, Badge, Bar, Button, Disclosure, LinkButton, Size, Status, StatusTone, StepMarker,
-    Swatch, Variant,
+    ArrowLink, Badge, BadgeFill, Bar, Button, Disclosure, LinkButton, Size, Status, StatusTone,
+    StepMarker, Swatch, TEXT_LINK, TEXT_LINK_STRONG, TextLink, Variant,
 };
 pub use crate::product_shell::{
-    NavigationRail, PageEntrance, ProcessRail, ProcessStep, ProductHeader, ProductHeaderAction,
-    ProductNavItem,
+    NavLink, NavigationRail, PageEntrance, ProcessRail, ProcessStep, ProductHeader,
 };
 pub use crate::site::{
-    Fact, FactList, Faq, FeatureCard, Footer, FooterColumn, Hero, NavItem, PricingCard, QandA,
-    Step, StepList,
+    Fact, FactList, Faq, FeatureCard, Footer, FooterColumn, Hero, PricingCard, QandA, Step,
+    StepList,
 };
-pub use crate::tabs::{Tab, Tabs, TabsVariant};
+pub use crate::tabs::{Tab, Tabs};
 pub use crate::typography::{Eyebrow, Heading, HeadingSize, Text, Tone};

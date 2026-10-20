@@ -5,6 +5,60 @@ use dioxus::prelude::*;
 const FIELD_BASE: &str = "w-full rounded-md border border-rule px-3 py-2 text-sm \
                           focus:outline-none focus:ring-2 focus:ring-accent";
 
+/// A bare text control, for a field whose label is not a line of text above it
+/// — a search box labelled for screen readers only, a free-text answer under a
+/// question that is already its label.
+///
+/// [`TextField`] is this plus a visible label and an error line, so the field
+/// styling has one home. Apps had been copying it by hand, and two of the four
+/// copies dropped the focus ring.
+#[component]
+pub fn Input(
+    value: String,
+    oninput: EventHandler<FormEvent>,
+    #[props(default = "text".to_string())] r#type: String,
+    #[props(default)] placeholder: String,
+    #[props(default)] id: Option<String>,
+    /// The `name` attribute. See [`TextField`] for why a form needs it.
+    #[props(default)]
+    name: Option<String>,
+    /// The `autocomplete` token — `email`, `current-password`, `off`.
+    #[props(default)]
+    autocomplete: Option<String>,
+    #[props(default)] spellcheck: Option<bool>,
+    #[props(default = false)] required: bool,
+    /// Layout only: room for an adornment inside the box, say.
+    #[props(default)]
+    class: String,
+    #[props(default)] onkeydown: Option<EventHandler<KeyboardEvent>>,
+    #[props(default)] onfocusin: Option<EventHandler<FocusEvent>>,
+) -> Element {
+    rsx! {
+        input {
+            class: "{FIELD_BASE} {class}",
+            r#type: "{r#type}",
+            value: "{value}",
+            placeholder: "{placeholder}",
+            id,
+            name,
+            autocomplete,
+            spellcheck,
+            required,
+            oninput: move |event| oninput.call(event),
+            onkeydown: move |event| {
+                if let Some(handler) = &onkeydown {
+                    handler.call(event);
+                }
+            },
+            onfocusin: move |event| {
+                if let Some(handler) = &onfocusin {
+                    handler.call(event);
+                }
+            },
+        }
+    }
+}
+
 #[component]
 pub fn TextField(
     label: String,
@@ -33,19 +87,20 @@ pub fn TextField(
     #[props(default)]
     error: Option<String>,
     oninput: EventHandler<FormEvent>,
+    #[props(default)] onfocusin: Option<EventHandler<FocusEvent>>,
 ) -> Element {
     rsx! {
         label { class: "block space-y-1",
             span { class: "text-sm font-medium text-ink", "{label}" }
-            input {
-                class: "{FIELD_BASE}",
-                r#type: "{r#type}",
-                value: "{value}",
-                placeholder: "{placeholder}",
-                name: name.unwrap_or_default(),
-                autocomplete: autocomplete.unwrap_or_default(),
+            Input {
+                r#type,
+                value,
+                placeholder,
+                name,
+                autocomplete,
                 required,
-                oninput: move |event| oninput.call(event),
+                oninput,
+                onfocusin,
             }
             if let Some(message) = error {
                 span { class: "text-xs text-fault-ink", role: "alert", "{message}" }
