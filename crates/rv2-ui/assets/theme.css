@@ -4,15 +4,15 @@
  * One copy, imported by every app after `@import "tailwindcss"`. Tailwind v4
  * builds utilities per app from that app's own `@theme`, so a kit component
  * writing `text-ink-muted` renders unstyled in any app that has not declared
- * it. This file used to be two byte-identical blocks in `apps/app` and
- * `apps/web`, plus a third full copy in `apps/hiring` — so adding a register to
- * the kit meant remembering three files, and forgetting one only showed up as
- * one element rendering unstyled in one app.
+ * it. This file used to be byte-identical blocks copied into each app, plus a
+ * full copy in a dark-themed one — so adding a register to the kit meant
+ * remembering every app, and forgetting one only showed up as one element
+ * rendering unstyled in one app.
  *
  * An app themes by declaring its own `@theme` **after** this import, with
  * values only: a later declaration of the same variable wins. Product registers
- * (`index-*`, `clears-*` in hiring) belong to the app and never appear here or
- * in kit source.
+ * — a market's colour, a chart's ramp — belong to the app and never appear here
+ * or in kit source.
  *
  * These values are the light system the kit's classes originally resolved to. */
 @theme {
@@ -21,9 +21,9 @@
   --font-display: var(--font-sans);
   /* The weight those headings take, as `font-heading`. A register rather than
    * `font-semibold` in the component, because a display face is often loaded
-   * at a couple of weights only, and the right one belongs to the face: the
-   * hiring app's condensed face ships 600 and 800, and at 600 its masthead
-   * lost the weight it was designed around. */
+   * at a couple of weights only, and the right one belongs to the face: a
+   * condensed face shipped at 600 and 800 lost its masthead's weight at the
+   * kit's 600 until the app could say 800. */
   --font-weight-heading: 600;
 
   --color-ground: #f8fafc;

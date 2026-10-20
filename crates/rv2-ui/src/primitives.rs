@@ -213,8 +213,8 @@ pub fn ArrowLink(href: String, #[props(default)] class: String, children: Elemen
 ///
 /// An enum rather than a `class`, because the badge already sets a fill and a
 /// text colour of its own, and a second pair passed in through `class` won or
-/// lost against them by stylesheet order (UI5). `apps/hiring` relied on that
-/// for every verdict chip on the page.
+/// lost against them by stylesheet order (UI5). A product page once relied on
+/// that for every verdict chip it drew.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum BadgeFill {
     /// A plain label.
