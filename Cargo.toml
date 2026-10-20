@@ -155,8 +155,8 @@ metrics-exporter-prometheus = { version = "0.18.3", default-features = false, fe
 # Off unless OTEL_EXPORTER_OTLP_ENDPOINT is set. The span data already exists —
 # `tracing` instruments the whole request path — so this is a subscriber layer
 # that ships it somewhere, not new instrumentation.
-opentelemetry = "0.32"
-opentelemetry_sdk = { version = "0.32", features = ["rt-tokio"] }
+opentelemetry = "0.33"
+opentelemetry_sdk = { version = "0.33", features = ["rt-tokio"] }
 # `http-proto` rather than the default `grpc-tonic`: tonic brings its own
 # transport and TLS stack into a binary that already has two, and OTLP/HTTP is
 # accepted by every collector worth pointing at.
@@ -168,7 +168,7 @@ opentelemetry_sdk = { version = "0.32", features = ["rt-tokio"] }
 # runtime" — on a background thread, so the process keeps serving and the
 # collector simply never receives anything. Blocking IO is correct here: that
 # thread exists to block.
-opentelemetry-otlp = { version = "0.32", default-features = false, features = [
+opentelemetry-otlp = { version = "0.33", default-features = false, features = [
   "http-proto",
   "reqwest-blocking-client",
   "reqwest-rustls",
