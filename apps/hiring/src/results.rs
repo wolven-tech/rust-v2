@@ -17,16 +17,23 @@ use rv2_hiring::links::{careers_search, linkedin_search, safe_url};
 use rv2_hiring::mandate::MandateStrength;
 use rv2_hiring::model::{Company, LinkStatus, Register, Role};
 use rv2_hiring::view::{self, Layout, Sort, group_colour, group_label};
-use rv2_ui::{Badge, Disclosure, Select, Status, StatusTone, Tab, Tabs};
+use rv2_ui::{
+    Badge, BadgeFill, Button, Card, Disclosure, Heading, HeadingSize, LinkButton, Pad, Select,
+    Status, StatusTone, Tab, Tabs, Text, TextLink, Tone, Variant,
+};
 
 use crate::{Page, SharedRegister};
 
-/// The tone a badge takes when its filter would keep the role. Green is the
+/// The fill a badge takes when its filter would keep the role. Green is the
 /// only colour on the page that means "this one is takeable", so it is spent
 /// on nothing else.
-const PASSES: &str = "bg-takeable-soft text-takeable-ink";
-
-const EXT: &str = "noopener noreferrer";
+fn passes(keeps: bool) -> BadgeFill {
+    if keeps {
+        BadgeFill::Takeable
+    } else {
+        BadgeFill::Default
+    }
+}
 
 fn tone_of(status: LinkStatus) -> StatusTone {
     match status {
@@ -114,7 +121,7 @@ fn Toolbar(page: Page, rows: usize, total: usize) -> Element {
         .collect();
 
     rsx! {
-        div { class: "flex flex-wrap items-end justify-between gap-3 rounded-lg border border-rule-soft bg-surface p-3",
+        Card { class: "flex flex-wrap items-end justify-between gap-3",
             div { class: "w-72",
                 Select {
                     label: "Sort",
@@ -166,11 +173,11 @@ fn ExportButton(page: Page, rows: usize) -> Element {
     let href = format!("data:text/csv;charset=utf-8,{}", encode_data(&csv));
 
     rsx! {
-        a {
-            class: if rows == 0 { "pointer-events-none rounded-md border border-rule-soft px-3 py-1.5 text-sm text-ink-faint" } else { "rounded-md border border-rule px-3 py-1.5 text-sm hover:bg-ground" },
-            href: "{href}",
+        LinkButton {
+            href,
+            variant: Variant::Outline,
             download: "uk-tech-hiring-register.csv",
-            aria_disabled: "{rows == 0}",
+            disabled: rows == 0,
             "Export CSV"
         }
     }
@@ -270,14 +277,16 @@ fn Empty(page: Page) -> Element {
     let mut page_state = page;
 
     rsx! {
-        section { class: "rounded-lg border border-rule-soft bg-surface p-8 text-center",
-            h2 { class: "text-lg font-semibold", "{headline}" }
-            p { class: "mx-auto mt-2 max-w-2xl text-sm text-ink-muted", "{explanation}" }
-            button {
-                r#type: "button",
-                class: "mt-4 rounded-md border border-rule px-3 py-1.5 text-sm hover:bg-ground",
-                onclick: move |_| page_state.clear(),
-                "Clear every filter"
+        Card { pad: Pad::Roomy, class: "text-center",
+            section {
+                Heading { size: HeadingSize::Title, "{headline}" }
+                Text { tone: Tone::Muted, class: "mx-auto mt-2 max-w-2xl", "{explanation}" }
+                Button {
+                    variant: Variant::Outline,
+                    class: "mt-4",
+                    onclick: move |_| page_state.clear(),
+                    "Clear every filter"
+                }
             }
         }
     }
@@ -338,51 +347,53 @@ fn Entry(company: Company, page: Page) -> Element {
     };
 
     rsx! {
-        article { class: "rounded-lg border border-rule-soft bg-surface p-4",
-            div { class: "flex flex-wrap items-start justify-between gap-3",
-                div { class: "flex min-w-0 gap-3",
-                    Mark { company: company.clone() }
-                    div { class: "min-w-0",
-                        h2 { class: "font-display text-2xl font-bold leading-tight", "{company.name}" }
-                        p { class: "mt-0.5 text-sm text-ink-muted",
-                            "{company.sector()}"
-                            if !company.uk_locations().is_empty() {
-                                " in {company.uk_locations()}"
-                            }
-                            if !company.employee_scale().is_empty() {
-                                ", {company.employee_scale()} people"
-                            }
-                        }
-                        if !company.tech_stack_note().is_empty() {
-                            p { class: "mt-1 text-sm text-ink-muted", "{company.tech_stack_note()}" }
-                        }
-                    }
-                }
-                Actions { company: company.clone(), rust: filters.rust }
-            }
+        Card {
+            article {
+              div { class: "flex flex-wrap items-start justify-between gap-3",
+                  div { class: "flex min-w-0 gap-3",
+                      Mark { company: company.clone() }
+                      div { class: "min-w-0",
+                          Heading { size: HeadingSize::Title, "{company.name}" }
+                          p { class: "mt-0.5 text-sm text-ink-muted",
+                              "{company.sector()}"
+                              if !company.uk_locations().is_empty() {
+                                  " in {company.uk_locations()}"
+                              }
+                              if !company.employee_scale().is_empty() {
+                                  ", {company.employee_scale()} people"
+                              }
+                          }
+                          if !company.tech_stack_note().is_empty() {
+                              p { class: "mt-1 text-sm text-ink-muted", "{company.tech_stack_note()}" }
+                          }
+                      }
+                  }
+                  Actions { company: company.clone(), rust: filters.rust }
+              }
 
-            Chips { company: company.clone(), matched: shown }
-            Openings { company: company.clone() }
-            Depth { company: company.clone() }
+              Chips { company: company.clone(), matched: shown }
+              Openings { company: company.clone() }
+              Depth { company: company.clone() }
 
-            if roles.is_empty() {
-                p { class: "mt-2 text-sm text-ink-muted",
-                    if total_roles == 0 {
-                        "No roles recorded for this company."
-                    } else {
-                        "None of this company’s {total_roles} recorded roles survive these filters."
-                    }
-                }
-            } else {
-                Disclosure { class: "mt-3", open: true, summary,
-                    ul { class: "space-y-2",
-                        for role in roles {
-                            li { key: "{role.url}",
-                                RoleLine { role: role.clone(), show_evidence }
-                            }
-                        }
-                    }
-                }
+              if roles.is_empty() {
+                  p { class: "mt-2 text-sm text-ink-muted",
+                      if total_roles == 0 {
+                          "No roles recorded for this company."
+                      } else {
+                          "None of this company’s {total_roles} recorded roles survive these filters."
+                      }
+                  }
+              } else {
+                  Disclosure { class: "mt-3", open: true, summary,
+                      ul { class: "space-y-2",
+                          for role in roles {
+                              li { key: "{role.url}",
+                                  RoleLine { role: role.clone(), show_evidence }
+                              }
+                          }
+                      }
+                  }
+              }
             }
         }
     }
@@ -415,38 +426,21 @@ fn Actions(company: Company, rust: bool) -> Element {
         div { class: "flex shrink-0 flex-col items-end gap-1 text-sm",
             match careers {
                 Some(url) => rsx! {
-                    a {
-                        href: "{url}",
-                        target: "_blank",
-                        rel: EXT,
-                        class: "rounded-md bg-ink px-3 py-1.5 text-on-ink",
-                        "Open careers site"
-                    }
+                    LinkButton { href: url, external: true, "Open careers site" }
                 },
                 None => rsx! {
-                    a {
-                        href: "{search}",
-                        target: "_blank",
-                        rel: EXT,
-                        class: "rounded-md border border-rule px-3 py-1.5",
+                    LinkButton {
+                        href: search,
+                        external: true,
+                        variant: Variant::Outline,
                         "Search for careers site"
                     }
                 },
             }
             if let Some(board) = board {
-                a {
-                    href: "{board}",
-                    target: "_blank",
-                    rel: EXT,
-                    class: "text-ink-muted underline",
-                    "All roles on {company.feed()}"
-                }
+                TextLink { href: board, external: true, "All roles on {company.feed()}" }
             }
-            a {
-                href: "{linkedin}",
-                target: "_blank",
-                rel: EXT,
-                class: "text-ink-muted underline",
+            TextLink { href: linkedin, external: true,
                 if rust {
                     "Rust roles on LinkedIn"
                 } else {
@@ -589,43 +583,36 @@ fn RoleLine(role: Role, show_evidence: bool) -> Element {
 
     rsx! {
         div { class: if clears { "rounded-md border border-takeable bg-takeable-wash p-2 shadow-takeable" } else { "rounded-md border border-rule-soft p-2" },
-            div { class: "flex flex-wrap items-baseline justify-between gap-2",
+            div { class: "flex flex-wrap items-baseline justify-between gap-2 text-sm",
                 match url {
                     Some(url) => rsx! {
-                        a {
-                            href: "{url}",
-                            target: "_blank",
-                            rel: EXT,
-                            class: "text-sm font-medium underline",
-                            "{role.title}"
-                        }
+                        TextLink { href: url, external: true, strong: true, "{role.title}" }
                     },
                     None => rsx! {
-                        span { class: "text-sm font-medium", "{role.title}" }
+                        span { class: "font-medium", "{role.title}" }
                     },
                 }
                 span { class: "text-xs text-ink-muted", "{role.location}" }
             }
             div { class: "mt-1 flex flex-wrap gap-1.5",
                 Badge {
-                    class: if role.work_pattern.at_most_quarter_office() { PASSES } else { "" },
+                    fill: passes(role.work_pattern.at_most_quarter_office()),
                     "{role.work_pattern.label()}"
                 }
-                Badge {
-                    class: if role.engagement.is_b2b() { PASSES } else { "" },
-                    "{role.engagement.label()}"
-                }
+                Badge { fill: passes(role.engagement.is_b2b()), "{role.engagement.label()}" }
+                // Rust carries no hue on this page (see the Ledger): a Rust role
+                // is the filled chip, a mere mention the quiet one.
                 if role.rust_in_title {
-                    Badge { class: "bg-rust-strong text-rust-ink", "Rust role" }
+                    Badge { fill: BadgeFill::Strong, "Rust role" }
                 } else if role.rust {
-                    Badge { class: "bg-rust-soft text-rust-ink", "Mentions Rust" }
+                    Badge { fill: BadgeFill::Quiet, "Mentions Rust" }
                 }
                 if let Some(m) = mandate.as_ref() {
                     Badge { "{m.strength.label()}" }
                     Badge { "{m.level.label()}" }
                 }
                 if !role.applied_on.is_empty() {
-                    Badge { class: "bg-takeable-soft text-takeable-ink", "Applied {role.applied_on}" }
+                    Badge { fill: BadgeFill::Takeable, "Applied {role.applied_on}" }
                 }
             }
             if !role.work_pattern_note.is_empty() {
@@ -654,7 +641,7 @@ fn RoleLine(role: Role, show_evidence: bool) -> Element {
 fn Table(companies: Vec<Company>, page: Page) -> Element {
     let rust = page.filters.read().rust;
     rsx! {
-        div { class: "overflow-x-auto rounded-lg border border-rule-soft bg-surface",
+        Card { pad: Pad::None, class: "overflow-x-auto",
             table { class: "w-full text-sm",
                 thead { class: "border-b border-rule-soft bg-ground text-left",
                     tr {
@@ -740,10 +727,10 @@ fn TableRow(company: Company, page: Page, rust: bool) -> Element {
             td { class: "px-3 py-2",
                 match careers {
                     Some(url) => rsx! {
-                        a { href: "{url}", target: "_blank", rel: EXT, class: "underline", "Careers site" }
+                        TextLink { href: url, external: true, "Careers site" }
                     },
                     None => rsx! {
-                        a { href: "{search}", target: "_blank", rel: EXT, class: "underline", "Search" }
+                        TextLink { href: search, external: true, "Search" }
                     },
                 }
                 div { class: "pt-0.5",
@@ -753,7 +740,7 @@ fn TableRow(company: Company, page: Page, rust: bool) -> Element {
             td { class: "px-3 py-2 text-xs",
                 match board {
                     Some(url) => rsx! {
-                        a { href: "{url}", target: "_blank", rel: EXT, class: "underline", "{company.feed()}" }
+                        TextLink { href: url, external: true, "{company.feed()}" }
                     },
                     None => rsx! {
                         span { class: "text-ink-faint", "{company.feed()}" }
@@ -761,7 +748,7 @@ fn TableRow(company: Company, page: Page, rust: bool) -> Element {
                 }
             }
             td { class: "px-3 py-2 text-xs",
-                a { href: "{linkedin}", target: "_blank", rel: EXT, class: "underline", "LinkedIn" }
+                TextLink { href: linkedin, external: true, "LinkedIn" }
             }
         }
     }

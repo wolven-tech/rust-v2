@@ -8,8 +8,8 @@
 use dioxus::prelude::*;
 use rv2_api_types::{CreatePostRequest, PostView, SessionView};
 use rv2_ui::{
-    Button, Card, EmptyState, ErrorBanner, PageHeader, ProductHeader, ProductNavItem, Skeleton,
-    TextArea, TextField, Variant,
+    Button, Card, Container, EmptyState, ErrorBanner, NavLink, PageHeader, ProductHeader, Skeleton,
+    TEXT_LINK, TextArea, TextField, Variant, Width,
 };
 use uuid::Uuid;
 
@@ -56,15 +56,17 @@ pub fn Shell() -> Element {
                 brand_href: PUBLIC_SITE_URL,
                 brand_subtitle: "Application",
                 items: vec![
-                    ProductNavItem::new("dashboard", "Dashboard", "/"),
-                    ProductNavItem::new("posts", "Posts", "/posts"),
+                    NavLink::route("dashboard", "Dashboard", "/"),
+                    NavLink::route("posts", "Posts", "/posts"),
                 ],
                 current,
                 tail: session.read().as_ref().map(|current| rsx! {
                     span { "{current.email}" }
                 }),
             }
-            main { class: "mx-auto max-w-4xl px-6 py-8", Outlet::<Route> {} }
+            main { class: "py-8",
+                Container { Outlet::<Route> {} }
+            }
         }
     }
 }
@@ -171,7 +173,7 @@ pub fn Posts() -> Element {
                             actions: rsx! {
                                 Link {
                                     to: Route::PostDetail { id: post.id },
-                                    class: "text-xs text-ink-muted underline",
+                                    class: "{TEXT_LINK} text-xs",
                                     "Open"
                                 }
                             },
@@ -254,7 +256,7 @@ pub fn Login() -> Element {
     };
 
     rsx! {
-        div { class: "mx-auto max-w-sm px-6 py-16",
+        Container { width: Width::Narrow, class: "py-16",
             PageHeader { title: "Sign in" }
             Card {
                 form {

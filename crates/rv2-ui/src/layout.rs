@@ -11,30 +11,46 @@ use dioxus::prelude::*;
 /// `Prose` is deliberately narrower than `Default`: long-form reading breaks
 /// down past roughly 75 characters per line, so guide pages want a tighter
 /// measure than a three-column card grid does.
+///
+/// `Narrow` is a single form — sign-in and the like — where a wider column only
+/// stretches the inputs. `Dense` is a data screen that wants every column it can
+/// get: a filter rail beside a results table. It also takes the smaller gutter,
+/// because on such a screen the gutter is width the data does not get.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum Width {
+    Narrow,
     Prose,
     #[default]
     Default,
     Wide,
+    Dense,
 }
 
 impl Width {
     fn classes(self) -> &'static str {
         match self {
-            Width::Prose => "max-w-2xl",
-            Width::Default => "max-w-5xl",
-            Width::Wide => "max-w-7xl",
+            Width::Narrow => "max-w-sm px-6",
+            Width::Prose => "max-w-2xl px-6",
+            Width::Default => "max-w-5xl px-6",
+            Width::Wide => "max-w-7xl px-6",
+            Width::Dense => "max-w-[110rem] px-4",
         }
     }
 }
 
 /// Centred, padded content column.
+///
+/// `class` is for layout inside the column — flex direction, gaps, vertical
+/// padding — never for its width, which is what [`Width`] is for.
 #[component]
-pub fn Container(#[props(default)] width: Width, children: Element) -> Element {
+pub fn Container(
+    #[props(default)] width: Width,
+    #[props(default)] class: String,
+    children: Element,
+) -> Element {
     let width = width.classes();
     rsx! {
-        div { class: "mx-auto w-full {width} px-6", {children} }
+        div { class: "mx-auto w-full {width} {class}", {children} }
     }
 }
 
@@ -92,45 +108,6 @@ pub fn Grid(
     };
     rsx! {
         div { class: "grid gap-6 {cols} {class}", {children} }
-    }
-}
-
-/// Vertical flex stack with a uniform gap.
-#[component]
-pub fn Stack(
-    #[props(default = 4)] gap: u8,
-    #[props(default)] class: String,
-    children: Element,
-) -> Element {
-    let gap = match gap {
-        1 => "gap-1",
-        2 => "gap-2",
-        3 => "gap-3",
-        6 => "gap-6",
-        8 => "gap-8",
-        _ => "gap-4",
-    };
-    rsx! {
-        div { class: "flex flex-col {gap} {class}", {children} }
-    }
-}
-
-/// Horizontal flex row that wraps rather than overflowing on narrow screens.
-#[component]
-pub fn Row(
-    #[props(default = 3)] gap: u8,
-    #[props(default)] class: String,
-    children: Element,
-) -> Element {
-    let gap = match gap {
-        1 => "gap-1",
-        2 => "gap-2",
-        4 => "gap-4",
-        6 => "gap-6",
-        _ => "gap-3",
-    };
-    rsx! {
-        div { class: "flex flex-wrap items-center {gap} {class}", {children} }
     }
 }
 

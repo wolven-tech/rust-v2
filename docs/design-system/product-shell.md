@@ -13,6 +13,15 @@ Both starter apps already import:
 
 Override semantic hooks at product boundary. Keep component class names intact.
 
+Hooks that have a kit register default to it — `paper` to `--color-surface`,
+`ink`, `muted` to `--color-ink-muted`, `rule`, `focus` to `--color-accent`, and
+`done`/`done-ink` (completed process steps) to `--color-takeable`/`-ink` — so a
+product that sets its `@theme` gets a header in the same palette with no
+overrides here (UI3 in `../architecture/003-ui-semantic-isa.md`). `accent`,
+`accent-soft` and `highlight` are the shell's own decoration and keep their
+hex defaults. Override any of them only where the shell should differ from the
+rest of the product.
+
 ```css
 .my-product {
   --rv2-shell-paper: #fbf7ed;
@@ -23,14 +32,19 @@ Override semantic hooks at product boundary. Keep component class names intact.
   --rv2-shell-accent-soft: #e7edff;
   --rv2-shell-highlight: #f4c350;
   --rv2-shell-focus: #183fb2;
+  --rv2-shell-done: #087f5b;
+  --rv2-shell-done-ink: #07684b;
   --rv2-shell-width: 80rem;
 }
 ```
 
 ## Header
 
-Use stable route keys. Labels and URLs may change without breaking current-page
-state. CTA remains a link because navigation must stay openable in new tab and
+Every link is a `NavLink`. A route takes a stable key through
+`NavLink::route`; labels and URLs may change without breaking current-page
+state. A call-to-action, footer link or in-page index entry is `NavLink::new`
+and has no key, so it can never be marked current. `.external()` opens either
+kind in a new tab. CTA remains a link because navigation must stay openable in new tab and
 crawlable.
 
 ```rust
@@ -38,11 +52,11 @@ ProductHeader {
     brand: "Product name",
     brand_subtitle: "Local calculator",
     items: vec![
-        ProductNavItem::new("home", "Home", "/"),
-        ProductNavItem::new("guide", "Guide", "/guide"),
+        NavLink::route("home", "Home", "/"),
+        NavLink::route("guide", "Guide", "/guide"),
     ],
     current: "guide",
-    action: ProductHeaderAction::new("Open app", "https://app.example.com"),
+    action: NavLink::new("Open app", "https://app.example.com"),
 }
 ```
 
@@ -59,8 +73,8 @@ in-page indexes; set it only when one item represents current page.
 NavigationRail {
     label: "Guide contents",
     items: vec![
-        ProductNavItem::new("measure", "01 Measure", "#measure"),
-        ProductNavItem::new("review", "02 Review", "#review"),
+        NavLink::new("01 Measure", "#measure"),
+        NavLink::new("02 Review", "#review"),
     ],
 }
 ```

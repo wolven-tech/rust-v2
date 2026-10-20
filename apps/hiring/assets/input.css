@@ -14,6 +14,10 @@
 @source "../src";
 @source "../../../crates/rv2-ui/src";
 
+/* The kit's registers, which the Ledger block below overrides by value. The
+ * registry aliases live there too, and resolve to these values through var(). */
+@import "../../../crates/rv2-ui/assets/theme.css";
+
 /* ── Ledger ──────────────────────────────────────────────────────────────────
  *
  * A warm, restrained dark reading space where negative results carry no
@@ -32,6 +36,10 @@
  * Ground is warm charcoal rather than #0B0B0B or #111 — those read as the
  * default dark theme of any product. This one keeps the light system's thermal
  * character, so someone who knows the paper theme recognises the same hand.
+ *
+ * Values only. The register names, the registry aliases and their comments are
+ * in `crates/rv2-ui/assets/theme.css`; a later `@theme` declaration of the same
+ * variable wins, which is the whole override mechanism.
  *
  * Every colour is named for its JOB, never its hue. No component may say
  * `slate-600` again; `apps/hiring/tests/tokens.rs` fails the build if one does.
@@ -54,6 +62,8 @@
 @theme {
   --font-sans: "Atkinson Hyperlegible Next", ui-sans-serif, system-ui, sans-serif;
   --font-display: "Big Shoulders Display", "Arial Narrow", ui-sans-serif, sans-serif;
+  /* The face is loaded at 600 and 800 only; headings are set in the heavy one. */
+  --font-weight-heading: 800;
 
   /* Warm charcoal, not template near-black. */
   --color-ground: #1a1714;
@@ -99,9 +109,11 @@
   --color-fault-ink: #ff9d8c;
 
   /* Rust signal, said without a hue. A filled chip is a Rust role; a quiet one
-   * is a posting that merely mentions it. */
-  --color-rust-strong: #4a4340;
-  --color-rust-soft: #2d2622;
+   * is a posting that merely mentions it. The chips themselves are the kit's
+   * `BadgeFill::Strong` and `Quiet`, which resolve to `rule` and `surface` —
+   * the values `rust-strong` and `rust-soft` held, under names of their own
+   * that a kit component could not use (UI5). The ink stays, for the Rust
+   * count in running text. */
   --color-rust-ink: #e8e5e2;
 
   /* Market identity. Five hues that stay apart under protanopia, deuteranopia
@@ -120,28 +132,6 @@
   /* The system's signature, inherited from the light theme unchanged. Zero
    * blur. Gold. Nothing else on the page casts a shadow at all. */
   --shadow-takeable: 0.5rem 0.5rem 0 #f4c350;
-
-  /* shadcn's names, pointing at this theme's values, so a component copied
-   * from a shadcn-shaped registry styles itself correctly without its classes
-   * being rewritten. Every app defines this block against its own palette.
-   *
-   * `accent` is deliberately absent. shadcn spends it on a subtle hover
-   * SURFACE; this theme spends it on the focus ring, chosen to be lighter than
-   * the FTSE 100 blue so a ring never reads as market data. One name, two
-   * incompatible jobs — so a component wanting shadcn's `accent` gets
-   * `bg-raised` written in instead, and `--color-accent` keeps meaning focus. */
-  --color-background: var(--color-ground);
-  --color-foreground: var(--color-ink);
-  --color-muted: var(--color-raised);
-  --color-muted-foreground: var(--color-ink-muted);
-  --color-input: var(--color-rule-soft);
-  --color-ring: var(--color-accent);
-  /* The filled-control pair. It inverts with the theme rather than picking a
-   * side: on this dark ground the fill is the light ink and the text is the
-   * ground, and on a light theme both swap. A control that spelled "light
-   * fill" would be right in one theme and invisible in the other. */
-  --color-primary: var(--color-ink);
-  --color-primary-foreground: var(--color-on-ink);
 }
 
 /* Two arms for a breakdown's bars. Every axis in `breakdown.rs` is declared

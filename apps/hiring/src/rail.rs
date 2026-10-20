@@ -14,7 +14,9 @@ use rv2_hiring::litmus::{Axis, Challenge, Situation, Timing};
 use rv2_hiring::mandate::LevelBand;
 use rv2_hiring::model::{MarketReach, OrgScale};
 use rv2_hiring::view::{self, FACET_PREVIEW, group_colour};
-use rv2_ui::{Checkbox, FieldSet, Swatch};
+use rv2_ui::{
+    Button, Card, Checkbox, FieldSet, Heading, HeadingSize, Input, Size, Swatch, Variant,
+};
 
 use crate::{Page, SharedRegister};
 
@@ -26,35 +28,37 @@ pub fn Rail(page: Page) -> Element {
 
     rsx! {
         aside { class: "w-full shrink-0 lg:sticky lg:top-4 lg:w-80",
-            details {
-                class: "rounded-lg border border-rule-soft bg-surface p-4 [&[open]>summary>.marker]:rotate-90",
-                open: true,
-                summary { class: "flex cursor-pointer list-none items-baseline justify-between",
-                    span { class: "flex items-baseline gap-2",
-                        span { class: "marker inline-block transition-transform lg:hidden", aria_hidden: "true", "›" }
-                        h2 { class: "text-sm font-semibold", "Filters" }
+            Card {
+                details {
+                    class: "[&[open]>summary>.marker]:rotate-90",
+                    open: true,
+                    summary { class: "flex cursor-pointer list-none items-baseline justify-between",
+                        span { class: "flex items-baseline gap-2",
+                            span { class: "marker inline-block transition-transform lg:hidden", aria_hidden: "true", "›" }
+                            Heading { size: HeadingSize::Card, "Filters" }
+                            if active > 0 {
+                                span { class: "text-xs font-normal text-ink-muted", "({active} on)" }
+                            }
+                        }
                         if active > 0 {
-                            span { class: "text-xs font-normal text-ink-muted", "({active} on)" }
+                            span {
+                                role: "button",
+                                tabindex: "0",
+                                class: "text-xs text-ink-muted underline hover:text-ink",
+                                onclick: move |event| {
+                                    event.stop_propagation();
+                                    page_state.clear();
+                                },
+                                "Clear all"
+                            }
                         }
                     }
-                    if active > 0 {
-                        span {
-                            role: "button",
-                            tabindex: "0",
-                            class: "text-xs text-ink-muted underline hover:text-ink",
-                            onclick: move |event| {
-                                event.stop_propagation();
-                                page_state.clear();
-                            },
-                            "Clear all"
-                        }
+                    div { class: "space-y-4 pt-3",
+                        Essentials { page }
+                        Litmus { page }
+                        Register_Facets { page }
+                        Toggles { page }
                     }
-                }
-                div { class: "space-y-4 pt-3",
-                    Essentials { page }
-                    Litmus { page }
-                    Register_Facets { page }
-                    Toggles { page }
                 }
             }
         }
@@ -298,12 +302,10 @@ fn FreeText(page: Page, countries: bool) -> Element {
 
     rsx! {
         div {
-            input {
-                r#type: "text",
-                value: "{value}",
+            Input {
+                value,
                 placeholder: "Comma separated",
-                class: "w-full rounded-md border border-rule px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-accent",
-                oninput: move |event| {
+                oninput: move |event: FormEvent| {
                     let parsed: Vec<String> = event
                         .value()
                         .split(',')
@@ -411,9 +413,10 @@ fn Facet(page: Page, facet: String, legend: String) -> Element {
                 }
             }
             if !expanded {
-                button {
-                    r#type: "button",
-                    class: "pt-1 text-xs text-ink-muted underline hover:text-ink",
+                Button {
+                    variant: Variant::Link,
+                    size: Size::Small,
+                    class: "mt-1",
                     onclick: move |_| page_state.expand(&facet_for_expand),
                     "Show all {total}"
                 }

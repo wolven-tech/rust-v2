@@ -8,6 +8,43 @@ Nothing here is released yet — the workspace is at `0.1.0` and every crate is
 
 ## [Unreleased]
 
+### Changed — `rv2-ui` is a semantic instruction set
+
+[`docs/architecture/003-ui-semantic-isa.md`](docs/architecture/003-ui-semantic-isa.md)
+fixes the kit's vocabulary as registers (tokens), operands (enums) and
+instructions (components), and `cargo xtask ci` now fails an app that writes a
+raw control, heading or link instead of using one.
+
+- **One theme.** `crates/rv2-ui/assets/theme.css` holds every register and the
+  registry aliases. `apps/app` and `apps/web` import it instead of carrying
+  byte-identical copies; `apps/hiring` imports it and overrides values only.
+- **Hooks default to registers.** `--rv2-shell-*` and `--rv2-command-*` resolve
+  to the theme (with their old hex as fallback), so the header and the command
+  picker take the page's focus colour instead of two blues of their own, and
+  `CommandSelect` is no longer a cream box on a dark theme. New
+  `--rv2-shell-done` / `--rv2-shell-done-ink` replace two hard-coded greens.
+- **New operands:** `Variant::Outline`, `Variant::Link`, `Size::Small`,
+  `Tone::OnInk`, `Width::Narrow`, `Width::Dense`, `HeadingSize::Title`,
+  `BadgeFill`, and `Pad` for `Card`. `Display`, `Section` and `Title` headings
+  use `--font-display`, which defaults to the body family.
+- **New instructions:** `Input` (which `TextField` now wraps), `TextLink` with
+  `TEXT_LINK` / `TEXT_LINK_STRONG` for router links, and `LinkButton` gains
+  `download` and a `disabled` that removes the `href` rather than only blocking
+  the mouse.
+- **Composites use atoms.** `Hero`, `FeatureCard`, `StepList`, `PricingCard` and
+  `Footer` are built from `Eyebrow`, `Heading`, `Text`, `Card` and `Container`.
+- **`Card` is flat**, without `shadow-sm`, matching every hand-made surface it
+  replaced and the hiring ledger's one-shadow rule.
+- **Breaking:** `NavItem`, `ProductNavItem` and `ProductHeaderAction` are one
+  `NavLink` (`NavLink::route(key, label, href)` for a route,
+  `NavLink::new(label, href)` otherwise, `.external()` for either). `Row`,
+  `Stack` and `TabsVariant` are removed; nothing used them. A product that
+  copied the kit keeps its copy until it pulls this.
+- **Apps migrated.** `apps/web`, `apps/app` and `apps/hiring` use the kit's
+  instructions throughout. Two `/motion` inputs that had lost their focus ring
+  have it back; the hiring CSV export is a real disabled link when there is
+  nothing to export.
+
 ### Added — the UK tech hiring register
 
 - **`crates/rv2-hiring`**, WASM-safe and file-backed, holding what a role is.

@@ -3,22 +3,34 @@
 use dioxus::prelude::*;
 
 /// Visual weight of a [`Button`] or [`LinkButton`].
+///
+/// `Outline` is the quiet secondary action — "Clear every filter", "Export CSV"
+/// — that apps had been hand-writing as `rounded-md border border-rule …` seven
+/// times. `Link` is a button that reads as a text link, for an action sitting
+/// in running text where a filled control would shout; it is still a
+/// `<button>`, because it does something rather than going somewhere.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum Variant {
     #[default]
     Primary,
     Secondary,
+    Outline,
     Danger,
     Ghost,
+    Link,
 }
 
 impl Variant {
     fn classes(self) -> &'static str {
         match self {
-            Variant::Primary => "bg-ink text-on-ink hover:bg-ink-hover",
-            Variant::Secondary => "bg-raised text-ink hover:bg-raised",
-            Variant::Danger => "bg-fault text-on-ink hover:bg-fault-ink",
-            Variant::Ghost => "bg-transparent text-ink hover:bg-raised",
+            Variant::Primary => "font-medium bg-ink text-on-ink hover:bg-ink-hover",
+            Variant::Secondary => "font-medium bg-raised text-ink hover:bg-raised",
+            Variant::Outline => {
+                "font-medium border border-rule bg-transparent text-ink hover:bg-raised"
+            }
+            Variant::Danger => "font-medium bg-fault text-on-ink hover:bg-fault-ink",
+            Variant::Ghost => "font-medium bg-transparent text-ink hover:bg-raised",
+            Variant::Link => "bg-transparent text-ink-muted underline hover:text-ink",
         }
     }
 }
@@ -26,6 +38,8 @@ impl Variant {
 /// Control height.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum Size {
+    /// Inline with dense content: a demo's controls, a toolbar of many.
+    Small,
     #[default]
     Default,
     /// Hero call-to-action.
@@ -33,20 +47,32 @@ pub enum Size {
 }
 
 impl Size {
-    fn classes(self) -> &'static str {
-        match self {
-            Size::Default => "px-4 py-2 text-sm",
-            Size::Large => "px-6 py-3 text-base",
+    /// The padding and type size for a control of this size.
+    ///
+    /// A [`Variant::Link`] keeps the type scale and drops the padding: it sits
+    /// in a line of text, and padding would push it off the baseline.
+    fn classes(self, variant: Variant) -> &'static str {
+        match (self, variant == Variant::Link) {
+            (Size::Small, false) => "px-3 py-1 text-xs",
+            (Size::Default, false) => "px-4 py-2 text-sm",
+            (Size::Large, false) => "px-6 py-3 text-base",
+            (Size::Small, true) => "text-xs",
+            (Size::Default, true) => "text-sm",
+            (Size::Large, true) => "text-base",
         }
     }
 }
 
 /// Shared by [`Button`] and [`LinkButton`] so the two are visually identical.
 ///
+/// Font weight lives in [`Variant`] rather than here: `Link` is regular weight,
+/// and two weight utilities on one element resolve by stylesheet order, not by
+/// which was written last.
+///
 /// `focus-visible` rather than `focus`: a mouse user clicking a button should
 /// not get a focus ring, but a keyboard user tabbing to it must.
 const CONTROL_BASE: &str = "inline-flex items-center justify-center gap-2 rounded-md \
-                            font-medium transition-colors focus-visible:outline-none \
+                            transition-colors focus-visible:outline-none \
                             focus-visible:ring-2 focus-visible:ring-accent \
                             focus-visible:ring-offset-2 disabled:opacity-50 \
                             disabled:pointer-events-none";
@@ -62,7 +88,7 @@ pub fn Button(
     #[props(default)] onclick: Option<EventHandler<MouseEvent>>,
     children: Element,
 ) -> Element {
-    let (variant, size) = (variant.classes(), size.classes());
+    let (size, variant) = (size.classes(variant), variant.classes());
     rsx! {
         button {
             class: "{CONTROL_BASE} {variant} {size} {class}",
@@ -96,13 +122,73 @@ pub fn LinkButton(
     /// which the opened page can reach back through `window.opener`.
     #[props(default = false)]
     external: bool,
+    /// The `download` filename, for a link that saves a file rather than
+    /// opening a page.
+    #[props(default)]
+    download: Option<String>,
+    /// Renders the link with no `href`.
+    ///
+    /// `pointer-events: none` alone, which is what the hand-written version
+    /// did, stops a mouse and nothing else: the link stays in the tab order and
+    /// Enter still follows it. An anchor without an `href` is not focusable and
+    /// cannot be followed at all, which is what "disabled" has to mean.
+    #[props(default = false)]
+    disabled: bool,
     children: Element,
 ) -> Element {
-    let (variant, size) = (variant.classes(), size.classes());
+    let (size, variant) = (size.classes(variant), variant.classes());
+    let state = if disabled {
+        "opacity-50 pointer-events-none"
+    } else {
+        ""
+    };
+    let href = (!disabled).then_some(href);
+    let target = external.then_some("_blank");
+    let rel = external.then_some("noopener noreferrer");
+    let aria_disabled = disabled.then_some("true");
+    rsx! {
+        a {
+            class: "{CONTROL_BASE} {variant} {size} {state} {class}",
+            href,
+            target,
+            rel,
+            download,
+            aria_disabled,
+            {children}
+        }
+    }
+}
+
+/// The classes of a [`TextLink`], for a link the kit cannot render itself.
+///
+/// The kit has no router (see the crate docs), so an app's router `Link` takes
+/// this as its `class` rather than re-typing it — which is how the same link
+/// ended up in two different colours.
+pub const TEXT_LINK: &str = "text-ink-muted underline hover:text-ink";
+
+/// The same, for a link that is the thing being read rather than a route off
+/// it: a role's title, a record's name.
+pub const TEXT_LINK_STRONG: &str = "font-medium text-ink underline hover:text-ink-muted";
+
+/// An inline, underlined link that inherits its type size from the text around
+/// it.
+#[component]
+pub fn TextLink(
+    href: String,
+    /// Opens in a new tab with `rel="noopener noreferrer"`.
+    #[props(default = false)]
+    external: bool,
+    /// The link is the subject of its line, not a route off it.
+    #[props(default = false)]
+    strong: bool,
+    #[props(default)] class: String,
+    children: Element,
+) -> Element {
+    let tone = if strong { TEXT_LINK_STRONG } else { TEXT_LINK };
     let target = external.then_some("_blank");
     let rel = external.then_some("noopener noreferrer");
     rsx! {
-        a { class: "{CONTROL_BASE} {variant} {size} {class}", href: "{href}", target, rel, {children} }
+        a { class: "{tone} {class}", href: "{href}", target, rel, {children} }
     }
 }
 
@@ -123,12 +209,42 @@ pub fn ArrowLink(href: String, #[props(default)] class: String, children: Elemen
     }
 }
 
+/// How a [`Badge`] without a category colour is filled.
+///
+/// An enum rather than a `class`, because the badge already sets a fill and a
+/// text colour of its own, and a second pair passed in through `class` won or
+/// lost against them by stylesheet order (UI5). `apps/hiring` relied on that
+/// for every verdict chip on the page.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub enum BadgeFill {
+    /// A plain label.
+    #[default]
+    Default,
+    /// The thing labelled passes the reader's filter. Spent on nothing else.
+    Takeable,
+    /// The emphatic one of a pair, said with fill rather than a hue.
+    Strong,
+    /// The quiet one of the same pair: present, not asserted.
+    Quiet,
+}
+
+impl BadgeFill {
+    fn classes(self) -> &'static str {
+        match self {
+            BadgeFill::Default => "bg-raised text-ink",
+            BadgeFill::Takeable => "bg-takeable-soft text-takeable-ink",
+            BadgeFill::Strong => "bg-rule text-ink",
+            BadgeFill::Quiet => "bg-surface text-ink",
+        }
+    }
+}
+
 /// Small pill label.
 #[component]
 pub fn Badge(
     #[props(default)] class: String,
-    /// A CSS colour this badge takes for its text and border, instead of the
-    /// default grey fill.
+    #[props(default)] fill: BadgeFill,
+    /// A CSS colour this badge takes for its text and border, instead of a fill.
     ///
     /// Exists so a set of badges can encode a category rather than merely
     /// label it. A reader scanning a long list sees the colour before they
@@ -147,8 +263,8 @@ pub fn Badge(
         },
         None => rsx! {
             span {
-                class: "inline-flex items-center rounded-full bg-raised px-2.5 py-0.5 \
-                        text-xs font-medium text-ink {class}",
+                class: "inline-flex items-center rounded-full px-2.5 py-0.5 \
+                        text-xs font-medium {fill.classes()} {class}",
                 {children}
             }
         },
@@ -285,8 +401,25 @@ mod tests {
         let all = [
             Variant::Primary,
             Variant::Secondary,
+            Variant::Outline,
             Variant::Danger,
             Variant::Ghost,
+            Variant::Link,
+        ];
+        for (i, a) in all.iter().enumerate() {
+            for b in &all[i + 1..] {
+                assert_ne!(a.classes(), b.classes(), "{a:?} and {b:?} look identical");
+            }
+        }
+    }
+
+    #[test]
+    fn every_badge_fill_has_distinct_classes() {
+        let all = [
+            BadgeFill::Default,
+            BadgeFill::Takeable,
+            BadgeFill::Strong,
+            BadgeFill::Quiet,
         ];
         for (i, a) in all.iter().enumerate() {
             for b in &all[i + 1..] {
@@ -302,7 +435,36 @@ mod tests {
 
     #[test]
     fn every_size_has_distinct_classes() {
-        assert_ne!(Size::Default.classes(), Size::Large.classes());
+        for variant in [Variant::Primary, Variant::Link] {
+            let all = [Size::Small, Size::Default, Size::Large].map(|s| s.classes(variant));
+            assert_ne!(
+                all[0], all[1],
+                "{variant:?}: Small and Default look identical"
+            );
+            assert_ne!(
+                all[1], all[2],
+                "{variant:?}: Default and Large look identical"
+            );
+        }
+    }
+
+    /// A text-link button sits on the baseline of the sentence it is in; the
+    /// padding every other control carries would lift it off.
+    #[test]
+    fn a_link_variant_carries_no_padding_at_any_size() {
+        for size in [Size::Small, Size::Default, Size::Large] {
+            let classes = size.classes(Variant::Link);
+            assert!(
+                !classes.contains("px-") && !classes.contains("py-"),
+                "{size:?}: {classes}"
+            );
+        }
+    }
+
+    /// Weight belongs to the variant so no control carries two weights at once.
+    #[test]
+    fn the_shared_control_base_sets_no_font_weight() {
+        assert!(!CONTROL_BASE.contains("font-"));
     }
 
     /// The step marker is zero-padded so `01`..`09` stay optically aligned with

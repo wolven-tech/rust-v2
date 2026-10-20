@@ -4,10 +4,48 @@ use dioxus::prelude::*;
 
 use crate::primitives::{Button, Variant};
 
+/// Inner spacing of a [`Card`].
+///
+/// Two values, because two is what the pages need: a list of cards that should
+/// read as a list, and a single card that is the whole of its section. Hand-made
+/// surfaces had been using four (`p-3`, `p-4`, `p-6`, `p-8`), which is the
+/// drift and not a design. `None` is a card whose content brings its own edge —
+/// a table running to the border.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub enum Pad {
+    None,
+    #[default]
+    Default,
+    Roomy,
+}
+
+impl Pad {
+    fn classes(self) -> &'static str {
+        match self {
+            Pad::None => "",
+            Pad::Default => "p-4",
+            Pad::Roomy => "p-6",
+        }
+    }
+}
+
+/// A bordered surface.
+///
+/// Flat, with no shadow. Every hand-made surface in `apps/web` and
+/// `apps/hiring` was flat, and the hiring ledger spends its one shadow on a
+/// verdict — "nothing else on the page casts a shadow at all" — which a shadow
+/// on every card would quietly break.
+///
+/// `class` is for layout inside the card: flex direction, gaps, alignment.
 #[component]
-pub fn Card(#[props(default)] class: String, children: Element) -> Element {
+pub fn Card(
+    #[props(default)] pad: Pad,
+    #[props(default)] class: String,
+    children: Element,
+) -> Element {
+    let pad = pad.classes();
     rsx! {
-        div { class: "rounded-lg border border-rule-soft bg-surface p-4 shadow-sm {class}", {children} }
+        div { class: "rounded-lg border border-rule-soft bg-surface {pad} {class}", {children} }
     }
 }
 

@@ -19,6 +19,7 @@ pub mod results;
 use dioxus::prelude::*;
 use rv2_hiring::model::Register;
 use rv2_hiring::view::{self, Filters};
+use rv2_ui::{Container, Heading, HeadingSize, Input, Width};
 
 /// The id the search box carries, so the `/` shortcut can find it.
 const SEARCH_ID: &str = "q";
@@ -164,13 +165,15 @@ pub fn App() -> Element {
                     focus_search();
                 }
             },
+            // isa-raw-ok: a skip link is invisible until focused and must be the
+            // first focusable thing on the page; no kit link behaves like that.
             a {
                 class: "sr-only focus:not-sr-only focus:absolute focus:left-2 focus:top-2 focus:z-50 focus:rounded-md focus:bg-ink focus:px-3 focus:py-2 focus:text-on-ink",
                 href: "#results",
                 "Skip to results"
             }
             Masthead { shown, page }
-            div { class: "mx-auto flex max-w-[110rem] flex-col gap-6 px-4 pb-16 lg:flex-row lg:items-start",
+            Container { width: Width::Dense, class: "flex flex-col gap-6 pb-16 lg:flex-row lg:items-start",
                 rail::Rail { page }
                 main { id: "results", tabindex: "-1", class: "min-w-0 flex-1",
                     results::Results { page }
@@ -215,8 +218,8 @@ fn Masthead(shown: usize, page: Page) -> Element {
 
     rsx! {
         header { class: "border-b border-rule-soft bg-surface",
-            div { class: "mx-auto max-w-[110rem] px-4 py-6",
-                h1 { class: "font-display text-5xl font-bold leading-none", "UK tech hiring register" }
+            Container { width: Width::Dense, class: "py-6",
+                Heading { level: 1, size: HeadingSize::Display, "UK tech hiring register" }
                 p { class: "mt-1 max-w-4xl text-sm text-ink-muted",
                     b { "{total}" }
                     " employers. Across the "
@@ -232,18 +235,19 @@ fn Masthead(shown: usize, page: Page) -> Element {
                 div { class: "mt-4 flex flex-wrap items-center gap-3",
                     label { class: "relative min-w-64 flex-1",
                         span { class: "sr-only", "Search companies" }
-                        input {
+                        Input {
                             id: SEARCH_ID,
                             r#type: "search",
                             autocomplete: "off",
                             spellcheck: false,
                             placeholder: "Company, ticker, city or stack",
-                            value: "{filters.q}",
-                            class: "w-full rounded-md border border-rule py-2 pl-3 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-accent",
-                            oninput: move |event| {
+                            value: filters.q.clone(),
+                            // Room for the `/` hint drawn inside the box.
+                            class: "pr-10",
+                            oninput: move |event: FormEvent| {
                                 filters_signal.write().q = event.value().trim().to_string();
                             },
-                            onkeydown: move |event| {
+                            onkeydown: move |event: KeyboardEvent| {
                                 if event.key() == Key::Escape {
                                     filters_signal.write().q = String::new();
                                 }
@@ -275,17 +279,19 @@ fn Colophon() -> Element {
 
     rsx! {
         footer { class: "border-t border-rule-soft bg-surface",
-            div { class: "mx-auto max-w-[110rem] space-y-1 px-4 py-6 text-xs text-ink-muted",
-                p {
-                    "Index membership comes from FTSE Russell constituent files as at 30 June 2026. \
-                     AIM listings and the target list come from research. Job boards last read {openings}. \
-                     {live} careers links answered when checked {links}."
-                }
-                p {
-                    "Refresh with "
-                    code { class: "rounded bg-raised px-1", "cargo run -p hiring-register -- check" }
-                    ", then rebuild the page. Every work pattern, engagement and mandate shown here \
-                     was decided when the posting was read, not when the page was opened."
+            Container { width: Width::Dense, class: "py-6",
+                div { class: "space-y-1 text-xs text-ink-muted",
+                    p {
+                        "Index membership comes from FTSE Russell constituent files as at 30 June 2026. \
+                         AIM listings and the target list come from research. Job boards last read {openings}. \
+                         {live} careers links answered when checked {links}."
+                    }
+                    p {
+                        "Refresh with "
+                        code { class: "rounded bg-raised px-1", "cargo run -p hiring-register -- check" }
+                        ", then rebuild the page. Every work pattern, engagement and mandate shown here \
+                         was decided when the posting was read, not when the page was opened."
+                    }
                 }
             }
         }

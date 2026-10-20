@@ -29,7 +29,11 @@ input. Optional `disabled` disables selection and form submission. Placeholder,
 search placeholder and empty-message strings are caller-owned. `class` allows a
 product scope. Theme through `--rv2-command-paper`, `--rv2-command-ink`,
 `--rv2-command-muted`, `--rv2-command-rule`, `--rv2-command-active` and
-`--rv2-command-focus` while retaining adequate contrast.
+`--rv2-command-focus` while retaining adequate contrast. Each defaults to the
+matching kit register (`--color-surface`, `--color-ink`, `--color-ink-muted`,
+`--color-rule`, `--color-raised`, `--color-accent`), falling back to the
+original palette where no theme defines them, so the picker follows a dark
+theme without overrides.
 
 ## Interaction and accessibility
 

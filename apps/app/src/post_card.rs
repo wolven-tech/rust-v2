@@ -8,7 +8,7 @@
 
 use dioxus::prelude::*;
 use rv2_api_types::PostView;
-use rv2_ui::Card;
+use rv2_ui::{Card, Heading, HeadingSize, Text, Tone};
 
 /// A single post in the list. Takes a [`PostView`] — the *same* type the API
 /// serves and the folders produce — so there is no view-model to keep in sync.
@@ -21,8 +21,8 @@ pub fn PostCard(post: PostView, #[props(default)] actions: Option<Element>) -> E
     rsx! {
         Card {
             article {
-                h2 { class: "text-lg font-medium text-ink", "{post.title}" }
-                p { class: "mt-1 whitespace-pre-wrap text-sm text-ink-muted", "{post.content}" }
+                Heading { size: HeadingSize::Title, "{post.title}" }
+                Text { tone: Tone::Muted, class: "mt-1 whitespace-pre-wrap", "{post.content}" }
                 footer { class: "mt-3 flex items-center justify-between",
                     time { class: "text-xs text-ink-faint", datetime: "{iso}", "{human}" }
                     div { class: "flex gap-2", {actions} }

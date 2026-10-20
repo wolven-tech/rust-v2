@@ -1,0 +1,83 @@
+/* The registers every `rv2-ui` component resolves against (UI2 in
+ * docs/architecture/003-ui-semantic-isa.md).
+ *
+ * One copy, imported by every app after `@import "tailwindcss"`. Tailwind v4
+ * builds utilities per app from that app's own `@theme`, so a kit component
+ * writing `text-ink-muted` renders unstyled in any app that has not declared
+ * it. This file used to be two byte-identical blocks in `apps/app` and
+ * `apps/web`, plus a third full copy in `apps/hiring` — so adding a register to
+ * the kit meant remembering three files, and forgetting one only showed up as
+ * one element rendering unstyled in one app.
+ *
+ * An app themes by declaring its own `@theme` **after** this import, with
+ * values only: a later declaration of the same variable wins. Product registers
+ * (`index-*`, `clears-*` in hiring) belong to the app and never appear here or
+ * in kit source.
+ *
+ * These values are the light system the kit's classes originally resolved to. */
+@theme {
+  /* Display family for Display, Section and Title headings. Defaults to the
+   * body family, so an app that never sets it renders exactly as before. */
+  --font-display: var(--font-sans);
+  /* The weight those headings take, as `font-heading`. A register rather than
+   * `font-semibold` in the component, because a display face is often loaded
+   * at a couple of weights only, and the right one belongs to the face: the
+   * hiring app's condensed face ships 600 and 800, and at 600 its masthead
+   * lost the weight it was designed around. */
+  --font-weight-heading: 600;
+
+  --color-ground: #f8fafc;
+  --color-surface: #ffffff;
+  --color-raised: #f1f5f9;
+
+  --color-ink: #0f172a;
+  --color-ink-hover: #334155;
+  --color-ink-muted: #475569;
+  --color-ink-faint: #94a3b8;
+  /* Text on an ink-filled control. Three levels, because a filled control
+   * carries a hierarchy just as the page does, and this scale runs the opposite
+   * way from ink/ink-muted/ink-faint so it cannot borrow their values.
+   * Measured against --color-ink as the fill: 17.9:1, 14.5:1, 12.0:1. */
+  --color-on-ink: #ffffff;
+  --color-on-ink-muted: #e2e8f0;
+  --color-on-ink-faint: #cbd5e1;
+
+  --color-rule: #cbd5e1;
+  --color-rule-soft: #e2e8f0;
+  /* Focus and selected controls only. */
+  --color-accent: #0f172a;
+
+  --color-takeable: #10b981;
+  /* The fill of a badge whose filter would keep the thing it labels. */
+  --color-takeable-soft: #d1fae5;
+  --color-takeable-ink: #064e3b;
+
+  --color-caution: #f59e0b;
+  --color-caution-ink: #92400e;
+
+  --color-fault: #ef4444;
+  --color-fault-ink: #991b1b;
+
+  /* shadcn's names pointing at this theme's values, so a component copied from
+   * a shadcn-shaped registry styles itself without its classes being
+   * rewritten. They are aliases, not values, so an app's overrides reach them
+   * with no extra work. Kit source never uses them (UI4): they exist for
+   * borrowed code.
+   *
+   * `accent` is deliberately absent. shadcn spends it on a subtle hover
+   * SURFACE; this system spends it on the focus ring. One name, two
+   * incompatible jobs — so a component wanting shadcn's `accent` gets
+   * `bg-raised` written in instead, and `--color-accent` keeps meaning focus. */
+  --color-background: var(--color-ground);
+  --color-foreground: var(--color-ink);
+  --color-muted: var(--color-raised);
+  --color-muted-foreground: var(--color-ink-muted);
+  --color-input: var(--color-rule-soft);
+  --color-ring: var(--color-accent);
+  /* The filled-control pair. It inverts with the theme rather than picking a
+   * side: on a light ground the fill is dark ink and the text is white, and on
+   * a dark theme both swap. A control that spelled "dark fill" would be right
+   * in one theme and invisible in the other. */
+  --color-primary: var(--color-ink);
+  --color-primary-foreground: var(--color-on-ink);
+}
