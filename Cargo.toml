@@ -168,7 +168,7 @@ opentelemetry_sdk = { version = "0.32", features = ["rt-tokio"] }
 # runtime" — on a background thread, so the process keeps serving and the
 # collector simply never receives anything. Blocking IO is correct here: that
 # thread exists to block.
-opentelemetry-otlp = { version = "0.32", default-features = false, features = [
+opentelemetry-otlp = { version = "0.33", default-features = false, features = [
   "http-proto",
   "reqwest-blocking-client",
   "reqwest-rustls",
