@@ -32,9 +32,12 @@
 //! Deliberately shadcn-shaped but **minimal**: the set was fixed by auditing a
 //! real marketing page rather than by porting a component catalogue, and has
 //! grown only where an app needed something twice (UI8). Everything here is
-//! used by `apps/web`, `apps/app` or `apps/hiring`, with one named exception:
-//! [`CommandSelect`]'s consumer is A Place Ahead, outside this repo, and its
-//! preview lives in `apps/app/examples`. There is no modal, tooltip, carousel
+//! used by `apps/web` or `apps/app`, with named exceptions: [`CommandSelect`]'s
+//! consumer is A Place Ahead, outside this repo, and its preview lives in
+//! `apps/app/examples`; and the components only the removed hiring app used
+//! are listed under "Not decided here" in
+//! `docs/architecture/003-ui-semantic-isa.md` until someone keeps or deletes
+//! them. There is no modal, tooltip, carousel
 //! or date picker, because no page needs one yet — an unused component is
 //! bundle weight and maintenance cost with nothing on the other side of the
 //! ledger.

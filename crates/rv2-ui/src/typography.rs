@@ -12,9 +12,8 @@ use dioxus::prelude::*;
 ///
 /// The three larger sizes set `font-display` and `font-heading`, which the
 /// kit's theme points at the body family at semibold. An app with a display
-/// face — `apps/hiring`'s condensed one — sets `--font-display` and
-/// `--font-weight-heading` and every heading follows, instead of each call site
-/// spelling the family and weight.
+/// face sets `--font-display` and `--font-weight-heading` and every heading
+/// follows, instead of each call site spelling the family and weight.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum HeadingSize {
     /// Hero headline.

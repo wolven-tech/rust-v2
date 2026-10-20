@@ -1,7 +1,8 @@
 # UI semantic instruction set
 
-**Status:** Accepted, and implemented across `rv2-ui`, `apps/app`, `apps/web` and
-`apps/hiring` (beads epic `rv2-pql`). UI7 is enforced by `cargo xtask ci`.
+**Status:** Accepted, and implemented across `rv2-ui`, `apps/app` and `apps/web`.
+UI7 is enforced by `cargo xtask ci`. `apps/hiring`, which the evidence below
+cites, was removed on 2026-10-20: it ships from `uk-tech-hiring-dashboard`.
 
 This extends, without replacing, D7/D8 in
 [`001-rust-v2-allsource-foundation.md`](001-rust-v2-allsource-foundation.md),
@@ -138,10 +139,17 @@ exception; it is an operand to add.
 
 The check (`apps speak the kit`, `tooling/xtask/src/isa.rs`) scans
 `apps/*/src`. It does not scan `examples/`, which preview the kit's own markup,
-or the kit itself, whose job is emitting markup. At the time of writing one
-exception exists: `apps/hiring`'s skip link.
+or the kit itself, whose job is emitting markup. At the time of writing no
+exception exists; the first one was `apps/hiring`'s skip link.
 
 ## Not decided here
+
+- **The components only `apps/hiring` used.** With it removed, nothing in this
+  repo renders `Badge`/`BadgeFill`, `Bar`, `Disclosure`, `Status`, `Swatch`,
+  `TextLink`/`TEXT_LINK_STRONG`, `Checkbox`, `FieldSet`, `Select`, `Tabs`, or
+  the operands `Width::Dense`, `Variant::Link` and `Pad::None`. UI8 says delete
+  them; they are kept for now only because a product bet may be the consumer,
+  and UI8 counts an external consumer only once it is named here.
 
 - Whether `motion` keeps earning its weight. `lib.rs` already says delete the
   module and `/motion` together when it stops.

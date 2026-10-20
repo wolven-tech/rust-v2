@@ -131,16 +131,16 @@ fn ci() -> Fallible {
 
 /// Every colour names its job, in every app and in the shared kit.
 ///
-/// `apps/hiring` is dark and the other two are light, and all three define the
-/// same token names against their own palettes. A class naming a hue is
-/// therefore correct in at most one of them: `bg-white` on a component in
-/// `rv2-ui` drew a white card on the dark page for as long as nothing checked.
+/// Every app defines the same token names against its own palette, and a
+/// product may ship a dark one. A class naming a hue is therefore correct in at
+/// most one theme: `bg-white` on a component in `rv2-ui` drew a white card on a
+/// dark page for as long as nothing checked.
 ///
 /// This lives here rather than as a test in one app because it is a scan over
 /// source text. As a test it needed that app's test binary to compile before it
 /// could read a string, and it could only reach the files that app owned —
-/// which is how the other two apps and seven of the kit's files stayed
-/// unscanned. A grep needs neither.
+/// which is how the other apps and seven of the kit's files stayed unscanned. A
+/// grep needs neither.
 ///
 /// Bare `white` and `black` are included. They carry no shade, so a pattern
 /// built from `{palette}-{shade}` cannot see them, and `bg-white` was the
@@ -330,10 +330,6 @@ fn wasm_boundary() -> Fallible {
             "app",
             "-p",
             "web",
-            "-p",
-            "rv2-hiring",
-            "-p",
-            "hiring",
         ],
     )?;
 
@@ -350,7 +346,7 @@ fn wasm_boundary() -> Fallible {
     // only on the app, so the nested loop this replaced ran the same two
     // commands five times each — ten resolutions for two distinct answers, on
     // every CI run and every local gate.
-    for wasm_app in ["app", "web", "hiring"] {
+    for wasm_app in ["app", "web"] {
         let tree = Command::new("cargo")
             .args([
                 "tree",

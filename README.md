@@ -6,10 +6,8 @@ One datastore, one language, no TypeScript in the data path.
 - `apps/api` — Axum HTTP API. The only server process.
 - `apps/app` — Dioxus CSR SPA, the authenticated dashboard.
 - `apps/web` — Dioxus marketing site, built SSG.
-- `apps/hiring` — Dioxus CSR page over the UK tech hiring register. File-backed: the register is compiled in, so there is no API behind it.
-- `crates/` — the shared crate graph (events, domain, grounded generative-AI contracts, DTOs, UI kit, client, AllSource integration, analytics, email, jobs, hiring register).
+- `crates/` — the shared crate graph (events, domain, grounded generative-AI contracts, DTOs, UI kit, client, AllSource integration, analytics, email, jobs).
 - `tooling/xtask` — the gate: `cargo xtask ci`, and the Tailwind compile.
-- `tooling/hiring-register` — reads job boards, checks careers links, and writes each role's work pattern, engagement and mandate into the register.
 
 The design and every decision behind it live in
 [`docs/architecture/001-rust-v2-allsource-foundation.md`](docs/architecture/001-rust-v2-allsource-foundation.md).
@@ -143,7 +141,6 @@ gone stale.
 | `apps/api` | 4400 |
 | `apps/web` | 4401 |
 | `apps/app` | 4402 |
-| `apps/hiring` | 4403 |
 
 Ports 4400–4402 preserve rust-v1's allocation, so existing `.env` files and
 bookmarks carry over.
@@ -511,9 +508,6 @@ line that everyone reads as "no traffic".
 | [`docs/ledger/allsource-integration-corpus.md`](docs/ledger/allsource-integration-corpus.md) | The frozen list of AllSource behaviours this integration depends on (B1–B21), which are asserted, and the loop that asserted them. |
 | [`docs/ledger/component-kit-autoresearch.md`](docs/ledger/component-kit-autoresearch.md) | How `rv2-ui` got its scope and why the bundle is the size it is. |
 | [`docs/review/001-bootstrap-readiness.md`](docs/review/001-bootstrap-readiness.md) | A cold review of this repository as a foundation to start a project from: twelve findings, what each one actually was, and what was done about it. |
-| [`docs/reports/2026-09-20-uk-leadership-role-hunt.md`](docs/reports/2026-09-20-uk-leadership-role-hunt.md) | What `rv2-hiring` was built to answer: which UK roles are remote at 25% or less, outside IR35, and carry a mandate to build a function. Of 30 live listings on the specialist board, six clear both filters, one carries the mandate, and none do both. |
-| [`docs/design-system/ledger.md`](docs/design-system/ledger.md) | Ledger, the dark identity for `apps/hiring`: what each token is for, the two things overruled in the direction that won it, and why the muted ink sits at 7.5:1 rather than the 4.5:1 AA allows. |
-| [`docs/plans/2026-09-21-hiring-ui-to-register-handover.md`](docs/plans/2026-09-21-hiring-ui-to-register-handover.md) | The register deploys from `uk-tech-hiring-dashboard`, not from here. What the hiring UI work depends on that the destination lacks, in dependency order, and the four frictions that cost something to find — including why a gate ordered ahead of another hides it. |
 | [`AGENTS.md`](AGENTS.md) | The short orientation for anyone arriving with no context. `CLAUDE.md` points here. |
 | [`CONTRIBUTING.md`](CONTRIBUTING.md) | The rules, and what enforces each one. |
 | [`SECURITY.md`](SECURITY.md) | How to report a vulnerability, what is in scope, and the limitations stated rather than hidden. |

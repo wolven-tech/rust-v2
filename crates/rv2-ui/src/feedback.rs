@@ -31,10 +31,9 @@ impl Pad {
 
 /// A bordered surface.
 ///
-/// Flat, with no shadow. Every hand-made surface in `apps/web` and
-/// `apps/hiring` was flat, and the hiring ledger spends its one shadow on a
-/// verdict — "nothing else on the page casts a shadow at all" — which a shadow
-/// on every card would quietly break.
+/// Flat, with no shadow. Every hand-made surface it replaced was flat, and a
+/// product that spends a shadow on meaning — one verdict that must stand out —
+/// cannot do so if every card already casts one.
 ///
 /// `class` is for layout inside the card: flex direction, gaps, alignment.
 #[component]

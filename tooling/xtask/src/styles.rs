@@ -53,10 +53,6 @@ const APPS: &[App] = &[
         name: "app",
         dir: "apps/app",
     },
-    App {
-        name: "hiring",
-        dir: "apps/hiring",
-    },
 ];
 
 /// One compiled stylesheet.

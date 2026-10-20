@@ -8,6 +8,17 @@ Nothing here is released yet — the workspace is at `0.1.0` and every crate is
 
 ## [Unreleased]
 
+### Removed — the hiring register and beads
+
+- **`apps/hiring`, `crates/rv2-hiring` and `tooling/hiring-register`.** The
+  register deploys from `uk-tech-hiring-dashboard`, not from here, so this
+  foundation was carrying a product it does not ship: three crates on every
+  build, test and wasm32 boundary check. Its docs went with it — the Ledger
+  dark theme, the role-hunt report and the handover plan.
+- **The beads issue tracker** (`.beads/` and its `.gitignore` lines). It held one
+  epic, now closed; the decisions it tracked are in
+  `docs/architecture/003-ui-semantic-isa.md` and this changelog.
+
 ### Changed — `rv2-ui` is a semantic instruction set
 
 [`docs/architecture/003-ui-semantic-isa.md`](docs/architecture/003-ui-semantic-isa.md)
@@ -17,7 +28,7 @@ raw control, heading or link instead of using one.
 
 - **One theme.** `crates/rv2-ui/assets/theme.css` holds every register and the
   registry aliases. `apps/app` and `apps/web` import it instead of carrying
-  byte-identical copies; `apps/hiring` imports it and overrides values only.
+  byte-identical copies; a product theme overrides values only.
 - **Hooks default to registers.** `--rv2-shell-*` and `--rv2-command-*` resolve
   to the theme (with their old hex as fallback), so the header and the command
   picker take the page's focus colour instead of two blues of their own, and
@@ -34,44 +45,14 @@ raw control, heading or link instead of using one.
 - **Composites use atoms.** `Hero`, `FeatureCard`, `StepList`, `PricingCard` and
   `Footer` are built from `Eyebrow`, `Heading`, `Text`, `Card` and `Container`.
 - **`Card` is flat**, without `shadow-sm`, matching every hand-made surface it
-  replaced and the hiring ledger's one-shadow rule.
+  replaced.
 - **Breaking:** `NavItem`, `ProductNavItem` and `ProductHeaderAction` are one
   `NavLink` (`NavLink::route(key, label, href)` for a route,
   `NavLink::new(label, href)` otherwise, `.external()` for either). `Row`,
   `Stack` and `TabsVariant` are removed; nothing used them. A product that
   copied the kit keeps its copy until it pulls this.
-- **Apps migrated.** `apps/web`, `apps/app` and `apps/hiring` use the kit's
-  instructions throughout. Two `/motion` inputs that had lost their focus ring
-  have it back; the hiring CSV export is a real disabled link when there is
-  nothing to export.
-
-### Added — the UK tech hiring register
-
-- **`crates/rv2-hiring`**, WASM-safe and file-backed, holding what a role is.
-  Three classifiers, because three questions decide whether a role is worth an
-  application and a job title answers none of them:
-  - **Work pattern**, against a ceiling of 25% in-office. Cadence is part of the
-    judgement: "2 days a week" is 40% and fails, "2 days a month" is 9% and
-    passes. A bare "hybrid" with no number fails and records that the number was
-    missing, which is the usual way a three-day office week goes unsaid.
-  - **Engagement**, permanent against B2B. A title never states an IR35
-    determination, so this reads descriptions — and where the text is silent the
-    board it came from is the evidence. An employer applicant-tracking system
-    advertises employment; a specialist outside-IR35 board admits nothing else.
-  - **Mandate**, whether the holder builds a function and teaches. Every senior
-    posting says "mentor junior engineers", so each signal has strong phrasing
-    that counts and weak phrasing that is recorded and does not.
-- **`apps/hiring`**, a Dioxus CSR page over it. The register is compiled into
-  the binary, so there is no API, no loading state, and no failure mode where
-  the data is missing.
-- **`tooling/hiring-register`**, which reads the job boards and writes the
-  verdicts. It is the only place holding a description, which is what makes it
-  the only place that can classify properly — the page reads what it writes and
-  never recomputes.
-- **`rv2-ui` gains `Checkbox`, `Select` and `FieldSet`.** The kit had
-  `TextField` and `TextArea` and nothing else in `form`, and a filter rail is
-  about thirty checkboxes. `Checkbox` carries an option's match count, because a
-  facet with no count makes the reader click it to discover it matches nothing.
+- **Apps migrated.** `apps/web` and `apps/app` use the kit's instructions
+  throughout. Two `/motion` inputs that had lost their focus ring have it back.
 
 ### Fixed — the predecessor-stack check could fail unactionably
 
