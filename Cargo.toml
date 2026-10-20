@@ -156,7 +156,7 @@ metrics-exporter-prometheus = { version = "0.18.3", default-features = false, fe
 # `tracing` instruments the whole request path — so this is a subscriber layer
 # that ships it somewhere, not new instrumentation.
 opentelemetry = "0.32"
-opentelemetry_sdk = { version = "0.32", features = ["rt-tokio"] }
+opentelemetry_sdk = { version = "0.33", features = ["rt-tokio"] }
 # `http-proto` rather than the default `grpc-tonic`: tonic brings its own
 # transport and TLS stack into a binary that already has two, and OTLP/HTTP is
 # accepted by every collector worth pointing at.
