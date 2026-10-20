@@ -1,10 +1,13 @@
 .rv2-command-select {
-  --rv2-command-paper: #fffdf8;
-  --rv2-command-ink: #253a55;
-  --rv2-command-muted: #52657a;
-  --rv2-command-rule: #b3bcc7;
-  --rv2-command-active: #edf1e8;
-  --rv2-command-focus: #315bc4;
+  /* Hooks default to the kit's registers (UI3), with the original palette as
+   * the fallback for a product without the kit's theme. Hard-coded, this was a
+   * cream box with its own blue focus ring on every theme, dark ones included. */
+  --rv2-command-paper: var(--color-surface, #fffdf8);
+  --rv2-command-ink: var(--color-ink, #253a55);
+  --rv2-command-muted: var(--color-ink-muted, #52657a);
+  --rv2-command-rule: var(--color-rule, #b3bcc7);
+  --rv2-command-active: var(--color-raised, #edf1e8);
+  --rv2-command-focus: var(--color-accent, #315bc4);
   position: relative;
   width: 100%;
   min-width: 0;
@@ -26,7 +29,7 @@
   position: absolute; z-index: 100; inset-inline: 0; top: calc(100% + .4rem);
   padding: .45rem; border: 1px solid var(--rv2-command-rule); border-radius: .85rem;
   background: var(--rv2-command-paper); color: var(--rv2-command-ink);
-  box-shadow: 0 12px 32px #253a5526; animation: rv2-command-enter .12s ease-out;
+  box-shadow: 0 12px 32px color-mix(in oklch, var(--rv2-command-ink) 15%, transparent); animation: rv2-command-enter .12s ease-out;
 }
 .rv2-command-select .rv2-command-select__search {
   display: block; width: 100%; min-height: 44px; box-sizing: border-box;

@@ -37,6 +37,71 @@ pub fn FieldShell(
     }
 }
 
+/// A bare text control, for a field whose label is not a line of text above it
+/// — a search box labelled for screen readers only, a free-text answer under a
+/// question that is already its label.
+///
+/// [`TextField`] is this inside a [`FieldShell`], so the field styling has one
+/// home. Apps had been copying it by hand, and two of the four copies dropped
+/// the focus ring.
+#[component]
+pub fn Input(
+    value: String,
+    oninput: EventHandler<FormEvent>,
+    #[props(default = "text".to_string())] r#type: String,
+    #[props(default)] placeholder: String,
+    #[props(default)] id: Option<String>,
+    /// The `name` attribute. See [`TextField`] for why a form needs it.
+    #[props(default)]
+    name: Option<String>,
+    /// The `autocomplete` token — `email`, `current-password`, `off`.
+    #[props(default)]
+    autocomplete: Option<String>,
+    #[props(default)] spellcheck: Option<bool>,
+    #[props(default = false)] required: bool,
+    #[props(default = false)] disabled: bool,
+    /// Space-separated IDs of the messages describing this control; see
+    /// [`field_description`].
+    #[props(default)]
+    describedby: Option<String>,
+    /// `aria-invalid`. `None` omits the attribute.
+    #[props(default)]
+    invalid: Option<bool>,
+    /// Layout only: room for an adornment inside the box, say.
+    #[props(default)]
+    class: String,
+    #[props(default)] onkeydown: Option<EventHandler<KeyboardEvent>>,
+    #[props(default)] onfocusin: Option<EventHandler<FocusEvent>>,
+) -> Element {
+    rsx! {
+        input {
+            class: "{FIELD_BASE} {class}",
+            r#type: "{r#type}",
+            value: "{value}",
+            placeholder: "{placeholder}",
+            id,
+            "aria-describedby": describedby,
+            "aria-invalid": invalid,
+            name,
+            autocomplete,
+            spellcheck,
+            required,
+            disabled,
+            oninput: move |event| oninput.call(event),
+            onkeydown: move |event| {
+                if let Some(handler) = &onkeydown {
+                    handler.call(event);
+                }
+            },
+            onfocusin: move |event| {
+                if let Some(handler) = &onfocusin {
+                    handler.call(event);
+                }
+            },
+        }
+    }
+}
+
 #[component]
 pub fn TextField(
     label: String,
@@ -68,25 +133,26 @@ pub fn TextField(
     #[props(default)]
     error: Option<String>,
     oninput: EventHandler<FormEvent>,
+    #[props(default)] onfocusin: Option<EventHandler<FocusEvent>>,
 ) -> Element {
     let id = id.unwrap_or_else(|| format!("rv2-field-{}", current_scope_id().0));
     let description = field_description(&id, help.as_deref(), error.as_deref());
     let invalid = error.as_ref().is_some_and(|v| !v.trim().is_empty());
     rsx! {
         FieldShell { id: id.clone(), label, help, error,
-            input {
+            Input {
                 id,
-                "aria-describedby": description,
-                "aria-invalid": invalid,
-                class: "{FIELD_BASE}",
-                r#type: "{r#type}",
-                value: "{value}",
-                placeholder: "{placeholder}",
-                name: name.unwrap_or_default(),
-                autocomplete: autocomplete.unwrap_or_default(),
+                describedby: description,
+                invalid,
+                r#type,
+                value,
+                placeholder,
+                name,
+                autocomplete,
                 required,
                 disabled,
-                oninput: move |event| oninput.call(event),
+                oninput,
+                onfocusin,
             }
         }
     }

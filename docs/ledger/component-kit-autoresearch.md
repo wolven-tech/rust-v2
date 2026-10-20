@@ -187,3 +187,19 @@ are recorded in `docs/plans/2026-09-09-product-shell-patterns-design.md` and
 `docs/design-system/product-shell.md`.
 - **Dark mode is absent**, matching the audited page. Adding it later means touching every colour
   class in the kit.
+
+## Later — 2026-10-20
+
+Two things this ledger states no longer hold, recorded here rather than edited
+above, because the rows above are what was measured at the time.
+
+- **"29 components" and "light-mode only".** `apps/hiring` added a dark theme
+  and the kit grew form controls, `Tabs`, `CommandSelect`, the product shell and
+  the motion showcase.
+- **Scope by audit alone.** The kit is now governed by
+  [`003-ui-semantic-isa.md`](../architecture/003-ui-semantic-isa.md): an
+  instruction exists when two call sites need it and is deleted when none do
+  (UI8), and `cargo xtask ci` fails an app that writes raw markup instead of
+  using one (UI7). `Row`, `Stack` and the underline `Tabs` variant were deleted
+  under that rule; `NavItem` merged into `NavLink`.
+

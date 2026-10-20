@@ -110,12 +110,14 @@ first, including the person who set the brief.
 
 ## Changing it
 
-The palette is one `@theme` block in `apps/hiring/assets/input.css`. Nothing
-else needs touching, which is the point of the token layer. Run
-`cargo xtask styles` after, and commit the generated stylesheet — the gate
+The palette is one `@theme` block in `apps/hiring/assets/input.css`, holding
+values only. Nothing else needs touching, which is the point of the token layer.
+Run `cargo xtask styles` after, and commit the generated stylesheet — the gate
 checks it is current.
 
-`rv2-ui` components resolve against the same token names, so any app consuming
-the kit must declare them. `apps/app` and `apps/web` carry the subset the kit
-touches; adding a kit component that uses a new token means adding it there too,
-or that element renders unstyled in those apps only.
+The register names themselves, and the registry aliases, live once in
+`crates/rv2-ui/assets/theme.css`, which every app imports before its own
+overrides (UI2 in `docs/architecture/003-ui-semantic-isa.md`). A kit component
+that needs a new register adds it there, with a light-system value, and every
+app has it; this app then overrides the value if the Ledger needs a different
+one.

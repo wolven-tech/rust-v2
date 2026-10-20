@@ -26,6 +26,7 @@
 //! and the release bundle (slow, and `meta build` owns it).
 
 mod discovery;
+mod isa;
 mod styles;
 
 use std::process::{Command, Stdio};
@@ -117,6 +118,9 @@ fn ci() -> Fallible {
 
     step("no hardcoded hues");
     no_hardcoded_hues()?;
+
+    step("apps speak the kit");
+    isa::check(&styles::workspace_root()?)?;
 
     step("wasm32 boundary");
     wasm_boundary()?;

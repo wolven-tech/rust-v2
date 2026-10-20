@@ -6,70 +6,64 @@
 
 use dioxus::prelude::*;
 
-/// One route exposed by [`ProductHeader`] or [`NavigationRail`].
+/// A link in the kit's navigation: a header route, a rail entry, a footer
+/// link, a header call-to-action.
+///
+/// One record for all of them. There used to be three — `NavItem`,
+/// `ProductNavItem` and `ProductHeaderAction` — each carrying the same label,
+/// href and external flag with its own constructors, so a footer link and a
+/// header link could not be the same value.
+///
+/// `key` is the stable route identity that `current` is matched against, so a
+/// label or URL can change without breaking current-page state. A link that is
+/// never "the current page" — a footer link, a call-to-action — has no key.
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ProductNavItem {
-    pub key: String,
+pub struct NavLink {
+    pub key: Option<String>,
     pub label: String,
     pub href: String,
+    /// Opens in a new tab with `rel="noopener noreferrer"`.
     pub external: bool,
 }
 
-impl ProductNavItem {
-    pub fn new(key: impl Into<String>, label: impl Into<String>, href: impl Into<String>) -> Self {
+impl NavLink {
+    /// A link that is never the current page.
+    pub fn new(label: impl Into<String>, href: impl Into<String>) -> Self {
         Self {
-            key: key.into(),
+            key: None,
             label: label.into(),
             href: href.into(),
             external: false,
         }
     }
 
-    pub fn external(
+    /// A route, matched against `current` by `key`.
+    pub fn route(
         key: impl Into<String>,
         label: impl Into<String>,
         href: impl Into<String>,
     ) -> Self {
         Self {
-            key: key.into(),
-            label: label.into(),
-            href: href.into(),
-            external: true,
+            key: Some(key.into()),
+            ..Self::new(label, href)
         }
     }
-}
 
-/// Navigation call-to-action repeated in desktop and mobile header states.
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ProductHeaderAction {
-    pub label: String,
-    pub href: String,
-    pub external: bool,
-}
-
-impl ProductHeaderAction {
-    pub fn new(label: impl Into<String>, href: impl Into<String>) -> Self {
+    /// The same link, leaving the site.
+    #[must_use]
+    pub fn external(self) -> Self {
         Self {
-            label: label.into(),
-            href: href.into(),
-            external: false,
-        }
-    }
-
-    pub fn external(label: impl Into<String>, href: impl Into<String>) -> Self {
-        Self {
-            label: label.into(),
-            href: href.into(),
             external: true,
+            ..self
         }
     }
 }
 
-fn is_current(item: &ProductNavItem, current: Option<&str>) -> bool {
-    current == Some(item.key.as_str())
+fn is_current(item: &NavLink, current: Option<&str>) -> bool {
+    item.key.is_some() && item.key.as_deref() == current
 }
 
-fn render_header_action(action: &ProductHeaderAction) -> Element {
+fn render_header_action(action: &NavLink) -> Element {
     rsx! {
         a {
             class: "rv2-product-header__action",
@@ -92,9 +86,9 @@ pub fn ProductHeader(
     #[props(default = "/".to_string())] brand_href: String,
     #[props(default)] brand_subtitle: Option<String>,
     #[props(default)] brand_mark: Option<Element>,
-    #[props(default)] items: Vec<ProductNavItem>,
+    #[props(default)] items: Vec<NavLink>,
     #[props(default)] current: Option<String>,
-    #[props(default)] action: Option<ProductHeaderAction>,
+    #[props(default)] action: Option<NavLink>,
     #[props(default)] tail: Option<Element>,
     #[props(default = "Menu".to_string())] menu_label: String,
     #[props(default)] class: String,
@@ -172,7 +166,7 @@ pub fn ProductHeader(
 #[component]
 pub fn NavigationRail(
     label: String,
-    #[props(default)] items: Vec<ProductNavItem>,
+    #[props(default)] items: Vec<NavLink>,
     #[props(default)] current: Option<String>,
     #[props(default)] class: String,
 ) -> Element {
@@ -318,14 +312,32 @@ pub fn PageEntrance(#[props(default)] class: String, children: Element) -> Eleme
 
 #[cfg(test)]
 mod tests {
-    use super::{ProcessState, ProductNavItem, is_current, process_state};
+    use super::{NavLink, ProcessState, is_current, process_state};
 
     #[test]
     fn route_state_matches_stable_key_not_label_or_href() {
-        let item = ProductNavItem::new("guide", "Owner guide", "/guide");
+        let item = NavLink::route("guide", "Owner guide", "/guide");
         assert!(is_current(&item, Some("guide")));
         assert!(!is_current(&item, Some("Owner guide")));
         assert!(!is_current(&item, Some("/guide")));
+    }
+
+    /// A footer link or call-to-action has no route identity, so nothing —
+    /// not even an empty `current` — can mark it as the page you are on.
+    #[test]
+    fn a_link_without_a_key_is_never_the_current_page() {
+        let item = NavLink::new("Pricing", "/#pricing");
+        assert!(!is_current(&item, None));
+        assert!(!is_current(&item, Some("")));
+        assert!(!is_current(&item, Some("Pricing")));
+    }
+
+    #[test]
+    fn external_keeps_the_key_label_and_href() {
+        let item = NavLink::route("docs", "Docs", "https://example.com").external();
+        assert_eq!(item.key.as_deref(), Some("docs"));
+        assert_eq!(item.label, "Docs");
+        assert!(item.external);
     }
 
     #[test]

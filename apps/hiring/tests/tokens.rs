@@ -14,11 +14,30 @@
 
 use std::path::Path;
 
+/// The theme this app compiles against: the kit's registers, then this app's
+/// overrides.
+///
+/// Both files, in import order. Reading only `assets/input.css` stopped being
+/// enough once the shared registers and the registry aliases moved to
+/// `crates/rv2-ui/assets/theme.css` (UI2): a token defined there is defined
+/// here too, and a check that looked only at the override file would fail on
+/// every alias and miss a kit register that went missing at the source.
+fn theme() -> String {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR"));
+    let shared = std::fs::read_to_string(root.join("../../crates/rv2-ui/assets/theme.css"))
+        .expect("the kit's shared theme must be readable");
+    let own = std::fs::read_to_string(root.join("assets/input.css"))
+        .expect("the theme block must be readable");
+    assert!(
+        own.contains("crates/rv2-ui/assets/theme.css"),
+        "assets/input.css must import the kit's shared theme"
+    );
+    format!("{shared}\n{own}")
+}
+
 #[test]
 fn every_semantic_token_a_component_uses_is_defined_in_the_theme() {
-    let root = Path::new(env!("CARGO_MANIFEST_DIR"));
-    let theme = std::fs::read_to_string(root.join("assets/input.css"))
-        .expect("the theme block must be readable");
+    let theme = theme();
 
     let tokens = [
         "ground",
@@ -42,8 +61,6 @@ fn every_semantic_token_a_component_uses_is_defined_in_the_theme() {
         "caution-ink",
         "fault",
         "fault-ink",
-        "rust-strong",
-        "rust-soft",
         "rust-ink",
         "index-ftse100",
         "index-ftse250",
@@ -73,9 +90,7 @@ fn every_semantic_token_a_component_uses_is_defined_in_the_theme() {
 /// in the focus colour.
 #[test]
 fn the_registry_aliases_are_defined_and_accent_is_not_among_them() {
-    let root = Path::new(env!("CARGO_MANIFEST_DIR"));
-    let theme = std::fs::read_to_string(root.join("assets/input.css"))
-        .expect("the theme block must be readable");
+    let theme = theme();
 
     for alias in [
         "background",

@@ -539,13 +539,31 @@ fn the_layout_tabs_and_the_panel_they_switch_agree() {
             1,
             "{layout:?}: a roving tabindex leaves one stop, so Tab enters the list once"
         );
-        assert_eq!(
-            html.matches("bg-primary").count(),
-            1,
-            "{layout:?}: the current tab is the filled control. Filling it with the \
-             page background instead lifts it out of the track on a light theme and \
-             sinks it into the track on a dark one, leaving the current tab the least \
-             emphatic thing in the row"
-        );
+        // Read off each tab's own tag rather than counted across the page: the
+        // fill is the kit's `bg-ink`, which a primary `LinkButton` elsewhere in
+        // the results carries too.
+        for other in rv2_hiring::view::Layout::ALL {
+            let tag = tag_with(&html, &format!(r#"id="tab-{}""#, other.key()));
+            assert_eq!(
+                tag.contains(" bg-ink "),
+                other == layout,
+                "{layout:?}: the current tab is the filled control, and only it. Filling \
+                 it with the page background instead lifts it out of the track on a light \
+                 theme and sinks it into the track on a dark one, leaving the current tab \
+                 the least emphatic thing in the row"
+            );
+        }
     }
+}
+
+/// The opening tag carrying `attribute`, from `<` to `>`.
+fn tag_with<'a>(html: &'a str, attribute: &str) -> &'a str {
+    let at = html
+        .find(attribute)
+        .unwrap_or_else(|| panic!("no element carries {attribute}"));
+    let start = html[..at]
+        .rfind('<')
+        .expect("an attribute sits inside a tag");
+    let end = at + html[at..].find('>').expect("a tag closes");
+    &html[start..=end]
 }

@@ -17,7 +17,7 @@ use rv2_hiring::breakdown::{self, Coverage, GroupBy};
 use rv2_hiring::dashboard::{Dashboard, Panel, Show};
 use rv2_hiring::model::Register;
 use rv2_hiring::view::{self, Filters, Sort};
-use rv2_ui::Bar;
+use rv2_ui::{Bar, Button, Card, Heading, HeadingSize, Size, Variant};
 
 use crate::{Page, SharedRegister};
 
@@ -30,7 +30,7 @@ pub fn DashboardView(page: Page) -> Element {
     rsx! {
         section { class: "space-y-4",
             header { class: "flex flex-wrap items-baseline justify-between gap-2",
-                h2 { class: "font-display text-3xl font-bold leading-none", "{dashboard.name}" }
+                Heading { size: HeadingSize::Section, "{dashboard.name}" }
                 p { class: "text-xs text-ink-muted",
                     "Every panel answers itself from the register as it stands. Run "
                     code { class: "rounded bg-raised px-1", "hiring-register check" }
@@ -59,26 +59,28 @@ pub fn DashboardView(page: Page) -> Element {
 fn PanelCard(panel: Panel, register: usize, page: Page) -> Element {
     let _ = register;
     rsx! {
-        article { class: "rounded-lg border border-rule-soft bg-surface p-4",
-            h3 { class: "text-sm font-semibold text-ink", "{panel.title}" }
-            div { class: "pt-2",
-                match panel.show {
-                    Show::Count => rsx! {
-                        CountPanel { filters: panel.filters.clone() }
-                    },
-                    Show::Breakdown { by } => rsx! {
-                        BreakdownPanel { filters: panel.filters.clone(), by }
-                    },
-                    Show::List { top, by } => rsx! {
-                        ListPanel { filters: panel.filters.clone(), top, by }
-                    },
-                    Show::Table => rsx! {
-                        CountPanel { filters: panel.filters.clone() }
-                    },
-                }
-            }
-            div { class: "pt-2",
-                OpenInRegister { filters: panel.filters.clone(), page }
+        Card {
+            article {
+              Heading { level: 3, size: HeadingSize::Card, "{panel.title}" }
+              div { class: "pt-2",
+                  match panel.show {
+                      Show::Count => rsx! {
+                          CountPanel { filters: panel.filters.clone() }
+                      },
+                      Show::Breakdown { by } => rsx! {
+                          BreakdownPanel { filters: panel.filters.clone(), by }
+                      },
+                      Show::List { top, by } => rsx! {
+                          ListPanel { filters: panel.filters.clone(), top, by }
+                      },
+                      Show::Table => rsx! {
+                          CountPanel { filters: panel.filters.clone() }
+                      },
+                  }
+              }
+              div { class: "pt-2",
+                  OpenInRegister { filters: panel.filters.clone(), page }
+              }
             }
         }
     }
@@ -93,9 +95,9 @@ fn OpenInRegister(filters: Filters, page: Page) -> Element {
     let mut f = page.filters;
     let target = filters.clone();
     rsx! {
-        button {
-            r#type: "button",
-            class: "text-xs text-ink-muted underline hover:text-ink",
+        Button {
+            variant: Variant::Link,
+            size: Size::Small,
             onclick: move |_| {
                 let mut next = target.clone();
                 next.layout = view::Layout::Register;
