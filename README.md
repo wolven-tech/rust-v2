@@ -200,6 +200,7 @@ This repo follows portable rules published at [decebal-claude-skills](https://gi
 | [`docs/ledger/allsource-integration-corpus.md`](docs/ledger/allsource-integration-corpus.md) | 21 AllSource behaviours this codebase depends on (B1–B21), which are asserted in tests. |
 | [`docs/review/001-bootstrap-readiness.md`](docs/review/001-bootstrap-readiness.md) | An external review of rust-v2 as a foundation; twelve findings and what was done about each. |
 | [`docs/design-system/field-and-action-contracts.md`](docs/design-system/field-and-action-contracts.md) | Shared field labels, help/error associations, typed-control composition, busy actions and verification limits. |
+| [`docs/design-system/consent-footer.md`](docs/design-system/consent-footer.md) | Shared fixed consent footer, product adapters, theme tokens and browser checks. |
 | [`docs/plans/2026-10-12-command-select-design.md`](docs/plans/2026-10-12-command-select-design.md) | Shared searchable selection, consumption API, theme variables and keyboard/browser acceptance. |
 | [`docs/NEXT_BET_START.md`](docs/NEXT_BET_START.md) | Checklist for placing a new product bet from this foundation. |
 | [`AGENTS.md`](AGENTS.md) | Short orientation for anyone arriving with no context. Read this first. |
