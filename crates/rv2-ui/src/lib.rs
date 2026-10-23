@@ -76,6 +76,7 @@
 #![allow(non_snake_case)] // Dioxus components are PascalCase by convention.
 
 pub mod command_select;
+pub mod consent_footer;
 pub mod feedback;
 pub mod form;
 pub mod layout;
@@ -87,6 +88,7 @@ pub mod tabs;
 pub mod typography;
 
 pub use crate::command_select::CommandSelect;
+pub use crate::consent_footer::ConsentFooter;
 pub use crate::feedback::{Card, EmptyState, ErrorBanner, Pad, PageHeader, Skeleton};
 pub use crate::form::{
     Checkbox, FieldSet, FieldShell, Input, Select, TextArea, TextField, field_description,
