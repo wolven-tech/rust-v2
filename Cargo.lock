@@ -577,7 +577,7 @@ dependencies = [
  "reqwest 0.12.28",
  "serde",
  "serde_json",
- "sha2",
+ "sha2 0.10.9",
  "totp-rs",
  "tracing",
  "url",
@@ -1768,7 +1768,7 @@ dependencies = [
  "digest 0.10.7",
  "proc-macro2",
  "quote",
- "sha2",
+ "sha2 0.10.9",
  "slab",
  "syn 2.0.119",
 ]
@@ -4887,6 +4887,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "sha2"
+version = "0.11.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "47d7069beb7d6ac7b9acd1039986e73443f24234f41074da099d6f994ac9ad19"
+dependencies = [
+ "cfg-if",
+ "cpufeatures 0.3.0",
+ "digest 0.11.3",
+]
+
+[[package]]
 name = "sharded-slab"
 version = "0.1.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5143,7 +5154,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "32497e9a4c7b38532efcdebeef879707aa9f794296a4f0244f6f69e9bc8574bd"
 dependencies = [
  "fastrand",
- "getrandom 0.3.4",
+ "getrandom 0.4.3",
  "once_cell",
  "rustix",
  "windows-sys 0.61.2",
@@ -5460,7 +5471,7 @@ dependencies = [
  "hmac",
  "rand 0.9.5",
  "sha1 0.10.7",
- "sha2",
+ "sha2 0.10.9",
  "url",
  "urlencoding",
 ]
@@ -6333,7 +6344,7 @@ checksum = "1ffae5123b2d3fc086436f8834ae3ab053a283cfac8fe0a0b8eaae044768a4c4"
 name = "xtask"
 version = "0.1.0"
 dependencies = [
- "sha2",
+ "sha2 0.11.1",
 ]
 
 [[package]]
