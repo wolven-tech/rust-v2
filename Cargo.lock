@@ -1968,9 +1968,9 @@ checksum = "92773504d58c093f6de2459af4af33faa518c13451eb8f2b5698ed3d36e7c813"
 
 [[package]]
 name = "ecow"
-version = "0.3.0"
+version = "0.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "62bac48c16a993694c703f2991527d422d9efb8ec5625756004ba30e97683720"
+checksum = "2dca6141d10838e13f9b166c190254a3f9b5d8379521f9b7510810061cef17a4"
 dependencies = [
  "serde",
 ]
@@ -4094,7 +4094,7 @@ dependencies = [
  "bytes",
  "getrandom 0.4.3",
  "lru-slab",
- "rand 0.10.2",
+ "rand 0.10.3",
  "rand_pcg",
  "ring",
  "rustc-hash 2.1.3",
@@ -4171,9 +4171,9 @@ dependencies = [
 
 [[package]]
 name = "rand"
-version = "0.10.2"
+version = "0.10.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c7f5fa3a058cd35567ef9bfa5e75732bee0f9e4c55fa90477bef2dfcdbc4be80"
+checksum = "65c9fb96cbc91e3478eaae79a69fcd3f1ae4ad052e471fe6732fff548984b4af"
 dependencies = [
  "chacha20",
  "getrandom 0.4.3",
@@ -4395,16 +4395,16 @@ dependencies = [
 
 [[package]]
 name = "resend-rs"
-version = "0.35.0"
+version = "0.35.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "641bb43849955a6394f1b7f2d0a653381b8dab7a4d20c7fb9a87633c1ce8624f"
+checksum = "0945b9fcb8054832cbee16d653037294aa01bdd4fa39bd6df9bd233414dc7336"
 dependencies = [
  "ecow",
  "getrandom 0.4.3",
  "governor 0.10.4",
  "mailparse",
  "maybe-async",
- "rand 0.10.2",
+ "rand 0.10.3",
  "reqwest 0.13.4",
  "serde",
  "serde_json",
