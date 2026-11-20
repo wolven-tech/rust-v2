@@ -5,6 +5,25 @@ contract stays in that bet's `docs/BET.md`; changing execution priorities go in
 `docs/IMPACT_PLAN.md`. Each bet gets its own repository imported from a pinned
 commit of this foundation. Existing products are not migrated by this guide.
 
+## Before placement: evidence admission
+
+Use the current `place-product-bets` skill's selection guide and demand brief
+before committing to a repository or domain. Shape schema 7 requires reviewed
+original recurring-problem evidence, business-model fit, a credible route to
+the first five qualified prospects, customer work removed, an observable
+result, counterevidence and a stop condition. A bookmark or seller claim is a
+lead to investigate, not proof of demand. List-price evidence does not prove
+sales; ad-funded traffic does not validate a paid offer.
+
+Hold candidates with a critical unknown; reject contradicted assumptions.
+Rank only eligible candidates, compare with continuing an active bet, and
+never fill a discovery quota. Unproven willingness to pay may enter an explicit
+priced test when problem evidence and access are credible. Unknown search
+volume remains unknown. Preserve the reviewed snapshot as
+`docs/DEMAND_BRIEF.md`; the bet validator's `--admission` gate precedes creation
+and `--placement` validates the schema-7 contract and its sibling brief. Passing
+structure checks cannot authenticate sources or pass the commercial gate.
+
 ## First decision: one complete value circuit
 
 Name one customer in a triggered situation, payer, decision-maker, specific
@@ -35,15 +54,26 @@ the delivered output and refund/failed-delivery state before promotion.
 | Product web | Deterministic local-first outcome where honest | Browser task completion, errors, receipt, keyboard and 320px reflow |
 | API | Park unless trusted write, entitlement, sync, or another named server-only action needs it | Auth/validation, bounded retries, idempotency, rate limit, health, rollback, receipt trace |
 | AllSource | Park unless shared durable data is essential; never introduce a second datastore by default | Tenant-scoped read-after-write, retention/deletion/recovery, failure proof |
-| Native app | Build only for a distinct at-location, offline, camera, share, notification, or repeat-use job | Shared domain-rule parity, safe areas/system bars, offline recovery, physical-device smoke, store review and public URL |
+| Native app | Complete Android and iOS value circuit required by the 21 September 2026 founder decision; share domain rules and preserve product economics | Safe areas/system bars, purchase/restore/refund parity, offline recovery, physical-device proof, store review and verified public URLs independently for each OS |
+| ChatGPT and Claude | Assess every new bet under shape schema 7. Choose pilot, queued or deferred from customer job and advantage over ordinary chat | Separate data/render tools, MCP Apps UI plus text fallback, explicit processing/entitlement boundary, independent actual-host proof and commerce review |
 | Generative AI | Park unless a bounded, grounded, human-reviewed step helps the fixed gate | Deterministic fallback, edit/accept evidence; no model deciding price, consent, eligibility, or legal/health truth |
 
 Keep `apps/api`, `apps/web`, `apps/app`, shared Rust domain crates, `rv2-ai`,
 and `tooling/xtask` boundaries from the foundation. Replace sample posts and
 rust-v2 identity with the bet's smallest circuit. An existing API crate or
-mobile-shaped component is not a reason to deploy either service. Native paid
+mobile-shaped component does not establish release readiness. Native paid
 digital access needs current store-policy review, purchase/restore/refund
 parity, and no disguised web-checkout bypass.
+
+Chat is an additional customer delivery option, not a substitute for complete
+native delivery. Sponsor Ledger is the first portfolio pilot; subsequent fit
+candidates are Edit Scope, SolarQuote and Talk Run, subject to the existing
+single-focus activation order. Shared deterministic rules stay authoritative.
+Keep synthetic samples separate from paid custom output. OpenAI's plugin
+commerce rules checked 22 September 2026 prohibit digital checkout and upsells;
+existing paid-account access needs product-specific eligibility. Claude review
+is independent. Record readiness in `docs/CHAT_DELIVERY.md`; no host-ready claim
+from a local harness. Private founder tools use a separate read-only connection.
 
 ## Low-cost production profile
 
@@ -117,6 +147,21 @@ After launch, freeze the commercial gate. Improve one reversible bottleneck at
 a time. Baseline source-to-gate counts, change one element, compare qualified
 completion and cost per delivered value, then keep, revert, or replace. Append
 decision and evidence; do not rewrite the original bet after seeing results.
+
+Separate direct customer validation from search development. Track qualified
+exposure, offer comprehension and source-to-delivery progression; no conversion
+without exposure is not an offer rejection. Search delay cannot extend a fired
+kill condition. Describe the purchase as a literal delivered outcome. A free
+utility must serve the same job and lead honestly to that outcome.
+
+Before an inspiration creates a bead, map source/claim class to the current
+bottleneck, one bounded change, observable success/regression and a stop rule;
+deduplicate the queue. Otherwise retain research. For an AI experiment, inspect
+representative traces and human-reviewed failure modes, then test task completion
+or correction effort against the manual path. Keep synthetic cases distinct
+from customer evidence. Reuse applicable last-ten failure cases. For routing or
+SEO automation, calibrate bounded decisions against reviewed examples and
+measure error, cost and fallback; a confidence score is not rollout authority.
 
 ## Autoresearch record: foundation shape
 

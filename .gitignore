@@ -20,6 +20,9 @@ public/
 .env*.local
 !.env.example
 
+# Local scratch: evidence screenshots, patches, seed binaries, worktrees
+/.local/
+
 # meta runtime data
 .meta/
 meta-logs-*.txt
