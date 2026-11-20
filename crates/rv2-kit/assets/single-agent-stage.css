@@ -1,0 +1,485 @@
+.kit-sas {
+  box-sizing: border-box;
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  gap: 12px;
+  width: 100%;
+  padding: 16px;
+  font-family: var(--kit-font);
+  color: var(--kit-ink);
+  background: var(--kit-surface);
+  border: 1px solid var(--kit-rule-soft);
+  border-radius: var(--kit-radius-lg);
+  box-shadow: var(--kit-shadow);
+}
+
+.kit-sas button {
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.kit-sas img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.kit-sas__upper {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr);
+  gap: 12px;
+  align-items: stretch;
+}
+
+/* Joins sit in the 12px gutters; each is a rule between two hollow end dots. */
+.kit-sas__upper::before,
+.kit-sas__upper::after {
+  content: "";
+  position: absolute;
+  top: calc(50% - 4px);
+  width: 12px;
+  height: 8px;
+  pointer-events: none;
+  background:
+    radial-gradient(circle closest-side, transparent 45%, var(--kit-ink-muted) 55%) left center / 8px 8px no-repeat,
+    radial-gradient(circle closest-side, transparent 45%, var(--kit-ink-muted) 55%) right center / 8px 8px no-repeat,
+    linear-gradient(var(--kit-rule), var(--kit-rule)) center / calc(100% - 8px) 2px no-repeat;
+}
+
+/* z-index -1 needs .kit-sas to isolate, so the joins paint above its background and below the cards. */
+.kit-sas__joins {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.kit-sas__join {
+  fill: none;
+  stroke: var(--kit-ink-muted);
+  stroke-width: 1.5;
+}
+
+.kit-sas__worker::after,
+.kit-sas__tool:not(.kit-sas__tool--summary)::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  width: 8px;
+  height: 8px;
+  margin-left: -4px;
+  border: 1.5px solid var(--kit-ink-muted);
+  border-radius: 50%;
+  background: var(--kit-surface);
+}
+
+.kit-sas__worker::after {
+  bottom: -4px;
+}
+
+.kit-sas__tool:not(.kit-sas__tool--summary)::before {
+  top: -4px;
+}
+
+.kit-sas__upper::before {
+  left: calc((100% - 24px) / 3);
+}
+
+.kit-sas__upper::after {
+  left: calc((100% - 24px) * 2 / 3 + 12px);
+}
+
+.kit-sas__requester,
+.kit-sas__worker,
+.kit-sas__files,
+.kit-sas__tool,
+.kit-sas__work,
+.kit-sas__info {
+  min-width: 0;
+  border: 1px solid var(--kit-rule-soft);
+  border-radius: var(--kit-radius);
+  background: var(--kit-surface);
+}
+
+.kit-sas__requester {
+  display: flex;
+  gap: 10px;
+  padding: 12px;
+}
+
+.kit-sas__avatar,
+.kit-sas__mark,
+.kit-sas__file-mark {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--kit-raised);
+  color: var(--kit-ink-muted);
+  font-weight: 600;
+  overflow: hidden;
+}
+
+.kit-sas__requester-text {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.kit-sas__name,
+.kit-sas__worker-name,
+.kit-sas__file-name,
+.kit-sas__tool-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.kit-sas__message {
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  font-size: 13px;
+  color: var(--kit-ink-hover);
+}
+
+.kit-sas__worker {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-content: center;
+  align-items: center;
+  gap: 4px 10px;
+  padding: 12px;
+}
+
+.kit-sas__subtitle {
+  grid-column: 2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12px;
+  color: var(--kit-ink-muted);
+}
+
+.kit-sas__state {
+  grid-column: 3;
+  grid-row: 1;
+  font-size: 12px;
+  color: var(--kit-ink-muted);
+}
+
+.kit-sas__worker[data-stage="working"] .kit-sas__mark {
+  color: var(--kit-ok-ink);
+  animation: kit-sas-breathe 1.6s var(--kit-ease) infinite;
+}
+
+.kit-sas__worker[data-stage="working"] .kit-sas__state {
+  color: var(--kit-ok-ink);
+}
+
+.kit-sas__worker[data-stage="finished"] .kit-sas__state {
+  color: var(--kit-ink);
+}
+
+.kit-sas__worker[aria-expanded="true"],
+.kit-sas__file[aria-expanded="true"],
+.kit-sas__tool[aria-expanded="true"] {
+  border-color: var(--kit-accent);
+  box-shadow: var(--kit-shadow);
+}
+
+.kit-sas__files {
+  display: grid;
+  gap: 6px;
+  padding: 10px;
+  grid-column: 3;
+  grid-row: 1;
+}
+
+.kit-sas__file-list {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.kit-sas__file {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 32px;
+  padding: 4px 6px;
+  border: 0;
+  border-radius: var(--kit-radius-sm);
+  background: transparent;
+}
+
+.kit-sas__file:hover {
+  background: var(--kit-raised);
+}
+
+.kit-sas__file[data-reading="true"] {
+  background: var(--kit-ok-soft);
+  color: var(--kit-ok-ink);
+}
+
+.kit-sas__file-name {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.kit-sas__file-meta,
+.kit-sas__more,
+.kit-sas__grant,
+.kit-sas__last,
+.kit-sas__idle {
+  font-size: 12px;
+  color: var(--kit-ink-muted);
+  margin: 0;
+}
+
+.kit-sas__file-meta {
+  flex: 0 0 auto;
+}
+
+.kit-sas__rail {
+  position: relative;
+  height: 2px;
+  margin: 0 12%;
+  border-radius: 1px;
+  background: var(--kit-rule);
+  overflow: hidden;
+}
+
+.kit-sas__rail[data-route]:not([data-route=""])::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 30%;
+  background: linear-gradient(90deg, transparent, var(--kit-accent), transparent);
+  animation: kit-sas-travel 1.4s linear infinite;
+}
+
+.kit-sas__work {
+  display: grid;
+  grid-auto-rows: 28px;
+  gap: 2px;
+  height: calc(3 * 28px + 4px);
+  padding: 6px;
+  overflow: hidden;
+  align-content: start;
+}
+
+.kit-sas__step {
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13px;
+  padding: 0 6px;
+  border-radius: var(--kit-radius-sm);
+  animation: kit-sas-slide 260ms var(--kit-ease) both;
+}
+
+.kit-sas__step[data-in-progress="true"] {
+  background: linear-gradient(90deg, var(--kit-raised), var(--kit-surface), var(--kit-raised));
+  background-size: 200% 100%;
+  animation: kit-sas-sheen 1.6s linear infinite;
+}
+
+.kit-sas__tools {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 10px;
+}
+
+.kit-sas__tool {
+  position: relative;
+  display: grid;
+  gap: 4px;
+  padding: 10px;
+  border: 1px solid var(--kit-rule-soft);
+  border-radius: var(--kit-radius);
+  background: var(--kit-surface);
+}
+
+.kit-sas__tool-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.kit-sas__tool-name {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.kit-sas__status {
+  justify-self: start;
+  padding: 0 8px;
+  border: 1px solid var(--kit-rule);
+  border-radius: 999px;
+  font-size: 11px;
+}
+
+.kit-sas__tool[data-live="true"] .kit-sas__status {
+  color: var(--kit-ok-ink);
+  border-color: var(--kit-ok);
+  animation: kit-sas-sheen 1.6s linear infinite;
+}
+
+.kit-sas__last {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.kit-sas__tool--summary {
+  align-content: center;
+  border-style: dashed;
+}
+
+.kit-sas__info {
+  display: grid;
+  padding: 12px;
+  box-shadow: var(--kit-shadow-pop);
+  animation: kit-sas-grow var(--kit-fast) var(--kit-ease) both;
+}
+
+.kit-sas__info dl {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+}
+
+.kit-sas__info-row {
+  display: grid;
+  grid-template-columns: minmax(96px, auto) minmax(0, 1fr);
+  gap: 10px;
+  font-size: 13px;
+}
+
+.kit-sas__info dt {
+  color: var(--kit-ink-muted);
+}
+
+.kit-sas__info dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.kit-sas button:focus-visible {
+  outline: 2px solid var(--kit-accent);
+  outline-offset: 2px;
+}
+
+@keyframes kit-sas-breathe {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.08);
+  }
+}
+
+@keyframes kit-sas-travel {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(400%);
+  }
+}
+
+@keyframes kit-sas-slide {
+  from {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+
+@keyframes kit-sas-sheen {
+  from {
+    background-position: 100% 0;
+  }
+  to {
+    background-position: -100% 0;
+  }
+}
+
+@keyframes kit-sas-grow {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scaleY(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .kit-sas__upper {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .kit-sas__upper::before,
+  .kit-sas__upper::after {
+    display: none;
+  }
+
+  .kit-sas__rail,
+  .kit-sas__joins,
+  .kit-sas__worker::after,
+  .kit-sas__tool::before {
+    display: none;
+  }
+
+  .kit-sas__requester {
+    order: 1;
+  }
+
+  .kit-sas__worker {
+    order: 2;
+  }
+
+  .kit-sas__files {
+    order: 3;
+    grid-column: auto;
+    grid-row: auto;
+  }
+
+  .kit-sas__tools {
+    order: 4;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kit-sas * {
+    animation: none !important;
+    transition: none !important;
+  }
+}

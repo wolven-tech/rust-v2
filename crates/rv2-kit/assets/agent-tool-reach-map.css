@@ -1,0 +1,185 @@
+.kit-atr {
+  container-type: inline-size;
+  display: grid;
+  gap: var(--kit-gap);
+  padding: var(--kit-gap);
+  border: 1px solid var(--kit-rule-soft);
+  border-radius: var(--kit-radius-lg);
+  background: var(--kit-surface);
+  color: var(--kit-ink);
+  font-family: var(--kit-font);
+  font-size: 13px;
+}
+.kit-atr__head { display: flex; justify-content: space-between; align-items: baseline; gap: var(--kit-gap); flex-wrap: wrap; }
+.kit-atr__title { margin: 0; font-size: 15px; font-weight: 600; }
+.kit-atr__counts { margin: 0; color: var(--kit-ink-muted); font-variant-numeric: tabular-nums; }
+
+.kit-atr__tabs { display: flex; gap: 4px; flex-wrap: wrap; border-bottom: 1px solid var(--kit-rule-soft); }
+.kit-atr__tab {
+  padding: 6px 10px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: none;
+  color: var(--kit-ink-muted);
+  cursor: pointer;
+}
+.kit-atr__tab[aria-selected="true"] { color: var(--kit-ink); border-bottom-color: var(--kit-ink); }
+.kit-atr__tab:focus-visible,
+.kit-atr__card:focus-visible,
+.kit-atr__close:focus-visible,
+.kit-atr__replay:focus-visible,
+.kit-atr__call button:focus-visible,
+.kit-atr__edit:focus-visible {
+  outline: 2px solid var(--kit-ink);
+  outline-offset: 2px;
+}
+
+.kit-atr__map { position: relative; aspect-ratio: 5 / 3; min-height: 340px; transition: opacity var(--kit-fast) var(--kit-ease); }
+.kit-atr__map[data-blocked="true"] { opacity: 0.4; pointer-events: none; }
+.kit-atr__wires { position: absolute; inset: 0; width: 100%; height: 100%; }
+.kit-atr__wire { stroke: var(--kit-rule); stroke-width: 1.5; }
+.kit-atr__wire[data-granted="false"] { stroke-dasharray: 2 6; stroke: var(--kit-rule-soft); }
+.kit-atr__wire[data-running="true"] { stroke: var(--kit-ok); stroke-width: 2; animation: kit-atr-spark 1.2s ease-in-out infinite; }
+
+.kit-atr__tools { position: absolute; inset: 0; margin: 0; padding: 0; list-style: none; }
+.kit-atr__slot {
+  position: absolute;
+  left: var(--atr-x);
+  top: var(--atr-y);
+  transform: translate(-50%, -50%);
+  width: min(180px, 24%);
+}
+.kit-atr__card,
+.kit-atr__agent {
+  box-sizing: border-box;
+  display: grid;
+  gap: 2px;
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--kit-rule-soft);
+  border-radius: var(--kit-radius);
+  background: var(--kit-raised);
+  box-shadow: var(--kit-shadow);
+  font: inherit;
+  color: inherit;
+  text-align: left;
+}
+.kit-atr__card { cursor: pointer; }
+.kit-atr__card[data-granted="false"] { cursor: default; opacity: 0.5; border-style: dashed; }
+.kit-atr__slot[data-reach="Failed"] .kit-atr__card { border-color: var(--kit-fault); }
+.kit-atr__slot[data-reach="Running"] .kit-atr__card { border-color: var(--kit-ok); }
+.kit-atr__name { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.kit-atr__state { font-size: 12px; color: var(--kit-ink-muted); }
+.kit-atr__slot[data-reach="Failed"] .kit-atr__state { color: var(--kit-fault-ink); }
+.kit-atr__slot[data-reach="Running"] .kit-atr__state { color: var(--kit-ok-ink); }
+.kit-atr__meta { font-size: 11px; color: var(--kit-ink-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.kit-atr__mark {
+  display: inline-grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  background: var(--kit-surface);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.kit-atr__agent {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: min(190px, 30%);
+  background: var(--kit-surface);
+  box-shadow: var(--kit-shadow-pop);
+  justify-items: center;
+  text-align: center;
+}
+
+.kit-atr__calls {
+  display: grid;
+  gap: 8px;
+  padding: var(--kit-gap);
+  border: 1px solid var(--kit-rule-soft);
+  border-radius: var(--kit-radius);
+  background: var(--kit-surface);
+  box-shadow: var(--kit-shadow-pop);
+}
+.kit-atr__calls-head { display: flex; justify-content: space-between; align-items: center; gap: var(--kit-gap); }
+.kit-atr__calls-title { margin: 0; font-size: 14px; font-weight: 600; }
+.kit-atr__close { border: 0; background: none; color: var(--kit-ink-muted); cursor: pointer; }
+.kit-atr__call-list { display: grid; gap: 4px; margin: 0; padding: 0; list-style: none; }
+.kit-atr__call button {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  width: 100%;
+  padding: 4px 8px;
+  border: 1px solid var(--kit-rule-soft);
+  border-radius: var(--kit-radius-sm);
+  background: var(--kit-raised);
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.kit-atr__call button[aria-pressed="true"] { border-color: var(--kit-ink); }
+.kit-atr__tag {
+  padding: 0 6px;
+  border: 1px solid var(--kit-rule);
+  border-radius: 999px;
+  font-size: 11px;
+  color: var(--kit-ink-muted);
+}
+.kit-atr__label { margin: 0; font-size: 11px; color: var(--kit-ink-muted); text-transform: uppercase; letter-spacing: 0.04em; }
+.kit-atr__code {
+  margin: 0;
+  padding: 8px;
+  overflow: auto;
+  max-height: 180px;
+  border-radius: var(--kit-radius-sm);
+  background: var(--kit-raised);
+  font-family: var(--kit-mono);
+  font-size: 12px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.kit-atr__code[data-tone="fault"] { color: var(--kit-fault-ink); }
+.kit-atr__edit {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 8px;
+  border: 1px solid var(--kit-rule);
+  border-radius: var(--kit-radius-sm);
+  background: var(--kit-surface);
+  color: var(--kit-ink);
+  font-family: var(--kit-mono);
+  font-size: 12px;
+}
+.kit-atr__error { margin: 0; color: var(--kit-fault-ink); }
+.kit-atr__replay {
+  justify-self: start;
+  padding: 6px 12px;
+  border: 1px solid var(--kit-rule);
+  border-radius: 999px;
+  background: var(--kit-ink);
+  color: var(--kit-on-ink);
+  cursor: pointer;
+}
+
+@container (max-width: 560px) {
+  .kit-atr__map { aspect-ratio: auto; min-height: 0; display: grid; gap: var(--kit-gap); }
+  .kit-atr__wires { display: none; }
+  .kit-atr__tools { position: static; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .kit-atr__slot { position: static; transform: none; width: auto; }
+  .kit-atr__agent { position: static; transform: none; width: 100%; }
+}
+
+@keyframes kit-atr-spark {
+  50% { stroke-opacity: 0.45; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kit-atr__wire[data-running="true"] { animation: none; }
+  .kit-atr__map { transition: none; }
+}

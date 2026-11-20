@@ -1,0 +1,43 @@
+/* Colors and motion as variables – override them on .ui-skl (see Theming in the docs) */
+.ui-skl {
+  --ui-skl-fill: #efefef;
+  --ui-skl-sheen: rgba(255, 255, 255, 0.8);
+  --ui-skl-speed: 1.6s;
+  --ui-skl-ease: var(--aui-ease, cubic-bezier(0.22, 1, 0.36, 1));
+
+  position: relative;
+  display: block;
+  flex: none;
+  box-sizing: border-box;
+  max-width: 100%;
+  overflow: hidden;
+  border-radius: var(--aui-radius-sm, 6px);
+  background: var(--ui-skl-fill);
+}
+/* The sheen: every skeleton sweeps at the same time, so a whole list breathes as one */
+.ui-skl::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, var(--ui-skl-sheen), transparent);
+  translate: -100% 0;
+  animation: ui-skl-sweep var(--ui-skl-speed) var(--ui-skl-ease) infinite;
+}
+@keyframes ui-skl-sweep { 60%, 100% { translate: 100% 0; } }
+
+/* line: a box one text line tall, the shape centered in it */
+.ui-skl__line { display: flex; align-items: center; min-width: 0; max-width: 100%; }
+
+/* The wrapper fades in a beat late – a load under 150ms never shows the skeletons at all */
+.ui-skl-loading { --ui-skl-delay: 150ms; animation: ui-skl-in 300ms ease var(--ui-skl-delay) both; }
+@keyframes ui-skl-in { from { opacity: 0; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-skl::after { display: none; }
+}
+
+/* Dark mode: follows a .dark class or data-theme="dark" on any ancestor, e.g. <html> */
+:where(.dark, [data-theme="dark"]) .ui-skl {
+  --ui-skl-fill: #242428;
+  --ui-skl-sheen: rgba(255, 255, 255, 0.05);
+}

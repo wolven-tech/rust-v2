@@ -1,0 +1,231 @@
+.kit-rcr {
+  box-sizing: border-box;
+  container-type: inline-size;
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+  font-family: var(--kit-font);
+  color: var(--kit-ink);
+  background: var(--kit-surface);
+  border: 1px solid var(--kit-rule-soft);
+  border-radius: var(--kit-radius-lg);
+  box-shadow: var(--kit-shadow);
+  font-variant-numeric: tabular-nums;
+}
+
+.kit-rcr__bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 12px;
+  font-size: 12px;
+  color: var(--kit-ink-muted);
+}
+
+.kit-rcr__heading {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--kit-ink);
+}
+
+.kit-rcr__goal {
+  flex: 1 1 160px;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.kit-rcr__spend {
+  margin-left: auto;
+  color: var(--kit-ink);
+}
+
+.kit-rcr__rail {
+  position: relative;
+  display: grid;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  max-height: calc(14 * 36px);
+  overflow-y: auto;
+}
+
+.kit-rcr__rail::before {
+  content: "";
+  position: absolute;
+  top: 18px;
+  bottom: 18px;
+  left: 9px;
+  width: 2px;
+  background: var(--kit-rule);
+}
+
+.kit-rcr__row {
+  position: relative;
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  height: 36px;
+  padding: 0 6px;
+  border-radius: var(--kit-radius-sm);
+  outline: none;
+}
+
+.kit-rcr__row:focus-visible {
+  outline: 2px solid var(--kit-accent);
+  outline-offset: -2px;
+}
+
+.kit-rcr__row:hover,
+.kit-rcr__row:focus-within {
+  background: var(--kit-raised);
+}
+
+.kit-rcr__row[data-left-behind="true"] {
+  opacity: 0.5;
+}
+
+.kit-rcr__node {
+  position: relative;
+  z-index: 1;
+  width: 10px;
+  height: 10px;
+  justify-self: center;
+  border-radius: 50%;
+  border: 2px solid var(--kit-ink-muted);
+  background: var(--kit-surface);
+}
+
+.kit-rcr__row[data-current="true"] .kit-rcr__node {
+  background: var(--kit-accent);
+  border-color: var(--kit-accent);
+}
+
+.kit-rcr__row[data-state="failed"] .kit-rcr__node {
+  border-color: var(--kit-fault);
+}
+
+.kit-rcr__row[data-state="running"] .kit-rcr__name {
+  background: linear-gradient(
+    90deg,
+    var(--kit-ink-muted) 35%,
+    var(--kit-ink) 50%,
+    var(--kit-ink-muted) 65%
+  );
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: kit-rcr-shimmer 1.8s linear infinite;
+}
+
+@keyframes kit-rcr-shimmer {
+  from {
+    background-position: 100% 0;
+  }
+  to {
+    background-position: -100% 0;
+  }
+}
+
+.kit-rcr__label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  font-size: 13px;
+}
+
+.kit-rcr__name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.kit-rcr__row[data-current="true"] .kit-rcr__name {
+  font-weight: 600;
+}
+
+.kit-rcr__glyph {
+  flex: 0 0 auto;
+  color: var(--kit-ink-muted);
+}
+
+.kit-rcr__attempt,
+.kit-rcr__state {
+  flex: 0 0 auto;
+  padding: 0 6px;
+  border-radius: 999px;
+  border: 1px solid var(--kit-rule);
+  font-size: 11px;
+  color: var(--kit-ink-muted);
+  white-space: nowrap;
+}
+
+.kit-rcr__row[data-state="failed"] .kit-rcr__state {
+  color: var(--kit-fault-ink);
+  border-color: var(--kit-fault);
+}
+
+.kit-rcr__row[data-state="stopped"] .kit-rcr__state {
+  color: var(--kit-warn-ink);
+}
+
+.kit-rcr__meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--kit-ink-muted);
+}
+
+.kit-rcr__restart {
+  display: none;
+  min-height: 24px;
+  padding: 0 8px;
+  border: 1px solid var(--kit-rule);
+  border-radius: var(--kit-radius-sm);
+  background: var(--kit-surface);
+  color: var(--kit-ink);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.kit-rcr__row:hover .kit-rcr__restart,
+.kit-rcr__row:focus-within .kit-rcr__restart {
+  display: inline-flex;
+}
+
+.kit-rcr__row:hover .kit-rcr__meta,
+.kit-rcr__row:focus-within .kit-rcr__meta {
+  display: none;
+}
+
+.kit-rcr__live {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+@container (max-width: 360px) {
+  .kit-rcr__goal,
+  .kit-rcr__meta > span:first-child {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kit-rcr * {
+    animation: none !important;
+    transition: none !important;
+  }
+}

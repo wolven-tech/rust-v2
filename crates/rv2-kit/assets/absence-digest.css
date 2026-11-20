@@ -1,0 +1,37 @@
+.kit-ad {
+  width: 100%; max-width: 40rem; box-sizing: border-box; display: grid; gap: 10px;
+  padding: 14px 16px; border: 1px solid var(--kit-rule-soft); border-radius: var(--kit-radius);
+  background: var(--kit-surface); color: var(--kit-ink); font-family: var(--kit-font); font-size: 14px; line-height: 1.45;
+}
+.kit-ad[data-folded="true"] { padding: 0; border: 0; background: transparent; }
+.kit-ad__head { display: grid; gap: 2px; }
+.kit-ad__title { margin: 0; font-size: 14px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.kit-ad__counts { margin: 0; font-size: 12px; color: var(--kit-ink-muted); font-variant-numeric: tabular-nums; }
+.kit-ad__rows { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.kit-ad__row {
+  display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 10px;
+  min-height: 44px; padding: 6px 10px; border-radius: var(--kit-radius-sm); background: var(--kit-ground);
+}
+.kit-ad__marker { width: 10px; height: 10px; border-radius: 999px; background: var(--kit-ink-faint); }
+.kit-ad__marker[data-state="awaiting_input"] { background: var(--kit-warn); animation: kit-ad-pulse 2s var(--kit-ease) infinite; }
+.kit-ad__marker[data-state="failed"] { background: var(--kit-fault); }
+.kit-ad__marker[data-state="completed"] { background: var(--kit-ok); }
+.kit-ad__text { display: grid; gap: 1px; min-width: 0; }
+.kit-ad__name { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.kit-ad__state { font-size: 12px; color: var(--kit-ink-muted); }
+.kit-ad__note { font-size: 12px; color: var(--kit-ink-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.kit-ad__action, .kit-ad__more, .kit-ad__ack {
+  min-height: 34px; padding: 0 12px; border-radius: var(--kit-radius-sm); border: 1px solid var(--kit-rule);
+  background: var(--kit-surface); color: var(--kit-ink); font: inherit; font-size: 13px; font-weight: 600; cursor: pointer;
+  max-width: 10rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.kit-ad__row[aria-busy="true"] .kit-ad__action { opacity: 0.6; cursor: progress; }
+.kit-ad__foot { display: flex; justify-content: flex-end; }
+.kit-ad__empty { margin: 0; color: var(--kit-ink-faint); }
+.kit-ad__divider { width: 100%; display: flex; align-items: center; gap: 10px; border: 0; background: transparent; color: var(--kit-ink-muted); font: inherit; font-size: 12px; cursor: pointer; min-height: 32px; }
+.kit-ad__rule { flex: 1; height: 1px; background: var(--kit-rule-soft); }
+.kit-ad__live { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.kit-ad button:focus-visible { outline: 2px solid var(--kit-ink-hover); outline-offset: 2px; }
+@keyframes kit-ad-pulse { 0%, 100% { opacity: 0.45; } 50% { opacity: 1; } }
+@media (pointer: coarse) { .kit-ad__action, .kit-ad__more, .kit-ad__ack { min-height: 44px; } }
+@media (prefers-reduced-motion: reduce) { .kit-ad__marker[data-state="awaiting_input"] { animation: none; } }

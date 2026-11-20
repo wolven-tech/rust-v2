@@ -1,0 +1,48 @@
+.ui-eo {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 3 / 2;
+  overflow: hidden;
+}
+.ui-eo-art {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* Comets: one full turn around the center every 7 s */
+.ui-eo-spin {
+  transform-origin: 160px 120px;
+  animation: ui-eo-turn 7s linear infinite;
+}
+.ui-eo-reverse { animation-direction: reverse; }
+
+/* Nodes: one orbit every 22 s, turned back around their own center to stay upright */
+.ui-eo-orbit {
+  transform-origin: 160px 120px;
+  animation: ui-eo-turn 22s linear infinite;
+}
+.ui-eo-upright {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: ui-eo-turn 22s linear infinite reverse;
+}
+@keyframes ui-eo-turn {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Reduced motion: everything stays put, the nodes keep their staggered spots on the ring */
+@media (prefers-reduced-motion: reduce) {
+  .ui-eo-spin, .ui-eo-orbit, .ui-eo-upright { animation-play-state: paused; }
+}
+
+/* Dark mode: follows a .dark class or data-theme="dark" on any ancestor, e.g. <html> */
+:where(.dark, [data-theme="dark"]) .ui-eo-rings { stroke: rgba(255, 255, 255, 0.14); }
+:where(.dark, [data-theme="dark"]) .ui-eo-tile { fill: #232326; stroke: rgba(255, 255, 255, 0.08); }
+:where(.dark, [data-theme="dark"]) .ui-eo-drop { flood-opacity: 0.4; }
+:where(.dark, [data-theme="dark"]) .ui-eo-sliver { flood-color: #1a1a1c; }
+:where(.dark, [data-theme="dark"]) .ui-eo-icon { fill: #c4c4c4; }
+:where(.dark, [data-theme="dark"]) .ui-eo-mark { fill: #ededed; }

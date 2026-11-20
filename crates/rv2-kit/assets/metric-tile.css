@@ -1,0 +1,239 @@
+.kit-tile {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+  padding: 16px;
+  border: 1px solid var(--kit-rule-soft);
+  border-radius: var(--kit-radius);
+  background: var(--kit-surface);
+  box-shadow: var(--kit-shadow);
+  color: var(--kit-ink);
+  font-family: var(--kit-font);
+  transition: border-color var(--kit-fast) var(--kit-ease), opacity var(--kit-fast) var(--kit-ease);
+}
+
+.kit-tile[data-interactive="true"]:hover,
+.kit-tile[data-interactive="true"]:focus-within {
+  border-color: var(--kit-rule);
+}
+
+.kit-tile:has(.kit-tile__hit:focus-visible) {
+  box-shadow: 0 0 0 2px var(--kit-ink-faint), var(--kit-shadow);
+}
+
+.kit-tile[data-chosen="unchosen"] {
+  border-style: dashed;
+  background: var(--kit-raised);
+}
+
+.kit-tile[data-chosen="chosen"] {
+  border-color: var(--kit-rule);
+}
+
+.kit-tile__top {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.kit-tile__mark {
+  display: inline-flex;
+  flex: none;
+  color: var(--kit-ink-muted);
+}
+
+.kit-tile__label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--kit-ink-muted);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.kit-tile__corner {
+  flex: none;
+}
+
+.kit-tile__body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.kit-tile__body[data-position="inline"] {
+  flex-direction: row;
+  align-items: flex-end;
+  justify-content: space-between;
+}
+
+.kit-tile__figure-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.kit-tile__figure {
+  display: block;
+  overflow-wrap: anywhere;
+  font-size: 28px;
+  font-weight: 650;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+  animation: kit-tile-rise var(--kit-slow) var(--kit-ease) both;
+}
+
+.kit-tile__figure--text {
+  font-size: 22px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  animation: none;
+}
+
+.kit-tile__change {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.kit-tile__badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-weight: 600;
+  background: var(--kit-raised);
+  color: var(--kit-ink-muted);
+}
+
+.kit-tile[data-tone="favourable"] .kit-tile__badge {
+  background: var(--kit-ok-soft);
+  color: var(--kit-ok-ink);
+}
+
+.kit-tile[data-tone="unfavourable"] .kit-tile__badge {
+  background: color-mix(in srgb, var(--kit-fault) 14%, var(--kit-surface));
+  color: var(--kit-fault-ink);
+}
+
+.kit-tile__note {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--kit-ink-faint);
+}
+
+.kit-tile__chart {
+  min-width: 0;
+}
+
+.kit-tile__footer {
+  padding-top: 10px;
+  border-top: 1px solid var(--kit-rule-soft);
+  color: var(--kit-ink-muted);
+  font-size: 12px;
+}
+
+.kit-tile__placeholder {
+  display: block;
+  border-radius: var(--kit-radius-sm);
+  background: linear-gradient(
+    90deg,
+    var(--kit-raised) 0%,
+    var(--kit-rule-soft) 50%,
+    var(--kit-raised) 100%
+  );
+  background-size: 200% 100%;
+}
+
+.kit-tile__placeholder--value {
+  height: 32px;
+  width: 55%;
+}
+
+.kit-tile__placeholder--change {
+  height: 14px;
+  width: 30%;
+}
+
+.kit-tile__placeholder--chart {
+  height: 48px;
+}
+
+.kit-tile__hit {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border: 0;
+  border-radius: inherit;
+  background: transparent;
+  cursor: pointer;
+  appearance: none;
+  outline: none;
+}
+
+.kit-tile__hit:hover {
+  background: color-mix(in srgb, var(--kit-ink) 3%, transparent);
+}
+
+.kit-tile__hit:focus-visible {
+  outline: none;
+}
+
+@keyframes kit-tile-rise {
+  from {
+    opacity: 0;
+    transform: translateY(40%);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 480px) {
+  .kit-tile__figure {
+    font-size: 24px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kit-tile__figure {
+    animation: none;
+  }
+
+  .kit-tile__placeholder {
+    background: var(--kit-raised);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .kit-tile__placeholder {
+    animation: kit-tile-sheen 1.8s linear infinite;
+  }
+}
+
+@keyframes kit-tile-sheen {
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: -200% 0;
+  }
+}

@@ -1,0 +1,55 @@
+/* Colors and motion as variables – override them on .ui-fld (see Theming in the docs) */
+.ui-fld {
+  --ui-fld-ink: var(--aui-ink, #171717);
+  --ui-fld-muted: var(--aui-muted, #8f8f8f);
+  --ui-fld-faint: var(--aui-placeholder, #b5b5b5);
+  --ui-fld-danger: var(--aui-danger, #c4320a);
+  --ui-fld-ease: cubic-bezier(0.22, 1, 0.36, 1);
+
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  min-width: 0;
+  font-family: var(--aui-font, "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif);
+  font-size: 13.5px;
+  line-height: 20px;
+  color: var(--ui-fld-ink);
+  -webkit-font-smoothing: antialiased;
+}
+.ui-fld[data-disabled] { opacity: 0.55; }
+
+.ui-fld__head { display: flex; align-items: baseline; gap: 6px; min-width: 0; padding: 0 2px; }
+.ui-fld__label { min-width: 0; font-size: 13px; font-weight: 500; color: var(--ui-fld-ink); overflow-wrap: anywhere; cursor: default; }
+/* The required mark: quiet, right after the last word */
+.ui-fld__required { margin-inline-start: 2px; color: var(--ui-fld-muted); font-weight: 400; white-space: nowrap; }
+.ui-fld__optional { flex: none; font-size: 12px; line-height: 16px; color: var(--ui-fld-muted); }
+
+/* Under the control: the hint, or the error in its place, and the count */
+.ui-fld__foot { display: flex; align-items: flex-start; gap: 12px; min-width: 0; padding: 0 2px; }
+.ui-fld__message {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  font-size: 12.5px;
+  line-height: 17px;
+  color: var(--ui-fld-muted);
+  overflow-wrap: anywhere;
+  animation: ui-fld-message 260ms var(--ui-fld-ease);
+}
+.ui-fld[data-invalid] .ui-fld__message { color: var(--ui-fld-danger); }
+.ui-fld__count { flex: none; margin-inline-start: auto; font-size: 12px; line-height: 17px; font-variant-numeric: tabular-nums; color: var(--ui-fld-faint); white-space: nowrap; }
+
+@keyframes ui-fld-message {
+  from { opacity: 0; transform: translateY(-3px); filter: blur(2px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ui-fld__message { animation-duration: 1ms; }
+}
+
+/* Dark mode: follows a .dark class or data-theme="dark" on any ancestor, e.g. <html> */
+:where(.dark, [data-theme="dark"]) .ui-fld {
+  --ui-fld-ink: var(--aui-ink, #ededed);
+  --ui-fld-muted: var(--aui-muted, #8b8b92);
+  --ui-fld-faint: var(--aui-placeholder, #5c5c63);
+  --ui-fld-danger: var(--aui-danger, #ff8a7a);
+}

@@ -1,0 +1,14 @@
+/* One turn every --ui-spn-speed – override it on .ui-spn (see Theming in the docs) */
+.ui-spn {
+  --ui-spn-speed: 750ms;
+  display: inline-block;
+  flex: none;
+  vertical-align: middle;
+  animation: ui-spn-turn var(--ui-spn-speed) linear infinite;
+}
+@keyframes ui-spn-turn { to { rotate: 360deg; } }
+
+/* Reduced motion: it still turns – it is the only sign that work goes on – but slowly */
+@media (prefers-reduced-motion: reduce) {
+  .ui-spn { --ui-spn-speed: 2400ms; }
+}

@@ -1,0 +1,164 @@
+/* Colors and motion as variables – override them on .ui-ctx (see Theming in the docs) */
+.ui-ctx {
+  --ui-ctx-surface: var(--aui-overlay, var(--aui-surface, #ffffff));
+  --ui-ctx-ink: var(--aui-ink, #171717);
+  --ui-ctx-text: var(--aui-ink, #262626);
+  --ui-ctx-icon: var(--aui-muted, #8f8f8f);
+  --ui-ctx-faint: var(--aui-placeholder, #a3a3a3);
+  --ui-ctx-line: var(--aui-border, #ececec);
+  --ui-ctx-glow: #f4f4f5;
+  --ui-ctx-danger: var(--aui-danger, #d92d20);
+  --ui-ctx-danger-glow: color-mix(in srgb, var(--aui-red, #f04438) 8%, transparent);
+  --ui-ctx-shadow: var(--aui-shadow-popover, 0 0 0 1px rgba(0, 0, 0, 0.06), 0 18px 40px -12px rgba(0, 0, 0, 0.18), 0 4px 12px -4px rgba(0, 0, 0, 0.06));
+  --ui-ctx-focus: var(--aui-focus, rgba(0, 96, 226, 0.7));
+  --ui-ctx-ease: var(--aui-ease, cubic-bezier(0.22, 1, 0.36, 1));
+  --ui-ctx-radius: calc(var(--aui-radius-lg, 10px) + 4px);
+  --ui-ctx-row-radius: calc(var(--aui-radius-sm, 5px) + 4px);
+}
+
+/* The menu: a white card in the top layer, a 1px edge and a deeper drop */
+.ui-ctx__panel {
+  position: fixed;
+  inset: auto;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  min-width: 180px;
+  /* Fits its content up to 320px – long items shorten with … (full text on hover) instead of stretching it; the width prop lifts the cap */
+  max-width: min(320px, calc(100vw - 16px));
+  max-height: calc(100vh - 16px);
+  margin: 0;
+  padding: 5px;
+  border: 0;
+  border-radius: var(--ui-ctx-radius);
+  background: var(--ui-ctx-surface);
+  box-shadow: var(--ui-ctx-shadow);
+  color: var(--ui-ctx-ink);
+  font-family: var(--aui-font, "Inter", "InterVariable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif);
+  font-size: 13.5px;
+  line-height: 20px;
+  font-weight: 400;
+  text-align: start;
+  overflow: visible;
+  -webkit-font-smoothing: antialiased;
+  transform-origin: top left;
+  animation: ui-ctx-in 220ms var(--ui-ctx-ease) both;
+}
+.ui-ctx__panel::backdrop { display: none; }
+.ui-ctx__panel[data-align="end"] { transform-origin: top right; }
+.ui-ctx__panel[data-side="top"] { transform-origin: bottom left; animation-name: ui-ctx-in-up; }
+.ui-ctx__panel[data-side="top"][data-align="end"] { transform-origin: bottom right; }
+.ui-ctx__panel[data-side="right"] { transform-origin: top left; animation-name: ui-ctx-in-side; animation-duration: 160ms; }
+.ui-ctx__panel[data-side="left"] { transform-origin: top right; animation-name: ui-ctx-in-side; animation-duration: 160ms; }
+
+.ui-ctx__title { display: block; flex: none; padding: 7px 10px 5px; font-size: 12px; line-height: 16px; font-weight: 500; color: var(--ui-ctx-icon); }
+
+/* The rows; a long menu scrolls inside the card */
+.ui-ctx__list {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-content: start;
+  gap: 1px;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+}
+.ui-ctx__list:focus { outline: none; }
+
+/* One soft highlight that glides between the rows */
+.ui-ctx__glow {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  border-radius: var(--ui-ctx-row-radius);
+  background: var(--ui-ctx-glow);
+  pointer-events: none;
+  transition: transform 180ms var(--ui-ctx-ease), height 180ms var(--ui-ctx-ease), background-color 120ms ease;
+}
+.ui-ctx__glow[data-danger] { background: var(--ui-ctx-danger-glow); }
+
+.ui-ctx__item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  box-sizing: border-box;
+  min-width: 0;
+  min-height: 34px;
+  padding: 0 10px;
+  border-radius: var(--ui-ctx-row-radius);
+  color: var(--ui-ctx-text);
+  white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: color 120ms ease;
+}
+.ui-ctx__item[data-rich] { min-height: 46px; padding: 7px 10px; }
+.ui-ctx__item:focus { outline: none; color: var(--ui-ctx-ink); }
+.ui-ctx__item:focus-visible { outline: 2px solid var(--ui-ctx-focus); outline-offset: -2px; }
+/* The item whose submenu is open keeps a highlight while the focus is in the submenu */
+.ui-ctx__item[data-open] { color: var(--ui-ctx-ink); }
+.ui-ctx__item[data-open]:not(:focus) { background: var(--ui-ctx-glow); }
+.ui-ctx__item[aria-checked="true"] { color: var(--ui-ctx-ink); font-weight: 500; }
+.ui-ctx__item[data-danger], .ui-ctx__item[data-danger]:focus { color: var(--ui-ctx-danger); }
+.ui-ctx__item[aria-disabled="true"] { color: var(--ui-ctx-faint); cursor: default; }
+
+.ui-ctx__icon { display: grid; flex: none; place-items: center; width: 16px; height: 16px; color: var(--ui-ctx-icon); transition: color 120ms ease; }
+.ui-ctx__icon > svg { display: block; width: 16px; height: 16px; }
+.ui-ctx__icon[data-logo] > svg, .ui-ctx__icon[data-logo] > img { width: 14px; height: 14px; }
+.ui-ctx__item:focus .ui-ctx__icon:not([data-logo]), .ui-ctx__item[data-open] .ui-ctx__icon:not([data-logo]) { color: var(--ui-ctx-ink); }
+.ui-ctx__item[data-danger] .ui-ctx__icon { color: var(--ui-ctx-danger); }
+.ui-ctx__item[aria-disabled="true"] .ui-ctx__icon { opacity: 0.5; color: var(--ui-ctx-icon); }
+
+/* Long names stay on one line – the full name on hover */
+.ui-ctx__label { display: grid; flex: 1; gap: 1px; min-width: 0; }
+.ui-ctx__text, .ui-ctx__desc { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.ui-ctx__desc { font-size: 12.5px; line-height: 17px; font-weight: 400; color: var(--ui-ctx-icon); }
+
+.ui-ctx__kbd { flex: none; padding-left: 16px; font: inherit; font-size: 12px; font-weight: 400; letter-spacing: 0.04em; color: var(--ui-ctx-faint); }
+.ui-ctx__more, .ui-ctx__check { display: grid; flex: none; place-items: center; width: 14px; height: 14px; }
+.ui-ctx__more { color: var(--ui-ctx-faint); }
+.ui-ctx__check { color: var(--ui-ctx-ink); }
+.ui-ctx__more > svg, .ui-ctx__check > svg { display: block; width: 14px; height: 14px; }
+.ui-ctx__tick { stroke-dasharray: 1; animation: ui-ctx-draw 280ms 40ms var(--ui-ctx-ease) both; }
+
+.ui-ctx__sep { display: block; height: 1px; margin: 5px 4px; background: var(--ui-ctx-line); }
+.ui-ctx__empty { display: block; padding: 6px 8px; color: var(--ui-ctx-faint); }
+
+@keyframes ui-ctx-in { from { opacity: 0; transform: scale(0.96) translateY(-4px); } }
+@keyframes ui-ctx-in-up { from { opacity: 0; transform: scale(0.96) translateY(4px); } }
+@keyframes ui-ctx-in-side { from { opacity: 0; transform: scale(0.98); } }
+@keyframes ui-ctx-draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+
+/* Touch screens: rows a finger can hit */
+@media (pointer: coarse) {
+  .ui-ctx__item { min-height: 40px; }
+  .ui-ctx__item[data-rich] { min-height: 48px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-ctx__panel, .ui-ctx__tick { animation-duration: 1ms; }
+  .ui-ctx__glow, .ui-ctx__item, .ui-ctx__icon { transition-duration: 1ms; }
+}
+
+/* Dark mode: follows a .dark class or data-theme="dark" on any ancestor, e.g. <html> */
+:where(.dark, [data-theme="dark"]) .ui-ctx {
+  --ui-ctx-surface: var(--aui-overlay, var(--aui-surface, #19191b));
+  --ui-ctx-ink: var(--aui-ink, #ededed);
+  --ui-ctx-text: var(--aui-ink, #e4e4e7);
+  --ui-ctx-icon: var(--aui-muted, #8b8b92);
+  --ui-ctx-faint: var(--aui-placeholder, #5c5c63);
+  --ui-ctx-line: var(--aui-border, #2a2a2e);
+  --ui-ctx-glow: #26262a;
+  --ui-ctx-danger: var(--aui-danger, #ff8a7a);
+  --ui-ctx-danger-glow: color-mix(in srgb, var(--aui-red, #ff6b5f) 14%, transparent);
+  --ui-ctx-shadow: var(--aui-shadow-popover, 0 0 0 1px rgba(255, 255, 255, 0.06), 0 18px 40px -12px rgba(0, 0, 0, 0.6));
+  --ui-ctx-focus: var(--aui-focus, rgba(77, 141, 255, 0.8));
+  color-scheme: dark;
+}

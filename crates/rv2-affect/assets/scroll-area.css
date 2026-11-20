@@ -1,0 +1,140 @@
+/* The fades' lengths animate as you near an end */
+@property --ui-sa-y-start { syntax: "<length>"; inherits: true; initial-value: 0px; }
+@property --ui-sa-y-end { syntax: "<length>"; inherits: true; initial-value: 0px; }
+@property --ui-sa-x-start { syntax: "<length>"; inherits: true; initial-value: 0px; }
+@property --ui-sa-x-end { syntax: "<length>"; inherits: true; initial-value: 0px; }
+
+/* Colors and sizes as variables – override them on .ui-sa (see Theming in the docs) */
+.ui-sa {
+  --ui-sa-thumb: rgba(0, 0, 0, 0.22);
+  --ui-sa-thumb-hover: rgba(0, 0, 0, 0.36);
+  --ui-sa-thumb-active: rgba(0, 0, 0, 0.48);
+  --ui-sa-size: 6px;
+  --ui-sa-size-hover: 8px;
+  --ui-sa-inset: 2px;
+  --ui-sa-fade: 28px;
+  --ui-sa-focus: var(--aui-focus, rgba(0, 96, 226, 0.7));
+  --ui-sa-ease: var(--aui-ease, cubic-bezier(0.22, 1, 0.36, 1));
+
+  /* A column, so a height or max-height on the box is what the viewport fills */
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+.ui-sa *, .ui-sa *::before, .ui-sa *::after { box-sizing: border-box; }
+
+/* The element that scrolls: the browser's own scrolling, its bar hidden – ours is drawn on top */
+.ui-sa__viewport {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+  border-radius: inherit;
+  overflow: hidden;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+.ui-sa__viewport::-webkit-scrollbar { display: none; }
+.ui-sa[data-orientation="vertical"] > .ui-sa__viewport { overflow-y: auto; }
+.ui-sa[data-orientation="horizontal"] > .ui-sa__viewport { overflow-x: auto; }
+.ui-sa[data-orientation="both"] > .ui-sa__viewport { overflow: auto; }
+.ui-sa__viewport:focus { outline: none; }
+/* Inside the box, so no card edge or overflow cuts it */
+.ui-sa__viewport:focus-visible { outline: 2px solid var(--ui-sa-focus); outline-offset: -2px; }
+
+/* Sideways the content keeps its natural width, so a wide row really overflows; text still wraps at the box */
+.ui-sa:not([data-orientation="vertical"]) .ui-sa__content { min-width: fit-content; }
+
+/* Soft fades where there is more – a mask, so it works on any background */
+.ui-sa[data-fade][data-scroll-y] > .ui-sa__viewport {
+  -webkit-mask-image: linear-gradient(to bottom, transparent, #000 var(--ui-sa-y-start), #000 calc(100% - var(--ui-sa-y-end)), transparent);
+  mask-image: linear-gradient(to bottom, transparent, #000 var(--ui-sa-y-start), #000 calc(100% - var(--ui-sa-y-end)), transparent);
+}
+.ui-sa[data-fade][data-scroll-x]:not([data-scroll-y]) > .ui-sa__viewport {
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 var(--ui-sa-x-start), #000 calc(100% - var(--ui-sa-x-end)), transparent);
+  mask-image: linear-gradient(to right, transparent, #000 var(--ui-sa-x-start), #000 calc(100% - var(--ui-sa-x-end)), transparent);
+}
+.ui-sa[data-fade][dir="rtl"][data-scroll-x]:not([data-scroll-y]) > .ui-sa__viewport,
+[dir="rtl"] .ui-sa[data-fade][data-scroll-x]:not([data-scroll-y]) > .ui-sa__viewport {
+  -webkit-mask-image: linear-gradient(to left, transparent, #000 var(--ui-sa-x-start), #000 calc(100% - var(--ui-sa-x-end)), transparent);
+  mask-image: linear-gradient(to left, transparent, #000 var(--ui-sa-x-start), #000 calc(100% - var(--ui-sa-x-end)), transparent);
+}
+.ui-sa[data-fade] {
+  transition: --ui-sa-y-start 160ms ease, --ui-sa-y-end 160ms ease, --ui-sa-x-start 160ms ease, --ui-sa-x-end 160ms ease;
+}
+
+/* The bar: a 10px strip over the content's edge, the thumb in it – hidden until there is something to scroll */
+.ui-sa__bar {
+  position: absolute;
+  z-index: 1;
+  display: none;
+  opacity: 0;
+  touch-action: none;
+  user-select: none;
+  transition: opacity 280ms var(--ui-sa-ease);
+}
+.ui-sa__bar[data-axis="y"] { top: var(--ui-sa-inset); bottom: var(--ui-sa-inset); inset-inline-end: 0; width: 10px; }
+.ui-sa__bar[data-axis="x"] { left: var(--ui-sa-inset); right: var(--ui-sa-inset); bottom: 0; height: 10px; }
+/* Both bars: each stops short of the corner the other one runs into */
+.ui-sa[data-scroll-y][data-scroll-x] > .ui-sa__bar[data-axis="y"] { bottom: 10px; }
+.ui-sa[data-scroll-y][data-scroll-x] > .ui-sa__bar[data-axis="x"] { inset-inline-end: 10px; }
+.ui-sa[data-scroll-y] > .ui-sa__bar[data-axis="y"], .ui-sa[data-scroll-x] > .ui-sa__bar[data-axis="x"] { display: block; }
+
+.ui-sa__thumb {
+  position: absolute;
+  border-radius: 999px;
+  background: var(--ui-sa-thumb);
+  cursor: default;
+  transition: background-color 150ms ease, width 150ms var(--ui-sa-ease), height 150ms var(--ui-sa-ease);
+  will-change: transform;
+}
+/* A wider, invisible grab area around the thin thumb */
+.ui-sa__thumb::before { content: ""; position: absolute; inset: -4px; }
+.ui-sa__bar[data-axis="y"] > .ui-sa__thumb { top: 0; inset-inline-end: var(--ui-sa-inset); width: var(--ui-sa-size); }
+.ui-sa__bar[data-axis="x"] > .ui-sa__thumb { inset-inline-start: 0; bottom: var(--ui-sa-inset); height: var(--ui-sa-size); }
+.ui-sa__bar[data-axis="y"]:hover > .ui-sa__thumb, .ui-sa[data-dragging] > .ui-sa__bar[data-axis="y"] > .ui-sa__thumb { width: var(--ui-sa-size-hover); }
+.ui-sa__bar[data-axis="x"]:hover > .ui-sa__thumb, .ui-sa[data-dragging] > .ui-sa__bar[data-axis="x"] > .ui-sa__thumb { height: var(--ui-sa-size-hover); }
+.ui-sa__bar:hover > .ui-sa__thumb { background: var(--ui-sa-thumb-hover); }
+.ui-sa[data-dragging] .ui-sa__thumb { background: var(--ui-sa-thumb-active); }
+.ui-sa[data-dragging] { user-select: none; }
+
+/* When it shows: hover – while the pointer is over the box or it scrolls · scroll – only while it scrolls · always */
+.ui-sa[data-type="always"] > .ui-sa__bar,
+.ui-sa[data-scrolling] > .ui-sa__bar,
+.ui-sa[data-dragging] > .ui-sa__bar { opacity: 1; transition-duration: 120ms; }
+@media (hover: hover) {
+  .ui-sa[data-type="hover"]:hover > .ui-sa__bar { opacity: 1; transition-duration: 120ms; }
+}
+/* Faded out it lets the pointer through to the content under it */
+.ui-sa > .ui-sa__bar { pointer-events: none; }
+.ui-sa:is([data-type="always"], [data-scrolling], [data-dragging]) > .ui-sa__bar { pointer-events: auto; }
+@media (hover: hover) {
+  .ui-sa[data-type="hover"]:hover > .ui-sa__bar { pointer-events: auto; }
+}
+
+/* Touch screens: the finger scrolls the content – the bar only shows where you are, a little thicker */
+@media (pointer: coarse) {
+  .ui-sa { --ui-sa-size: 4px; --ui-sa-size-hover: 4px; }
+  .ui-sa > .ui-sa__bar { pointer-events: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-sa__bar, .ui-sa__thumb, .ui-sa[data-fade] { transition-duration: 1ms !important; }
+}
+
+/* Windows high contrast: the thumb keeps a system color */
+@media (forced-colors: active) {
+  .ui-sa__thumb { background: CanvasText; }
+}
+
+/* Dark mode: follows a .dark class or data-theme="dark" on any ancestor, e.g. <html> */
+:where(.dark, [data-theme="dark"]) .ui-sa {
+  --ui-sa-thumb: rgba(255, 255, 255, 0.22);
+  --ui-sa-thumb-hover: rgba(255, 255, 255, 0.36);
+  --ui-sa-thumb-active: rgba(255, 255, 255, 0.5);
+  --ui-sa-focus: var(--aui-focus, rgba(77, 141, 255, 0.8));
+}

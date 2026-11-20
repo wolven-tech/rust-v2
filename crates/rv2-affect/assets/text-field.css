@@ -1,0 +1,222 @@
+/* Colors and motion as variables – override them on .ui-tf (see Theming in the docs) */
+.ui-tf {
+  --ui-tf-ink: var(--aui-ink, #171717);
+  --ui-tf-text: #404040;
+  --ui-tf-muted: var(--aui-muted, #8f8f8f);
+  --ui-tf-faint: var(--aui-placeholder, #b5b5b5);
+  --ui-tf-surface: var(--aui-surface, #ffffff);
+  --ui-tf-line: var(--aui-border, #e6e6e8);
+  --ui-tf-edge: var(--aui-border-strong, #d4d4d8);
+  --ui-tf-edge-focus: var(--aui-border-strong, #b4b4bb);
+  --ui-tf-wash: #f4f4f5;
+  --ui-tf-readonly: #fafafa;
+  --ui-tf-danger: var(--aui-danger, #c4320a);
+  --ui-tf-danger-edge: #ff8a7a;
+  --ui-tf-danger-edge-focus: #f04438;
+  --ui-tf-danger-wash: color-mix(in srgb, var(--aui-red, #f04438) 4%, transparent);
+  --ui-tf-success: var(--aui-success, #1e8a4f);
+  --ui-tf-focus: var(--aui-focus, rgba(0, 96, 226, 0.7));
+  --ui-tf-ease: cubic-bezier(0.22, 1, 0.36, 1);
+
+  --h: 36px;
+  --px: 12px;
+  --fs: 13.5px;
+  --radius: var(--aui-radius, 10px);
+
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  min-width: 0;
+  font-family: var(--aui-font, "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif);
+  font-size: 13.5px;
+  line-height: 20px;
+  color: var(--ui-tf-ink);
+  -webkit-font-smoothing: antialiased;
+}
+.ui-tf[data-size="sm"] { --h: 32px; --px: 10px; --fs: 13px; --radius: calc(var(--aui-radius, 10px) - 1px); }
+.ui-tf[data-size="lg"] { --h: 40px; --px: 14px; --fs: 14px; --radius: calc(var(--aui-radius, 10px) + 2px); }
+/* Touch screens: a comfortable tap height, and 16px text so iOS doesn't zoom in on focus */
+@media (pointer: coarse) {
+  .ui-tf { --fs: 16px; }
+  .ui-tf[data-size="sm"] { --h: 36px; }
+  .ui-tf[data-size="md"] { --h: 40px; }
+  .ui-tf[data-size="lg"] { --h: 44px; }
+}
+
+.ui-tf__head { display: flex; align-items: baseline; gap: 6px; min-width: 0; padding: 0 2px; }
+.ui-tf__label { min-width: 0; font-size: 13px; font-weight: 500; color: var(--ui-tf-ink); overflow-wrap: anywhere; cursor: default; }
+.ui-tf__optional { flex: none; font-size: 12px; line-height: 16px; color: var(--ui-tf-muted); }
+
+/* The box: white with a 1px gray edge; hover and focus only darken that edge */
+.ui-tf__box {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  box-sizing: border-box;
+  height: var(--h);
+  min-width: 0;
+  padding-block: 0;
+  padding-inline: var(--px) calc(var(--px) - 6px);
+  border-radius: var(--radius);
+  background: var(--ui-tf-surface);
+  box-shadow: 0 0 0 1px var(--ui-tf-line), 0 1px 2px rgba(0, 0, 0, 0.04);
+  cursor: text;
+  transition: box-shadow 160ms ease, background-color 160ms ease;
+}
+.ui-tf__box:not(:has(.ui-tf__action)) { padding-inline-end: var(--px); }
+.ui-tf__box:hover { box-shadow: 0 0 0 1px var(--ui-tf-edge), 0 1px 2px rgba(0, 0, 0, 0.04); }
+.ui-tf__box:focus-within { box-shadow: 0 0 0 1px var(--ui-tf-edge-focus), 0 1px 2px rgba(0, 0, 0, 0.04); }
+.ui-tf[data-invalid] .ui-tf__box { background: var(--ui-tf-danger-wash); box-shadow: 0 0 0 1px var(--ui-tf-danger-edge), 0 1px 2px rgba(0, 0, 0, 0.04); animation: ui-tf-nudge 320ms var(--ui-tf-ease); }
+.ui-tf[data-invalid] .ui-tf__box:focus-within { box-shadow: 0 0 0 1px var(--ui-tf-danger-edge-focus), 0 1px 2px rgba(0, 0, 0, 0.04); }
+.ui-tf[data-readonly] .ui-tf__box { background: var(--ui-tf-readonly); box-shadow: 0 0 0 1px var(--ui-tf-line); cursor: default; }
+.ui-tf[data-disabled] .ui-tf__box { background: var(--ui-tf-readonly); box-shadow: 0 0 0 1px var(--ui-tf-line); cursor: not-allowed; }
+.ui-tf[data-disabled] { opacity: 0.55; }
+
+.ui-tf__input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  font: inherit;
+  font-size: var(--fs);
+  color: var(--ui-tf-ink);
+  text-overflow: ellipsis;
+  -webkit-appearance: none;
+  appearance: none;
+}
+/* Next to a prefix or suffix the value keeps at least 6em – they shrink first */
+.ui-tf__box:has(> .ui-tf__affix) .ui-tf__input { flex: 1 0 6em; min-width: 6em; }
+.ui-tf__input::placeholder { color: var(--ui-tf-faint); opacity: 1; }
+.ui-tf__input:disabled { cursor: not-allowed; }
+.ui-tf__input[type="search"]::-webkit-search-cancel-button { display: none; }
+.ui-tf__input[type="number"] { -moz-appearance: textfield; font-variant-numeric: tabular-nums; }
+.ui-tf__input[type="number"]::-webkit-inner-spin-button,
+.ui-tf__input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+/* Revealing a password: the characters come out of a short blur */
+.ui-tf__input[data-revealed] { animation: ui-tf-reveal 260ms var(--ui-tf-ease); }
+.ui-tf__input[data-revealed="false"] { animation-name: ui-tf-reveal-hide; }
+
+/* Prefix and suffix: quiet text or an icon inside the box */
+.ui-tf__affix {
+  display: inline-flex;
+  flex: 0 1 auto;
+  align-items: center;
+  min-width: 0;
+  max-width: 70%;
+  font-size: var(--fs);
+  color: var(--ui-tf-muted);
+  white-space: nowrap;
+  user-select: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ui-tf__affix[data-side="start"] { margin-inline-end: -6px; }
+.ui-tf__affix[data-side="end"] { max-width: 40%; margin-inline-start: -6px; }
+/* A long prefix loses its start: "…/workspaces/" stays next to the value */
+.ui-tf__affix-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ui-tf__affix[data-side="start"]:dir(ltr) .ui-tf__affix-text { direction: rtl; text-align: left; }
+.ui-tf__affix[data-side="start"]:dir(ltr) .ui-tf__affix-text::after { content: "\200E"; }
+.ui-tf__affix[data-side]:has(> svg) { margin: 0; color: var(--ui-tf-muted); }
+.ui-tf__affix > svg { display: block; width: 16px; height: 16px; flex: none; }
+
+/* Clear, reveal and copy: small buttons at the end */
+.ui-tf__action {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: calc(var(--h) - 10px);
+  height: calc(var(--h) - 10px);
+  position: relative;
+  max-width: 28px;
+  max-height: 28px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--ui-tf-muted);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color 140ms ease, color 140ms ease;
+}
+.ui-tf__action + .ui-tf__action { margin-left: -4px; }
+/* Touch screens: bigger buttons and a hit area that reaches past them */
+@media (pointer: coarse) {
+  .ui-tf__action { width: 32px; height: 32px; max-width: none; max-height: none; }
+  .ui-tf__action::before { content: ""; position: absolute; inset: -4px; }
+}
+.ui-tf__action:hover:not(:disabled) { background: var(--ui-tf-wash); color: var(--ui-tf-ink); }
+.ui-tf__action:focus-visible { outline: 2px solid var(--ui-tf-focus); outline-offset: -2px; }
+.ui-tf__action:disabled { opacity: 0.4; cursor: default; }
+.ui-tf__action[data-copied] { color: var(--ui-tf-success); }
+.ui-tf__action svg { display: block; }
+.ui-tf__swap { display: grid; animation: ui-tf-swap 280ms var(--ui-tf-ease); }
+.ui-tf__check { stroke-dasharray: 1; animation: ui-tf-draw 320ms 60ms var(--ui-tf-ease) both; }
+
+/* Under the field: the hint, or the error in its place, and the count */
+.ui-tf__foot { display: flex; align-items: flex-start; gap: 12px; min-width: 0; padding: 0 2px; }
+.ui-tf__message {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  font-size: 12.5px;
+  line-height: 17px;
+  color: var(--ui-tf-muted);
+  overflow-wrap: anywhere;
+  animation: ui-tf-message 260ms var(--ui-tf-ease);
+}
+.ui-tf[data-invalid] .ui-tf__message { color: var(--ui-tf-danger); }
+.ui-tf__count { flex: none; margin-left: auto; font-size: 12px; line-height: 17px; font-variant-numeric: tabular-nums; color: var(--ui-tf-faint); transition: color 140ms ease; }
+.ui-tf__count[data-over] { color: var(--ui-tf-danger); }
+.ui-tf__sr { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+.ui-tf__count[data-full] { color: var(--ui-tf-text); }
+
+@keyframes ui-tf-nudge {
+  30% { transform: translateX(-3px); }
+  65% { transform: translateX(2px); }
+}
+@keyframes ui-tf-message {
+  from { opacity: 0; transform: translateY(-3px); filter: blur(2px); }
+}
+@keyframes ui-tf-reveal {
+  from { filter: blur(4px); opacity: 0.4; }
+}
+@keyframes ui-tf-reveal-hide {
+  from { filter: blur(3px); opacity: 0.5; }
+}
+@keyframes ui-tf-swap {
+  from { opacity: 0; transform: scale(0.6); filter: blur(2px); }
+}
+@keyframes ui-tf-draw {
+  from { stroke-dashoffset: 1; }
+  to { stroke-dashoffset: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-tf *, .ui-tf[data-invalid] .ui-tf__box { animation-duration: 1ms !important; }
+  .ui-tf__box { transition-duration: 1ms; }
+}
+
+/* Dark mode: follows a .dark class or data-theme="dark" on any ancestor, e.g. <html> */
+:where(.dark, [data-theme="dark"]) .ui-tf {
+  --ui-tf-ink: var(--aui-ink, #ededed);
+  --ui-tf-text: #c8c8cc;
+  --ui-tf-muted: var(--aui-muted, #8b8b92);
+  --ui-tf-faint: var(--aui-placeholder, #5c5c63);
+  --ui-tf-surface: var(--aui-surface, #19191b);
+  --ui-tf-line: var(--aui-border, #2a2a2e);
+  --ui-tf-edge: var(--aui-border-strong, #3a3a40);
+  --ui-tf-edge-focus: var(--aui-border-strong, #4e4e55);
+  --ui-tf-wash: #26262a;
+  --ui-tf-readonly: #151517;
+  --ui-tf-danger: var(--aui-danger, #ff8a7a);
+  --ui-tf-danger-edge: color-mix(in srgb, var(--aui-red, #ff6b5f) 45%, transparent);
+  --ui-tf-danger-edge-focus: rgba(255, 99, 105, 0.75);
+  --ui-tf-danger-wash: color-mix(in srgb, var(--aui-red, #ff6b5f) 6%, transparent);
+  --ui-tf-success: var(--aui-success, #7dcf9f);
+  --ui-tf-focus: var(--aui-focus, rgba(77, 141, 255, 0.8));
+}

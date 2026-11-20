@@ -1,0 +1,139 @@
+/* Colors as variables – override them on .ui-bdg (see Theming in the docs) */
+.ui-bdg {
+  --ui-bdg-neutral-bg: var(--aui-subtle, #f0f0f0);
+  --ui-bdg-neutral-fg: #616161;
+  --ui-bdg-neutral-dot: #a3a3a3;
+  --ui-bdg-info-bg: var(--aui-info-soft, #eaf1ff);
+  --ui-bdg-info-fg: var(--aui-info, #2456d6);
+  --ui-bdg-success-bg: var(--aui-success-soft, #e6f6ed);
+  --ui-bdg-success-fg: var(--aui-success, #1e8a4f);
+  --ui-bdg-warning-bg: var(--aui-warning-soft, #fff1e0);
+  --ui-bdg-warning-fg: var(--aui-warning, #b25e00);
+  --ui-bdg-danger-bg: var(--aui-danger-soft, #fdecea);
+  --ui-bdg-danger-fg: var(--aui-danger, #c4320a);
+  --ui-bdg-purple-bg: #f4ebfd;
+  --ui-bdg-purple-fg: #8a35d6;
+
+  --bg: var(--ui-bdg-neutral-bg);
+  --fg: var(--ui-bdg-neutral-fg);
+  --dot: currentColor;
+  --h: 20px;
+  --pad: 8px;
+  --lead: 6px;
+  --mark: 12px;
+
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 4px;
+  box-sizing: border-box;
+  max-width: 100%;
+  height: var(--h);
+  padding: 0 var(--pad);
+  border-radius: 999px;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--aui-font, "Inter", "InterVariable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif);
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 16px;
+  letter-spacing: 0;
+  white-space: nowrap;
+  vertical-align: middle;
+  font-variant-numeric: tabular-nums;
+  -webkit-font-smoothing: antialiased;
+}
+.ui-bdg[data-size="md"] {
+  --h: 22px;
+  --pad: 9px;
+  --lead: 7px;
+  --mark: 13px;
+  gap: 5px;
+  font-size: 12px;
+}
+/* A dot or icon in front sits a little closer to the edge, so it looks as far in as the text on the other side */
+.ui-bdg[data-lead] {
+  padding-inline-start: var(--lead);
+}
+
+.ui-bdg[data-tone="neutral"] { --dot: var(--ui-bdg-neutral-dot); }
+.ui-bdg[data-tone="info"] { --bg: var(--ui-bdg-info-bg); --fg: var(--ui-bdg-info-fg); }
+.ui-bdg[data-tone="success"] { --bg: var(--ui-bdg-success-bg); --fg: var(--ui-bdg-success-fg); }
+.ui-bdg[data-tone="warning"] { --bg: var(--ui-bdg-warning-bg); --fg: var(--ui-bdg-warning-fg); }
+.ui-bdg[data-tone="danger"] { --bg: var(--ui-bdg-danger-bg); --fg: var(--ui-bdg-danger-fg); }
+.ui-bdg[data-tone="purple"] { --bg: var(--ui-bdg-purple-bg); --fg: var(--ui-bdg-purple-fg); }
+
+/* Long text ends in … instead of pushing the row wider */
+.ui-bdg__label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ui-bdg__dot {
+  position: relative;
+  flex: none;
+  width: 6px;
+  height: 6px;
+  margin: 0 1px;
+  border-radius: 50%;
+  background: var(--dot);
+}
+/* Live: a soft halo grows out of the dot and fades, over and over */
+.ui-bdg__dot[data-live]::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: var(--dot);
+  animation: ui-bdg-live 1.8s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+}
+@keyframes ui-bdg-live {
+  0% { transform: scale(1); opacity: 0.5; }
+  70%, 100% { transform: scale(2.6); opacity: 0; }
+}
+
+.ui-bdg__icon {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: var(--mark);
+  height: var(--mark);
+}
+.ui-bdg__icon > svg,
+.ui-bdg__icon > img {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* Count: round, at least as wide as it is high, the number centred */
+.ui-bdg[data-count] {
+  justify-content: center;
+  min-width: var(--h);
+  padding: 0 6px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-bdg__dot[data-live]::after {
+    animation: none;
+    opacity: 0;
+  }
+}
+
+/* Dark mode: follows a .dark class or data-theme="dark" on any ancestor, e.g. <html> */
+:where(.dark, [data-theme="dark"]) .ui-bdg {
+  --ui-bdg-neutral-bg: var(--aui-subtle, #26262a);
+  --ui-bdg-neutral-fg: #a1a1a6;
+  --ui-bdg-neutral-dot: #6b6b72;
+  --ui-bdg-info-bg: var(--aui-info-soft, #16243f);
+  --ui-bdg-info-fg: var(--aui-info, #8ab4ff);
+  --ui-bdg-success-bg: var(--aui-success-soft, #123020);
+  --ui-bdg-success-fg: var(--aui-success, #5fc88a);
+  --ui-bdg-warning-bg: var(--aui-warning-soft, #3a2610);
+  --ui-bdg-warning-fg: var(--aui-warning, #ffb35c);
+  --ui-bdg-danger-bg: var(--aui-danger-soft, #3b1c14);
+  --ui-bdg-danger-fg: var(--aui-danger, #ff8a7a);
+  --ui-bdg-purple-bg: #2a1c3d;
+  --ui-bdg-purple-fg: #c9a2f5;
+}

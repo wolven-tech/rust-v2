@@ -1,0 +1,93 @@
+/* Colors as variables – override them on .ui-rsz (see Theming in the docs) */
+.ui-rsz {
+  --ui-rsz-line: var(--aui-border, #ececec);
+  --ui-rsz-line-active: #c4c4c8;
+  --ui-rsz-grip: var(--aui-surface, #ffffff);
+  --ui-rsz-grip-edge: #e1e1e4;
+  --ui-rsz-focus: var(--aui-focus, rgba(0, 96, 226, 0.7));
+  --ui-rsz-ease: var(--aui-ease, cubic-bezier(0.22, 1, 0.36, 1));
+
+  /* Fills what it is put in; the panes share it by their sizes */
+  display: flex;
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+.ui-rsz[data-direction="vertical"] { flex-direction: column; }
+.ui-rsz *, .ui-rsz *::before, .ui-rsz *::after { box-sizing: border-box; }
+.ui-rsz[data-resizing] { user-select: none; -webkit-user-select: none; }
+.ui-rsz[data-direction="horizontal"][data-resizing] { cursor: col-resize; }
+.ui-rsz[data-direction="vertical"][data-resizing] { cursor: row-resize; }
+/* While dragging, iframes and text under the pointer don't catch it */
+.ui-rsz[data-resizing] > .ui-rsz__panel { pointer-events: none; }
+
+/* A pane: its share of the room, never pushed wider by its content; it scrolls when the content doesn't fit */
+.ui-rsz__panel { position: relative; min-width: 0; min-height: 0; overflow: auto; }
+.ui-rsz[data-snap] > .ui-rsz__panel { transition: flex-grow 220ms var(--ui-rsz-ease); }
+
+/* The handle: a 1px line in the layout, a 12px grab strip over it */
+.ui-rsz__handle {
+  position: relative;
+  z-index: 1;
+  flex: none;
+  outline: none;
+  touch-action: none;
+  user-select: none;
+  border: 0 solid var(--ui-rsz-line);
+  transition: border-color 150ms ease;
+}
+.ui-rsz[data-direction="horizontal"] > .ui-rsz__handle { width: 0; border-inline-start-width: 1px; cursor: col-resize; }
+.ui-rsz[data-direction="vertical"] > .ui-rsz__handle { height: 0; border-top-width: 1px; cursor: row-resize; }
+.ui-rsz__handle::after { content: ""; position: absolute; border-radius: 4px; }
+.ui-rsz[data-direction="horizontal"] > .ui-rsz__handle::after { top: 0; bottom: 0; left: -6px; right: -6px; }
+.ui-rsz[data-direction="vertical"] > .ui-rsz__handle::after { left: 0; right: 0; top: -6px; bottom: -6px; }
+/* The line firms up under the pointer (after a short rest, so passing over it stays calm) and while dragging */
+.ui-rsz__handle:hover { border-color: var(--ui-rsz-line-active); transition-delay: 120ms; }
+.ui-rsz__handle[data-dragging], .ui-rsz__handle:focus-visible { border-color: var(--ui-rsz-line-active); transition-delay: 0ms; }
+/* Keyboard focus: the ring around the grab strip, inside it, so the panes' edges never cut it */
+.ui-rsz__handle:focus-visible::after { outline: 2px solid var(--ui-rsz-focus); outline-offset: -2px; }
+
+/* The grip: a small white pill on the line, a 1px edge */
+.ui-rsz__grip {
+  position: absolute;
+  z-index: 1;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  border-radius: 999px;
+  background: var(--ui-rsz-grip);
+  box-shadow: 0 0 0 1px var(--ui-rsz-grip-edge), 0 1px 2px rgba(0, 0, 0, 0.06);
+  pointer-events: none;
+}
+.ui-rsz[data-direction="horizontal"] .ui-rsz__grip { width: 8px; height: 28px; }
+.ui-rsz[data-direction="vertical"] .ui-rsz__grip { width: 28px; height: 8px; }
+
+/* Touch screens: a wider strip for the finger and a bigger grip */
+@media (pointer: coarse) {
+  .ui-rsz[data-direction="horizontal"] > .ui-rsz__handle::after { left: -12px; right: -12px; }
+  .ui-rsz[data-direction="vertical"] > .ui-rsz__handle::after { top: -12px; bottom: -12px; }
+  .ui-rsz[data-direction="horizontal"] .ui-rsz__grip { width: 10px; height: 36px; }
+  .ui-rsz[data-direction="vertical"] .ui-rsz__grip { width: 36px; height: 10px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-rsz[data-snap] > .ui-rsz__panel { transition: none; }
+  .ui-rsz__handle { transition: none; }
+}
+
+/* Windows high contrast: the line keeps a system color */
+@media (forced-colors: active) {
+  .ui-rsz__handle { border-color: CanvasText; }
+}
+
+/* Dark mode: follows a .dark class or data-theme="dark" on any ancestor, e.g. <html> */
+:where(.dark, [data-theme="dark"]) .ui-rsz {
+  --ui-rsz-line: var(--aui-border, #26262a);
+  --ui-rsz-line-active: #4a4a50;
+  --ui-rsz-grip: var(--aui-surface, #1c1c1e);
+  --ui-rsz-grip-edge: #34343a;
+  --ui-rsz-focus: var(--aui-focus, rgba(77, 141, 255, 0.8));
+}

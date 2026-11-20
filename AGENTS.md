@@ -42,7 +42,7 @@ The SDK's own `QueryEventsParams` has no field for it; that is why
 `crates/rv2-allsource/src/tenant_query.rs` exists. Use it.
 
 **2. The WASM boundary is real and is enforced by cross-compile.** `rv2-events`,
-`rv2-domain`, `rv2-ai`, `rv2-api-types`, `rv2-ui`, `rv2-client` and both apps compile to
+`rv2-domain`, `rv2-ai`, `rv2-api-types`, `rv2-ui`, `rv2-affect`, `rv2-kit`, `rv2-client` and both apps compile to
 `wasm32-unknown-unknown`. Nothing that pulls `reqwest`, `tokio` with `net`,
 native TLS, or `getrandom` may be reachable from them. Server-only crates —
 `rv2-allsource`, `rv2-shared`, `better-auth-allsource`, `rv2-analytics`,

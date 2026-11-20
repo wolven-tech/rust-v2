@@ -1,0 +1,175 @@
+/* Colors and motion as variables – override them on .ui-ta (see Theming in the docs) */
+.ui-ta {
+  --ui-ta-title: var(--aui-ink, #171717);
+  --ui-ta-ink: var(--aui-ink, #171717);
+  --ui-ta-muted: var(--aui-muted, #8f8f8f);
+  --ui-ta-subtle: var(--aui-muted, #8f8f8f);
+  --ui-ta-faint: var(--aui-placeholder, #b5b5b5);
+  --ui-ta-icon: var(--aui-muted, #8f8f8f);
+  --ui-ta-text: #404040;
+  --ui-ta-surface: var(--aui-surface, #ffffff);
+  --ui-ta-line: var(--aui-border, #e6e6e8);
+  --ui-ta-edge: var(--aui-border-strong, #d4d4d8);
+  --ui-ta-edge-focus: var(--aui-border-strong, #b4b4bb);
+  --ui-ta-wash: #f4f4f5;
+  --ui-ta-readonly: #fafafa;
+  --ui-ta-danger: var(--aui-danger, #c4320a);
+  --ui-ta-danger-edge: #ff8a7a;
+  --ui-ta-danger-edge-focus: #f04438;
+  --ui-ta-danger-wash: color-mix(in srgb, var(--aui-red, #f04438) 4%, transparent);
+  --ui-ta-focus: var(--aui-focus, rgba(0, 96, 226, 0.7));
+  --ui-ta-ease: cubic-bezier(0.22, 1, 0.36, 1);
+
+  --fs: 13.5px;
+  --lh: 21px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  min-width: 0;
+  font-family: var(--aui-font, "Inter", "InterVariable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif);
+  font-size: 13.5px;
+  line-height: 20px;
+  color: var(--ui-ta-ink);
+  -webkit-font-smoothing: antialiased;
+}
+/* Touch screens: 16px text, so iOS doesn't zoom in on focus */
+@media (pointer: coarse) {
+  .ui-ta { --fs: 16px; --lh: 24px; }
+}
+
+.ui-ta__head { display: flex; align-items: baseline; gap: 6px; min-width: 0; padding: 0 2px; }
+.ui-ta__label { min-width: 0; font-size: 13px; font-weight: 500; color: var(--ui-ta-title); overflow-wrap: anywhere; cursor: default; }
+.ui-ta__optional { flex: none; font-size: 12px; line-height: 16px; color: var(--ui-ta-subtle); }
+
+/* The box: white with a 1px gray edge; hover and focus only darken that edge */
+.ui-ta__box {
+  position: relative;
+  display: flex;
+  min-width: 0;
+  border-radius: var(--aui-radius, 10px);
+  background: var(--ui-ta-surface);
+  box-shadow: 0 0 0 1px var(--ui-ta-line), 0 1px 2px rgba(0, 0, 0, 0.04);
+  cursor: text;
+  transition: box-shadow 140ms ease, background-color 140ms ease;
+}
+.ui-ta__box:hover { box-shadow: 0 0 0 1px var(--ui-ta-edge), 0 1px 2px rgba(0, 0, 0, 0.04); }
+.ui-ta__box:focus-within { box-shadow: 0 0 0 1px var(--ui-ta-edge-focus), 0 1px 2px rgba(0, 0, 0, 0.04); }
+.ui-ta[data-invalid] .ui-ta__box { background: var(--ui-ta-danger-wash); box-shadow: 0 0 0 1px var(--ui-ta-danger-edge), 0 1px 2px rgba(0, 0, 0, 0.04); animation: ui-ta-nudge 320ms var(--ui-ta-ease); }
+.ui-ta[data-invalid] .ui-ta__box:focus-within { box-shadow: 0 0 0 1px var(--ui-ta-danger-edge-focus), 0 1px 2px rgba(0, 0, 0, 0.04); }
+.ui-ta[data-readonly] .ui-ta__box { background: var(--ui-ta-readonly); box-shadow: 0 0 0 1px var(--ui-ta-line); cursor: default; }
+.ui-ta[data-disabled] .ui-ta__box { background: var(--ui-ta-readonly); box-shadow: 0 0 0 1px var(--ui-ta-line); cursor: not-allowed; }
+.ui-ta[data-disabled] { opacity: 0.55; }
+
+.ui-ta__input {
+  display: block;
+  flex: 1;
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+  padding: 8px 12px;
+  border: 0;
+  border-radius: inherit;
+  outline: 0;
+  background: transparent;
+  font: inherit;
+  font-size: var(--fs);
+  line-height: var(--lh);
+  color: var(--ui-ta-ink);
+  overflow-wrap: anywhere;
+  resize: none;
+  overflow-y: hidden;
+  scrollbar-width: thin;
+  -webkit-appearance: none;
+  appearance: none;
+}
+/* The corner button keeps clear of the text */
+.ui-ta[data-expandable] .ui-ta__input { padding-inline-end: 36px; }
+.ui-ta__input::placeholder { color: var(--ui-ta-faint); opacity: 1; }
+.ui-ta__input:disabled { cursor: not-allowed; }
+.ui-ta__input[data-gliding] { transition: height 300ms var(--ui-ta-ease); }
+
+/* More room: a small ghost button in the top corner */
+.ui-ta__expand {
+  position: absolute;
+  top: 4px;
+  inset-inline-end: 4px;
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--ui-ta-icon);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color 140ms ease, color 140ms ease;
+}
+.ui-ta__expand:hover { background: var(--ui-ta-wash); color: var(--ui-ta-ink); }
+.ui-ta__expand:focus-visible { outline: 2px solid var(--ui-ta-focus); outline-offset: -2px; }
+.ui-ta__expand svg { display: block; }
+.ui-ta__swap { display: grid; animation: ui-ta-swap 280ms var(--ui-ta-ease); }
+@media (pointer: coarse) {
+  .ui-ta__expand { width: 32px; height: 32px; }
+  .ui-ta__expand::before { content: ""; position: absolute; inset: -4px; }
+  .ui-ta[data-expandable] .ui-ta__input { padding-inline-end: 42px; }
+}
+
+/* Under the field: the hint, or the error in its place, and the count */
+.ui-ta__foot { display: flex; align-items: flex-start; gap: 12px; min-width: 0; padding: 0 2px; }
+.ui-ta__message {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  font-size: 12.5px;
+  line-height: 17px;
+  color: var(--ui-ta-subtle);
+  overflow-wrap: anywhere;
+  animation: ui-ta-message 260ms var(--ui-ta-ease);
+}
+.ui-ta[data-invalid] .ui-ta__message { color: var(--ui-ta-danger); }
+.ui-ta__count { flex: none; margin-left: auto; font-size: 12px; line-height: 16px; font-variant-numeric: tabular-nums; color: var(--ui-ta-faint); transition: color 140ms ease; }
+.ui-ta__count[data-full] { color: var(--ui-ta-text); }
+.ui-ta__count[data-over] { color: var(--ui-ta-danger); }
+
+@keyframes ui-ta-nudge {
+  30% { transform: translateX(-3px); }
+  65% { transform: translateX(2px); }
+}
+@keyframes ui-ta-message {
+  from { opacity: 0; transform: translateY(-3px); filter: blur(2px); }
+}
+@keyframes ui-ta-swap {
+  from { opacity: 0; transform: scale(0.6); filter: blur(2px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-ta *, .ui-ta[data-invalid] .ui-ta__box { animation-duration: 1ms !important; }
+  .ui-ta__box, .ui-ta__input[data-gliding] { transition-duration: 1ms; }
+}
+
+/* Dark mode: follows a .dark class or data-theme="dark" on any ancestor, e.g. <html> */
+:where(.dark, [data-theme="dark"]) .ui-ta {
+  --ui-ta-title: var(--aui-ink, #ededed);
+  --ui-ta-ink: var(--aui-ink, #ededed);
+  --ui-ta-text: #c8c8cc;
+  --ui-ta-muted: var(--aui-muted, #8b8b92);
+  --ui-ta-subtle: var(--aui-muted, #8b8b92);
+  --ui-ta-faint: var(--aui-placeholder, #5c5c63);
+  --ui-ta-icon: var(--aui-muted, #8b8b92);
+  --ui-ta-surface: var(--aui-surface, #19191b);
+  --ui-ta-line: var(--aui-border, #2a2a2e);
+  --ui-ta-edge: var(--aui-border-strong, #3a3a40);
+  --ui-ta-edge-focus: var(--aui-border-strong, #4e4e55);
+  --ui-ta-wash: #26262a;
+  --ui-ta-readonly: #151517;
+  --ui-ta-danger: var(--aui-danger, #ff8a7a);
+  --ui-ta-danger-edge: color-mix(in srgb, var(--aui-red, #ff6b5f) 45%, transparent);
+  --ui-ta-danger-edge-focus: rgba(255, 99, 105, 0.75);
+  --ui-ta-danger-wash: color-mix(in srgb, var(--aui-red, #ff6b5f) 6%, transparent);
+  --ui-ta-focus: var(--aui-focus, rgba(77, 141, 255, 0.8));
+}

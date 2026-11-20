@@ -1,0 +1,76 @@
+/* Palette as variables – blue, or red-orange via data-color="orange" */
+.ui-fc {
+  --ui-fc-sky-top: #2475ea;
+  --ui-fc-sky-bottom: #4ac8f5;
+  --ui-fc-sky-light: rgba(110, 225, 255, 0.55);
+  --ui-fc-white: #ffffff;
+  --ui-fc-frost: #eef8ff;
+  --ui-fc-tint: rgba(70, 165, 235, 0.2);
+  --ui-fc-hole-1: #3aaef2;
+  --ui-fc-hole-2: #62cdfa;
+  --ui-fc-eye-drop: rgba(40, 130, 210, 0.1);
+  --ui-fc-eye-shade: rgba(10, 90, 190, 0.24);
+  --ui-fc-halo: rgba(30, 150, 255, 0.2);
+  --ui-fc-edge: rgba(20, 120, 240, 0.4);
+  --ui-fc-shadow: rgba(10, 90, 200, 0.55);
+  --ui-fc-ground: rgba(10, 80, 190, 0.4);
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 100%;
+  aspect-ratio: 1;
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+.ui-fc[data-color="orange"] {
+  --ui-fc-sky-top: #e94135;
+  --ui-fc-sky-bottom: #fa9842;
+  --ui-fc-sky-light: rgba(255, 205, 150, 0.5);
+  --ui-fc-frost: #fff5f0;
+  --ui-fc-tint: rgba(235, 110, 70, 0.2);
+  --ui-fc-hole-1: #f05f42;
+  --ui-fc-hole-2: #fba05b;
+  --ui-fc-eye-drop: rgba(200, 70, 40, 0.1);
+  --ui-fc-eye-shade: rgba(170, 40, 20, 0.24);
+  --ui-fc-halo: rgba(240, 100, 60, 0.2);
+  --ui-fc-edge: rgba(220, 80, 40, 0.4);
+  --ui-fc-shadow: rgba(170, 50, 20, 0.5);
+  --ui-fc-ground: rgba(150, 30, 10, 0.36);
+}
+.ui-fc svg { display: block; width: 100%; max-width: 320px; overflow: visible; }
+.ui-fc__halo { fill: var(--ui-fc-halo); }
+.ui-fc__edge { fill: var(--ui-fc-edge); }
+.ui-fc__shadow { fill: var(--ui-fc-shadow); }
+.ui-fc__tint { fill: var(--ui-fc-tint); }
+.ui-fc__eye-drop { fill: var(--ui-fc-eye-drop); }
+.ui-fc__eye-shade { stroke: var(--ui-fc-eye-shade); }
+
+/* The sky: darker at the top, lighter at the bottom, a brighter patch behind the cloud – fills the whole box */
+.ui-fc[data-bg] {
+  --ui-fc-halo: rgba(255, 255, 255, 0.75);
+  --ui-fc-edge: rgba(255, 255, 255, 0.5);
+  --ui-fc-shadow: var(--ui-fc-ground);
+  background:
+    radial-gradient(60% 55% at 62% 42%, var(--ui-fc-sky-light), transparent 70%),
+    linear-gradient(180deg, var(--ui-fc-sky-top), var(--ui-fc-sky-bottom));
+}
+
+/* Dark mode: follows a .dark class or data-theme="dark" on any ancestor, e.g. <html> – a deeper sky */
+:where(.dark, [data-theme="dark"]) .ui-fc {
+  --ui-fc-sky-top: #1659c8;
+  --ui-fc-sky-bottom: #2aa6e6;
+  --ui-fc-sky-light: rgba(90, 205, 255, 0.45);
+  --ui-fc-ground: rgba(5, 50, 140, 0.5);
+}
+:where(.dark, [data-theme="dark"]) .ui-fc[data-color="orange"] {
+  --ui-fc-sky-top: #bf2722;
+  --ui-fc-sky-bottom: #ed701d;
+  --ui-fc-sky-light: rgba(255, 175, 120, 0.42);
+  --ui-fc-ground: rgba(110, 15, 5, 0.5);
+}
+:where(.dark, [data-theme="dark"]) .ui-fc:not([data-bg]) {
+  --ui-fc-halo: rgba(255, 255, 255, 0.35);
+  --ui-fc-edge: rgba(255, 255, 255, 0.25);
+}

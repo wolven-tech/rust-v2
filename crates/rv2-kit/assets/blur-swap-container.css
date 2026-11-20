@@ -1,0 +1,56 @@
+/* Height glide is set from JS in blur_swap_container.rs; blur and fade are CSS. */
+.kit-blur-swap {
+  position: relative;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+.kit-blur-swap[data-swapping] {
+  overflow: hidden;
+}
+
+.kit-blur-swap__current[data-swap]:not([data-swap="0"]) {
+  animation: kit-blur-swap-in var(--kit-slow) var(--kit-ease) both;
+}
+
+.kit-blur-swap__outgoing {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  pointer-events: none;
+  animation: kit-blur-swap-out var(--kit-slow) var(--kit-ease) both;
+}
+
+.kit-blur-swap[data-reduced] .kit-blur-swap__outgoing {
+  display: none;
+}
+
+@keyframes kit-blur-swap-in {
+  from {
+    filter: blur(10px);
+    opacity: 0;
+  }
+  to {
+    filter: blur(0);
+    opacity: 1;
+  }
+}
+
+@keyframes kit-blur-swap-out {
+  to {
+    filter: blur(10px);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kit-blur-swap__current,
+  .kit-blur-swap__current[data-swap]:not([data-swap="0"]),
+  .kit-blur-swap__outgoing {
+    animation: none;
+  }
+  .kit-blur-swap__outgoing {
+    display: none;
+  }
+}

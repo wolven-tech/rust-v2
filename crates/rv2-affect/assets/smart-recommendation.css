@@ -1,0 +1,257 @@
+.ui-sr {
+  --ui-sr-tray: var(--aui-subtle, #f0f0f0);
+  --ui-sr-card: var(--aui-surface, #ffffff);
+  --ui-sr-ink: var(--aui-ink, #171717);
+  --ui-sr-text: var(--aui-ink, #404040);
+  --ui-sr-muted: var(--aui-muted, #8f8f8f);
+  --ui-sr-accent: var(--aui-blue, #4fb0fe);
+  --ui-sr-ok: var(--aui-success, #1e8a4f);
+  --ui-sr-focus: var(--aui-focus, rgba(0, 96, 226, 0.7));
+  --ui-sr-accent-text: var(--aui-blue, #4fb0fe);
+  --ui-sr-border: var(--aui-border, #e5e5e5);
+  --ui-sr-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+  --ui-sr-head-hover: var(--aui-subtle, #f8f8f8);
+  --ui-sr-pill: #f4f0ff;
+  --ui-sr-pill-text: var(--aui-purple, #a651f0);
+  --ui-sr-bar: #d4d4d4;
+  --ui-sr-btn: var(--aui-surface, #fff);
+  --ui-sr-btn-hover: #f7f7f7;
+  --ui-sr-menu: var(--aui-overlay, #fff);
+  --ui-sr-option-hover: var(--aui-subtle, #f5f5f5);
+  --ui-sr-option-on: #f5f8ff;
+  --ui-sr-tag: #eef7ff;
+  --ui-sr-ease: var(--aui-ease, cubic-bezier(0.22, 1, 0.36, 1));
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 440px;
+  container-type: inline-size;
+  /* Like the Chat Composer: the white card on a gray tray, the actions live in the tray below */
+  background: var(--ui-sr-tray);
+  /* The gray tray frames the white card on every side */
+  padding: 6px;
+  border-radius: calc(var(--aui-radius-lg, 16px) + 6px);
+  font-family: var(--aui-font, "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif);
+  color: var(--ui-sr-ink);
+  -webkit-font-smoothing: antialiased;
+}
+.ui-sr *, .ui-sr *::before, .ui-sr *::after { box-sizing: border-box; }
+.ui-sr button { margin: 0; font: inherit; color: inherit; cursor: pointer; }
+.ui-sr button:focus-visible { outline: 2px solid var(--ui-sr-focus); outline-offset: 2px; }
+
+.ui-sr__card {
+  padding: 6px 8px 8px;
+  background: var(--ui-sr-card);
+  border: 1px solid var(--ui-sr-border);
+  border-radius: var(--aui-radius-lg, 16px);
+  box-shadow: var(--ui-sr-shadow);
+}
+.ui-sr__head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  height: 40px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: calc(var(--aui-radius-lg, 16px) - 4px);
+  background: transparent;
+  text-align: left;
+  transition: background-color 140ms ease;
+}
+.ui-sr__head:hover { background: var(--ui-sr-head-hover); }
+.ui-sr button.ui-sr__head:focus-visible { outline-offset: -2px; }
+.ui-sr__spark { flex: none; color: var(--ui-sr-accent-text); }
+.ui-sr__title { min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-size: 15px; font-weight: 500; }
+.ui-sr__pill {
+  flex: none;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: var(--ui-sr-pill);
+  font-size: 11.5px;
+  font-weight: 500;
+  color: var(--ui-sr-pill-text);
+}
+.ui-sr__chevron { display: grid; margin-left: auto; color: var(--ui-sr-muted); transition: transform 280ms var(--ui-sr-ease); }
+.ui-sr__head[aria-expanded="false"] .ui-sr__chevron { transform: rotate(-90deg); }
+.ui-sr__body {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 340ms var(--ui-sr-ease);
+}
+.ui-sr__body[data-open] { grid-template-rows: 1fr; }
+.ui-sr__reason {
+  min-height: 0;
+  overflow: hidden;
+  margin: 0;
+  padding: 0 10px;
+  font-size: 14px;
+  line-height: 21px;
+  color: var(--ui-sr-text);
+  text-align: start;
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+  animation: ui-sr-swap 360ms var(--ui-sr-ease);
+}
+.ui-sr__body[data-open] .ui-sr__reason { padding-bottom: 8px; }
+.ui-sr__reason strong { font-weight: 500; color: var(--ui-sr-ink); }
+
+.ui-sr__foot {
+  display: flex;
+  align-items: center;
+  /* Narrow containers: the actions move below the signal instead of running out of the tray */
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px 10px;
+  min-height: 50px;
+  padding: 8px 8px 8px 16px;
+}
+.ui-sr__signal {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  white-space: nowrap;
+  color: var(--ui-sr-muted);
+}
+.ui-sr__bars, .ui-sr__mini { display: inline-flex; align-items: flex-end; gap: 2px; }
+.ui-sr__bars span, .ui-sr__mini span {
+  width: 3px;
+  border-radius: 1px;
+  background: var(--ui-sr-bar);
+  transition: background-color 260ms ease;
+}
+.ui-sr__bars span:nth-child(1), .ui-sr__mini span:nth-child(1) { height: 6px; }
+.ui-sr__bars span:nth-child(2), .ui-sr__mini span:nth-child(2) { height: 9px; }
+.ui-sr__bars span:nth-child(3), .ui-sr__mini span:nth-child(3) { height: 12px; }
+/* Scoped to the card, so other components with data-level on the page keep their colors */
+.ui-sr [data-level="1"] > span[data-on] { background: var(--aui-amber, #e8b000); }
+.ui-sr [data-level="2"] > span[data-on] { background: var(--ui-sr-accent); }
+.ui-sr [data-level="3"] > span[data-on] { background: var(--ui-sr-ok); }
+.ui-sr__signal[data-level="0"] .ui-sr__bars span:first-child { background: #8f8f8f; }
+
+/* Never wider than the row – a long label shortens in its button instead of running out of the tray */
+.ui-sr__actions { display: flex; align-items: center; gap: 6px; min-width: 0; max-width: 100%; margin-left: auto; }
+.ui-sr__alt, .ui-sr__actions > .ui-sr__btn:not(.ui-sr__btn--primary) { flex: none; }
+.ui-sr__btn {
+  height: 32px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: var(--aui-radius, 10px);
+  background: var(--ui-sr-btn);
+  box-shadow: 0 0 0 1px var(--ui-sr-border), 0 1px 2px rgba(0, 0, 0, 0.04);
+  font-size: 13px !important;
+  font-weight: 500;
+  min-width: 0;
+  max-width: 100%;
+  white-space: nowrap;
+  transition: background-color 160ms ease, transform 160ms ease;
+}
+.ui-sr__btn--primary { display: inline-flex; align-items: center; }
+.ui-sr__btn-text { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.ui-sr__btn:hover { background: var(--ui-sr-btn-hover); }
+.ui-sr__btn:active { transform: scale(0.98); }
+.ui-sr__btn--primary {
+  background: linear-gradient(#323137, #201e25);
+  box-shadow: 0 0 0 1px #0d0d0d, 0 2px 4px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  color: #fff !important;
+}
+.ui-sr__btn--primary:hover { background: linear-gradient(#3b3a41, #26242b); }
+.ui-sr__done {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  padding-right: 4px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ui-sr-ok);
+  animation: ui-sr-swap 300ms var(--ui-sr-ease);
+}
+
+.ui-sr__alt { position: relative; }
+.ui-sr__menu {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  right: 0;
+  z-index: 5;
+  display: grid;
+  gap: 2px;
+  /* The column never grows with a long name; a long list scrolls */
+  grid-template-columns: minmax(0, 1fr);
+  width: 260px;
+  max-height: min(320px, 60vh);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 4px;
+  border-radius: calc(var(--aui-radius-lg, 16px) - 4px);
+  background: var(--ui-sr-menu);
+  box-shadow: var(--aui-shadow-popover, 0 0 0 1px var(--ui-sr-border), 0 12px 30px -8px rgba(0, 0, 0, 0.2));
+  animation: ui-sr-drop 180ms var(--ui-sr-ease);
+}
+.ui-sr__menu[data-flip] { right: auto; left: 0; }
+/* Narrow: the actions sit on their own row – the menu lines up with its right edge so it stays inside */
+@container (max-width: 420px) {
+  .ui-sr__actions { position: relative; }
+  .ui-sr__alt { position: static; }
+  .ui-sr__menu { width: min(260px, 100cqw - 24px); }
+}
+.ui-sr__option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-height: 34px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: calc(var(--aui-radius-sm, 7px) + 1px);
+  background: transparent;
+  font-size: 13px !important;
+  text-align: left;
+}
+.ui-sr__option:hover { background: var(--ui-sr-option-hover); }
+.ui-sr__option[aria-checked="true"] { background: var(--ui-sr-option-on); }
+.ui-sr button.ui-sr__option:focus-visible { outline-offset: -2px; }
+.ui-sr__option-label { display: inline-flex; flex: 0 1 auto; align-items: center; gap: 6px; min-width: 0; }
+.ui-sr__option-name, .ui-sr__done-text { min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.ui-sr__tag, .ui-sr__mini { flex: none; }
+.ui-sr__tag { padding: 0 6px; border-radius: 999px; background: var(--ui-sr-tag); font-size: 10.5px; font-weight: 500; line-height: 16px; color: var(--ui-sr-accent-text); }
+
+@keyframes ui-sr-swap { from { opacity: 0; transform: translateY(2px); } }
+@keyframes ui-sr-drop { from { opacity: 0; transform: translateY(4px) scale(0.98); } }
+@media (prefers-reduced-motion: reduce) {
+  .ui-sr__reason, .ui-sr__done, .ui-sr__menu { animation: none; }
+  .ui-sr__body, .ui-sr__chevron { transition: none; }
+}
+
+/* Dark mode: follows a .dark class or data-theme="dark" on any ancestor, e.g. <html> */
+:where(.dark, [data-theme="dark"]) .ui-sr {
+  --ui-sr-tray: var(--aui-subtle, #161618);
+  --ui-sr-card: var(--aui-surface, #232326);
+  --ui-sr-ink: var(--aui-ink, #ededed);
+  --ui-sr-text: var(--aui-ink, #c4c4c4);
+  --ui-sr-muted: var(--aui-muted, #8f8f8f);
+  --ui-sr-ok: #3fb971;
+  --ui-sr-focus: var(--aui-focus, rgba(77, 141, 255, 0.8));
+  --ui-sr-accent-text: var(--aui-info, #4fb0fe);
+  --ui-sr-border: var(--aui-border, rgba(255, 255, 255, 0.08));
+  --ui-sr-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --ui-sr-head-hover: var(--aui-subtle, rgba(255, 255, 255, 0.06));
+  --ui-sr-pill: color-mix(in srgb, var(--aui-purple, #b98af0) 18%, transparent);
+  --ui-sr-pill-text: var(--aui-purple, #b98af0);
+  --ui-sr-bar: rgba(255, 255, 255, 0.14);
+  --ui-sr-btn: var(--aui-surface, #2a2a2d);
+  --ui-sr-btn-hover: #313135;
+  --ui-sr-menu: var(--aui-overlay, #2a2a2d);
+  --ui-sr-option-hover: var(--aui-subtle, #313135);
+  --ui-sr-option-on: color-mix(in srgb, var(--aui-blue, #4fb0fe) 16%, transparent);
+  --ui-sr-tag: color-mix(in srgb, var(--aui-blue, #4fb0fe) 16%, transparent);
+}
+:where(.dark, [data-theme="dark"]) .ui-sr__menu {
+  box-shadow: var(--aui-shadow-popover, 0 0 0 1px rgba(255, 255, 255, 0.1), 0 12px 30px -8px rgba(0, 0, 0, 0.5));
+}
+:where(.dark, [data-theme="dark"]) .ui-sr__btn--primary {
+  background: linear-gradient(#f4f4f5, #e4e4e7);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.6), 0 2px 4px rgba(0, 0, 0, 0.35), inset 0 1px 0 #ffffff;
+  color: #121213 !important;
+}
+:where(.dark, [data-theme="dark"]) .ui-sr__btn--primary:hover { background: linear-gradient(#ffffff, #ececef); }

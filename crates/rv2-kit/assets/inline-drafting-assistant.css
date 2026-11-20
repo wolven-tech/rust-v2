@@ -1,0 +1,42 @@
+.kit-ida {
+  position: relative; overflow: hidden; width: 100%; max-width: 30rem; box-sizing: border-box; display: grid; gap: 12px;
+  padding: 16px; border: 1px solid var(--kit-rule-soft); border-radius: var(--kit-radius-lg); background: var(--kit-surface);
+  box-shadow: var(--kit-shadow); color: var(--kit-ink); font-family: var(--kit-font); font-size: 14px; line-height: 1.5;
+}
+.kit-ida::before {
+  content: ""; position: absolute; inset: -40% -20% auto; height: 60%; pointer-events: none; z-index: 0;
+  background: radial-gradient(closest-side, color-mix(in srgb, var(--kit-ok) 14%, transparent), transparent);
+  animation: kit-ida-glow 9s var(--kit-ease) infinite alternate;
+}
+.kit-ida > * { position: relative; z-index: 1; }
+.kit-ida__head { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.kit-ida__name { font-weight: 600; }
+.kit-ida__tagline { color: var(--kit-ink-muted); font-size: 12px; flex: 1; min-width: 0; }
+.kit-ida__new { border: 0; background: transparent; color: var(--kit-ink-muted); font: inherit; font-size: 12px; cursor: pointer; }
+.kit-ida__welcome { display: grid; gap: 10px; animation: kit-ida-rise var(--kit-slow) var(--kit-ease) both; }
+.kit-ida__greeting { margin: 0; font-size: 16px; }
+.kit-ida__chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.kit-ida__chip { min-height: 32px; padding: 0 12px; border-radius: 999px; border: 1px solid var(--kit-rule); background: var(--kit-surface); color: var(--kit-ink); font: inherit; font-size: 13px; cursor: pointer; }
+.kit-ida__log { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; max-height: 18rem; overflow-y: auto; }
+.kit-ida__msg { padding: 8px 12px; border-radius: var(--kit-radius); background: var(--kit-ground); overflow-wrap: anywhere; white-space: pre-wrap; animation: kit-ida-rise var(--kit-fast) var(--kit-ease) both; }
+.kit-ida__msg[data-role="user"] { justify-self: end; max-width: 85%; background: var(--kit-raised); }
+.kit-ida__msg[data-role="error"] { color: var(--kit-fault-ink); }
+.kit-ida__pending { color: var(--kit-ink-faint); animation: kit-ida-shimmer 1.6s linear infinite; }
+.kit-ida__composer { display: grid; gap: 8px; }
+.kit-ida__input { width: 100%; box-sizing: border-box; min-height: 3.25rem; field-sizing: content; max-height: calc(10lh + 16px); resize: vertical; padding: 8px 10px; border: 1px solid var(--kit-rule-soft); border-radius: var(--kit-radius-sm); background: var(--kit-surface); color: inherit; font: inherit; }
+.kit-ida__tools { display: flex; justify-content: flex-end; gap: 6px; }
+.kit-ida__mic, .kit-ida__send { position: relative; min-height: 34px; padding: 0 12px; border-radius: var(--kit-radius-sm); border: 1px solid var(--kit-rule); background: var(--kit-surface); color: var(--kit-ink); font: inherit; font-size: 13px; cursor: pointer; }
+.kit-ida__mic[aria-pressed="true"] { background: var(--kit-raised); }
+.kit-ida__ring { display: none; position: absolute; inset: -4px; border-radius: inherit; border: 1px solid var(--kit-ok); }
+.kit-ida__mic[aria-pressed="true"] .kit-ida__ring { display: block; animation: kit-ida-breathe 2.4s var(--kit-ease) infinite; }
+.kit-ida__send { background: var(--kit-accent); color: var(--kit-on-ink); border-color: var(--kit-accent); }
+.kit-ida__send:disabled { opacity: 0.45; cursor: default; }
+.kit-ida button:focus-visible, .kit-ida__input:focus-visible { outline: 2px solid var(--kit-ink-hover); outline-offset: 2px; }
+@keyframes kit-ida-glow { from { transform: translateX(-6%); } to { transform: translateX(6%); } }
+@keyframes kit-ida-rise { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+@keyframes kit-ida-shimmer { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
+@keyframes kit-ida-breathe { 0%, 100% { transform: scale(1); opacity: 0.6; } 50% { transform: scale(1.12); opacity: 0; } }
+@media (pointer: coarse) { .kit-ida__chip, .kit-ida__mic, .kit-ida__send { min-height: 44px; } }
+@media (prefers-reduced-motion: reduce) {
+  .kit-ida::before, .kit-ida__welcome, .kit-ida__msg, .kit-ida__pending, .kit-ida__mic[aria-pressed="true"] .kit-ida__ring { animation: none; }
+}
