@@ -246,6 +246,26 @@ impl ProcessState {
     }
 }
 
+/// Which way a [`ProcessRail`] runs.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub enum RailLayout {
+    /// Steps side by side, two per row on a phone.
+    #[default]
+    Row,
+    /// Steps stacked: a timeline beside the content it tracks, or a stepper
+    /// in a narrow column. Edit Scope's timeline and Reefdose's stepper.
+    Column,
+}
+
+impl RailLayout {
+    const fn name(self) -> &'static str {
+        match self {
+            Self::Row => "row",
+            Self::Column => "column",
+        }
+    }
+}
+
 /// Ordered process with optional current-step semantics.
 ///
 /// `active_step` is one-based. Omit it for a static process explanation.
@@ -254,12 +274,17 @@ pub fn ProcessRail(
     label: String,
     steps: Vec<ProcessStep>,
     #[props(default)] active_step: Option<usize>,
+    #[props(default)] layout: RailLayout,
     #[props(default)] class: String,
 ) -> Element {
     let count = steps.len();
     let column_style = format!("--rv2-process-columns: {};", count.max(1));
     rsx! {
-        nav { class: "rv2-process-rail {class}", aria_label: "{label}", style: "{column_style}",
+        nav {
+            class: "rv2-process-rail {class}",
+            aria_label: "{label}",
+            style: "{column_style}",
+            "data-layout": layout.name(),
             ol {
                 for (index, step) in steps.iter().enumerate() {
                     ProcessRailItem {

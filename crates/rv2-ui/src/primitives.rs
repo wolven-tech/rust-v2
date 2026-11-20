@@ -83,6 +83,9 @@ pub fn Button(
     #[props(default)] size: Size,
     #[props(default = false)] disabled: bool,
     #[props(default = false)] busy: bool,
+    /// Takes first focus when its modal [`crate::Dialog`] opens.
+    #[props(default = false)]
+    autofocus: bool,
     #[props(default = "button".to_string())] r#type: String,
     #[props(default)] class: String,
     #[props(default)] onclick: Option<EventHandler<MouseEvent>>,
@@ -93,6 +96,7 @@ pub fn Button(
         button {
             class: "{CONTROL_BASE} {variant} {size} {class}",
             r#type: "{r#type}",
+            autofocus,
             disabled: disabled || busy,
             "aria-busy": busy,
             onclick: move |event| {
@@ -101,6 +105,88 @@ pub fn Button(
                 }
             },
             {children}
+        }
+    }
+}
+
+/// What a click on an [`ArmedDeleteButton`] does next.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum DeleteClick {
+    Arm,
+    Confirm,
+}
+
+impl DeleteClick {
+    #[must_use]
+    pub fn next(armed: bool) -> Self {
+        if armed {
+            DeleteClick::Confirm
+        } else {
+            DeleteClick::Arm
+        }
+    }
+}
+
+/// Delete in two clicks without a dialog: the first arms it and changes its
+/// label, the second confirms.
+///
+/// For a row action where a modal would be heavier than the loss. The caller
+/// owns `armed`. Escape and leaving the button disarm it, and nothing confirms
+/// while `busy` or `disabled`. Screen readers do not reliably re-read a focused
+/// button whose label changes, so a status beside it speaks the armed label.
+#[component]
+pub fn ArmedDeleteButton(
+    label: String,
+    confirm_label: String,
+    armed: bool,
+    on_armed_change: EventHandler<bool>,
+    on_confirm: EventHandler<()>,
+    #[props(default = false)] busy: bool,
+    #[props(default = false)] disabled: bool,
+    #[props(default)] size: Size,
+    #[props(default)] class: String,
+) -> Element {
+    let blocked = busy || disabled;
+    let variant = if armed {
+        Variant::Danger
+    } else {
+        Variant::Outline
+    };
+    let (size, look) = (size.classes(variant), variant.classes());
+    rsx! {
+        button {
+            class: "{CONTROL_BASE} {look} {size} {class}",
+            r#type: "button",
+            disabled: blocked,
+            "aria-busy": busy,
+            "data-armed": armed,
+            onblur: move |_| {
+                if armed {
+                    on_armed_change.call(false);
+                }
+            },
+            onkeydown: move |event| {
+                if armed && event.key() == Key::Escape {
+                    event.prevent_default();
+                    on_armed_change.call(false);
+                }
+            },
+            onclick: move |_| {
+                if blocked {
+                    return;
+                }
+                match DeleteClick::next(armed) {
+                    DeleteClick::Arm => on_armed_change.call(true),
+                    DeleteClick::Confirm => {
+                        on_armed_change.call(false);
+                        on_confirm.call(());
+                    }
+                }
+            },
+            if armed { "{confirm_label}" } else { "{label}" }
+        }
+        span { class: "sr-only", role: "status",
+            if armed { "{confirm_label}" }
         }
     }
 }
@@ -226,6 +312,9 @@ pub enum BadgeFill {
     Strong,
     /// The quiet one of the same pair: present, not asserted.
     Quiet,
+    /// A count beside a heading or tab: the parent's text colour at low
+    /// strength, so it re-tints with whatever it sits in.
+    Tint,
 }
 
 impl BadgeFill {
@@ -235,6 +324,7 @@ impl BadgeFill {
             BadgeFill::Takeable => "bg-takeable-soft text-takeable-ink",
             BadgeFill::Strong => "bg-rule text-ink",
             BadgeFill::Quiet => "bg-surface text-ink",
+            BadgeFill::Tint => "bg-current/12 text-current tabular-nums",
         }
     }
 }
@@ -420,6 +510,7 @@ mod tests {
             BadgeFill::Takeable,
             BadgeFill::Strong,
             BadgeFill::Quiet,
+            BadgeFill::Tint,
         ];
         for (i, a) in all.iter().enumerate() {
             for b in &all[i + 1..] {
@@ -501,6 +592,7 @@ pub fn Bar(
     /// Whether this row is one the reader is hunting for.
     #[props(default = false)]
     emphasis: bool,
+    #[props(default)] arrive: crate::Arrive,
     children: Element,
 ) -> Element {
     // An empty set would otherwise divide by nought and render every bar full.
@@ -526,7 +618,7 @@ pub fn Bar(
             span { class: "tabular-nums text-xs font-semibold text-ink", "{count}" }
             div { class: "col-span-2 h-1.5 w-full rounded-sm bg-raised",
                 div {
-                    class: "h-full rounded-sm",
+                    class: "h-full rounded-sm {arrive.class()}",
                     style: "width:{width}%;background:{fill}",
                     aria_hidden: "true",
                 }

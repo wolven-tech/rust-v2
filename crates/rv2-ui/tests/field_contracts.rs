@@ -1,7 +1,7 @@
 #![allow(unused_braces)]
 
 use dioxus::prelude::*;
-use rv2_ui::{Button, FieldShell, TextArea, TextField, field_description};
+use rv2_ui::{Button, Checkbox, FieldShell, TextArea, TextField, field_description};
 
 fn render(component: fn() -> Element) -> String {
     let mut dom = VirtualDom::new(component);
@@ -146,4 +146,24 @@ fn custom_typed_fields_use_the_same_label_and_help_contract() {
     assert!(html.contains("for=\"custom\""));
     assert!(html.contains("id=\"custom-help\""));
     assert!(html.contains("aria-describedby=\"custom-help\""));
+}
+
+#[component]
+fn Derived() -> Element {
+    rsx! { Checkbox { label: "Mid-size", checked: false, count: 4, basis: "headcount band, not revenue", onchange: |_| {} } }
+}
+
+#[test]
+fn a_derived_checkbox_shows_its_basis_and_binds_it_as_the_description() {
+    let html = render(Derived);
+    assert!(!html.contains("title="), "{html}");
+    let id = html
+        .split("aria-describedby=\"")
+        .nth(1)
+        .and_then(|rest| rest.split('"').next())
+        .expect("checkbox described by its basis");
+    assert!(
+        html.contains(&format!("id=\"{id}\"")) && html.contains(">headcount band, not revenue</p>"),
+        "{html}"
+    );
 }

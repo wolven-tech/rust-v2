@@ -197,6 +197,7 @@ This repo follows portable rules published at [decebal-claude-skills](https://gi
 | [`docs/architecture/001-rust-v2-allsource-foundation.md`](docs/architecture/001-rust-v2-allsource-foundation.md) | 21 design decisions (D1–D21), risks (R*), open questions (OQ-*). Code comments cite these identifiers. |
 | [`docs/architecture/002-generative-ai-contract.md`](docs/architecture/002-generative-ai-contract.md) | Grounded-draft and AI runtime boundaries (AI1–AI5). |
 | [`docs/architecture/003-ui-semantic-isa.md`](docs/architecture/003-ui-semantic-isa.md) | The UI kit as a closed vocabulary — registers, operands, instructions (UI1–UI9) — and the `cargo xtask ci` check that keeps apps on it. |
+| [`docs/ledger/cross-bet-component-harvest.md`](docs/ledger/cross-bet-component-harvest.md) | Components moved into `rv2-ui` from the product bets (tactile, readout, verdict, dialog and toast pieces) and the ranked catalogue of what is left. |
 | [`docs/ledger/allsource-integration-corpus.md`](docs/ledger/allsource-integration-corpus.md) | 21 AllSource behaviours this codebase depends on (B1–B21), which are asserted in tests. |
 | [`docs/review/001-bootstrap-readiness.md`](docs/review/001-bootstrap-readiness.md) | An external review of rust-v2 as a foundation; twelve findings and what was done about each. |
 | [`docs/design-system/field-and-action-contracts.md`](docs/design-system/field-and-action-contracts.md) | Shared field labels, help/error associations, typed-control composition, busy actions and verification limits. |

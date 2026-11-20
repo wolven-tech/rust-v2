@@ -23,17 +23,29 @@
 
 #![allow(non_snake_case)]
 
+mod kit_catalogue;
+mod kit_records;
+
 use dioxus::prelude::*;
 use rv2_ui::{
-    ArrowLink, Blob, Button, Card, Container, Crumple, Divider, Eyebrow, Fact, FactList, Faq,
-    FeatureCard, Foil, Footer, FooterColumn, Fur, GradientBuilder, Grid, Heading, HeadingSize,
-    Hero, Hologram, LinkButton, Mood, NavLink, NavigationRail, Pad, PageEntrance, PricingCard,
-    ProcessRail, ProcessStep, ProductHeader, PullCord, QandA, Section, Size, Space, Step, StepList,
-    Text, TextField, Tone, Vacuum, Variant, Width,
+    ArrowLink, Blob, Button, Callout, Card, Chip, ChipGroup, Container, Crumple, Density, Divider,
+    Eyebrow, Fact, FactList, Faq, FeatureCard, Foil, Footer, FooterColumn, Fur, GradientBuilder,
+    Grid, Heading, HeadingSize, Hero, Hologram, Lean, LinkButton, Masthead, MediaCard, Meter, Mood,
+    NavLink, NavigationRail, Pad, PageEntrance, Part, Press, PressButton, PressLink, PricingCard,
+    ProcessRail, ProcessStep, ProductHeader, PullCord, QandA, Receipt, ResultPanel, SaveToggle,
+    Section, SegmentedControl, Size, Space, Sparkle, SplitBar, Stat, StatStrip, Step, StepList,
+    Text, TextField, Tone, UnitField, Vacuum, Variant, Verdict, Width,
 };
 
 const TAILWIND: Asset = asset!("/assets/tailwind.css");
 const FAVICON: Asset = asset!("/assets/favicon.svg");
+const STAR_ICON: Asset = asset!("/assets/action-star-icon.png");
+const HEART_ICON: Asset = asset!("/assets/save-heart-icon.png");
+const SCENES: [Asset; 3] = [
+    asset!("/assets/kit-scene-sun.svg"),
+    asset!("/assets/kit-scene-blocks.svg"),
+    asset!("/assets/kit-scene-star.svg"),
+];
 const PUBLIC_SITE_URL: &str = match option_env!("PUBLIC_SITE_URL") {
     Some(url) => url,
     None => "http://localhost:4401",
@@ -63,6 +75,8 @@ enum Route {
     About {},
     #[route("/motion")]
     Motion {},
+    #[route("/kit")]
+    Kit {},
 }
 
 fn main() {
@@ -167,6 +181,7 @@ fn Shell(current: &'static str, children: Element) -> Element {
                 items: vec![
                     NavLink::route("home", "Home", "/"),
                     NavLink::route("motion", "Motion", "/motion"),
+                    NavLink::route("kit", "Kit", "/kit"),
                     NavLink::route("about", "About", "/about"),
                 ],
                 current: current,
@@ -354,6 +369,196 @@ fn Home() -> Element {
                     }
                 }
             }
+        }
+    }
+}
+
+/// The `rv2_ui::tactile` gallery, in the playful theme it was drawn in.
+///
+/// A coverage fixture like `Home`: every tactile component is mounted with
+/// real props and real state, so a removed prop stops this page compiling.
+#[component]
+fn Kit() -> Element {
+    const FILTERS: [&str; 4] = ["All", "Indoor", "Outdoor", "Quiet"];
+    let ideas = [
+        (
+            "Sun catcher",
+            "Outdoor",
+            "Tissue paper, a lid and a sunny window.",
+        ),
+        (
+            "Block tower",
+            "Indoor",
+            "How tall before it wobbles? Count each level.",
+        ),
+        (
+            "Star hunt",
+            "Quiet",
+            "Hide five paper stars; find them by torchlight.",
+        ),
+    ];
+    let mut filter = use_signal(|| "All");
+    let mut saved = use_signal(Vec::<&'static str>::new);
+    let mut price = use_signal(|| "28.5".to_string());
+    let mut fee = use_signal(|| "1.20".to_string());
+    let mut period = use_signal(|| "month".to_string());
+
+    rsx! {
+        DiscoveryHead {
+            title: format!("Tactile component kit | {PUBLIC_PRODUCT_NAME}"),
+            description: "Tactile Dioxus buttons, chips, save toggles and media cards in the playful theme, plus dialogs, toasts, gate lists, redlines and comparison tables.".to_string(),
+            path: "/kit",
+        }
+        Shell { current: "kit",
+            div { class: "rv2-theme-playful pb-16",
+                Masthead {
+                    brand: "The Play Desk",
+                    mark: STAR_ICON.to_string(),
+                    subtitle: "Tactile controls, in the palette they were drawn in",
+                    strap: ("rv2-ui · tactile".to_string(), "Theme: playful".to_string()),
+                    items: vec![
+                        NavLink::route("press", "Buttons", "#press"),
+                        NavLink::route("chips", "Chips", "#chips"),
+                        NavLink::route("cards", "Cards", "#cards"),
+                    ],
+                    current: "press",
+                }
+
+                Section { id: "press",
+                    Container {
+                        div { class: "relative",
+                            Sparkle {}
+                            Heading { level: 1, size: HeadingSize::Display, "Buttons with a ledge" }
+                            Text { class: "mt-4 max-w-xl", tone: Tone::Lead,
+                                "They lift when you hover, press into the ledge when you click, and \
+                                 tilt their icon on keyboard focus as well as on hover."
+                            }
+                            div { class: "mt-6 flex flex-wrap gap-4",
+                                PressLink { href: "#cards", icon: STAR_ICON.to_string(), "Find an activity" }
+                                PressButton { press: Press::Soft, icon: STAR_ICON.to_string(), "Reset filters" }
+                                PressButton { press: Press::Soft, "No icon" }
+                                PressButton { disabled: true, "Disabled" }
+                            }
+                        }
+                    }
+                }
+
+                Section { id: "chips",
+                    Container {
+                        Heading { "Filter chips" }
+                        ChipGroup { label: "Filter activities", class: "mt-6",
+                            for name in FILTERS {
+                                Chip {
+                                    active: filter() == name,
+                                    icon: (name == "All").then(|| STAR_ICON.to_string()),
+                                    onclick: move |_| filter.set(name),
+                                    "{name}"
+                                }
+                            }
+                        }
+                    }
+                }
+
+                Section { id: "cards",
+                    Container {
+                        Heading { "Media cards" }
+                        Text { class: "mt-2", tone: Tone::Muted, "{saved.read().len()} saved" }
+                        Grid { columns: 3, class: "mt-6",
+                            for (i, (title, kind, body)) in ideas.into_iter().enumerate() {
+                                if filter() == "All" || filter() == kind {
+                                    MediaCard {
+                                        key: "{title}",
+                                        href: "#cards",
+                                        image: SCENES[i].to_string(),
+                                        title,
+                                        label: format!("{kind} · Activity idea"),
+                                        actions: rsx! {
+                                            SaveToggle {
+                                                saved: saved.read().contains(&title),
+                                                icon: HEART_ICON.to_string(),
+                                                ontoggle: move |next: bool| {
+                                                    let mut list = saved.write();
+                                                    if next { list.push(title) } else { list.retain(|t| *t != title) }
+                                                },
+                                                if saved.read().contains(&title) { "Saved" } else { "Save" }
+                                            }
+                                        },
+                                        Text { tone: Tone::Muted, "{body}" }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            Section { id: "ledger",
+                Container {
+                    Eyebrow { "Default theme" }
+                    Heading { "Ledger and calculator pieces" }
+                    Text { class: "mt-2", tone: Tone::Muted,
+                        "Shapes every calculator and ledger bet drew by hand, in the kit's own registers."
+                    }
+                    div { class: "mt-6",
+                        StatStrip {
+                            density: Density::Hero,
+                            stats: vec![
+                                Stat::new("Sessions", "14"),
+                                Stat::new("Spent", "£212").note("this month"),
+                                Stat::new("Budget left", "+£38").lean(Lean::Good),
+                                Stat::new("Fees", "£41").lean(Lean::Close),
+                            ],
+                        }
+                    }
+                    Grid { columns: 2, class: "mt-8 items-start gap-8",
+                        div { class: "space-y-4",
+                            UnitField { label: "Price per kWh, pence", value: price(), suffix: "p/kWh", oninput: move |e: FormEvent| price.set(e.value()) }
+                            UnitField { label: "Session fee, pounds", value: fee(), prefix: "£", oninput: move |e: FormEvent| fee.set(e.value()) }
+                            SegmentedControl {
+                                label: "Period",
+                                options: vec![("week".to_string(), "Week".to_string()), ("month".to_string(), "Month".to_string())],
+                                value: period(),
+                                onchange: move |next| period.set(next),
+                            }
+                            Meter { label: "Monthly budget", value: 212.0, max: 250.0, readout: "£212 of £250", warn_at: 0.8, critical_at: 0.95, ticks: 10 }
+                            PressButton { press: Press::Offset, "Recalculate" }
+                        }
+                        ResultPanel { label: "True cost", value: "£18.40", context: format!("per session, {}", period()),
+                            SplitBar {
+                                label: "Session cost",
+                                parts: vec![
+                                    Part::new("Energy", 14.2, "£14.20", "var(--color-ink)"),
+                                    Part::new("Fees", 4.2, "£4.20", "var(--color-caution)"),
+                                ],
+                            }
+                        }
+                    }
+                    Grid { columns: 2, class: "mt-8 items-start gap-8",
+                        Receipt {
+                            title: "Scope sent to client",
+                            status: "SENT",
+                            verdict: Verdict::Clear,
+                            facts: vec![
+                                ("Hours".to_string(), "12".to_string()),
+                                ("Rate".to_string(), "£65".to_string()),
+                                ("Total".to_string(), "£780".to_string()),
+                            ],
+                            actions: rsx! {
+                                Button { variant: Variant::Outline, size: Size::Small, "Open receipt" }
+                            },
+                            "Logged with the client's reply attached."
+                        }
+                        div { class: "space-y-3",
+                            Callout { verdict: Verdict::Clear, title: "Applies", "The offer clears the floor by £38." }
+                            Callout { verdict: Verdict::Caution, title: "Evidence missing", "No meter photo for 3 of 14 sessions." }
+                            Callout { verdict: Verdict::Stop, title: "Does not apply", "Below the published floor." }
+                        }
+                    }
+                }
+            }
+
+            kit_records::KitRecords {}
+            kit_catalogue::KitCatalogue {}
         }
     }
 }
