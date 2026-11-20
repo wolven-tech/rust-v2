@@ -190,6 +190,176 @@ pub fn TextArea(
     }
 }
 
+/// A labelled number with its unit fused into the box: `£ [ 1,200 ]`,
+/// `[ 7.4 ] kW`, `[ 3 ] hours`.
+///
+/// The ring is on the shell (`focus-within`), not the input, so the unit is
+/// inside the focused control rather than beside it. The affixes are
+/// `aria-hidden` because the label names the unit; give the label the unit
+/// ("Charger power, kW") for a screen reader to hear it.
+#[component]
+pub fn UnitField(
+    label: String,
+    value: String,
+    #[props(default)] prefix: Option<String>,
+    #[props(default)] suffix: Option<String>,
+    /// The on-screen keyboard: `decimal` for money and measures, `numeric`
+    /// for whole counts.
+    #[props(default = "decimal".to_string())]
+    inputmode: String,
+    #[props(default)] id: Option<String>,
+    #[props(default)] name: Option<String>,
+    #[props(default)] help: Option<String>,
+    #[props(default)] error: Option<String>,
+    #[props(default)] placeholder: String,
+    oninput: EventHandler<FormEvent>,
+) -> Element {
+    let id = id.unwrap_or_else(|| format!("rv2-field-{}", current_scope_id().0));
+    let description = field_description(&id, help.as_deref(), error.as_deref());
+    let invalid = error.as_ref().is_some_and(|v| !v.trim().is_empty());
+    rsx! {
+        FieldShell { id: id.clone(), label, help, error,
+            div { class: "flex w-full items-center rounded-md border border-rule bg-surface focus-within:ring-2 focus-within:ring-accent",
+                if let Some(prefix) = prefix {
+                    span { class: "pl-3 font-mono text-sm text-ink-muted", aria_hidden: "true", "{prefix}" }
+                }
+                input {
+                    class: "min-w-0 flex-1 bg-transparent px-3 py-2 font-mono text-sm tabular-nums text-ink focus:outline-none",
+                    r#type: "text",
+                    inputmode: "{inputmode}",
+                    id,
+                    name,
+                    value: "{value}",
+                    placeholder: "{placeholder}",
+                    "aria-describedby": description,
+                    "aria-invalid": invalid,
+                    oninput: move |event| oninput.call(event),
+                }
+                if let Some(suffix) = suffix {
+                    span { class: "pr-3 font-mono text-sm text-ink-muted", aria_hidden: "true", "{suffix}" }
+                }
+            }
+        }
+    }
+}
+
+/// A joined row of mutually exclusive options that narrows what is shown: a
+/// list/map view, monthly/yearly prices, a scope.
+///
+/// Not [`crate::Tabs`]: tabs switch between panels, this filters one. Buttons
+/// with `aria-pressed` inside a named group, the same contract as
+/// [`crate::Chip`].
+#[component]
+pub fn SegmentedControl(
+    label: String,
+    /// `(value, label)`.
+    options: Vec<(String, String)>,
+    value: String,
+    onchange: EventHandler<String>,
+    #[props(default)] class: String,
+) -> Element {
+    rsx! {
+        div { class: "inline-flex overflow-hidden rounded-md border border-rule {class}", role: "group", aria_label: "{label}",
+            for (key , text) in options {
+                button {
+                    key: "{key}",
+                    r#type: "button",
+                    class: if key == value {
+                        "px-3 py-1.5 text-sm font-medium bg-ink text-on-ink not-first:border-l not-first:border-rule focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent"
+                    } else {
+                        "px-3 py-1.5 text-sm font-medium bg-surface text-ink hover:bg-raised not-first:border-l not-first:border-rule focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent"
+                    },
+                    aria_pressed: if key == value { "true" } else { "false" },
+                    onclick: {
+                        let key = key.clone();
+                        move |_| onchange.call(key.clone())
+                    },
+                    "{text}"
+                }
+            }
+        }
+    }
+}
+
+/// One option in a [`ChoiceGroup`].
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Choice {
+    pub value: String,
+    pub label: String,
+    pub hint: Option<String>,
+}
+
+impl Choice {
+    pub fn new(value: impl Into<String>, label: impl Into<String>) -> Self {
+        Self {
+            value: value.into(),
+            label: label.into(),
+            hint: None,
+        }
+    }
+
+    #[must_use]
+    pub fn hint(self, hint: impl Into<String>) -> Self {
+        Self {
+            hint: Some(hint.into()),
+            ..self
+        }
+    }
+}
+
+/// Mutually exclusive options as cards, each a title and a line saying what
+/// choosing it means.
+///
+/// Native radios in a fieldset, so arrow keys move between options and a
+/// screen reader announces the legend and the position. The selected card is
+/// drawn from `:has(:checked)`, never a second copy of the state. Drawn from
+/// Move to Own's action options, Logo Handoff's context choice and Reefdose's
+/// parameter grid. [`SegmentedControl`] is the compact form for short labels.
+#[component]
+pub fn ChoiceGroup(
+    legend: String,
+    /// The radios' shared `name`; unique on the page.
+    name: String,
+    choices: Vec<Choice>,
+    value: String,
+    onchange: EventHandler<String>,
+    #[props(default)] class: String,
+) -> Element {
+    rsx! {
+        fieldset { class: "{class}",
+            legend { class: "mb-2 text-sm font-medium text-ink", "{legend}" }
+            div { class: "grid gap-2 sm:grid-cols-2",
+                for choice in choices {
+                    label {
+                        key: "{choice.value}",
+                        class: "flex cursor-pointer items-start gap-3 rounded-md border border-rule bg-surface p-3 \
+                                hover:bg-raised has-checked:border-ink has-checked:bg-raised \
+                                has-checked:shadow-[inset_0_0_0_1px_var(--color-ink)] \
+                                has-focus-visible:ring-2 has-focus-visible:ring-accent has-focus-visible:ring-offset-2",
+                        input {
+                            r#type: "radio",
+                            class: "mt-0.5 h-4 w-4 accent-ink focus:outline-none",
+                            name: "{name}",
+                            value: "{choice.value}",
+                            checked: choice.value == value,
+                            onchange: {
+                                let picked = choice.value.clone();
+                                move |_| onchange.call(picked.clone())
+                            },
+                        }
+                        span { class: "grid gap-0.5",
+                            span { class: "text-sm font-semibold text-ink", "{choice.label}" }
+                            if let Some(hint) = choice.hint {
+                                span { class: "text-xs text-ink-muted", "{hint}" }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
 /// A labelled checkbox, optionally carrying a count of what it would match.
 ///
 /// The count is the reason this is a component rather than a bare `input`. A

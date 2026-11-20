@@ -34,10 +34,12 @@
 //! grown only where an app needed something twice (UI8). Everything here is
 //! used by `apps/web` or `apps/app`, with named exceptions: [`CommandSelect`]'s
 //! consumer is A Place Ahead, outside this repo, and its preview lives in
-//! `apps/app/examples`; and the components only the removed hiring app used
+//! `apps/app/examples`; [`tactile`]'s consumer is Ready Play Days, and its
+//! gallery is `apps/web`'s `/kit`; [`overlay`]'s consumer is jbt-fit and
+//! [`RedlineDiff`]'s is Edit Scope, with the same gallery; and the components only the removed hiring app used
 //! are listed under "Not decided here" in
 //! `docs/architecture/003-ui-semantic-isa.md` until someone keeps or deletes
-//! them. There is no modal, tooltip, carousel
+//! them. There is no tooltip, carousel
 //! or date picker, because no page needs one yet — an unused component is
 //! bundle weight and maintenance cost with nothing on the other side of the
 //! ledger.
@@ -81,32 +83,51 @@ pub mod feedback;
 pub mod form;
 pub mod layout;
 pub mod motion;
+pub mod overlay;
 pub mod primitives;
 pub mod product_shell;
+pub mod readout;
 pub mod site;
 pub mod tabs;
+pub mod tactile;
 pub mod typography;
 
 pub use crate::command_select::CommandSelect;
 pub use crate::consent_footer::ConsentFooter;
-pub use crate::feedback::{Card, EmptyState, ErrorBanner, Pad, PageHeader, Skeleton};
+pub use crate::feedback::{
+    Callout, Card, EmptyState, ErrorBanner, Pad, PageHeader, Receipt, Skeleton, Stamp, Surface,
+    Verdict,
+};
 pub use crate::form::{
-    Checkbox, FieldSet, FieldShell, Input, Select, TextArea, TextField, field_description,
+    Checkbox, Choice, ChoiceGroup, FieldSet, FieldShell, Input, SegmentedControl, Select, TextArea,
+    TextField, UnitField, field_description,
 };
 pub use crate::layout::{Container, Divider, Grid, Section, Space, Width};
 pub use crate::motion::{
     Blob, Crumple, Foil, Fur, GradientBuilder, Hologram, Mood, PullCord, Vacuum,
 };
+pub use crate::overlay::{
+    ConfirmDialog, Dialog, DialogKind, Toast, ToastHandle, ToastProvider, ToastQueue, Toaster,
+    use_toast,
+};
 pub use crate::primitives::{
-    ArrowLink, Badge, BadgeFill, Bar, Button, Disclosure, LinkButton, Size, Status, StatusTone,
-    StepMarker, Swatch, TEXT_LINK, TEXT_LINK_STRONG, TextLink, Variant,
+    ArmedDeleteButton, ArrowLink, Badge, BadgeFill, Bar, Button, DeleteClick, Disclosure,
+    LinkButton, Size, Status, StatusTone, StepMarker, Swatch, TEXT_LINK, TEXT_LINK_STRONG,
+    TextLink, Variant,
 };
 pub use crate::product_shell::{
-    NavLink, NavigationRail, PageEntrance, ProcessRail, ProcessStep, ProductHeader,
+    NavLink, NavigationRail, PageEntrance, ProcessRail, ProcessStep, ProductHeader, RailLayout,
+};
+pub use crate::readout::{
+    CompareRow, CompareTable, Density, Gate, GateList, Lean, Meter, Part, Redline, RedlineDiff,
+    ResultPanel, SplitBar, Stat, StatStrip,
 };
 pub use crate::site::{
     Fact, FactList, Faq, FeatureCard, Footer, FooterColumn, Hero, PricingCard, QandA, Step,
     StepList,
 };
 pub use crate::tabs::{Tab, Tabs};
+pub use crate::tactile::{
+    Chip, ChipGroup, Masthead, MediaCard, Press, PressButton, PressLink, SaveToggle, Sparkle,
+};
 pub use crate::typography::{Eyebrow, Heading, HeadingSize, Text, Tone};

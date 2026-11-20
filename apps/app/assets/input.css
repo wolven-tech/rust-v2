@@ -27,3 +27,10 @@
  * this the dashboard still pays for every class those components name, because
  * the @source glob above covers the whole kit. */
 @source not "../../../crates/rv2-ui/src/motion.rs";
+
+/* Nor does it render `tactile.rs`, whose look lives in `tactile.css`. */
+@source not "../../../crates/rv2-ui/src/tactile.rs";
+
+/* Nor `overlay.rs` yet. A dashboard that mounts a dialog or a toaster removes
+ * this line and imports `overlay.css`. */
+@source not "../../../crates/rv2-ui/src/overlay.rs";

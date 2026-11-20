@@ -1,0 +1,377 @@
+/* `rv2_ui::tactile` — controls on a ledge, the save toggle, chips, the media
+ * card, the masthead and the sparkle.
+ *
+ * Every hook with a register defaults to it (UI3), so an app importing this
+ * after theme.css and setting nothing gets ink-and-rule controls. The warm
+ * palette these were drawn in is assets/themes/playful.css.
+ *
+ * The ledge is a hard offset shadow, not a blur: the control reads as a solid
+ * block sitting on the page, and pressing moves it onto the ledge rather than
+ * fading a glow.
+ *
+ * Hooks are never declared here, only read with a register fallback at each
+ * use: a declaration on the component would shadow a value an ancestor set,
+ * and one on `:root` would freeze the register it read there, so a theme
+ * scoped to one region could reach neither. Set them on any ancestor:
+ * fill, on-fill, soft, soft-ink, edge, ledge, ledge-deep, selected, focus,
+ * gem-ink, gem-from, gem-to, sparkle, media-ground, radius, fast, gentle,
+ * ease — each as `--rv2-tactile-<name>`. */
+
+/* ── Press: PressButton, PressLink ─────────────────────────────────────── */
+
+.rv2-press,
+.rv2-chip,
+.rv2-save {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+  border-radius: var(--rv2-tactile-radius, 12px);
+  font: inherit;
+  font-weight: 700;
+  line-height: 1.2;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    transform var(--rv2-tactile-fast, 150ms) var(--rv2-tactile-ease, cubic-bezier(0.25, 1, 0.5, 1)),
+    box-shadow var(--rv2-tactile-fast, 150ms),
+    background-color var(--rv2-tactile-gentle, 240ms),
+    color var(--rv2-tactile-gentle, 240ms);
+}
+
+.rv2-press {
+  padding: 0.7rem 1rem;
+  box-shadow: 0 3px 0 var(--rv2-tactile-ledge, var(--color-rule, #c9a5a2));
+}
+
+.rv2-press--primary {
+  border: 1px solid var(--rv2-tactile-fill, var(--color-ink, #3d2832));
+  background: var(--rv2-tactile-fill, var(--color-ink, #3d2832));
+  color: var(--rv2-tactile-on-fill, var(--color-on-ink, #fffaf4));
+  box-shadow: 0 4px 0 var(--rv2-tactile-ledge-deep, var(--color-ink-muted, #a57982));
+}
+
+.rv2-press--soft,
+.rv2-chip,
+.rv2-save {
+  border: 1px solid var(--rv2-tactile-edge, var(--color-rule, #c7929d));
+  background: var(--rv2-tactile-soft, var(--color-surface, #fff4f4));
+  color: var(--rv2-tactile-soft-ink, var(--color-ink, #512c3d));
+}
+
+.rv2-press.rv2-press--offset {
+  border: 2px solid var(--rv2-tactile-fill, var(--color-ink, #17211d));
+  border-radius: 0;
+  background: var(--rv2-tactile-soft, var(--color-surface, #fffdf6));
+  color: var(--rv2-tactile-fill, var(--color-ink, #17211d));
+  box-shadow: 4px 4px 0 var(--rv2-tactile-fill, var(--color-ink, #17211d));
+}
+
+@media (hover: hover) {
+  .rv2-press.rv2-press--offset:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 6px 6px 0 var(--rv2-tactile-fill, var(--color-ink, #17211d));
+  }
+}
+
+.rv2-press.rv2-press--offset:active {
+  transform: translate(4px, 4px);
+  box-shadow: 0 0 0 var(--rv2-tactile-fill, var(--color-ink, #17211d));
+}
+
+.rv2-press__icon {
+  width: 1.65rem;
+  height: 1.65rem;
+  flex: none;
+  object-fit: contain;
+  transition: transform var(--rv2-tactile-gentle, 240ms) var(--rv2-tactile-ease, cubic-bezier(0.25, 1, 0.5, 1));
+}
+
+.rv2-chip .rv2-press__icon {
+  width: 1.2rem;
+  height: 1.2rem;
+}
+
+@media (hover: hover) {
+  .rv2-press:hover,
+  .rv2-chip:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 0 var(--rv2-tactile-ledge, var(--color-rule, #c9a5a2));
+  }
+  .rv2-press:hover .rv2-press__icon,
+  .rv2-chip:hover .rv2-press__icon {
+    transform: rotate(15deg) scale(1.1);
+  }
+}
+
+.rv2-press:active,
+.rv2-chip:active,
+.rv2-save:active {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 var(--rv2-tactile-ledge, var(--color-rule, #c9a5a2));
+}
+
+.rv2-press:focus-visible .rv2-press__icon,
+.rv2-chip:focus-visible .rv2-press__icon {
+  transform: rotate(15deg);
+}
+
+.rv2-press:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.rv2-press:focus-visible,
+.rv2-chip:focus-visible,
+.rv2-save:focus-visible,
+.rv2-media-card a:focus-visible,
+.rv2-masthead a:focus-visible {
+  outline: 3px solid var(--rv2-tactile-focus, var(--color-accent, #a52e43));
+  outline-offset: 3px;
+}
+
+/* ── Chips ─────────────────────────────────────────────────────────────── */
+
+.rv2-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.rv2-chip {
+  padding: 0.55rem 1rem;
+  box-shadow: 0 3px 0 var(--rv2-tactile-ledge, var(--color-rule, #c9a5a2));
+}
+
+.rv2-chip[aria-pressed="true"] {
+  border-color: var(--rv2-tactile-fill, var(--color-ink, #3d2832));
+  background: var(--rv2-tactile-fill, var(--color-ink, #3d2832));
+  color: var(--rv2-tactile-on-fill, var(--color-on-ink, #fffaf4));
+}
+
+/* ── SaveToggle ────────────────────────────────────────────────────────── */
+
+.rv2-save {
+  padding: 0.65rem 1rem;
+  box-shadow: 0 3px 0 var(--rv2-tactile-ledge, var(--color-rule, #c9a5a2));
+}
+
+.rv2-save[aria-pressed="true"] {
+  background: var(--rv2-tactile-selected, var(--color-raised, #f6d8da));
+}
+
+.rv2-save__gem {
+  display: inline-grid;
+  place-items: center;
+  width: 1.65rem;
+  height: 1.65rem;
+  overflow: hidden;
+  border-radius: 50%;
+  color: var(--rv2-tactile-gem-ink, var(--color-ink, #a52d50));
+  background: linear-gradient(145deg, var(--rv2-tactile-gem-from, var(--color-surface, #fff8f4)), var(--rv2-tactile-gem-to, var(--color-raised, #f8aebb)));
+  box-shadow: inset 1px 1px 2px #fff, 0 2px 2px var(--rv2-tactile-ledge, var(--color-rule, #c9a5a2));
+  font-size: 0.95rem;
+}
+
+.rv2-save__gem img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.rv2-save--pulse-a .rv2-save__gem {
+  animation: rv2-save-pulse-a 350ms var(--rv2-tactile-ease, cubic-bezier(0.25, 1, 0.5, 1));
+}
+
+.rv2-save--pulse-b .rv2-save__gem {
+  animation: rv2-save-pulse-b 350ms var(--rv2-tactile-ease, cubic-bezier(0.25, 1, 0.5, 1));
+}
+
+@keyframes rv2-save-pulse-a {
+  50% { transform: scale(1.18); }
+}
+
+@keyframes rv2-save-pulse-b {
+  50% { transform: scale(1.18); }
+}
+
+/* ── MediaCard ─────────────────────────────────────────────────────────── */
+
+.rv2-media-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid var(--rv2-tactile-edge, var(--color-rule, #c7929d));
+}
+
+.rv2-media-card__image {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1.15;
+  overflow: hidden;
+  border-radius: calc(var(--rv2-tactile-radius, 12px) + 2px);
+  background: var(--rv2-tactile-media-ground, var(--color-raised, #f4ded1));
+}
+
+.rv2-media-card__image img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform var(--rv2-tactile-gentle, 240ms) var(--rv2-tactile-ease, cubic-bezier(0.25, 1, 0.5, 1));
+}
+
+@media (hover: hover) {
+  .rv2-media-card__image:hover img {
+    transform: scale(1.035) translateY(-2px);
+  }
+}
+
+.rv2-media-card__label {
+  margin: 0.2rem 0 0;
+  color: var(--rv2-tactile-focus, var(--color-accent, #a52e43));
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.rv2-media-card__title {
+  color: inherit;
+  text-decoration: none;
+}
+
+.rv2-media-card__title:hover {
+  text-decoration: underline;
+}
+
+.rv2-media-card__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-top: auto;
+}
+
+/* ── Masthead ──────────────────────────────────────────────────────────── */
+
+.rv2-masthead {
+  padding: 1rem clamp(1.2rem, 5vw, 5rem) 0;
+  color: var(--rv2-tactile-soft-ink, var(--color-ink, #512c3d));
+  text-align: center;
+}
+
+.rv2-masthead__strap {
+  display: flex;
+  justify-content: space-between;
+  padding-bottom: 0.65rem;
+  border-bottom: 1px solid var(--rv2-tactile-edge, var(--color-rule, #c7929d));
+  font-size: 0.74rem;
+  font-weight: 600;
+}
+
+.rv2-masthead__brand {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.12em;
+  margin: 1.2rem 0 0.2rem;
+  color: inherit;
+  font-family: var(--font-display, inherit);
+  font-size: clamp(2rem, 5.4vw, 5rem);
+  font-weight: 800;
+  letter-spacing: -0.055em;
+  line-height: 1.04;
+  text-decoration: none;
+}
+
+.rv2-masthead__brand img {
+  width: 0.95em;
+  height: 1.12em;
+  flex: none;
+  object-fit: contain;
+}
+
+.rv2-masthead__subtitle {
+  margin: 0.2rem 0 1rem;
+  font-weight: 700;
+}
+
+.rv2-masthead__nav {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.8rem clamp(1.5rem, 5vw, 4rem);
+  padding: 0.75rem 0;
+  border-top: 3px double currentColor;
+  border-bottom: 1px solid currentColor;
+}
+
+.rv2-masthead__nav a {
+  color: inherit;
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.rv2-masthead__nav a[aria-current="page"] {
+  text-decoration: underline;
+  text-underline-offset: 0.35em;
+}
+
+@media (max-width: 700px) {
+  .rv2-masthead__strap span:last-child { display: none; }
+}
+
+@media (max-width: 420px) {
+  .rv2-masthead { padding-inline: 1rem; }
+  .rv2-masthead__brand { font-size: clamp(1.65rem, 8vw, 2.2rem); gap: 0.08em; }
+}
+
+@media print {
+  .rv2-masthead { display: none; }
+}
+
+/* ── Sparkle ───────────────────────────────────────────────────────────── */
+
+.rv2-sparkle {
+  position: absolute;
+  top: 1.1rem;
+  right: 1.1rem;
+  width: 34px;
+  height: 34px;
+  background: var(--rv2-tactile-sparkle, var(--color-caution, #ffd46a));
+  clip-path: polygon(50% 0, 61% 35%, 100% 50%, 61% 61%, 50% 100%, 39% 61%, 0 50%, 39% 35%);
+  pointer-events: none;
+  animation: rv2-sparkle-unfold 550ms var(--rv2-tactile-ease, cubic-bezier(0.25, 1, 0.5, 1)) both;
+}
+
+@keyframes rv2-sparkle-unfold {
+  from { opacity: 0.3; transform: rotate(-35deg) scale(0.6); }
+  to { opacity: 1; transform: rotate(0) scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rv2-press,
+  .rv2-chip,
+  .rv2-save,
+  .rv2-press__icon,
+  .rv2-media-card__image img { transition: none; }
+  .rv2-press:hover,
+  .rv2-chip:hover,
+  .rv2-press:active,
+  .rv2-chip:active,
+  .rv2-save:active,
+  .rv2-press:hover .rv2-press__icon,
+  .rv2-chip:hover .rv2-press__icon,
+  .rv2-press:focus-visible .rv2-press__icon,
+  .rv2-chip:focus-visible .rv2-press__icon,
+  .rv2-media-card__image:hover img,
+  .rv2-press.rv2-press--offset:hover,
+  .rv2-press.rv2-press--offset:active { transform: none; }
+  .rv2-save--pulse-a .rv2-save__gem,
+  .rv2-save--pulse-b .rv2-save__gem,
+  .rv2-sparkle { animation: none; }
+}

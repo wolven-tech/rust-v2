@@ -89,7 +89,14 @@ nothing else in kit source.
 | `Width` | `Narrow`¹ (`sm`), `Prose` (`2xl`), `Default` (`5xl`), `Wide` (`7xl`), `Dense`¹ (`110rem`, data-dense screens) | `Container` |
 | `Space` | `Tight`, `Default`, `Loose` | `Section` |
 | `Pad` | `None`, `Default` (`p-4`), `Roomy`¹ (`p-6`) | `Card` |
-| `BadgeFill` | `Default`, `Takeable`¹, `Strong`¹, `Quiet`¹ | `Badge` (beside `colour`, for category hues) |
+| `Surface` | `Flat`, `Slab` (2px ink border, hard offset shadow) | `Card` |
+| `BadgeFill` | `Default`, `Takeable`¹, `Strong`¹, `Quiet`¹, `Tint` (a count in its parent's colour) | `Badge` (beside `colour`, for category hues) |
+| `Press` | `Primary`, `Soft`, `Offset` | `PressButton`, `PressLink` |
+| `Lean` | `Neutral`, `Good`, `Close`, `Bad` | `Stat`, `ResultPanel`, `Meter` |
+| `Density` | `Compact`, `Hero` | `StatStrip` |
+| `Verdict` | `Note`, `Clear`, `Caution`, `Stop` | `Callout`, `Receipt`, `Stamp`, `Gate`, `Toast` |
+| `DialogKind` | `Centered`, `Drawer` | `Dialog` |
+| `RailLayout` | `Row`, `Column` | `ProcessRail` |
 
 ¹ Added by this decision; each closes a gap with existing raw call sites.
 
@@ -97,7 +104,9 @@ nothing else in kit source.
 (UI8). `Variant::Link` keeps the size's type scale and drops its padding, so it
 sits on the baseline of the sentence it is in. `Card` is flat: every
 hand-made surface it replaced was, and the hiring ledger spends its one shadow
-on a verdict.
+on a verdict. `Surface::Slab` is the exception the printed-slab bets share: a
+hard offset shadow paired with `Press::Offset`, chosen per card, never a
+default.
 
 ## Instructions
 
@@ -116,6 +125,45 @@ on a verdict.
 | Report state | `EmptyState`, `Skeleton`, `ErrorBanner` | — | — |
 | Navigate | `ProductHeader`, `NavigationRail`, `ProcessRail`, `Tabs`, `Footer` | `header`/`nav` | — |
 | Market | `Hero`, `FeatureCard`, `StepList`, `FactList`, `PricingCard` | composites (UI6) | — |
+| Do or go, with weight | `PressButton`, `PressLink` | `button`, `a` on a ledge | Ready Play Days: `action-button` overrides on `Button` (UI5) |
+| Keep for later | `SaveToggle` | `button[aria-pressed]` | Ready Play Days: `save-button` + `save-gem` |
+| Narrow a list | `ChipGroup`, `Chip` | `div[role=group]` + `button[aria-pressed]` | Ready Play Days: `.filters button` |
+| Browse | `MediaCard` | `article` | Ready Play Days: `.idea` cards |
+| Identify an editorial site | `Masthead` | `header` | Ready Play Days: `.masthead` |
+| Decorate | `Sparkle` | `span[aria-hidden]` | Ready Play Days: `.paper-accent` |
+| Report a figure | `StatStrip`, `ResultPanel`, `Meter`, `SplitBar` | `dl`, `section[aria-live]`, `div[role=meter]`, `figure` | hand-drawn KPI bands and calculator results in 8 bets |
+| Judge | `Callout`, `Receipt` | `aside`, `article` | verdict strips and receipts in 5 bets |
+| Enter a measure | `UnitField` | `label` + affixed input | affix inputs in 5 bets |
+| Narrow one view | `SegmentedControl` | `div[role=group]` + `button[aria-pressed]` | view and billing toggles in 3 bets |
+| Choose one, with consequences | `ChoiceGroup`, `Choice` | `fieldset` + `label` + `input[type=radio]` | radio cards in 3 bets |
+| Ask before acting | `Dialog`, `ConfirmDialog` | `dialog` opened with `showModal()` | jbt-fit's `Dialog`, `ConfirmDialog` |
+| Delete without a modal | `ArmedDeleteButton` | `button[data-armed]` | jbt-fit's `TwoStateDeleteButton` |
+| Tell after acting | `ToastProvider`, `Toaster`, `use_toast` | `div[role=region]` of `role=status`/`alert` | jbt-fit's toast queue |
+| Mark a record's state | `Stamp` | `span` | outline status tags in 2 bets |
+| Check readiness | `GateList`, `Gate` | `ul` with spoken state | gate and asset rows in 3 bets |
+| Show an edit | `RedlineDiff`, `Redline` | `dl` of `del`/`ins` | Edit Scope's draft redline |
+| Compare options | `CompareTable`, `CompareRow` | `table`, stacked cards below `sm` | comparison tables in 3 bets |
+
+The tactile rows (`rv2_ui::tactile`) have a named external consumer, Ready Play
+Days, whose `apps/web` wrote every one of them as class overrides. Its look
+lives in `assets/tactile.css` behind `--rv2-tactile-*` hooks that fall back to
+registers (UI3), read at each use rather than declared, so a class-scoped theme
+such as `assets/themes/playful.css` reaches them. `/kit` on `apps/web` mounts
+all of them; `apps/app` excludes `tactile.rs` from its Tailwind sources.
+The readout, judge, measure and segment rows each have three or more consumers
+across the product bets, listed with sources in
+[`../ledger/cross-bet-component-harvest.md`](../ledger/cross-bet-component-harvest.md);
+`/kit` mounts them too.
+
+The ask, delete and tell rows (`rv2_ui::overlay`, plus `ArmedDeleteButton`)
+have a named external consumer, jbt-fit, whose `jbt-ui` they were drawn from.
+`Dialog` is the kit's one use of `document::eval`: `showModal()` has no
+attribute form, and the modal state is what gives the backdrop, `inert` on the
+page behind and Escape. A toast's lifetime is a CSS animation in
+`assets/overlay.css` and its `animationend` dismisses it, so the kit still has
+no timer. `apps/app` excludes `overlay.rs` from its Tailwind sources until it
+mounts one. `RedlineDiff` has one consumer, Edit Scope, named here as its
+external consumer (UI8).
 
 `NavItem`, `ProductNavItem` and `ProductHeaderAction` carried the same
 `label + href + external` record three times. They are one `NavLink`:
