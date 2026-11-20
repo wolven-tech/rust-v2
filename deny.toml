@@ -23,9 +23,15 @@ ignore = [
   "RUSTSEC-2025-0012",
   # instant 0.1 <- backoff, same path. A wasm-time shim.
   "RUSTSEC-2024-0384",
-  # proc-macro-error2 <- dioxus macro crates. Build-time only; never linked
-  # into the shipped binary or the wasm bundle.
+  # proc-macro-error2 <- validator_derive <- better-auth. Build-time only;
+  # never linked into the shipped binary or the wasm bundle.
   "RUSTSEC-2026-0173",
+  # chrono <- better-auth, posthog-rs, and directly by rv2-events wire types,
+  # rv2-domain, rv2-api-types, rv2-allsource and api. No safe upgrade exists.
+  # Leaving it means moving the event timestamp encoding off chrono without
+  # changing a released payload (see crates/rv2-events/tests/golden/), and
+  # the two upstream crates still resolve it.
+  "RUSTSEC-2026-0543",
 ]
 
 [licenses]

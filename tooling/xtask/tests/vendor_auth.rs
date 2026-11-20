@@ -31,7 +31,11 @@ fn auth_patch_preserves_published_library_sources() {
         ),
     ] {
         let bytes = fs::read(root.join(file)).expect("vendored source exists");
-        assert_eq!(format!("{:x}", Sha256::digest(bytes)), expected, "{file}");
+        let digest: String = Sha256::digest(bytes)
+            .iter()
+            .map(|byte| format!("{byte:02x}"))
+            .collect();
+        assert_eq!(digest, expected, "{file}");
     }
 }
 
