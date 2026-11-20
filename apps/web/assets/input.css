@@ -26,3 +26,14 @@
  * Imported rather than duplicated: Tailwind runs once per app, so both need it
  * in their graph, and one copy is the only way they cannot drift. */
 @import "../../../crates/rv2-ui/assets/motion.css";
+
+/* `rv2_ui::arrive`: `Tally`'s counter and `Arrive::Grow`. */
+@import "../../../crates/rv2-ui/assets/arrive.css";
+
+/* `rv2_ui::tactile` and the palette the `/kit` gallery shows it in. The theme
+ * is class-scoped, so importing it repaints nothing outside that gallery. */
+@import "../../../crates/rv2-ui/assets/tactile.css";
+@import "../../../crates/rv2-ui/assets/themes/playful.css";
+
+/* `rv2_ui::overlay`: dialog, drawer and toast, shown on `/kit`. */
+@import "../../../crates/rv2-ui/assets/overlay.css";

@@ -119,13 +119,44 @@ pub fn StepList(steps: Vec<Step>) -> Element {
     }
 }
 
+/// What a [`Fact`] row is in its sum.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub enum FactWeight {
+    #[default]
+    Item,
+    /// The computed result: bold, under a rule.
+    Total,
+    /// A figure someone set that stands in for the computed one — a quote
+    /// beside the arithmetic that suggested it. Inverted, so it is never read
+    /// as the sum.
+    Chosen,
+}
+
+impl FactWeight {
+    fn classes(self) -> (&'static str, &'static str) {
+        match self {
+            Self::Item => (
+                "flex items-baseline justify-between gap-4",
+                "text-sm text-ink-muted",
+            ),
+            Self::Total => (
+                "flex items-baseline justify-between gap-4 border-t border-rule-soft pt-2 font-semibold text-ink",
+                "text-sm text-ink-muted",
+            ),
+            Self::Chosen => (
+                "flex items-baseline justify-between gap-4 rounded-md bg-ink px-3 py-2 font-semibold text-on-ink",
+                "text-sm",
+            ),
+        }
+    }
+}
+
 /// A `label → value` row, for cost breakdowns and spec tables.
 #[derive(Debug, Clone, PartialEq)]
 pub struct Fact {
     pub label: String,
     pub value: String,
-    /// Renders bold with a top rule — for the total row.
-    pub emphasis: bool,
+    pub weight: FactWeight,
 }
 
 impl Fact {
@@ -133,15 +164,21 @@ impl Fact {
         Self {
             label: label.into(),
             value: value.into(),
-            emphasis: false,
+            weight: FactWeight::Item,
         }
     }
 
     pub fn total(label: impl Into<String>, value: impl Into<String>) -> Self {
         Self {
-            label: label.into(),
-            value: value.into(),
-            emphasis: true,
+            weight: FactWeight::Total,
+            ..Self::new(label, value)
+        }
+    }
+
+    pub fn chosen(label: impl Into<String>, value: impl Into<String>) -> Self {
+        Self {
+            weight: FactWeight::Chosen,
+            ..Self::new(label, value)
         }
     }
 }
@@ -156,14 +193,14 @@ pub fn FactList(facts: Vec<Fact>, #[props(default)] class: String) -> Element {
     rsx! {
         dl { class: "flex flex-col gap-2 {class}",
             for fact in facts.iter() {
-                div {
-                    class: if fact.emphasis {
-                        "flex items-baseline justify-between gap-4 border-t border-rule-soft pt-2 font-semibold text-ink"
-                    } else {
-                        "flex items-baseline justify-between gap-4"
-                    },
-                    dt { class: "text-sm text-ink-muted", "{fact.label}" }
-                    dd { class: "text-sm tabular-nums", "{fact.value}" }
+                {
+                    let (row, term) = fact.weight.classes();
+                    rsx! {
+                        div { class: row,
+                            dt { class: term, "{fact.label}" }
+                            dd { class: "text-sm tabular-nums", "{fact.value}" }
+                        }
+                    }
                 }
             }
         }

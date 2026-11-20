@@ -1,0 +1,82 @@
+/* Figures that arrive as they scroll into view: `Tally` counts up to its
+ * value, and a `Bar` or `SplitBar` with `Arrive::Grow` grows from its
+ * baseline. Drawn from Jobbreakdown's results page.
+ *
+ * Every rule here is an enhancement over a figure that is already correct.
+ * The static state is the end state, so a browser without scroll timelines,
+ * a printout and a reader with reduced motion all see the real number and
+ * the real length from the first paint. */
+
+/* Registered as an integer so the engine can interpolate it; an unregistered
+ * custom property jumps from start to end. Its initial value is the
+ * destination, so where nothing animates the counter already shows `--to`. */
+@property --rv2-tally {
+  syntax: "<integer>";
+  inherits: false;
+  initial-value: 0;
+}
+
+/* `Tally`'s text copy, visible only where this file is missing. */
+.rv2-tally-text {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.rv2-tally {
+  --rv2-tally: var(--to, 0);
+  counter-reset: rv2-tally var(--rv2-tally);
+  font-variant-numeric: tabular-nums;
+}
+
+.rv2-tally::after {
+  content: counter(rv2-tally);
+}
+
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    /* `animation-timeline` comes after the shorthand, which resets it.
+     *
+     * The range ends at `entry 100%`. Scroll progress follows position, not
+     * time, so a range reaching into `cover` never completes for a figure
+     * the reader stops above, and the number stays short: Jobbreakdown
+     * measured 147 under a denominator of 174 with `cover 35%`. */
+    .rv2-tally {
+      animation: rv2-tally-count 1 linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 100%;
+    }
+
+    .rv2-grow {
+      animation: rv2-grow 1 cubic-bezier(0.16, 1, 0.3, 1) both;
+      animation-timeline: view();
+      animation-range: entry min(30%, calc(var(--i, 0) * 8%)) entry
+        min(100%, calc(70% + (var(--i, 0) * 8%)));
+      transform-origin: left center;
+    }
+  }
+}
+
+@keyframes rv2-tally-count {
+  from {
+    --rv2-tally: 0;
+  }
+  to {
+    --rv2-tally: var(--to, 0);
+  }
+}
+
+@keyframes rv2-grow {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}

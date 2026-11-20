@@ -1,0 +1,50 @@
+/* Playful: warm paper, plum ink, rose focus. The palette Ready Play Days
+ * shipped its tactile controls in.
+ *
+ * Values only (UI2), scoped to a class rather than `@theme` so it can theme a
+ * whole app (on `body`) or one region of a page (the `/kit` gallery). Kit
+ * utilities read the registers through `var()`, so redefining them on an
+ * ancestor repaints everything inside it. Import after theme.css and
+ * tactile.css. Nunito Sans is not bundled; the stack falls back to Avenir Next
+ * and the system sans. */
+
+.rv2-theme-playful {
+  --font-sans: "Nunito Sans", "Avenir Next", Avenir, ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-sans);
+  --font-weight-heading: 800;
+
+  --color-ground: #fff4e5;
+  --color-surface: #fffaf4;
+  --color-raised: #f9d9cc;
+
+  --color-ink: #542039;
+  --color-ink-hover: #683b52;
+  --color-ink-muted: #6d4755;
+  --color-ink-faint: #a88a94;
+  --color-on-ink: #fff4e5;
+  --color-on-ink-muted: #f9e3dc;
+  --color-on-ink-faint: #e9c9c4;
+
+  --color-rule: #cbaab0;
+  --color-rule-soft: #ead6d4;
+  --color-accent: #a52e43;
+
+  --rv2-tactile-fill: #542039;
+  --rv2-tactile-on-fill: #fff4e5;
+  --rv2-tactile-soft: #fff4f4;
+  --rv2-tactile-soft-ink: #512c3d;
+  --rv2-tactile-edge: #c7929d;
+  --rv2-tactile-ledge: #c9a5a2;
+  --rv2-tactile-ledge-deep: #a57982;
+  --rv2-tactile-selected: #f6d8da;
+  --rv2-tactile-focus: #a52e43;
+  --rv2-tactile-gem-ink: #a52d50;
+  --rv2-tactile-gem-from: #fff8f4;
+  --rv2-tactile-gem-to: #f8aebb;
+  --rv2-tactile-sparkle: #ffd46a;
+  --rv2-tactile-media-ground: #f4ded1;
+
+  background: var(--color-surface);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+}
