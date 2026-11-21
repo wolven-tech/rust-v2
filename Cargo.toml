@@ -186,6 +186,15 @@ rv2-jobs = { path = "crates/rv2-jobs" }
 rv2-shared = { path = "crates/rv2-shared" }
 rv2-ui = { path = "crates/rv2-ui" }
 
+# Full debug info for every dependency is most of a dev build's size on disk.
+# Dependencies keep none; workspace crates keep line tables, so a backtrace
+# still names the file and line in our code. `dx`'s dev profiles inherit this.
+[profile.dev]
+debug = "line-tables-only"
+
+[profile.dev.package."*"]
+debug = false
+
 [profile.release]
 codegen-units = 1
 lto = true
