@@ -1,0 +1,39 @@
+/* affectUI's theme hooks pointed at rv2's registers (AF4 in
+ * docs/architecture/004-rv2-affect.md). Linked by `Rv2Theme`.
+ *
+ * Each register keeps affectUI's light value as its fallback: Tailwind emits
+ * only the theme variables an app uses, and a `var()` naming a missing
+ * register would make the hook invalid rather than fall back.
+ *
+ * Hues (--aui-red, --aui-blue …), shadows, radii and easing are not mapped:
+ * rv2 has no register for them, so the originals' values stand.
+ *
+ * With the bridge linked, colours follow the app's registers in both themes;
+ * affectUI's own `.dark` values no longer apply to the mapped hooks.
+ *
+ * Also declared on [data-theme] so a theme set on a subtree re-resolves the
+ * hooks there. */
+:root,
+[data-theme] {
+  --aui-font: var(--font-sans, "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif);
+
+  --aui-ink: var(--color-ink, #171717);
+  --aui-muted: var(--color-ink-muted, #737373);
+  --aui-placeholder: var(--color-ink-faint, #a3a3a3);
+
+  --aui-surface: var(--color-surface, #ffffff);
+  --aui-overlay: var(--color-surface, #ffffff);
+  --aui-subtle: var(--color-raised, #f5f5f5);
+
+  --aui-border: var(--color-rule-soft, #e5e5e5);
+  --aui-border-strong: var(--color-rule, #d4d4d4);
+
+  --aui-primary: var(--color-ink, #171717);
+  --aui-on-primary: var(--color-on-ink, #fafafa);
+  --aui-focus: var(--color-accent, rgba(0, 96, 226, 0.7));
+
+  --aui-success: var(--color-takeable-ink, #16a34a);
+  --aui-success-soft: var(--color-takeable-soft, #dcfce7);
+  --aui-warning: var(--color-caution-ink, #c2410c);
+  --aui-danger: var(--color-fault-ink, #c4320a);
+}

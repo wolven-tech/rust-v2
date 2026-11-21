@@ -1,0 +1,128 @@
+/* Colors as variables – override them on .ui-pgn (see Theming in the docs) */
+.ui-pgn {
+  --ui-pgn-ink: var(--aui-ink, #171717);
+  --ui-pgn-text: #404040;
+  --ui-pgn-muted: var(--aui-muted, #737373);
+  --ui-pgn-faint: var(--aui-placeholder, #a3a3a3);
+  --ui-pgn-wash: #f0f0f0;
+  --ui-pgn-active: var(--aui-subtle, #ebebeb);
+  --ui-pgn-surface: var(--aui-surface, #ffffff);
+  --ui-pgn-surface-hover: #fafafa;
+  --ui-pgn-line: var(--aui-border, #e5e5e5);
+  --ui-pgn-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+  --ui-pgn-focus: var(--aui-focus, rgba(0, 96, 226, 0.7));
+  --ui-pgn-radius: calc(var(--aui-radius, 12px) - 2px);
+  --ui-pgn-h: 32px;
+
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 16px;
+  min-width: 0;
+  font-family: var(--aui-font, "Inter", "InterVariable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif);
+  font-size: 13.5px;
+  line-height: 20px;
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+  color: var(--ui-pgn-muted);
+  white-space: nowrap;
+  -webkit-font-smoothing: antialiased;
+}
+.ui-pgn *, .ui-pgn *::before, .ui-pgn *::after { box-sizing: border-box; }
+.ui-pgn svg { display: block; flex: none; }
+
+.ui-pgn__info { display: flex; align-items: center; gap: 16px; min-width: 0; }
+.ui-pgn__range { color: var(--ui-pgn-text); }
+.ui-pgn__of { color: var(--ui-pgn-muted); }
+
+/* Rows per page: a quiet label and a small white field – the browser's own list opens from it */
+.ui-pgn__size { display: inline-flex; align-items: center; gap: 8px; cursor: default; }
+.ui-pgn__select { position: relative; display: inline-flex; align-items: center; }
+.ui-pgn__select > select {
+  appearance: none;
+  height: var(--ui-pgn-h);
+  margin: 0;
+  padding: 0 28px 0 11px;
+  border: 1px solid var(--ui-pgn-line);
+  border-radius: var(--ui-pgn-radius);
+  background: var(--ui-pgn-surface);
+  box-shadow: var(--ui-pgn-shadow);
+  font: inherit;
+  font-weight: 500;
+  color: var(--ui-pgn-ink);
+  cursor: pointer;
+  transition: background-color 140ms ease;
+}
+.ui-pgn__select > select:hover:not(:disabled) { background: var(--ui-pgn-surface-hover); }
+.ui-pgn__select > svg { position: absolute; right: 9px; width: 14px; height: 14px; color: var(--ui-pgn-muted); pointer-events: none; }
+.ui-pgn__select > select:dir(rtl) { padding: 0 11px 0 28px; }
+.ui-pgn__select > select:dir(rtl) + svg { right: auto; left: 9px; }
+
+/* The arrows and the numbers: one row, every number as wide as the longest */
+.ui-pgn__pages { display: flex; align-items: center; gap: 4px; margin: 0 0 0 auto; padding: 0; list-style: none; }
+.ui-pgn__pages > li { display: flex; }
+.ui-pgn__num,
+.ui-pgn__step {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  height: var(--ui-pgn-h);
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: var(--ui-pgn-radius);
+  background: none;
+  font: inherit;
+  color: var(--ui-pgn-text);
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color 120ms ease, color 120ms ease;
+}
+.ui-pgn__num { min-width: max(var(--ui-pgn-h), calc(var(--ui-pgn-digits, 1) * 1ch + 16px)); padding: 0 8px; }
+.ui-pgn__step { width: var(--ui-pgn-h); border: 1px solid var(--ui-pgn-line); background: var(--ui-pgn-surface); box-shadow: var(--ui-pgn-shadow); color: var(--ui-pgn-muted); }
+.ui-pgn__step > svg { width: 16px; height: 16px; }
+.ui-pgn__step > svg:dir(rtl) { transform: scaleX(-1); }
+.ui-pgn__num:hover:not([aria-disabled]) { background: var(--ui-pgn-wash); color: var(--ui-pgn-ink); }
+.ui-pgn__step:hover:not([aria-disabled]) { background: var(--ui-pgn-surface-hover); color: var(--ui-pgn-ink); }
+/* The page you're on: a gray fill, like an active tab */
+.ui-pgn__num[aria-current="page"],
+.ui-pgn__num[aria-current="page"]:hover { background: var(--ui-pgn-active); color: var(--ui-pgn-ink); font-weight: 500; cursor: default; }
+.ui-pgn__step[aria-disabled] { opacity: 0.45; box-shadow: none; cursor: default; }
+.ui-pgn__num:focus-visible,
+.ui-pgn__step:focus-visible,
+.ui-pgn__select > select:focus-visible { outline: 2px solid var(--ui-pgn-focus); outline-offset: 2px; }
+.ui-pgn__select > select:focus:not(:focus-visible) { outline: none; }
+.ui-pgn__gap { display: grid; place-items: center; min-width: 20px; height: var(--ui-pgn-h); color: var(--ui-pgn-faint); user-select: none; }
+
+/* While rows load: everything stays, nothing can be pressed */
+.ui-pgn[data-disabled] .ui-pgn__pages,
+.ui-pgn[data-disabled] .ui-pgn__size { opacity: 0.5; }
+.ui-pgn[data-disabled] button { cursor: default; }
+.ui-pgn[data-disabled] .ui-pgn__num[aria-current="page"] { background: var(--ui-pgn-active); }
+
+/* Touch screens: every number and arrow a finger can hit */
+@media (pointer: coarse) {
+  .ui-pgn { --ui-pgn-h: 40px; font-size: 15px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-pgn__num, .ui-pgn__step, .ui-pgn__select > select { transition-duration: 1ms; }
+}
+
+/* Dark mode: follows a .dark class or data-theme="dark" on any ancestor, e.g. <html> */
+:where(.dark, [data-theme="dark"]) .ui-pgn {
+  --ui-pgn-ink: var(--aui-ink, #ededed);
+  --ui-pgn-text: #d4d4d8;
+  --ui-pgn-muted: var(--aui-muted, #8f8f8f);
+  --ui-pgn-faint: var(--aui-placeholder, #5c5c63);
+  --ui-pgn-wash: rgba(255, 255, 255, 0.06);
+  --ui-pgn-active: var(--aui-subtle, rgba(255, 255, 255, 0.1));
+  --ui-pgn-surface: var(--aui-surface, #232326);
+  --ui-pgn-surface-hover: #2a2a2d;
+  --ui-pgn-line: var(--aui-border, rgba(255, 255, 255, 0.1));
+  --ui-pgn-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --ui-pgn-focus: var(--aui-focus, rgba(77, 141, 255, 0.8));
+  color-scheme: dark;
+}

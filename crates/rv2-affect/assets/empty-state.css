@@ -1,0 +1,102 @@
+/* Colors as variables – override them on .ui-est (see Theming in the docs) */
+.ui-est {
+  --ui-est-title: var(--aui-ink, #171717);
+  --ui-est-text: var(--aui-muted, #737373);
+  --ui-est-icon: var(--aui-muted, #737373);
+  --ui-est-tile: var(--aui-surface, #ffffff);
+  --ui-est-tile-line: var(--aui-border, #e5e5e5);
+  --ui-est-tile-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+  --ui-est-frame: #fafafa;
+  --ui-est-line: var(--aui-border, #e5e5e5);
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-sizing: border-box;
+  min-width: 0;
+  padding: 48px 24px 52px;
+  border: 1px dashed var(--ui-est-line);
+  border-radius: calc(var(--aui-radius, 12px) + 4px);
+  background: var(--ui-est-frame);
+  font-family: var(--aui-font, "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif);
+  font-size: 14px;
+  line-height: 21px;
+  letter-spacing: -0.01em;
+  text-align: center;
+  -webkit-font-smoothing: antialiased;
+}
+/* bare: no frame – the panel or page around it is the frame */
+.ui-est[data-bare] {
+  padding: 0;
+  border: 0;
+  background: none;
+}
+/* tall: fills its parent's height, the content in the middle */
+.ui-est[data-tall] {
+  justify-content: center;
+  min-height: 100%;
+}
+
+/* The icon on a small white card */
+.ui-est__icon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  box-sizing: border-box;
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--ui-est-tile-line);
+  border-radius: 12px;
+  background: var(--ui-est-tile);
+  box-shadow: var(--ui-est-tile-shadow);
+  color: var(--ui-est-icon);
+}
+.ui-est__icon > svg,
+.ui-est__icon > img {
+  display: block;
+  width: 20px;
+  height: 20px;
+}
+.ui-est__title {
+  max-width: 100%;
+  margin: 0;
+  font-weight: 500;
+  color: var(--ui-est-title);
+  overflow-wrap: anywhere;
+}
+.ui-est__icon + .ui-est__title { margin-top: 16px; }
+.ui-est__text {
+  max-width: 430px;
+  margin: 4px 0 0;
+  font-size: 13.5px;
+  line-height: 20px;
+  color: var(--ui-est-text);
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+}
+.ui-est__action {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 20px;
+}
+
+/* Small screens: a tighter frame */
+@media (max-width: 560px) {
+  .ui-est:not([data-bare]) {
+    padding: 36px 18px 40px;
+  }
+}
+
+/* Dark mode: follows a .dark class or data-theme="dark" on any ancestor, e.g. <html> */
+:where(.dark, [data-theme="dark"]) .ui-est {
+  --ui-est-title: var(--aui-ink, #ededed);
+  --ui-est-text: var(--aui-muted, #8f8f8f);
+  --ui-est-icon: var(--aui-muted, #8f8f8f);
+  --ui-est-tile: var(--aui-surface, #232326);
+  --ui-est-tile-line: var(--aui-border, rgba(255, 255, 255, 0.1));
+  --ui-est-tile-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --ui-est-frame: rgba(255, 255, 255, 0.02);
+  --ui-est-line: var(--aui-border, rgba(255, 255, 255, 0.12));
+}

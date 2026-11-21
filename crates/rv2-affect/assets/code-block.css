@@ -1,0 +1,198 @@
+/* Colors as variables – override them on .ui-code (see Theming in the docs) */
+.ui-code {
+  --ui-code-tray: var(--aui-subtle, #f4f4f4);
+  --ui-code-bg: var(--aui-surface, #ffffff);
+  --ui-code-line: var(--aui-border, #e7e7e7);
+  --ui-code-ink: var(--aui-ink, #171717);
+  --ui-code-muted: var(--aui-muted, #737373);
+  --ui-code-faint: #b4b4b4;
+  --ui-code-icon: var(--aui-muted, #8a8a8a);
+  --ui-code-wash: rgba(0, 0, 0, 0.05);
+  --ui-code-mark: rgba(0, 96, 226, 0.06);
+  --ui-code-mark-edge: rgba(0, 96, 226, 0.5);
+  --ui-code-focus: var(--aui-focus, rgba(0, 96, 226, 0.7));
+  --ui-code-ease: var(--aui-ease, cubic-bezier(0.22, 1, 0.36, 1));
+  --ui-code-mono: var(--aui-font-mono, ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace);
+  --ui-code-r: calc(var(--aui-radius, 10px) + 2px);
+  --ui-code-pad: 3px;
+  /* Tokens */
+  --ui-code-com: #9a9a9a;
+  --ui-code-str: #0b8576;
+  --ui-code-kw: #8a35d6;
+  --ui-code-num: #b25e00;
+  --ui-code-lit: #b25e00;
+  --ui-code-fn: #1f63c9;
+  --ui-code-key: #171717;
+  --ui-code-var: #1f63c9;
+
+  box-sizing: border-box;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  margin: 0;
+  padding: var(--ui-code-pad);
+  border-radius: var(--ui-code-r);
+  background: var(--ui-code-tray);
+  color: var(--ui-code-ink);
+  font-family: var(--aui-font, "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif);
+  font-size: 13.5px;
+  line-height: 20px;
+  -webkit-font-smoothing: antialiased;
+}
+.ui-code *, .ui-code *::before, .ui-code *::after { box-sizing: border-box; }
+
+/* Header on the tray: the name on the left, copy on the right – the button as far from the right edge as from the top */
+.ui-code__head {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 8px;
+  height: 32px;
+  padding: 0 3px 0 13px;
+}
+.ui-code__label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  font-size: 12.5px;
+  line-height: 16px;
+  font-weight: 500;
+  color: var(--ui-code-muted);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.ui-code__sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+
+/* Copy: a ghost button on the tray; the copy glyph blurs into a check */
+.ui-code__copy {
+  all: unset;
+  position: relative;
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: calc(var(--ui-code-r) - 5px);
+  color: var(--ui-code-icon);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color 160ms ease, color 160ms ease;
+}
+.ui-code__copy svg {
+  position: absolute;
+  width: 15px;
+  height: 15px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: opacity 200ms ease, transform 320ms var(--ui-code-ease), filter 200ms ease;
+}
+.ui-code__copy-icon rect { fill: none; stroke: currentColor; }
+.ui-code__copy .ui-code__copy-done { opacity: 0; transform: scale(0.6); filter: blur(2px); stroke-width: 1.7; }
+.ui-code__copy[data-copied] { color: var(--ui-code-ink); }
+.ui-code__copy[data-copied] .ui-code__copy-icon { opacity: 0; transform: scale(0.6); filter: blur(2px); }
+.ui-code__copy[data-copied] .ui-code__copy-done { opacity: 1; transform: none; filter: none; }
+.ui-code__copy:focus-visible { outline: 2px solid var(--ui-code-focus); outline-offset: 2px; }
+@media (hover: hover) {
+  .ui-code__copy:hover { background: var(--ui-code-wash); color: var(--ui-code-ink); }
+}
+
+/* The white card with the code: scrolls sideways (or wraps) and, past maxHeight, down – never wider than its container */
+.ui-code__scroll {
+  position: relative;
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+  overflow: auto;
+  overscroll-behavior-x: contain;
+  border-radius: calc(var(--ui-code-r) - var(--ui-code-pad));
+  background: var(--ui-code-bg);
+  box-shadow: 0 0 0 1px var(--ui-code-line), 0 1px 2px rgba(0, 0, 0, 0.04);
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.18) transparent;
+}
+.ui-code__scroll:focus-visible { outline: 2px solid var(--ui-code-focus); outline-offset: -2px; }
+.ui-code__pre {
+  margin: 0;
+  padding: 12px 0;
+  font-family: var(--ui-code-mono);
+  font-size: 12.5px;
+  line-height: 20px;
+  color: var(--ui-code-ink);
+  tab-size: 2;
+  text-align: left;
+}
+.ui-code__code { display: block; width: max-content; min-width: 100%; font: inherit; }
+.ui-code[data-wrap] .ui-code__code { width: auto; }
+
+.ui-code__line { display: flex; min-height: 20px; padding: 0 16px; }
+.ui-code__text { flex: 1 0 auto; white-space: pre; }
+.ui-code[data-wrap] .ui-code__text { flex: 1 1 auto; min-width: 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+.ui-code__line[data-marked] { background: var(--ui-code-mark); box-shadow: inset 2px 0 0 var(--ui-code-mark-edge); }
+
+/* Line numbers stay in place while long lines scroll sideways */
+.ui-code[data-numbers] .ui-code__line { padding-left: 0; }
+.ui-code__ln {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  flex: none;
+  min-width: calc(var(--ui-code-digits, 2) * 1ch + 32px);
+  padding: 0 14px 0 18px;
+  background: var(--ui-code-bg);
+  color: var(--ui-code-faint);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  -webkit-user-select: none;
+  user-select: none;
+}
+.ui-code__line[data-marked] .ui-code__ln {
+  background: linear-gradient(var(--ui-code-mark), var(--ui-code-mark)), var(--ui-code-bg);
+  box-shadow: inset 2px 0 0 var(--ui-code-mark-edge);
+  color: var(--ui-code-muted);
+}
+
+.ui-code__t-com { color: var(--ui-code-com); }
+.ui-code__t-str { color: var(--ui-code-str); }
+.ui-code__t-kw { color: var(--ui-code-kw); }
+.ui-code__t-num { color: var(--ui-code-num); }
+.ui-code__t-lit { color: var(--ui-code-lit); }
+.ui-code__t-fn { color: var(--ui-code-fn); }
+.ui-code__t-key { color: var(--ui-code-key); }
+.ui-code__t-var { color: var(--ui-code-var); }
+
+/* Touch screens: a bigger hit area around the copy button, the look stays */
+@media (pointer: coarse) {
+  .ui-code__copy::after { content: ""; position: absolute; inset: -5px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-code__copy, .ui-code__copy svg { transition: none; }
+}
+
+/* Dark mode: follows a .dark class or data-theme="dark" on any ancestor, e.g. <html> */
+:where(.dark, [data-theme="dark"]) .ui-code {
+  --ui-code-tray: var(--aui-subtle, #1d1d20);
+  --ui-code-bg: var(--aui-surface, #161618);
+  --ui-code-line: var(--aui-border, rgba(255, 255, 255, 0.1));
+  --ui-code-ink: var(--aui-ink, #ededed);
+  --ui-code-muted: var(--aui-muted, #8b8b92);
+  --ui-code-faint: #55555b;
+  --ui-code-icon: var(--aui-muted, #8b8b92);
+  --ui-code-wash: rgba(255, 255, 255, 0.07);
+  --ui-code-mark: rgba(77, 141, 255, 0.1);
+  --ui-code-mark-edge: rgba(77, 141, 255, 0.6);
+  --ui-code-focus: var(--aui-focus, rgba(77, 141, 255, 0.8));
+  --ui-code-com: #6e6e75;
+  --ui-code-str: var(--aui-teal, #4fc3b4);
+  --ui-code-kw: #cfaef5;
+  --ui-code-num: var(--aui-orange, #f2a15c);
+  --ui-code-lit: var(--aui-orange, #f2a15c);
+  --ui-code-fn: #7cb4ff;
+  --ui-code-key: #ededed;
+  --ui-code-var: #7cb4ff;
+}
+:where(.dark, [data-theme="dark"]) .ui-code__scroll { box-shadow: 0 0 0 1px var(--ui-code-line); scrollbar-color: rgba(255, 255, 255, 0.2) transparent; }

@@ -1,0 +1,47 @@
+.kit-jobs { position: relative; display: inline-block; font-family: var(--kit-font); color: var(--kit-ink); font-variant-numeric: tabular-nums; }
+.kit-jobs__trigger {
+  font: inherit; color: inherit; display: inline-flex; align-items: center; gap: 6px;
+  background: var(--kit-surface); border: 1px solid var(--kit-rule-soft); border-radius: 999px;
+  padding: 4px 12px; cursor: pointer; box-shadow: var(--kit-shadow);
+}
+.kit-jobs__short { display: none; }
+.kit-jobs__panel {
+  position: absolute; top: calc(100% + 6px); z-index: 20; width: min(22rem, calc(100vw - 32px));
+  max-height: 24rem; overflow-y: auto; display: flex; flex-direction: column; gap: 6px;
+  background: var(--kit-surface); border: 1px solid var(--kit-rule-soft); border-radius: var(--kit-radius);
+  box-shadow: var(--kit-shadow-pop); padding: 10px; animation: kit-jobs-in var(--kit-fast) var(--kit-ease);
+}
+.kit-jobs[data-align="end"] .kit-jobs__panel { right: 0; }
+.kit-jobs[data-align="start"] .kit-jobs__panel { left: 0; }
+.kit-jobs__heading { margin: 0 0 4px; font-size: 14px; font-weight: 600; }
+.kit-jobs__list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+.kit-jobs__row { display: flex; align-items: center; gap: 6px; height: 48px; }
+.kit-jobs__open {
+  flex: 1; min-width: 0; height: 100%; display: flex; align-items: center; gap: 8px; text-align: left;
+  font: inherit; color: inherit; background: transparent; border: 0; border-radius: var(--kit-radius-sm); padding: 4px 6px; cursor: pointer;
+}
+.kit-jobs__open:hover { background: var(--kit-raised); }
+.kit-jobs__ring { width: 22px; height: 22px; flex: none; }
+.kit-jobs__ring-track { stroke: var(--kit-rule-soft); stroke-width: 3; }
+.kit-jobs__ring-fill { stroke: var(--kit-accent); stroke-width: 3; stroke-linecap: round; transition: d var(--kit-slow) var(--kit-ease); }
+.kit-jobs__row.is-done .kit-jobs__ring-fill { stroke: var(--kit-ok); }
+.kit-jobs__text { display: flex; flex-direction: column; min-width: 0; }
+.kit-jobs__title, .kit-jobs__step { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.kit-jobs__step { font-size: 12px; color: var(--kit-ink-muted); }
+.kit-jobs__steps { font-size: 12px; color: var(--kit-ink-muted); margin-left: auto; }
+.kit-jobs__badge { font-size: 11px; color: var(--kit-warn-ink); border: 1px solid var(--kit-warn); border-radius: 999px; padding: 0 6px; }
+.kit-jobs__icon {
+  flex: none; width: 32px; height: 32px; font: inherit; color: inherit; background: transparent;
+  border: 1px solid var(--kit-rule-soft); border-radius: var(--kit-radius-sm); cursor: pointer;
+}
+.kit-jobs__empty { margin: 0; color: var(--kit-ink-muted); font-size: 13px; }
+.kit-jobs__all { font: inherit; color: var(--kit-ink-hover); background: transparent; border: 0; text-align: left; cursor: pointer; padding: 4px 0; }
+.kit-jobs__sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+@media (max-width: 360px) {
+  .kit-jobs__full { display: none; }
+  .kit-jobs__short { display: inline; }
+}
+@keyframes kit-jobs-in { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) {
+  .kit-jobs *, .kit-jobs *::before { animation: none !important; transition: none !important; }
+}

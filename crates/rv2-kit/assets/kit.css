@@ -1,0 +1,83 @@
+/* rv2-kit's tokens. Every colour is an rv2 register, so an app's theme
+ * (UI2) reaches the kit; the fallbacks are rv2's own light values from
+ * crates/rv2-ui/assets/theme.css, because Tailwind emits only the registers
+ * an app uses and a var() naming a missing one makes the token invalid.
+ * Also declared on [data-theme]: a custom property resolves var() where it
+ * is declared, so tokens set only on :root never see a theme applied to a
+ * subtree. */
+:root,
+[data-theme] {
+  --kit-font: var(--font-sans, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif);
+  --kit-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+
+  --kit-ground: var(--color-ground, #f8fafc);
+  --kit-surface: var(--color-surface, #ffffff);
+  --kit-raised: var(--color-raised, #f1f5f9);
+
+  --kit-ink: var(--color-ink, #0f172a);
+  --kit-ink-hover: var(--color-ink-hover, #334155);
+  --kit-ink-muted: var(--color-ink-muted, #475569);
+  --kit-ink-faint: var(--color-ink-faint, #94a3b8);
+  --kit-on-ink: var(--color-on-ink, #ffffff);
+
+  --kit-rule: var(--color-rule, #cbd5e1);
+  --kit-rule-soft: var(--color-rule-soft, #e2e8f0);
+  --kit-accent: var(--color-accent, #0f172a);
+
+  --kit-ok: var(--color-takeable, #10b981);
+  --kit-ok-soft: var(--color-takeable-soft, #d1fae5);
+  --kit-ok-ink: var(--color-takeable-ink, #064e3b);
+  --kit-warn: var(--color-caution, #f59e0b);
+  --kit-warn-ink: var(--color-caution-ink, #92400e);
+  --kit-fault: var(--color-fault, #ef4444);
+  --kit-fault-ink: var(--color-fault-ink, #991b1b);
+
+  --kit-radius-sm: 6px;
+  --kit-radius: 10px;
+  --kit-radius-lg: 14px;
+  --kit-gap: 12px;
+  --kit-shadow: 0 1px 2px rgb(15 23 42 / 0.06), 0 4px 12px rgb(15 23 42 / 0.06);
+  --kit-shadow-pop: 0 8px 28px rgb(15 23 42 / 0.16);
+  --kit-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --kit-fast: 140ms;
+  --kit-slow: 320ms;
+}
+
+/* Components size to their box including padding; a `width: 100%` root with
+ * padding otherwise overflows its container. */
+[class^="kit-"],
+[class*=" kit-"],
+[class^="kit-"]::before,
+[class*=" kit-"]::before,
+[class^="kit-"]::after,
+[class*=" kit-"]::after {
+  box-sizing: border-box;
+}
+
+.kit-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* !important because component rules that start an animation are often more
+ * specific than any per-component reduce block, which then silently loses. */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --kit-fast: 1ms;
+    --kit-slow: 1ms;
+  }
+  [class^="kit-"],
+  [class*=" kit-"],
+  [class^="kit-"]::before,
+  [class*=" kit-"]::before,
+  [class^="kit-"]::after,
+  [class*=" kit-"]::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+  }
+}

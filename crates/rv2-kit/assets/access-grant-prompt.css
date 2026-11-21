@@ -1,0 +1,108 @@
+.kit-agp {
+  container-type: inline-size;
+  display: grid;
+  gap: 10px;
+  width: 100%;
+  max-width: 34rem;
+  padding: 14px 16px;
+  border: 1px solid var(--kit-rule-soft);
+  border-radius: var(--kit-radius);
+  background: var(--kit-surface);
+  box-shadow: var(--kit-shadow);
+  color: var(--kit-ink);
+  font-family: var(--kit-font);
+  font-size: 14px;
+  line-height: 1.45;
+  box-sizing: border-box;
+}
+
+.kit-agp:focus-visible { outline: 2px solid var(--kit-ink-hover); outline-offset: 2px; }
+
+.kit-agp__head { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.kit-agp__avatar {
+  display: grid; place-items: center; flex: none;
+  width: 32px; height: 32px; border-radius: 999px;
+  background: var(--kit-raised); color: var(--kit-ink-muted);
+  font-size: 12px; font-weight: 600; overflow: hidden;
+}
+.kit-agp__avatar img { width: 100%; height: 100%; object-fit: cover; }
+.kit-agp__heading { display: grid; gap: 2px; min-width: 0; flex: 1; }
+.kit-agp__title { margin: 0; font-size: 15px; font-weight: 600; overflow-wrap: anywhere; }
+.kit-agp__model { color: var(--kit-ink-faint); font-size: 12px; }
+
+.kit-agp__risk {
+  flex: none; padding: 2px 8px; border-radius: 999px;
+  border: 1px solid var(--kit-rule); font-size: 12px; font-weight: 600; color: var(--kit-ink-muted);
+}
+.kit-agp__risk[data-risk="destructive"] { border-color: var(--kit-fault); color: var(--kit-fault-ink); background: color-mix(in srgb, var(--kit-fault) 10%, transparent); }
+
+.kit-agp__target { margin: 0; display: flex; align-items: center; gap: 6px; color: var(--kit-ink-muted); min-width: 0; }
+.kit-agp__mark { display: inline-grid; place-items: center; min-width: 1.4em; height: 1.4em; border-radius: var(--kit-radius-sm); background: var(--kit-raised); font-size: 12px; }
+.kit-agp__rationale { margin: 0 0 0 42px; color: var(--kit-ink-muted); overflow-wrap: anywhere; }
+
+.kit-agp__impact { display: grid; gap: 6px; padding: 10px 12px; border-radius: var(--kit-radius-sm); background: var(--kit-ground); }
+.kit-agp__impact-title { margin: 0; font-size: 12px; font-weight: 600; color: var(--kit-ink-muted); text-transform: uppercase; letter-spacing: 0.04em; }
+.kit-agp__impact-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.kit-agp__impact-row {
+  display: flex; align-items: center; gap: 8px; min-width: 0;
+  animation: kit-agp-rise var(--kit-fast) var(--kit-ease) both;
+  animation-delay: calc(var(--kit-i, 0) * 60ms);
+}
+.kit-agp__impact-label { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.kit-agp__meta { flex: none; margin-left: auto; font-variant-numeric: tabular-nums; color: var(--kit-ink-faint); font-size: 12px; }
+.kit-agp__more { margin: 0; color: var(--kit-ink-faint); font-size: 12px; }
+
+.kit-agp__choices { display: flex; flex-wrap: wrap; gap: 6px; }
+.kit-agp__choice {
+  min-height: 32px; padding: 0 12px; border-radius: var(--kit-radius-sm);
+  border: 1px solid var(--kit-rule); background: var(--kit-surface); color: var(--kit-ink);
+  font: inherit; font-size: 13px; cursor: pointer;
+  transition: background var(--kit-fast) var(--kit-ease), border-color var(--kit-fast) var(--kit-ease);
+}
+.kit-agp__choice[aria-checked="true"] { border-color: var(--kit-ink); background: var(--kit-raised); font-weight: 600; }
+.kit-agp__choice:focus-visible { outline: 2px solid var(--kit-ink-hover); outline-offset: 2px; }
+
+.kit-agp__actions { display: flex; justify-content: flex-end; gap: 8px; flex-wrap: wrap; }
+.kit-agp__deny, .kit-agp__allow, .kit-agp__link {
+  min-height: 36px; padding: 0 14px; border-radius: var(--kit-radius-sm);
+  font: inherit; font-size: 13px; font-weight: 600; cursor: pointer;
+}
+.kit-agp__deny { border: 1px solid var(--kit-rule); background: var(--kit-surface); color: var(--kit-ink); }
+.kit-agp__allow { border: 1px solid var(--kit-ink); background: var(--kit-accent); color: var(--kit-on-ink); }
+.kit-agp__allow[data-risk="risky"] { background: var(--kit-warn-ink); border-color: var(--kit-warn-ink); }
+.kit-agp__allow[data-risk="destructive"] { background: var(--kit-fault-ink); border-color: var(--kit-fault-ink); }
+.kit-agp__allow-label { display: inline-block; animation: kit-agp-fade var(--kit-fast) var(--kit-ease); }
+.kit-agp__deny:focus-visible, .kit-agp__allow:focus-visible, .kit-agp__link:focus-visible, .kit-agp__choice:focus-visible {
+  outline: 2px solid var(--kit-ink-hover); outline-offset: 2px;
+}
+
+.kit-agp__hints { margin: 0; color: var(--kit-ink-faint); font-size: 12px; text-align: right; }
+
+.kit-agp__line { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; min-width: 0; }
+.kit-agp__dot { width: 8px; height: 8px; border-radius: 999px; background: var(--kit-ok); flex: none; }
+.kit-agp--decided[data-outcome="denied"] .kit-agp__dot { background: var(--kit-fault); }
+.kit-agp--decided[data-outcome="expired"] .kit-agp__dot { background: var(--kit-warn); }
+.kit-agp__outcome { font-weight: 600; }
+.kit-agp__countdown { color: var(--kit-ink-muted); font-variant-numeric: tabular-nums; }
+.kit-agp__link { margin-left: auto; min-height: 28px; padding: 0 8px; border: 0; background: transparent; color: var(--kit-ink-muted); text-decoration: underline; }
+.kit-agp__bar { height: 3px; border-radius: 999px; background: var(--kit-rule-soft); overflow: hidden; }
+.kit-agp__bar-fill { display: block; height: 100%; background: var(--kit-ok); transform-origin: left center; transition: transform 1s linear; }
+
+@keyframes kit-agp-rise { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+@keyframes kit-agp-fade { from { opacity: 0; } to { opacity: 1; } }
+
+@container (max-width: 26rem) {
+  .kit-agp__hints { display: none; }
+  .kit-agp__rationale { margin-left: 0; }
+  .kit-agp__actions > button { flex: 1 1 auto; }
+}
+
+@media (pointer: coarse) {
+  .kit-agp__hints { display: none; }
+  .kit-agp__deny, .kit-agp__allow, .kit-agp__choice { min-height: 44px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kit-agp__impact-row, .kit-agp__allow-label { animation: none; }
+  .kit-agp__bar-fill, .kit-agp__choice { transition: none; }
+}

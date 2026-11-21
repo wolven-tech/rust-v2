@@ -1,0 +1,205 @@
+.kit-trend {
+  --kit-tone: var(--kit-ink);
+  position: relative;
+  width: 100%;
+  font-family: var(--kit-font);
+  color: var(--kit-ink-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.kit-trend [data-tone="ink"] { --kit-tone: var(--kit-ink); }
+.kit-trend [data-tone="ok"] { --kit-tone: var(--kit-ok); }
+.kit-trend [data-tone="warn"] { --kit-tone: var(--kit-warn); }
+.kit-trend [data-tone="fault"] { --kit-tone: var(--kit-fault); }
+.kit-trend [data-tone="muted"] { --kit-tone: var(--kit-ink-faint); }
+
+.kit-trend__plot {
+  position: relative;
+  border-radius: var(--kit-radius-sm);
+  outline: none;
+}
+
+.kit-trend__plot:focus-visible {
+  box-shadow: 0 0 0 2px var(--kit-ink-faint);
+}
+
+.kit-trend__svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.kit-trend__grid {
+  stroke: var(--kit-rule-soft);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+
+.kit-trend__baseline {
+  stroke: var(--kit-rule);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+
+.kit-trend__tick,
+.kit-trend__date {
+  fill: var(--kit-ink-faint);
+  font-size: 11px;
+  font-family: var(--kit-font);
+}
+
+.kit-trend__stroke {
+  fill: none;
+  stroke: var(--kit-tone);
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+}
+
+.kit-trend__stroke--emphasis {
+  stroke-width: 3;
+}
+
+.kit-trend__stroke--earlier {
+  stroke-dasharray: 5 4;
+  opacity: 0.7;
+}
+
+.kit-trend__area {
+  fill: var(--kit-tone);
+  fill-opacity: 0.14;
+  stroke: none;
+}
+
+.kit-trend__column {
+  fill: var(--kit-tone);
+  fill-opacity: 0.85;
+  transform-box: fill-box;
+  transform-origin: bottom;
+}
+
+.kit-trend__column--earlier {
+  fill-opacity: 0.3;
+}
+
+.kit-trend__guide {
+  stroke: var(--kit-ink-faint);
+  stroke-width: 1;
+  stroke-dasharray: 3 3;
+  vector-effect: non-scaling-stroke;
+}
+
+.kit-trend__marker {
+  fill: var(--kit-surface);
+  stroke: var(--kit-tone);
+  stroke-width: 2;
+  vector-effect: non-scaling-stroke;
+}
+
+.kit-trend__hit {
+  fill: transparent;
+  pointer-events: all;
+}
+
+.kit-trend__empty {
+  display: grid;
+  place-items: center;
+  min-height: 120px;
+  border: 1px dashed var(--kit-rule);
+  border-radius: var(--kit-radius);
+  color: var(--kit-ink-faint);
+  font-size: 13px;
+}
+
+.kit-trend__tooltip,
+.kit-trend__tag {
+  margin-top: 8px;
+  padding: 8px 10px;
+  border: 1px solid var(--kit-rule-soft);
+  border-radius: var(--kit-radius-sm);
+  background: var(--kit-surface);
+  box-shadow: var(--kit-shadow);
+  color: var(--kit-ink);
+  font-size: 12px;
+}
+
+.kit-trend__tag {
+  display: inline-block;
+  padding: 3px 8px;
+}
+
+.kit-trend__heading {
+  margin-bottom: 4px;
+  color: var(--kit-ink-muted);
+  font-weight: 600;
+}
+
+.kit-trend__row {
+  display: grid;
+  grid-template-columns: 10px 1fr auto;
+  align-items: center;
+  gap: 8px;
+  min-height: 20px;
+}
+
+.kit-trend__swatch {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--kit-tone);
+}
+
+.kit-trend__name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.kit-trend__value {
+  font-weight: 600;
+  color: var(--kit-ink);
+}
+
+@media (max-width: 480px) {
+  .kit-trend__date--mid {
+    display: none;
+  }
+
+  .kit-trend__row {
+    grid-template-columns: 10px 1fr;
+  }
+
+  .kit-trend__value {
+    grid-column: 2;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kit-trend__column {
+    animation: none;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .kit-trend[data-variant="line"] .kit-trend__stroke:not(.kit-trend__stroke--earlier),
+  .kit-trend[data-variant="area"] .kit-trend__stroke:not(.kit-trend__stroke--earlier) {
+    stroke-dasharray: 1000;
+    stroke-dashoffset: 1000;
+    animation: kit-trend-sweep var(--kit-slow) var(--kit-ease) forwards;
+  }
+
+  .kit-trend__column {
+    animation: kit-trend-rise var(--kit-slow) var(--kit-ease) both;
+  }
+}
+
+@keyframes kit-trend-sweep {
+  to { stroke-dashoffset: 0; }
+}
+
+@keyframes kit-trend-rise {
+  from { transform: scaleY(0); }
+  to { transform: scaleY(1); }
+}

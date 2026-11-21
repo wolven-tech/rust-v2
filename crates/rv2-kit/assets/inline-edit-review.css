@@ -1,0 +1,24 @@
+.kit-ier {
+  container-type: inline-size; display: grid; gap: 10px; width: 100%; max-width: 46rem; box-sizing: border-box;
+  padding: 14px 16px; border: 1px solid var(--kit-rule-soft); border-radius: var(--kit-radius); background: var(--kit-surface);
+  box-shadow: var(--kit-shadow); color: var(--kit-ink); font-family: var(--kit-font); font-size: 15px; line-height: 1.6;
+}
+.kit-ier__caption { margin: 0; font-size: 12px; color: var(--kit-ink-muted); }
+.kit-ier__body { margin: 0; overflow-wrap: anywhere; }
+.kit-ier__change { display: inline; }
+.kit-ier__hit { display: inline; padding: 0; border: 0; background: transparent; color: inherit; font: inherit; cursor: pointer; text-align: inherit; }
+.kit-ier__hit:focus-visible { outline: 2px solid var(--kit-ink-hover); outline-offset: 2px; }
+.kit-ier__removed { color: var(--kit-fault-ink); text-decoration: line-through; background: color-mix(in srgb, var(--kit-fault) 10%, transparent); border-radius: 3px; transition: opacity var(--kit-fast) var(--kit-ease); }
+.kit-ier__inserted { color: var(--kit-ok-ink); text-decoration: none; background: color-mix(in srgb, var(--kit-ok) 14%, transparent); border-radius: 3px; animation: kit-ier-settle var(--kit-fast) var(--kit-ease) both; }
+.kit-ier__change[data-active="true"] .kit-ier__hit { outline: 2px solid var(--kit-ink-hover); outline-offset: 2px; border-radius: 3px; }
+.kit-ier__change[data-state="rejected"] .kit-ier__inserted { display: none; }
+.kit-ier__change[data-state="accepted"] .kit-ier__removed { display: none; }
+.kit-ier__toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding-top: 8px; border-top: 1px solid var(--kit-rule-soft); }
+.kit-ier__count { margin-right: auto; font-size: 13px; color: var(--kit-ink-muted); font-variant-numeric: tabular-nums; }
+.kit-ier__toolbar button { min-height: 32px; padding: 0 10px; border-radius: var(--kit-radius-sm); border: 1px solid var(--kit-rule); background: var(--kit-surface); color: var(--kit-ink); font: inherit; font-size: 13px; cursor: pointer; }
+.kit-ier__toolbar button:disabled { opacity: 0.45; cursor: default; }
+.kit-ier__toolbar button:focus-visible { outline: 2px solid var(--kit-ink-hover); outline-offset: 2px; }
+.kit-ier__live { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+@keyframes kit-ier-settle { from { opacity: 0; } to { opacity: 1; } }
+@container (max-width: 28rem) { .kit-ier__toolbar .kit-ier__count { width: 100%; margin-right: 0; } }
+@media (prefers-reduced-motion: reduce) { .kit-ier__inserted { animation: none; } .kit-ier__removed { transition: none; } }

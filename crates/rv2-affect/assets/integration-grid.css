@@ -1,0 +1,84 @@
+.ui-ig {
+  /* 1 unit of the layout grid – 1520 × 560 with 9 columns, narrower with fewer */
+  --u: calc(100cqw / var(--ui-ig-w, 1520));
+  --ui-ig-ink: #0a0a0a;
+  /* Tile fill as RGB channels, so each tile can set its own opacity */
+  --ui-ig-tile: 255 255 255;
+  --ui-ig-border: 0 0 0;
+  --ui-ig-border-a: 0.15;
+  --ui-ig-shadow-a: 1;
+  --ui-ig-center: #ffffff;
+  --ui-ig-center-border: rgba(0, 0, 0, 0.14);
+  --ui-ig-center-shadow: 0 calc(16 * var(--u)) calc(18 * var(--u)) calc(-12 * var(--u)) rgba(0, 0, 0, 0.14);
+  --ui-ig-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  position: relative;
+  width: 100%;
+  aspect-ratio: var(--ui-ig-w, 1520) / 560;
+  container-type: inline-size;
+}
+.ui-ig *, .ui-ig *::before, .ui-ig *::after { box-sizing: border-box; }
+
+/* ---------- Tiles ---------- */
+
+.ui-ig-tile {
+  --s: 140;
+  position: absolute;
+  left: calc((var(--x) - var(--s) / 2) * var(--u));
+  top: calc((var(--y) - var(--s) / 2) * var(--u));
+  width: calc(var(--s) * var(--u));
+  height: calc(var(--s) * var(--u));
+  display: grid;
+  place-items: center;
+  border-radius: calc(22 * var(--u));
+  background: rgb(var(--ui-ig-tile) / var(--ui-ig-a));
+  box-shadow:
+    inset 0 0 0 calc(1 * var(--u)) rgb(var(--ui-ig-border) / calc(var(--ui-ig-border-a) * (0.7 + 0.3 * var(--ui-ig-k)))),
+    /* Only below the tile: a negative spread keeps it from showing left, right and above */
+    0 calc(12 * var(--u)) calc(14 * var(--u)) calc(-10 * var(--u)) rgb(0 0 0 / calc(0.06 * (0.65 + 0.35 * var(--ui-ig-k)) * var(--ui-ig-shadow-a)));
+  transition: transform 0.35s var(--ui-ig-ease), background-color 0.35s var(--ui-ig-ease), box-shadow 0.35s var(--ui-ig-ease);
+}
+/* Hover: the tile stays put and turns fully white, its logo grows a little from the centre */
+.ui-ig-tile:not(.ui-ig-tile--center):hover { --ui-ig-a: 1; }
+.ui-ig-tile:hover .ui-ig-logo { transform: scale(1.18); }
+
+.ui-ig-logo {
+  width: calc(52 * var(--u));
+  height: calc(52 * var(--u));
+  fill: var(--ui-ig-c, var(--ui-ig-ink));
+  transition: transform 0.35s var(--ui-ig-ease);
+}
+
+/* The centre: larger, pure white, a stronger shadow and the product mark */
+.ui-ig-tile--center {
+  --s: 168;
+  z-index: 1;
+  border-radius: calc(28 * var(--u));
+  background: var(--ui-ig-center);
+  box-shadow: inset 0 0 0 calc(1 * var(--u)) var(--ui-ig-center-border), var(--ui-ig-center-shadow);
+  color: var(--ui-ig-ink);
+}
+.ui-ig-mark {
+  width: calc(68 * var(--u));
+  height: calc(68 * var(--u));
+  fill: var(--ui-ig-ink);
+}
+.ui-ig-mark-soft { opacity: 0.32; }
+.ui-ig-mark-core { fill: var(--ui-ig-center); }
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-ig-tile { transition: none; }
+  .ui-ig-logo { transition: none; }
+}
+
+/* Dark mode: follows a .dark class or data-theme="dark" on any ancestor, e.g. <html> */
+:where(.dark, [data-theme="dark"]) .ui-ig {
+  --ui-ig-ink: #ededed;
+  --ui-ig-tile: 35 35 38;
+  --ui-ig-border: 255 255 255;
+  --ui-ig-border-a: 0.1;
+  --ui-ig-shadow-a: 4;
+  --ui-ig-center: #2a2a2d;
+  --ui-ig-center-border: rgba(255, 255, 255, 0.16);
+  --ui-ig-center-shadow: 0 calc(16 * var(--u)) calc(18 * var(--u)) calc(-12 * var(--u)) rgba(0, 0, 0, 0.5);
+}
+:where(.dark, [data-theme="dark"]) .ui-ig-logo { fill: var(--ui-ig-cd, var(--ui-ig-c, var(--ui-ig-ink))); }

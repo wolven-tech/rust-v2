@@ -1,0 +1,73 @@
+.kit-tls {
+  container-type: inline-size;
+  display: grid;
+  gap: 12px;
+  width: 100%;
+  max-width: 36rem;
+  box-sizing: border-box;
+  padding: 14px 16px;
+  border: 1px solid var(--kit-rule-soft);
+  border-radius: var(--kit-radius);
+  background: var(--kit-surface);
+  box-shadow: var(--kit-shadow);
+  color: var(--kit-ink);
+  font-family: var(--kit-font);
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.kit-tls__head { display: grid; gap: 2px; }
+.kit-tls__title { margin: 0; font-size: 15px; font-weight: 600; }
+.kit-tls__subtitle { margin: 0; color: var(--kit-ink-muted); font-size: 13px; }
+
+.kit-tls__levels { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; padding: 3px; border-radius: var(--kit-radius-sm); background: var(--kit-raised); }
+.kit-tls__level {
+  min-height: 36px; padding: 0 8px; border: 0; border-radius: var(--kit-radius-sm);
+  background: transparent; color: var(--kit-ink-muted); font: inherit; font-size: 13px; font-weight: 600; cursor: pointer;
+  transition: background var(--kit-fast) var(--kit-ease), color var(--kit-fast) var(--kit-ease);
+}
+.kit-tls__level[aria-checked="true"] { background: var(--kit-surface); color: var(--kit-ink); box-shadow: var(--kit-shadow); }
+.kit-tls__level:focus-visible { outline: 2px solid var(--kit-ink-hover); outline-offset: 2px; }
+.kit-tls__level-note { margin: 0; color: var(--kit-ink-muted); font-size: 13px; }
+
+.kit-tls__group { display: grid; gap: 6px; }
+.kit-tls__group-title { margin: 0; font-size: 12px; font-weight: 600; color: var(--kit-ink-faint); text-transform: uppercase; letter-spacing: 0.04em; }
+.kit-tls__list { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.kit-tls__row {
+  display: flex; align-items: center; gap: 10px; min-width: 0; padding: 8px 10px;
+  border: 1px solid var(--kit-rule-soft); border-radius: var(--kit-radius-sm); background: var(--kit-surface);
+  animation: kit-tls-move var(--kit-fast) var(--kit-ease) both;
+  animation-delay: calc(var(--kit-i, 0) * 40ms);
+}
+.kit-tls__row[data-pinned="true"] { border-color: var(--kit-ink-faint); }
+.kit-tls__mark { flex: none; display: grid; place-items: center; width: 1.6em; height: 1.6em; border-radius: var(--kit-radius-sm); background: var(--kit-raised); font-size: 12px; }
+.kit-tls__body { display: grid; gap: 1px; flex: 1; min-width: 0; }
+.kit-tls__name { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.kit-tls__note { color: var(--kit-ink-muted); font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.kit-tls__tag { flex: none; padding: 0 8px; border-radius: 999px; border: 1px solid var(--kit-rule); font-size: 11px; font-weight: 600; color: var(--kit-ink-muted); }
+.kit-tls__tag[data-risk="sensitive"] { color: var(--kit-warn-ink); border-color: var(--kit-warn); }
+.kit-tls__tag[data-risk="irreversible"] { color: var(--kit-fault-ink); border-color: var(--kit-fault); }
+.kit-tls__pin {
+  flex: none; min-height: 30px; padding: 0 10px; border-radius: var(--kit-radius-sm);
+  border: 1px solid var(--kit-rule); background: var(--kit-surface); color: var(--kit-ink-muted); font: inherit; font-size: 12px; cursor: pointer;
+}
+.kit-tls__pin[aria-pressed="true"] { background: var(--kit-accent); border-color: var(--kit-accent); color: var(--kit-on-ink); }
+.kit-tls__pin:focus-visible { outline: 2px solid var(--kit-ink-hover); outline-offset: 2px; }
+
+.kit-tls__count { color: var(--kit-ink-muted); font-size: 13px; font-variant-numeric: tabular-nums; }
+.kit-tls__empty { margin: 0; color: var(--kit-ink-faint); }
+.kit-tls__live { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+@keyframes kit-tls-move { from { opacity: 0; transform: translateY(3px); } to { opacity: 1; transform: none; } }
+
+@container (max-width: 22rem) {
+  .kit-tls__note { display: none; }
+}
+
+@media (pointer: coarse) {
+  .kit-tls__level, .kit-tls__pin { min-height: 44px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kit-tls__row, .kit-tls__level { animation: none; transition: none; }
+}

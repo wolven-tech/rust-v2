@@ -1,0 +1,68 @@
+.kit-sla {
+  display: grid; gap: 12px; width: 100%; max-width: 46rem; box-sizing: border-box;
+  color: var(--kit-ink); font-family: var(--kit-font); font-size: 15px; line-height: 1.6;
+}
+.kit-sla__head { font-size: 12px; color: var(--kit-ink-muted); font-variant-numeric: tabular-nums; }
+.kit-sla__body { margin: 0; overflow-wrap: anywhere; text-wrap: pretty; }
+.kit-sla__segment { transition: opacity var(--kit-fast) var(--kit-ease), background var(--kit-fast) var(--kit-ease); border-radius: 3px; }
+.kit-sla__segment[data-tint="true"] { background: color-mix(in srgb, var(--kit-ok) 14%, transparent); }
+.kit-sla__segment[data-dim="true"] { opacity: 0.45; }
+
+.kit-sla__marker {
+  display: inline-grid; place-items: center; min-width: 18px; height: 18px; margin: 0 2px; padding: 0 4px;
+  vertical-align: super; border: 0; border-radius: 999px; background: var(--kit-raised); color: var(--kit-ink-muted);
+  font: inherit; font-size: 11px; font-weight: 600; cursor: pointer;
+}
+.kit-sla__marker[aria-expanded="true"] { background: var(--kit-ink); color: var(--kit-on-ink); }
+
+.kit-sla__chips { display: flex; flex-wrap: nowrap; gap: 6px; overflow: hidden; align-items: center; }
+.kit-sla__chip {
+  display: inline-flex; align-items: center; gap: 6px; flex: 0 1 auto; min-width: 0; max-width: 16rem;
+  min-height: 30px; padding: 0 10px; border: 1px solid var(--kit-rule-soft); border-radius: 999px;
+  background: var(--kit-surface); color: var(--kit-ink); font: inherit; font-size: 12px; cursor: pointer;
+}
+.kit-sla__chip[aria-expanded="true"], .kit-sla__chip:hover { background: var(--kit-raised); }
+.kit-sla__chip-num { font-weight: 600; font-variant-numeric: tabular-nums; color: var(--kit-ink-muted); }
+.kit-sla__chip-site { color: var(--kit-ink-muted); white-space: nowrap; }
+.kit-sla__chip-head { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.kit-sla__more { flex: none; padding: 0 10px; font-size: 12px; color: var(--kit-ink-muted); font-variant-numeric: tabular-nums; }
+.kit-sla__chip:focus-visible, .kit-sla__marker:focus-visible, .kit-sla__open:focus-visible, .kit-sla__copy:focus-visible, .kit-sla__trailing:focus-visible {
+  outline: 2px solid var(--kit-ink-hover); outline-offset: 2px;
+}
+
+.kit-sla__preview {
+  display: grid; gap: 8px; padding: 12px 14px; border-radius: var(--kit-radius-sm);
+  border: 1px solid var(--kit-rule-soft); background: var(--kit-ground);
+  animation: kit-sla-fade var(--kit-fast) var(--kit-ease) both;
+}
+.kit-sla__preview-head { display: grid; gap: 2px; }
+.kit-sla__preview-meta { font-size: 12px; color: var(--kit-ink-muted); }
+.kit-sla__preview-title { margin: 0; font-size: 14px; font-weight: 600; overflow-wrap: anywhere; }
+.kit-sla__passage { margin: 0; color: var(--kit-ink-muted); font-size: 14px; }
+.kit-sla__passage mark { background: color-mix(in srgb, var(--kit-warn) 30%, transparent); color: inherit; border-radius: 2px; }
+.kit-sla__preview-actions { display: flex; flex-wrap: wrap; gap: 6px; }
+.kit-sla__open, .kit-sla__copy, .kit-sla__trailing {
+  min-height: 32px; padding: 0 12px; border-radius: var(--kit-radius-sm); border: 1px solid var(--kit-rule);
+  background: var(--kit-surface); color: var(--kit-ink); font: inherit; font-size: 13px; cursor: pointer;
+  display: inline-flex; align-items: center; text-decoration: none;
+}
+
+.kit-sla__foot { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 28px; font-size: 12px; color: var(--kit-ink-muted); }
+.kit-sla__status { transition: opacity var(--kit-fast) var(--kit-ease); }
+
+@keyframes kit-sla-fade { from { opacity: 0; } to { opacity: 1; } }
+
+@container (max-width: 30rem) {
+  .kit-sla__chip-site { display: none; }
+  .kit-sla__copy { width: 32px; padding: 0; justify-content: center; font-size: 0; }
+  .kit-sla__copy::before { content: "\2398"; font-size: 14px; }
+}
+
+@media (pointer: coarse) {
+  .kit-sla__marker { min-width: 26px; height: 26px; }
+  .kit-sla__chip, .kit-sla__open, .kit-sla__copy { min-height: 44px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kit-sla__preview, .kit-sla__segment, .kit-sla__status { animation: none; transition: none; }
+}

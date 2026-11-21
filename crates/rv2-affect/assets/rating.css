@@ -1,0 +1,121 @@
+/* Colors and motion as variables – override them on .ui-rtg (see Theming in the docs) */
+.ui-rtg {
+  --ui-rtg-star: #f5b000;
+  --ui-rtg-empty: #e4e4e7;
+  --ui-rtg-empty-hover: #d4d4d8;
+  --ui-rtg-icon: var(--aui-muted, #8f8f8f);
+  --ui-rtg-ink: var(--aui-ink, #171717);
+  --ui-rtg-wash: #f4f4f5;
+  --ui-rtg-wash-on: #ececee;
+  --ui-rtg-focus: var(--aui-focus, rgba(0, 96, 226, 0.7));
+  --ui-rtg-ease: var(--aui-ease, cubic-bezier(0.22, 1, 0.36, 1));
+
+  /* A star's size, the space around it (its hit area) and a thumb button's size */
+  --s: 20px;
+  --pad: 3px;
+  --b: 32px;
+  --i: 18px;
+
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  min-width: 0;
+  max-width: 100%;
+  flex-wrap: wrap;
+  vertical-align: middle;
+  -webkit-tap-highlight-color: transparent;
+}
+.ui-rtg[data-size="sm"] { --s: 16px; --pad: 2px; --b: 28px; --i: 16px; gap: 1px; }
+.ui-rtg[data-size="lg"] { --s: 26px; --pad: 3px; --b: 36px; --i: 20px; }
+.ui-rtg[data-readonly] { gap: 2px; }
+.ui-rtg[data-readonly][data-size="sm"] { gap: 1px; }
+.ui-rtg[data-disabled] { opacity: 0.5; }
+
+/* A star: its button is the glyph plus a little room, so the hit area is bigger than the star */
+.ui-rtg__star {
+  display: grid;
+  flex: none;
+  place-items: center;
+  margin: 0;
+  padding: var(--pad);
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+.ui-rtg[data-readonly] .ui-rtg__star { padding: 0; cursor: default; }
+.ui-rtg__star:disabled { cursor: not-allowed; }
+.ui-rtg__star:focus-visible { outline: 2px solid var(--ui-rtg-focus); outline-offset: 2px; }
+
+.ui-rtg__glyph { position: relative; display: block; width: var(--s); height: var(--s); transition: transform 160ms var(--ui-rtg-ease); }
+.ui-rtg__glyph svg { position: absolute; inset: 0; display: block; width: 100%; height: 100%; overflow: visible; }
+.ui-rtg__empty { color: var(--ui-rtg-empty); transition: color 140ms ease; }
+/* The fill is a second star on top, clipped from the start side – whole, or half for a read-only 4.5 */
+.ui-rtg__fill { color: var(--ui-rtg-star); clip-path: inset(0 calc((1 - var(--ui-rtg-f)) * 100%) 0 0); }
+.ui-rtg:dir(rtl) .ui-rtg__fill { clip-path: inset(0 0 0 calc((1 - var(--ui-rtg-f)) * 100%)); }
+.ui-rtg__star:not(:disabled):hover .ui-rtg__empty { color: var(--ui-rtg-empty-hover); }
+.ui-rtg__star[data-hover] .ui-rtg__glyph { transform: scale(1.12); }
+.ui-rtg__star:not(:disabled):active .ui-rtg__glyph { transform: scale(0.9); }
+/* A choice: the stars up to it pop one after the other */
+.ui-rtg__glyph[data-pop] { animation: ui-rtg-pop 420ms var(--ui-rtg-ease) both; }
+
+/* Thumbs: two icon buttons; the chosen one fills in ink and sits on a gray wash */
+.ui-rtg__thumb {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: var(--b);
+  height: var(--b);
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 9px;
+  background: none;
+  color: var(--ui-rtg-icon);
+  font: inherit;
+  cursor: pointer;
+  transition: background-color 140ms ease, color 140ms ease;
+}
+.ui-rtg[data-readonly] .ui-rtg__thumb { width: auto; height: auto; cursor: default; }
+.ui-rtg[data-readonly] .ui-rtg__thumb:not([data-on]) { opacity: 0.45; }
+.ui-rtg__thumb:not(:disabled):hover { background: var(--ui-rtg-wash); color: var(--ui-rtg-ink); }
+.ui-rtg__thumb[data-on] { color: var(--ui-rtg-ink); }
+.ui-rtg:not([data-readonly]) .ui-rtg__thumb[data-on] { background: var(--ui-rtg-wash-on); }
+.ui-rtg__thumb:disabled { cursor: not-allowed; }
+.ui-rtg__thumb:focus-visible { outline: 2px solid var(--ui-rtg-focus); outline-offset: 2px; }
+.ui-rtg__icon { display: block; width: var(--i); height: var(--i); }
+.ui-rtg__icon[data-pop] { animation: ui-rtg-thumb 460ms var(--ui-rtg-ease); transform-origin: 30% 70%; }
+.ui-rtg__icon[data-pop][data-down] { animation-name: ui-rtg-thumb-down; transform-origin: 30% 30%; }
+
+@keyframes ui-rtg-pop { 0% { transform: scale(0.6); } 55% { transform: scale(1.22); } 100% { transform: scale(1); } }
+@keyframes ui-rtg-thumb { 0% { transform: scale(0.8) rotate(0); } 45% { transform: scale(1.18) rotate(-12deg); } 100% { transform: scale(1) rotate(0); } }
+@keyframes ui-rtg-thumb-down { 0% { transform: scale(0.8) rotate(0); } 45% { transform: scale(1.18) rotate(12deg); } 100% { transform: scale(1) rotate(0); } }
+
+/* Touch screens: a hit area of at least 32px per star and 36px per thumb */
+@media (pointer: coarse) {
+  .ui-rtg { --pad: 6px; --b: 40px; }
+  .ui-rtg[data-size="sm"] { --pad: 8px; --b: 36px; }
+  .ui-rtg[data-size="lg"] { --pad: 5px; --b: 44px; }
+  .ui-rtg:not([data-readonly]) { gap: 0; }
+  .ui-rtg__star[data-hover] .ui-rtg__glyph { transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-rtg__glyph, .ui-rtg__empty, .ui-rtg__thumb { transition: none; }
+  .ui-rtg__glyph[data-pop], .ui-rtg__icon[data-pop] { animation: none; }
+  .ui-rtg__star[data-hover] .ui-rtg__glyph, .ui-rtg__star:active .ui-rtg__glyph { transform: none; }
+}
+
+/* Dark mode: follows a .dark class or data-theme="dark" on any ancestor, e.g. <html> */
+:where(.dark, [data-theme="dark"]) .ui-rtg {
+  --ui-rtg-star: #f0bd1a;
+  --ui-rtg-empty: #2e2e33;
+  --ui-rtg-empty-hover: #3a3a40;
+  --ui-rtg-icon: var(--aui-muted, #8b8b92);
+  --ui-rtg-ink: var(--aui-ink, #ededed);
+  --ui-rtg-wash: #232326;
+  --ui-rtg-wash-on: #2a2a2e;
+  --ui-rtg-focus: var(--aui-focus, rgba(77, 141, 255, 0.8));
+}

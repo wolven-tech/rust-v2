@@ -1,0 +1,74 @@
+/* Palette as variables – blue, or red-orange via data-color="orange" */
+.ui-glw {
+  --ui-glw-sky-top: #2475ea;
+  --ui-glw-sky-bottom: #4ac8f5;
+  --ui-glw-sky-light: rgba(110, 225, 255, 0.55);
+  --ui-glw-white: #ffffff;
+  --ui-glw-rim: #f4fcff;
+  --ui-glw-body-1: #06a3ff;
+  --ui-glw-body-2: #18b2ff;
+  --ui-glw-body-3: #58cdff;
+  --ui-glw-eye: #cdeeff;
+  --ui-glw-eye-shade: rgba(30, 140, 230, 0.3);
+  --ui-glw-halo: rgba(30, 150, 255, 0.2);
+  --ui-glw-edge: rgba(20, 120, 240, 0.4);
+  --ui-glw-shadow: rgba(10, 90, 200, 0.55);
+  --ui-glw-ground: rgba(10, 80, 190, 0.4);
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 100%;
+  aspect-ratio: 1;
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+.ui-glw[data-color="orange"] {
+  --ui-glw-sky-top: #e94135;
+  --ui-glw-sky-bottom: #fa9842;
+  --ui-glw-sky-light: rgba(255, 205, 150, 0.5);
+  --ui-glw-rim: #fff9f5;
+  --ui-glw-body-1: #f45434;
+  --ui-glw-body-2: #fa7342;
+  --ui-glw-body-3: #ffb175;
+  --ui-glw-eye: #ffe8db;
+  --ui-glw-eye-shade: rgba(230, 90, 50, 0.3);
+  --ui-glw-halo: rgba(240, 100, 60, 0.2);
+  --ui-glw-edge: rgba(220, 80, 40, 0.4);
+  --ui-glw-shadow: rgba(170, 50, 20, 0.5);
+  --ui-glw-ground: rgba(150, 30, 10, 0.36);
+}
+.ui-glw svg { display: block; width: 100%; max-width: 320px; overflow: visible; }
+.ui-glw__halo { fill: var(--ui-glw-halo); }
+.ui-glw__edge { fill: var(--ui-glw-edge); }
+.ui-glw__shadow { fill: var(--ui-glw-shadow); }
+.ui-glw__eye-shade { stroke: var(--ui-glw-eye-shade); }
+
+/* The sky: darker at the top, lighter at the bottom, a brighter patch behind the cloud – fills the whole box */
+.ui-glw[data-bg] {
+  --ui-glw-halo: rgba(255, 255, 255, 0.55);
+  --ui-glw-edge: rgba(255, 255, 255, 0.3);
+  --ui-glw-shadow: var(--ui-glw-ground);
+  background:
+    radial-gradient(60% 55% at 62% 42%, var(--ui-glw-sky-light), transparent 70%),
+    linear-gradient(180deg, var(--ui-glw-sky-top), var(--ui-glw-sky-bottom));
+}
+
+/* Dark mode: follows a .dark class or data-theme="dark" on any ancestor, e.g. <html> – a deeper sky */
+:where(.dark, [data-theme="dark"]) .ui-glw {
+  --ui-glw-sky-top: #1659c8;
+  --ui-glw-sky-bottom: #2aa6e6;
+  --ui-glw-sky-light: rgba(90, 205, 255, 0.45);
+  --ui-glw-ground: rgba(5, 50, 140, 0.5);
+}
+:where(.dark, [data-theme="dark"]) .ui-glw[data-color="orange"] {
+  --ui-glw-sky-top: #bf2722;
+  --ui-glw-sky-bottom: #ed701d;
+  --ui-glw-sky-light: rgba(255, 175, 120, 0.42);
+  --ui-glw-ground: rgba(110, 15, 5, 0.5);
+}
+:where(.dark, [data-theme="dark"]) .ui-glw:not([data-bg]) {
+  --ui-glw-halo: rgba(255, 255, 255, 0.35);
+  --ui-glw-edge: rgba(255, 255, 255, 0.25);
+}

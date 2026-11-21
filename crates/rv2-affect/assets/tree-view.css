@@ -1,0 +1,151 @@
+/* Colors and motion as variables – override them on .ui-tv (see Theming in the docs) */
+.ui-tv {
+  --ui-tv-ink: var(--aui-ink, #171717);
+  --ui-tv-text: var(--aui-ink, #262626);
+  --ui-tv-icon: var(--aui-muted, #8f8f8f);
+  --ui-tv-meta: var(--aui-muted, #8f8f8f);
+  --ui-tv-faint: var(--aui-placeholder, #a3a3a3);
+  --ui-tv-wash: #f4f4f5;
+  --ui-tv-fill: #ededed;
+  --ui-tv-guide: var(--aui-border, #ececec);
+  --ui-tv-guide-on: #c8c8c8;
+  --ui-tv-focus: var(--aui-focus, rgba(0, 96, 226, 0.7));
+  --ui-tv-ease: var(--aui-ease, cubic-bezier(0.22, 1, 0.36, 1));
+  /* Sizes: 32px rows, 18px per level */
+  --ui-tv-h: 32px;
+  --ui-tv-pad: 8px;
+  --ui-tv-indent: 18px;
+  --ui-tv-chev: 16px;
+  --ui-tv-r: calc(var(--aui-radius-sm, 5px) + 3px);
+
+  display: block;
+  box-sizing: border-box;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-family: var(--aui-font, "Inter", "InterVariable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif);
+  font-size: 13.5px;
+  font-weight: 400;
+  line-height: 20px;
+  color: var(--ui-tv-text);
+  -webkit-font-smoothing: antialiased;
+}
+.ui-tv *, .ui-tv *::before, .ui-tv *::after { box-sizing: border-box; }
+.ui-tv__group { position: relative; min-height: 0; margin: 0; padding: 0; list-style: none; overflow: hidden; }
+.ui-tv__item { display: block; margin: 0; padding: 0; }
+
+/* A row: chevron, glyph, name, meta – one fixed height; deeper levels indent (at most to 45% of the width) */
+.ui-tv__row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  height: var(--ui-tv-h);
+  padding-inline: calc(var(--ui-tv-pad) + min(var(--ui-tv-d, 0) * var(--ui-tv-indent), 45%)) var(--ui-tv-pad);
+  overflow: hidden;
+  border-radius: var(--ui-tv-r);
+  cursor: pointer;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color 90ms ease;
+}
+.ui-tv__item[aria-selected="true"] > .ui-tv__row { background: var(--ui-tv-fill); color: var(--ui-tv-ink); }
+.ui-tv__item[aria-selected="true"] > .ui-tv__row .ui-tv__label { font-weight: 500; }
+@media (hover: hover) {
+  .ui-tv__item:not([aria-selected="true"]):not([aria-disabled="true"]) > .ui-tv__row:hover { background: var(--ui-tv-wash); }
+  .ui-tv__row:hover .ui-tv__chev { color: var(--ui-tv-meta); }
+}
+.ui-tv__item[aria-disabled="true"] > .ui-tv__row { opacity: 0.4; cursor: not-allowed; }
+
+/* The ring sits on the row, inside it – never around the open branch below */
+.ui-tv__item:focus { outline: none; }
+.ui-tv__item:focus-visible > .ui-tv__row { outline: 2px solid var(--ui-tv-focus); outline-offset: -2px; }
+
+.ui-tv__chev {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: var(--ui-tv-chev);
+  height: var(--ui-tv-chev);
+  color: var(--ui-tv-faint);
+  transition: transform 200ms var(--ui-tv-ease), color 90ms ease;
+}
+.ui-tv__chev svg { display: block; width: 14px; height: 14px; }
+.ui-tv__chev:dir(rtl) svg { transform: scaleX(-1); }
+.ui-tv__item[aria-expanded="true"] > .ui-tv__row > .ui-tv__chev { transform: rotate(90deg); }
+.ui-tv__item[aria-expanded="true"] > .ui-tv__row > .ui-tv__chev:dir(rtl) { transform: rotate(-90deg); }
+
+.ui-tv__icon { display: grid; flex: none; place-items: center; width: 16px; height: 16px; margin-inline-end: 4px; overflow: hidden; color: var(--ui-tv-icon); }
+.ui-tv__icon svg, .ui-tv__icon img { display: block; width: 100%; height: 100%; object-fit: contain; }
+.ui-tv__item[aria-selected="true"] > .ui-tv__row .ui-tv__icon { color: var(--ui-tv-ink); }
+
+/* Long names end in … – the full name on hover */
+.ui-tv__label { flex: 1 1 auto; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.ui-tv__meta {
+  flex: none;
+  max-width: 45%;
+  margin-inline-start: 8px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: 12.5px;
+  line-height: 16px;
+  color: var(--ui-tv-meta);
+  font-variant-numeric: tabular-nums;
+}
+
+/* A branch grows and shrinks in height; closed, its rows are hidden from the keyboard and screen readers too */
+.ui-tv__fold {
+  display: grid;
+  grid-template-rows: 0fr;
+  visibility: hidden;
+  transition: grid-template-rows 220ms var(--ui-tv-ease), visibility 0s linear 220ms;
+}
+.ui-tv__fold[data-open] { grid-template-rows: 1fr; visibility: visible; transition: grid-template-rows 220ms var(--ui-tv-ease), visibility 0s; }
+
+/* Guides: a thin line under each open branch's chevron – darker where the selected row is */
+.ui-tv[data-guides] .ui-tv__group::before {
+  content: "";
+  position: absolute;
+  top: 2px;
+  bottom: 2px;
+  inset-inline-start: calc(var(--ui-tv-pad) + min((var(--ui-tv-d) - 1) * var(--ui-tv-indent), 45%) + var(--ui-tv-chev) / 2 - 0.5px);
+  width: 1px;
+  background: var(--ui-tv-guide);
+  pointer-events: none;
+  transition: background-color 160ms ease;
+}
+.ui-tv[data-guides] .ui-tv__group:has(> .ui-tv__item[aria-selected="true"])::before { background: var(--ui-tv-guide-on); }
+
+.ui-tv__empty {
+  display: flex;
+  align-items: center;
+  height: var(--ui-tv-h);
+  padding-inline: calc(var(--ui-tv-pad) + min(var(--ui-tv-d, 0) * var(--ui-tv-indent), 45%) + var(--ui-tv-chev) + 5px) var(--ui-tv-pad);
+  font-size: 12.5px;
+  color: var(--ui-tv-faint);
+  white-space: nowrap;
+}
+
+/* Touch screens: rows at least 40px tall */
+@media (pointer: coarse) {
+  .ui-tv { --ui-tv-h: 40px; --ui-tv-indent: 20px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ui-tv__row, .ui-tv__chev, .ui-tv__fold, .ui-tv__fold[data-open], .ui-tv[data-guides] .ui-tv__group::before { transition: none; }
+}
+
+/* Dark mode: follows a .dark class or data-theme="dark" on any ancestor, e.g. <html> */
+:where(.dark, [data-theme="dark"]) .ui-tv {
+  --ui-tv-ink: var(--aui-ink, #ededed);
+  --ui-tv-text: var(--aui-ink, #e4e4e7);
+  --ui-tv-icon: var(--aui-muted, #8b8b92);
+  --ui-tv-meta: var(--aui-muted, #8b8b92);
+  --ui-tv-faint: var(--aui-placeholder, #5c5c63);
+  --ui-tv-wash: rgba(255, 255, 255, 0.05);
+  --ui-tv-fill: #26262a;
+  --ui-tv-guide: var(--aui-border, #2a2a2e);
+  --ui-tv-guide-on: #4a4a50;
+  --ui-tv-focus: var(--aui-focus, rgba(77, 141, 255, 0.8));
+}

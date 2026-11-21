@@ -1,0 +1,191 @@
+/* Colors and motion as variables – override them on .ui-sel (see Theming in the docs) */
+.ui-sel {
+  --ui-sel-title: var(--aui-ink, #171717);
+  --ui-sel-ink: var(--aui-ink, #171717);
+  --ui-sel-subtle: var(--aui-muted, #8f8f8f);
+  --ui-sel-faint: var(--aui-placeholder, #b5b5b5);
+  --ui-sel-icon: var(--aui-muted, #8f8f8f);
+  --ui-sel-surface: var(--aui-surface, #ffffff);
+  --ui-sel-menu: var(--aui-surface, #ffffff);
+  --ui-sel-line: var(--aui-border, #e6e6e8);
+  --ui-sel-edge: var(--aui-border-strong, #d4d4d8);
+  --ui-sel-edge-open: var(--aui-border-strong, #b4b4bb);
+  --ui-sel-glow: #f4f4f5;
+  --ui-sel-readonly: #fafafa;
+  --ui-sel-shadow-menu: 0 0 0 1px rgba(0, 0, 0, 0.06), 0 18px 40px -12px rgba(0, 0, 0, 0.18), 0 4px 12px -4px rgba(0, 0, 0, 0.06);
+  --ui-sel-danger: var(--aui-danger, #c4320a);
+  --ui-sel-danger-edge: #ff8a7a;
+  --ui-sel-danger-wash: color-mix(in srgb, var(--aui-red, #f04438) 4%, transparent);
+  --ui-sel-focus: var(--aui-focus, rgba(0, 96, 226, 0.7));
+  --ui-sel-ease: cubic-bezier(0.22, 1, 0.36, 1);
+
+  --h: 36px;
+  --px: 12px;
+  --fs: 13.5px;
+  --radius: var(--aui-radius, 10px);
+
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  min-width: 0;
+  font-family: var(--aui-font, "Inter", "InterVariable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif);
+  font-size: 13.5px;
+  line-height: 20px;
+  color: var(--ui-sel-ink);
+  -webkit-font-smoothing: antialiased;
+}
+.ui-sel[data-size="sm"] { --h: 32px; --px: 10px; --fs: 13px; --radius: calc(var(--aui-radius, 10px) - 1px); }
+.ui-sel[data-size="lg"] { --h: 40px; --px: 14px; --fs: 14px; --radius: calc(var(--aui-radius, 10px) + 2px); }
+/* Touch screens: a comfortable tap height and 16px text */
+@media (pointer: coarse) {
+  .ui-sel { --fs: 16px; }
+  .ui-sel[data-size="sm"] { --h: 36px; }
+  .ui-sel[data-size="md"] { --h: 40px; }
+  .ui-sel[data-size="lg"] { --h: 44px; }
+}
+
+.ui-sel__head { display: flex; align-items: baseline; gap: 6px; min-width: 0; padding: 0 2px; }
+.ui-sel__label { min-width: 0; font-size: 13px; font-weight: 500; color: var(--ui-sel-title); overflow-wrap: anywhere; cursor: default; }
+.ui-sel__optional { flex: none; font-size: 12px; line-height: 16px; color: var(--ui-sel-subtle); }
+
+/* The field: the Text Field's look – white with a 1px gray edge that darkens on hover and while open */
+.ui-sel__trigger {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-sizing: border-box;
+  width: 100%;
+  height: var(--h);
+  min-width: 0;
+  margin: 0;
+  padding: 0 calc(var(--px) - 2px) 0 var(--px);
+  border: 0;
+  border-radius: var(--radius);
+  background: var(--ui-sel-surface);
+  box-shadow: 0 0 0 1px var(--ui-sel-line), 0 1px 2px rgba(0, 0, 0, 0.04);
+  font: inherit;
+  font-size: var(--fs);
+  color: var(--ui-sel-ink);
+  text-align: start;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: box-shadow 140ms ease, background-color 140ms ease;
+}
+.ui-sel__trigger:hover { box-shadow: 0 0 0 1px var(--ui-sel-edge), 0 1px 2px rgba(0, 0, 0, 0.04); }
+.ui-sel[data-open] .ui-sel__trigger { box-shadow: 0 0 0 1px var(--ui-sel-edge-open), 0 1px 2px rgba(0, 0, 0, 0.04); }
+.ui-sel__trigger:focus-visible { outline: 2px solid var(--ui-sel-focus); outline-offset: 2px; }
+.ui-sel[data-invalid] .ui-sel__trigger { background: var(--ui-sel-danger-wash); box-shadow: 0 0 0 1px var(--ui-sel-danger-edge), 0 1px 2px rgba(0, 0, 0, 0.04); }
+.ui-sel__trigger:disabled { background: var(--ui-sel-readonly); box-shadow: 0 0 0 1px var(--ui-sel-line); cursor: not-allowed; }
+.ui-sel[data-disabled] { opacity: 0.55; }
+
+.ui-sel__value { flex: 1; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.ui-sel__value[data-empty] { color: var(--ui-sel-faint); }
+.ui-sel__icon { display: grid; flex: none; place-items: center; width: 16px; height: 16px; color: var(--ui-sel-icon); }
+.ui-sel__icon > svg, .ui-sel__icon > img { display: block; width: 16px; height: 16px; }
+.ui-sel__chevron { display: grid; flex: none; place-items: center; width: 16px; height: 16px; color: var(--ui-sel-icon); transition: transform 240ms var(--ui-sel-ease); }
+.ui-sel[data-open] .ui-sel__chevron { transform: rotate(180deg); }
+
+/* The list: a white card in the top layer, at the field's edge */
+.ui-sel__list {
+  position: fixed;
+  inset: auto;
+  z-index: 1000;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 5px;
+  border: 0;
+  border-radius: 14px;
+  background: var(--ui-sel-menu);
+  box-shadow: var(--ui-sel-shadow-menu);
+  color: var(--ui-sel-ink);
+  font: inherit;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  transform-origin: top center;
+  animation: ui-sel-in 200ms var(--ui-sel-ease) both;
+}
+.ui-sel__list[data-up] { transform-origin: bottom center; }
+.ui-sel__list::backdrop { display: none; }
+
+/* One soft highlight that glides between the rows */
+.ui-sel__glow {
+  position: absolute;
+  top: 0;
+  left: 5px;
+  right: 5px;
+  border-radius: 9px;
+  background: var(--ui-sel-glow);
+  pointer-events: none;
+  transition: transform 180ms var(--ui-sel-ease), height 180ms var(--ui-sel-ease);
+}
+
+.ui-sel__option {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 34px;
+  padding: 7px 10px;
+  box-sizing: border-box;
+  border-radius: 9px;
+  font-size: 13.5px;
+  line-height: 20px;
+  cursor: pointer;
+  user-select: none;
+}
+.ui-sel__option[aria-disabled] { color: var(--ui-sel-faint); cursor: default; }
+.ui-sel__option[aria-disabled] .ui-sel__icon { opacity: 0.5; }
+.ui-sel__text { display: grid; flex: 1; min-width: 0; }
+.ui-sel__option-label { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.ui-sel__option[aria-selected="true"] .ui-sel__option-label { font-weight: 500; }
+.ui-sel__option-hint { overflow: hidden; font-size: 12px; line-height: 16px; white-space: nowrap; text-overflow: ellipsis; color: var(--ui-sel-subtle); }
+.ui-sel__check { display: grid; flex: none; place-items: center; width: 16px; height: 16px; color: var(--ui-sel-ink); }
+.ui-sel__tick { stroke-dasharray: 1; animation: ui-sel-draw 280ms 40ms var(--ui-sel-ease) both; }
+@media (pointer: coarse) {
+  .ui-sel__option { min-height: 40px; font-size: 15px; }
+}
+
+.ui-sel__message { margin: 0; padding: 0 2px; font-size: 12.5px; line-height: 17px; color: var(--ui-sel-subtle); overflow-wrap: anywhere; animation: ui-sel-message 260ms var(--ui-sel-ease); }
+.ui-sel[data-invalid] .ui-sel__message { color: var(--ui-sel-danger); }
+
+@keyframes ui-sel-in {
+  from { opacity: 0; transform: translateY(-4px) scale(0.98); }
+}
+.ui-sel__list[data-up] { animation-name: ui-sel-in-up; }
+@keyframes ui-sel-in-up {
+  from { opacity: 0; transform: translateY(4px) scale(0.98); }
+}
+@keyframes ui-sel-draw {
+  from { stroke-dashoffset: 1; }
+  to { stroke-dashoffset: 0; }
+}
+@keyframes ui-sel-message {
+  from { opacity: 0; transform: translateY(-3px); filter: blur(2px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-sel *, .ui-sel__list { animation-duration: 1ms !important; }
+  .ui-sel__glow, .ui-sel__chevron, .ui-sel__trigger { transition-duration: 1ms; }
+}
+
+/* Dark mode: follows a .dark class or data-theme="dark" on any ancestor, e.g. <html> */
+:where(.dark, [data-theme="dark"]) .ui-sel {
+  --ui-sel-title: var(--aui-ink, #ededed);
+  --ui-sel-ink: var(--aui-ink, #ededed);
+  --ui-sel-subtle: var(--aui-muted, #8b8b92);
+  --ui-sel-faint: var(--aui-placeholder, #5c5c63);
+  --ui-sel-icon: var(--aui-muted, #8b8b92);
+  --ui-sel-surface: var(--aui-surface, #19191b);
+  --ui-sel-menu: var(--aui-surface, #19191b);
+  --ui-sel-line: var(--aui-border, #2a2a2e);
+  --ui-sel-edge: var(--aui-border-strong, #3a3a40);
+  --ui-sel-edge-open: var(--aui-border-strong, #4e4e55);
+  --ui-sel-glow: #26262a;
+  --ui-sel-readonly: #151517;
+  --ui-sel-shadow-menu: 0 0 0 1px rgba(255, 255, 255, 0.06), 0 18px 40px -12px rgba(0, 0, 0, 0.6);
+  --ui-sel-danger: var(--aui-danger, #ff8a7a);
+  --ui-sel-danger-edge: color-mix(in srgb, var(--aui-red, #ff6b5f) 45%, transparent);
+  --ui-sel-danger-wash: color-mix(in srgb, var(--aui-red, #ff6b5f) 6%, transparent);
+  --ui-sel-focus: var(--aui-focus, rgba(77, 141, 255, 0.8));
+}

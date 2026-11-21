@@ -1,0 +1,37 @@
+.kit-pack { font-family: var(--kit-font); color: var(--kit-ink); background: var(--kit-surface); border: 1px solid var(--kit-rule-soft); border-radius: var(--kit-radius); box-shadow: var(--kit-shadow); padding: 12px; display: flex; flex-direction: column; gap: 10px; min-width: 0; position: relative; font-variant-numeric: tabular-nums; }
+.kit-pack__head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
+.kit-pack__title { margin: 0; font-size: 15px; font-weight: 600; }
+.kit-pack__note { margin: 0; font-size: 12px; color: var(--kit-ink-muted); }
+.kit-pack__mode { display: inline-flex; margin-left: auto; border: 1px solid var(--kit-rule-soft); border-radius: 999px; overflow: hidden; }
+.kit-pack__mode button { font: inherit; font-size: 12px; color: inherit; background: transparent; border: 0; padding: 3px 10px; cursor: pointer; }
+.kit-pack__mode button[aria-checked="true"] { background: var(--kit-raised); font-weight: 600; }
+.kit-pack__agents { display: flex; gap: -4px; flex-wrap: wrap; }
+.kit-pack__agent { width: 26px; height: 26px; margin-left: -4px; border-radius: 50%; border: 2px solid var(--kit-surface); background: var(--kit-raised); font: inherit; font-size: 11px; cursor: pointer; }
+.kit-pack__agent[aria-pressed="true"] { outline: 2px solid var(--kit-accent); }
+.kit-pack__pile { border: 1px dashed var(--kit-rule); border-radius: var(--kit-radius-sm); padding: 8px; }
+.kit-pack__pile-title { margin: 0 0 6px; font-size: 12px; color: var(--kit-ink-muted); font-weight: 600; }
+.kit-pack__cards { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+.kit-pack__card { font: inherit; font-size: 12px; color: inherit; background: var(--kit-surface); border: 1px solid var(--kit-rule-soft); border-left: 3px solid var(--kit-accent); border-radius: var(--kit-radius-sm); padding: 4px 8px; max-width: 14rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; cursor: pointer; transition: opacity var(--kit-fast), transform var(--kit-slow) var(--kit-ease); animation: kit-pack-in var(--kit-slow) var(--kit-ease); }
+.kit-pack__card.is-lifted { box-shadow: var(--kit-shadow-pop); transform: translateY(-2px); }
+.kit-pack__card[data-faded="true"] { opacity: 0.3; }
+.kit-pack__grid { display: flex; flex-direction: column; overflow-x: auto; }
+.kit-pack__row { display: grid; grid-template-columns: 5.5rem repeat(var(--kit-pack-days, 4), minmax(8rem, 1fr)); gap: 6px; min-width: max-content; }
+.kit-pack__row-head { font-size: 12px; color: var(--kit-ink-muted); font-weight: 600; }
+.kit-pack__day, .kit-pack__time { padding: 4px; }
+.kit-pack__time, .kit-pack__row-head > span:first-child { position: sticky; left: 0; z-index: 1; background: var(--kit-surface); }
+.kit-pack__cell { position: relative; min-height: 4.5rem; border: 1px solid var(--kit-rule-soft); border-radius: var(--kit-radius-sm); padding: 6px; display: flex; flex-direction: column; gap: 4px; }
+.kit-pack__cell[data-elapsed="true"] { opacity: 0.45; background: var(--kit-raised); }
+.kit-pack__capacity { position: absolute; left: 0; bottom: 0; height: 3px; background: var(--kit-ok); border-radius: 0 0 var(--kit-radius-sm) var(--kit-radius-sm); transition: width var(--kit-slow) var(--kit-ease); }
+.kit-pack__panel { border: 1px solid var(--kit-rule-soft); border-radius: var(--kit-radius); box-shadow: var(--kit-shadow-pop); padding: 10px; background: var(--kit-surface); font-size: 13px; }
+.kit-pack__panel h3 { margin: 0 0 4px; font-size: 14px; }
+.kit-pack__close { font: inherit; font-size: 12px; background: transparent; border: 1px solid var(--kit-rule-soft); border-radius: var(--kit-radius-sm); padding: 2px 8px; cursor: pointer; color: inherit; }
+.kit-pack__hint { margin: 0; font-size: 12px; color: var(--kit-ink-muted); }
+.kit-pack__sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+@keyframes kit-pack-in { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
+@media (max-width: 560px) {
+  .kit-pack__grid { overflow-x: auto; }
+  .kit-pack__note { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .kit-pack *, .kit-pack *::before { animation: none !important; transition: none !important; }
+}

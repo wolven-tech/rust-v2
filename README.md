@@ -197,6 +197,8 @@ This repo follows portable rules published at [decebal-claude-skills](https://gi
 | [`docs/architecture/001-rust-v2-allsource-foundation.md`](docs/architecture/001-rust-v2-allsource-foundation.md) | 21 design decisions (D1–D21), risks (R*), open questions (OQ-*). Code comments cite these identifiers. |
 | [`docs/architecture/002-generative-ai-contract.md`](docs/architecture/002-generative-ai-contract.md) | Grounded-draft and AI runtime boundaries (AI1–AI5). |
 | [`docs/architecture/003-ui-semantic-isa.md`](docs/architecture/003-ui-semantic-isa.md) | The UI kit as a closed vocabulary — registers, operands, instructions (UI1–UI9) — and the `cargo xtask ci` check that keeps apps on it. |
+| [`docs/architecture/004-rv2-affect.md`](docs/architecture/004-rv2-affect.md) | `rv2-affect`, the Dioxus port of affectUI's 74 MIT items: why it is a separate crate outside the instruction set (AF1–AF6) and what was not ported. |
+| [`docs/specs/rv2-kit/README.md`](docs/specs/rv2-kit/README.md) | Functional specs for `rv2-kit`, the clean-room rebuild of affectUI's Pro items (AF7), and how they were written. |
 | [`docs/ledger/allsource-integration-corpus.md`](docs/ledger/allsource-integration-corpus.md) | 21 AllSource behaviours this codebase depends on (B1–B21), which are asserted in tests. |
 | [`docs/review/001-bootstrap-readiness.md`](docs/review/001-bootstrap-readiness.md) | An external review of rust-v2 as a foundation; twelve findings and what was done about each. |
 | [`docs/design-system/field-and-action-contracts.md`](docs/design-system/field-and-action-contracts.md) | Shared field labels, help/error associations, typed-control composition, busy actions and verification limits. |

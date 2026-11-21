@@ -1,0 +1,205 @@
+/* Colors and motion as variables – override them on .ui-tpk (see Theming in the docs) */
+.ui-tpk {
+  --ui-tpk-title: var(--aui-ink, #171717);
+  --ui-tpk-ink: var(--aui-ink, #171717);
+  --ui-tpk-subtle: var(--aui-muted, #8f8f8f);
+  --ui-tpk-faint: var(--aui-placeholder, #b5b5b5);
+  --ui-tpk-icon: var(--aui-muted, #8f8f8f);
+  --ui-tpk-surface: var(--aui-surface, #ffffff);
+  --ui-tpk-menu: var(--aui-overlay, var(--aui-surface, #ffffff));
+  --ui-tpk-line: var(--aui-border, #e6e6e8);
+  --ui-tpk-edge: var(--aui-border-strong, #d4d4d8);
+  --ui-tpk-edge-focus: var(--aui-border-strong, #b4b4bb);
+  --ui-tpk-glow: #f4f4f5;
+  --ui-tpk-readonly: #fafafa;
+  --ui-tpk-shadow-menu: var(--aui-shadow-popover, 0 0 0 1px rgba(0, 0, 0, 0.06), 0 18px 40px -12px rgba(0, 0, 0, 0.18), 0 4px 12px -4px rgba(0, 0, 0, 0.06));
+  --ui-tpk-danger: var(--aui-danger, #c4320a);
+  --ui-tpk-danger-edge: #ff8a7a;
+  --ui-tpk-danger-wash: color-mix(in srgb, var(--aui-red, #f04438) 4%, transparent);
+  --ui-tpk-focus: var(--aui-focus, rgba(0, 96, 226, 0.7));
+  --ui-tpk-ease: var(--aui-ease, cubic-bezier(0.22, 1, 0.36, 1));
+
+  --h: 36px;
+  --px: 12px;
+  --fs: 13.5px;
+  --radius: var(--aui-radius, 10px);
+
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  min-width: 0;
+  font-family: var(--aui-font, "Inter", "InterVariable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif);
+  font-size: 13.5px;
+  line-height: 20px;
+  color: var(--ui-tpk-ink);
+  -webkit-font-smoothing: antialiased;
+}
+.ui-tpk[data-size="sm"] { --h: 32px; --px: 10px; --fs: 13px; --radius: calc(var(--aui-radius, 10px) - 1px); }
+.ui-tpk[data-size="lg"] { --h: 40px; --px: 14px; --fs: 14px; --radius: calc(var(--aui-radius, 10px) + 2px); }
+/* Touch screens: a comfortable tap height, and 16px text so iOS doesn't zoom in on focus */
+@media (pointer: coarse) {
+  .ui-tpk { --fs: 16px; }
+  .ui-tpk[data-size="sm"] { --h: 36px; }
+  .ui-tpk[data-size="md"] { --h: 40px; }
+  .ui-tpk[data-size="lg"] { --h: 44px; }
+}
+.ui-tpk *, .ui-tpk *::before, .ui-tpk *::after { box-sizing: border-box; }
+
+.ui-tpk__head { display: flex; align-items: baseline; gap: 6px; min-width: 0; padding: 0 2px; }
+.ui-tpk__label { min-width: 0; font-size: 13px; font-weight: 500; color: var(--ui-tpk-title); overflow-wrap: anywhere; cursor: default; }
+.ui-tpk__optional { flex: none; font-size: 12px; line-height: 16px; color: var(--ui-tpk-subtle); }
+
+/* The field: white with a 1px gray edge; hover and typing only darken that edge – no ring on a text field */
+.ui-tpk__box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  height: var(--h);
+  min-width: 0;
+  padding: 0 calc(var(--px) - 6px) 0 var(--px);
+  border-radius: var(--radius);
+  background: var(--ui-tpk-surface);
+  box-shadow: 0 0 0 1px var(--ui-tpk-line), 0 1px 2px rgba(0, 0, 0, 0.04);
+  cursor: text;
+  transition: box-shadow 160ms ease, background-color 160ms ease;
+}
+.ui-tpk__box:hover { box-shadow: 0 0 0 1px var(--ui-tpk-edge), 0 1px 2px rgba(0, 0, 0, 0.04); }
+.ui-tpk__box:focus-within, .ui-tpk[data-open] .ui-tpk__box { box-shadow: 0 0 0 1px var(--ui-tpk-edge-focus), 0 1px 2px rgba(0, 0, 0, 0.04); }
+.ui-tpk[data-invalid] .ui-tpk__box { background: var(--ui-tpk-danger-wash); box-shadow: 0 0 0 1px var(--ui-tpk-danger-edge), 0 1px 2px rgba(0, 0, 0, 0.04); }
+.ui-tpk[data-disabled] .ui-tpk__box { background: var(--ui-tpk-readonly); box-shadow: 0 0 0 1px var(--ui-tpk-line); cursor: not-allowed; }
+.ui-tpk[data-disabled] { opacity: 0.55; }
+.ui-tpk__icon { display: grid; flex: none; place-items: center; width: 16px; height: 16px; color: var(--ui-tpk-icon); }
+.ui-tpk__icon svg { display: block; }
+.ui-tpk__input {
+  flex: 1;
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  outline: none;
+  background: none;
+  font: inherit;
+  font-size: var(--fs);
+  font-variant-numeric: tabular-nums;
+  color: var(--ui-tpk-ink);
+  text-overflow: ellipsis;
+}
+.ui-tpk__input::placeholder { color: var(--ui-tpk-faint); opacity: 1; }
+.ui-tpk__input:disabled { cursor: not-allowed; }
+.ui-tpk__toggle {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 7px;
+  background: none;
+  color: var(--ui-tpk-icon);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color 140ms ease, color 140ms ease;
+}
+.ui-tpk__toggle svg { display: block; transition: transform 240ms var(--ui-tpk-ease); }
+.ui-tpk__toggle:hover:not(:disabled) { background: var(--ui-tpk-glow); color: var(--ui-tpk-ink); }
+.ui-tpk__toggle:focus-visible { outline: 2px solid var(--ui-tpk-focus); outline-offset: -2px; }
+.ui-tpk__toggle:disabled { cursor: not-allowed; }
+.ui-tpk[data-open] .ui-tpk__toggle svg { transform: rotate(180deg); }
+
+/* The list: a white card in the top layer, at the field's edge */
+.ui-tpk__list {
+  position: fixed;
+  inset: auto;
+  z-index: 1000;
+  margin: 0;
+  padding: 5px;
+  border: 0;
+  border-radius: 14px;
+  background: var(--ui-tpk-menu);
+  box-shadow: var(--ui-tpk-shadow-menu);
+  color: var(--ui-tpk-ink);
+  font: inherit;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  transform-origin: top center;
+  animation: ui-tpk-in 200ms var(--ui-tpk-ease) both;
+}
+.ui-tpk__list[data-up] { transform-origin: bottom center; animation-name: ui-tpk-in-up; }
+.ui-tpk__list::backdrop { display: none; }
+
+/* One soft highlight that glides between the rows */
+.ui-tpk__glow {
+  position: absolute;
+  top: 0;
+  left: 5px;
+  right: 5px;
+  border-radius: 9px;
+  background: var(--ui-tpk-glow);
+  pointer-events: none;
+  transition: transform 180ms var(--ui-tpk-ease), height 180ms var(--ui-tpk-ease);
+}
+
+.ui-tpk__option {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 34px;
+  padding: 0 10px;
+  border-radius: 9px;
+  font-size: 13.5px;
+  line-height: 20px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
+}
+.ui-tpk__time { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.ui-tpk__option[aria-selected="true"] .ui-tpk__time { font-weight: 500; }
+.ui-tpk__check { display: grid; flex: none; place-items: center; width: 16px; height: 16px; color: var(--ui-tpk-ink); }
+.ui-tpk__check svg { display: block; }
+.ui-tpk__tick { stroke-dasharray: 1; animation: ui-tpk-draw 280ms 40ms var(--ui-tpk-ease) both; }
+@media (pointer: coarse) {
+  .ui-tpk__option { height: 40px; font-size: 15px; }
+  .ui-tpk__toggle { width: 34px; height: 34px; }
+}
+
+.ui-tpk__message { margin: 0; padding: 0 2px; font-size: 12.5px; line-height: 17px; color: var(--ui-tpk-subtle); overflow-wrap: anywhere; animation: ui-tpk-message 260ms var(--ui-tpk-ease); }
+.ui-tpk[data-invalid] .ui-tpk__message { color: var(--ui-tpk-danger); }
+
+@keyframes ui-tpk-in { from { opacity: 0; transform: translateY(-4px) scale(0.98); } }
+@keyframes ui-tpk-in-up { from { opacity: 0; transform: translateY(4px) scale(0.98); } }
+@keyframes ui-tpk-draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+@keyframes ui-tpk-message { from { opacity: 0; transform: translateY(-3px); filter: blur(2px); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-tpk *, .ui-tpk *::before, .ui-tpk *::after { animation-duration: 1ms !important; transition-duration: 1ms !important; }
+}
+
+/* Dark mode: follows a .dark class or data-theme="dark" on any ancestor, e.g. <html> */
+:where(.dark, [data-theme="dark"]) .ui-tpk {
+  --ui-tpk-title: var(--aui-ink, #ededed);
+  --ui-tpk-ink: var(--aui-ink, #ededed);
+  --ui-tpk-subtle: var(--aui-muted, #8b8b92);
+  --ui-tpk-faint: var(--aui-placeholder, #5c5c63);
+  --ui-tpk-icon: var(--aui-muted, #8b8b92);
+  --ui-tpk-surface: var(--aui-surface, #19191b);
+  --ui-tpk-menu: var(--aui-overlay, var(--aui-surface, #19191b));
+  --ui-tpk-line: var(--aui-border, #2a2a2e);
+  --ui-tpk-edge: var(--aui-border-strong, #3a3a40);
+  --ui-tpk-edge-focus: var(--aui-border-strong, #4e4e55);
+  --ui-tpk-glow: #26262a;
+  --ui-tpk-readonly: #151517;
+  --ui-tpk-shadow-menu: var(--aui-shadow-popover, 0 0 0 1px rgba(255, 255, 255, 0.06), 0 18px 40px -12px rgba(0, 0, 0, 0.6));
+  --ui-tpk-danger: var(--aui-danger, #ff8a7a);
+  --ui-tpk-danger-edge: color-mix(in srgb, var(--aui-red, #ff6b5f) 45%, transparent);
+  --ui-tpk-danger-wash: color-mix(in srgb, var(--aui-red, #ff6b5f) 6%, transparent);
+  --ui-tpk-focus: var(--aui-focus, rgba(77, 141, 255, 0.8));
+  color-scheme: dark;
+}
