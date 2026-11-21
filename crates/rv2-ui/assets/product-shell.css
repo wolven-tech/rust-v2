@@ -311,6 +311,24 @@
   box-shadow: inset 0 -0.3rem 0 var(--rv2-shell-accent);
 }
 
+.rv2-process-rail[data-layout="column"] ol {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.rv2-process-rail[data-layout="column"] .rv2-process-step + .rv2-process-step {
+  border-left: 0;
+  border-top: 1px solid var(--rv2-shell-rule);
+}
+
+.rv2-process-rail[data-layout="column"] .rv2-process-step.is-current {
+  box-shadow: inset 0.3rem 0 0 var(--rv2-shell-accent);
+}
+
+.rv2-process-rail[data-layout="column"] .rv2-process-step > a,
+.rv2-process-rail[data-layout="column"] .rv2-process-step > div {
+  min-height: 3.5rem;
+}
+
 .rv2-process-step > a:hover {
   background: var(--rv2-shell-accent-soft);
 }
@@ -350,8 +368,10 @@
 }
 
 @media (prefers-reduced-motion: no-preference) {
+  /* Not `both`: a retained transform makes this the containing block for
+     every `position: fixed` descendant, and the toaster lands off-screen. */
   .rv2-page-entrance {
-    animation: rv2-page-entrance 0.42s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation: rv2-page-entrance 0.42s cubic-bezier(0.22, 1, 0.36, 1) backwards;
   }
 
   .rv2-product-header a,
