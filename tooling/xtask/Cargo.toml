@@ -9,5 +9,5 @@ version.workspace = true
 publish = false
 
 [dependencies]
-rv2-kit = { path = "../kit" }
+rv2-isa = { path = "../isa" }
 sha2.workspace = true

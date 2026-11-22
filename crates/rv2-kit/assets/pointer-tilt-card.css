@@ -1,0 +1,87 @@
+/* --kit-tilt-x and --kit-tilt-y are written by the listeners in pointer_tilt_card.rs. */
+.kit-tilt {
+  --kit-tilt-x: 0;
+  --kit-tilt-y: 0;
+  --kit-tilt-max: 8deg;
+  --kit-glare-x: calc(50% - var(--kit-tilt-x) * 50%);
+  --kit-glare-y: calc(50% - var(--kit-tilt-y) * 50%);
+  position: relative;
+  background: var(--kit-surface);
+  border: 1px solid var(--kit-rule-soft);
+  border-radius: var(--kit-radius-lg);
+  box-shadow: var(--kit-shadow);
+  transform: perspective(900px)
+    rotateX(calc(var(--kit-tilt-y) * var(--kit-tilt-max)))
+    rotateY(calc(var(--kit-tilt-x) * var(--kit-tilt-max) * -1));
+  transition: transform var(--kit-slow) var(--kit-ease);
+  min-width: 0;
+  max-width: 100%;
+}
+
+.kit-tilt[data-strength="subtle"] {
+  --kit-tilt-max: 4deg;
+}
+.kit-tilt[data-strength="strong"] {
+  --kit-tilt-max: 12deg;
+}
+
+.kit-tilt[data-active] {
+  transition: transform var(--kit-fast) var(--kit-ease);
+}
+
+.kit-tilt[data-nudge] {
+  animation: kit-tilt-nudge var(--kit-slow) var(--kit-ease);
+}
+
+.kit-tilt__content {
+  position: relative;
+  z-index: 1;
+  padding: var(--kit-gap);
+}
+
+.kit-tilt__glare {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--kit-slow) var(--kit-ease);
+  background: radial-gradient(
+    circle at var(--kit-glare-x) var(--kit-glare-y),
+    color-mix(in srgb, var(--kit-on-ink) 45%, transparent),
+    transparent 55%
+  );
+}
+
+.kit-tilt[data-active] .kit-tilt__glare {
+  opacity: 1;
+}
+
+@keyframes kit-tilt-nudge {
+  0%,
+  100% {
+    transform: perspective(900px) rotateX(0deg) rotateY(0deg);
+  }
+  40% {
+    transform: perspective(900px) rotateX(calc(var(--kit-tilt-max) * -0.5)) rotateY(0deg);
+  }
+}
+
+/* Reduced motion: flat card, static glare at the upper edge. */
+@media (prefers-reduced-motion: reduce) {
+  .kit-tilt,
+  .kit-tilt[data-active] {
+    transform: none;
+    transition: none;
+    --kit-glare-x: 50%;
+    --kit-glare-y: 0%;
+  }
+  .kit-tilt[data-nudge] {
+    animation: none;
+  }
+  .kit-tilt__glare {
+    opacity: 1;
+    transition: none;
+  }
+}

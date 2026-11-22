@@ -1,0 +1,194 @@
+/* rv2-kit's tokens. Every colour is an rv2 register, so an app's theme
+ * (UI2) reaches the kit; the fallbacks are rv2's own light values from
+ * crates/rv2-ui/assets/theme.css, because Tailwind emits only the registers
+ * an app uses and a var() naming a missing one makes the token invalid.
+ * Also declared on [data-theme]: a custom property resolves var() where it
+ * is declared, so tokens set only on :root never see a theme applied to a
+ * subtree. */
+/* Native controls (time and date pickers, selects, scrollbars) take their
+ * colours from color-scheme, not from the tokens. */
+[data-theme="light"] {
+  color-scheme: light;
+}
+[data-theme="dark"] {
+  color-scheme: dark;
+}
+
+:root,
+[data-theme] {
+  --kit-font: var(--font-sans, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif);
+  --kit-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+
+  --kit-ground: var(--color-ground, #f8fafc);
+  --kit-surface: var(--color-surface, #ffffff);
+  --kit-raised: var(--color-raised, #f1f5f9);
+
+  --kit-ink: var(--color-ink, #0f172a);
+  --kit-ink-hover: var(--color-ink-hover, #334155);
+  --kit-ink-muted: var(--color-ink-muted, #475569);
+  /* Same as muted, not read from --color-ink-faint: that register is 2.56:1 on
+   * a light surface, and any blend lighter than muted fell under 4.5:1 on the
+   * raised and ground fills text also sits on. Tertiary text differs by size. */
+  --kit-ink-faint: var(--kit-ink-muted);
+  --kit-on-ink: var(--color-on-ink, #ffffff);
+
+  --kit-rule: var(--color-rule, #cbd5e1);
+  --kit-rule-soft: var(--color-rule-soft, #e2e8f0);
+  --kit-accent: var(--color-accent, #0f172a);
+
+  --kit-ok: var(--color-takeable, #10b981);
+  --kit-ok-soft: var(--color-takeable-soft, #d1fae5);
+  --kit-ok-ink: var(--color-takeable-ink, #064e3b);
+  --kit-warn: var(--color-caution, #f59e0b);
+  --kit-warn-ink: var(--color-caution-ink, #92400e);
+  --kit-fault: var(--color-fault, #ef4444);
+  --kit-fault-ink: var(--color-fault-ink, #991b1b);
+
+  --kit-radius-sm: 6px;
+  --kit-radius: 10px;
+  --kit-radius-lg: 14px;
+  --kit-gap: 12px;
+  --kit-shadow: 0 1px 2px rgb(15 23 42 / 0.06), 0 4px 12px rgb(15 23 42 / 0.06);
+  --kit-shadow-pop: 0 8px 28px rgb(15 23 42 / 0.16);
+  --kit-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --kit-fast: 140ms;
+  --kit-slow: 320ms;
+
+  /* Identity: tells agents, tools and people apart. Picked by index, never by
+   * hue name, so a theme can swap the whole set. No orange or red: those hues
+   * mean warn and fault, and an agent must never read as a failure. */
+  --kit-id-1: var(--color-id-1, #2563eb);
+  --kit-id-2: var(--color-id-2, #7c3aed);
+  --kit-id-3: var(--color-id-3, #0f766e);
+  --kit-id-4: var(--color-id-4, #a21caf);
+  --kit-id-5: var(--color-id-5, #4338ca);
+  --kit-id-6: var(--color-id-6, #475569);
+
+  /* Chart series, kept apart from identity so a legend never implies a
+   * series is an agent. No orange or red, for the same reason as identity. */
+  --kit-series-1: var(--color-series-1, #6366f1);
+  --kit-series-2: var(--color-series-2, #14b8a6);
+  --kit-series-3: var(--color-series-3, #0ea5e9);
+  --kit-series-4: var(--color-series-4, #8b5cf6);
+  --kit-series-5: var(--color-series-5, #d946ef);
+  --kit-series-6: var(--color-series-6, #64748b);
+
+  /* The one primary action colour. Every primary button uses this pair; a
+   * deliberately risky action (granting access, deleting) uses the risky pair
+   * instead of inventing a second primary. */
+  --kit-primary: var(--kit-accent);
+  --kit-on-primary: var(--kit-on-ink);
+  --kit-risky: var(--kit-fault-ink);
+  --kit-on-risky: var(--kit-on-ink);
+
+  /* Tinted marks: a component supplies only its hue and composes
+   * oklch(var(--kit-tint-bg-l) var(--kit-tint-bg-c) var(--its-hue)). */
+  --kit-tint-bg-l: 95%;
+  --kit-tint-bg-c: 0.035;
+  --kit-tint-ink-l: 38%;
+  --kit-tint-ink-c: 0.1;
+  --kit-tint-strong-l: 62%;
+  --kit-tint-strong-c: 0.14;
+
+  --kit-shadow-card: 0 1px 2px rgb(15 23 42 / 0.05), 0 2px 8px rgb(15 23 42 / 0.04);
+  --kit-scrim: rgb(15 23 42 / 0.2);
+  --kit-glass: rgb(255 255 255 / 0.6);
+  --kit-think: oklch(56% 0.14 290);
+  --kit-radius-card: 12px;
+  --kit-radius-pill: 999px;
+
+  --kit-space-1: 4px;
+  --kit-space-2: 8px;
+  --kit-space-3: 12px;
+  --kit-space-4: 16px;
+  --kit-space-5: 20px;
+  --kit-space-6: 24px;
+  --kit-text-xs: 11px;
+  --kit-text-sm: 12px;
+  --kit-text-md: 13px;
+  --kit-text-lg: 14px;
+  --kit-text-xl: 16px;
+}
+
+/* Must follow the block above: same specificity as [data-theme], so order
+ * decides. */
+[data-theme="dark"],
+.dark {
+  --kit-id-1: var(--color-id-1, #93c5fd);
+  --kit-id-2: var(--color-id-2, #c4b5fd);
+  --kit-id-3: var(--color-id-3, #5eead4);
+  --kit-id-4: var(--color-id-4, #f0abfc);
+  --kit-id-5: var(--color-id-5, #a5b4fc);
+  --kit-id-6: var(--color-id-6, #cbd5e1);
+
+  --kit-series-1: var(--color-series-1, #818cf8);
+  --kit-series-2: var(--color-series-2, #2dd4bf);
+  --kit-series-3: var(--color-series-3, #38bdf8);
+  --kit-series-4: var(--color-series-4, #a78bfa);
+  --kit-series-5: var(--color-series-5, #e879f9);
+  --kit-series-6: var(--color-series-6, #94a3b8);
+
+  --kit-tint-bg-l: 30%;
+  --kit-tint-bg-c: 0.05;
+  --kit-tint-ink-l: 88%;
+  --kit-tint-ink-c: 0.08;
+  --kit-tint-strong-l: 72%;
+  --kit-tint-strong-c: 0.14;
+
+  --kit-shadow-card: 0 1px 2px rgb(0 0 0 / 0.3), 0 2px 8px rgb(0 0 0 / 0.25);
+  --kit-scrim: rgb(0 0 0 / 0.5);
+  --kit-glass: rgb(255 255 255 / 0.06);
+  --kit-think: oklch(80% 0.11 290);
+}
+
+/* Soft fills derive from the identity colour and the surface, so they follow
+ * both without a second palette. */
+:root,
+[data-theme],
+.dark {
+  --kit-id-1-soft: color-mix(in srgb, var(--kit-id-1) 14%, var(--kit-surface));
+  --kit-id-2-soft: color-mix(in srgb, var(--kit-id-2) 14%, var(--kit-surface));
+  --kit-id-3-soft: color-mix(in srgb, var(--kit-id-3) 14%, var(--kit-surface));
+  --kit-id-4-soft: color-mix(in srgb, var(--kit-id-4) 14%, var(--kit-surface));
+  --kit-id-5-soft: color-mix(in srgb, var(--kit-id-5) 14%, var(--kit-surface));
+  --kit-id-6-soft: color-mix(in srgb, var(--kit-id-6) 14%, var(--kit-surface));
+}
+
+/* Components size to their box including padding; a `width: 100%` root with
+ * padding otherwise overflows its container. */
+[class^="kit-"],
+[class*=" kit-"],
+[class^="kit-"]::before,
+[class*=" kit-"]::before,
+[class^="kit-"]::after,
+[class*=" kit-"]::after {
+  box-sizing: border-box;
+}
+
+.kit-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* !important because component rules that start an animation are often more
+ * specific than any per-component reduce block, which then silently loses. */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --kit-fast: 1ms;
+    --kit-slow: 1ms;
+  }
+  [class^="kit-"],
+  [class*=" kit-"],
+  [class^="kit-"]::before,
+  [class*=" kit-"]::before,
+  [class^="kit-"]::after,
+  [class*=" kit-"]::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+  }
+}

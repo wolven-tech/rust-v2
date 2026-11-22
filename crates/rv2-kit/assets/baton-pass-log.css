@@ -1,0 +1,504 @@
+.kit-baton__sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.kit-baton {
+  box-sizing: border-box;
+  container-type: inline-size;
+  display: flex;
+  flex-direction: column;
+  gap: var(--kit-space-3);
+  width: 100%;
+  max-width: 1120px;
+  margin-inline: auto;
+  color: var(--kit-ink);
+  font-family: var(--kit-font);
+  font-variant-numeric: tabular-nums;
+}
+
+.kit-baton__pick {
+  margin: 0;
+  padding: var(--kit-space-2) var(--kit-space-3);
+  border-radius: var(--kit-radius-sm);
+  background: var(--kit-raised);
+  border: 1px dashed var(--kit-rule);
+  font-size: var(--kit-text-sm);
+  line-height: 16px;
+}
+
+.kit-baton__relay {
+  display: flex;
+  flex-direction: column;
+  gap: var(--kit-space-3);
+}
+
+/* The tint is set on the agent card, the element carrying its inline hue. */
+.kit-baton__agent {
+  --kit-baton-tint-bg: oklch(var(--kit-tint-bg-l) var(--kit-tint-bg-c) var(--kit-baton-hue, 250));
+  --kit-baton-tint-ink: oklch(var(--kit-tint-ink-l) var(--kit-tint-ink-c) var(--kit-baton-hue, 250));
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-content: start;
+  order: var(--kit-baton-stack, 0);
+  gap: var(--kit-space-1);
+  padding: var(--kit-space-3) var(--kit-space-3);
+  border-radius: var(--kit-radius-card);
+  border: 1px solid var(--kit-rule-soft);
+  background: var(--kit-surface);
+  box-shadow: var(--kit-shadow-card);
+  min-width: 0;
+  transition: border-color var(--kit-fast) var(--kit-ease), transform var(--kit-fast) var(--kit-ease);
+}
+
+.kit-baton__agent[data-target="true"] {
+  border-color: var(--kit-ink-muted);
+  transform: translateY(-1px);
+}
+
+.kit-baton__agent-head {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px var(--kit-space-2);
+  min-height: 28px;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  background: transparent;
+  border: 0;
+  border-radius: var(--kit-radius-sm);
+  cursor: pointer;
+}
+
+.kit-baton__agent-head:hover .kit-baton__name {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.kit-baton__agent-head:focus-visible {
+  outline: 2px solid var(--kit-accent);
+  outline-offset: 2px;
+}
+
+.kit-baton__mark {
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: 24px;
+  height: 24px;
+  border-radius: var(--kit-radius-sm);
+  background: var(--kit-baton-tint-bg);
+  color: var(--kit-baton-tint-ink);
+  font-size: var(--kit-text-xs);
+  font-weight: 600;
+  line-height: 1;
+}
+
+.kit-baton__name {
+  font-size: var(--kit-text-md);
+  font-weight: 600;
+  line-height: 18px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+.kit-baton__model {
+  font-size: var(--kit-text-sm);
+  line-height: 16px;
+  color: var(--kit-ink-muted);
+}
+
+.kit-baton__state {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 20px;
+  padding: 0 var(--kit-space-2) 0 7px;
+  border-radius: var(--kit-radius-pill);
+  background: var(--kit-raised);
+  font-size: var(--kit-text-sm);
+  line-height: 1;
+  color: var(--kit-ink-muted);
+  white-space: nowrap;
+}
+
+.kit-baton__state::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.kit-baton__agent[data-state="working"] .kit-baton__state {
+  background: var(--kit-ok-soft);
+  color: var(--kit-ok-ink);
+}
+
+.kit-baton__agent[data-state="working"] .kit-baton__state::before {
+  animation: kit-baton-breathe 1.8s var(--kit-ease) infinite;
+}
+
+.kit-baton__agent[data-state="ready"] .kit-baton__state {
+  color: var(--kit-ink);
+}
+
+.kit-baton__role,
+.kit-baton__slot {
+  margin: 0;
+  font-size: var(--kit-text-sm);
+  line-height: 16px;
+  color: var(--kit-ink-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.kit-baton__lane {
+  order: var(--kit-baton-stack, 0);
+  display: flex;
+  flex-direction: column;
+  gap: var(--kit-space-2);
+  min-width: 0;
+  padding-left: var(--kit-space-3);
+  border-left: 1px solid var(--kit-rule);
+}
+
+.kit-baton__lane-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 2px var(--kit-space-2);
+  padding: 4px var(--kit-space-2);
+  border: 1px solid var(--kit-rule-soft);
+  border-radius: var(--kit-radius-sm);
+  background: var(--kit-raised);
+  font-size: var(--kit-text-sm);
+  line-height: 16px;
+  color: var(--kit-ink-muted);
+}
+
+.kit-baton__lane-pair {
+  font-weight: 600;
+  color: var(--kit-ink);
+  overflow-wrap: anywhere;
+}
+
+.kit-baton__lane-count {
+  white-space: nowrap;
+}
+
+.kit-baton__lane-cards {
+  display: grid;
+  gap: var(--kit-space-2);
+  padding-top: var(--kit-space-2);
+  mask-image: linear-gradient(to bottom, currentColor 60%, color-mix(in srgb, currentColor 35%, transparent));
+}
+
+.kit-baton__links {
+  display: none;
+  overflow: visible;
+}
+
+.kit-baton__link {
+  fill: none;
+  stroke: var(--kit-rule);
+  stroke-width: 1.5;
+  vector-effect: non-scaling-stroke;
+}
+
+.kit-baton__transfer {
+  border-radius: var(--kit-radius-card);
+  border: 1px solid var(--kit-rule-soft);
+  background: var(--kit-raised);
+  min-width: 0;
+}
+
+.kit-baton__transfer[data-transit="true"] {
+  animation: kit-baton-arrive var(--kit-slow) var(--kit-ease) both;
+}
+
+.kit-baton__transfer-head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 2px;
+  width: 100%;
+  padding: var(--kit-space-2) var(--kit-space-3);
+  font: inherit;
+  font-size: var(--kit-text-md);
+  line-height: 18px;
+  text-align: left;
+  color: inherit;
+  background: transparent;
+  border: 0;
+  border-radius: var(--kit-radius-card);
+  cursor: pointer;
+}
+
+.kit-baton__transfer-head:hover {
+  background: color-mix(in srgb, var(--kit-surface) 50%, transparent);
+}
+
+.kit-baton__transfer-head:focus-visible {
+  outline: 2px solid var(--kit-accent);
+  outline-offset: -2px;
+}
+
+.kit-baton__preview {
+  font-size: var(--kit-text-sm);
+  line-height: 16px;
+  color: var(--kit-ink-muted);
+  overflow-wrap: anywhere;
+}
+
+.kit-baton__memo,
+.kit-baton__stage {
+  font-size: var(--kit-text-sm);
+  line-height: 16px;
+  color: var(--kit-ink-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* The route names both agents and the count; it wraps so neither is cut off in a narrow lane. */
+.kit-baton__route {
+  font-size: var(--kit-text-sm);
+  line-height: 16px;
+  color: var(--kit-ink-muted);
+  overflow-wrap: anywhere;
+}
+
+.kit-baton__status[data-status="good"] {
+  color: var(--kit-ok-ink);
+}
+
+.kit-baton__status[data-status="warning"] {
+  color: var(--kit-warn-ink);
+}
+
+.kit-baton__items {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--kit-space-1);
+  margin: 0;
+  padding: 0 var(--kit-space-3) var(--kit-space-2);
+  list-style: none;
+}
+
+.kit-baton__item {
+  min-width: 0;
+}
+
+.kit-baton__item-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px var(--kit-space-2);
+  width: 100%;
+  min-height: 36px;
+  padding: 6px var(--kit-space-2);
+  font: inherit;
+  font-size: var(--kit-text-md);
+  line-height: 18px;
+  text-align: left;
+  color: inherit;
+  background: var(--kit-surface);
+  border: 1px solid var(--kit-rule-soft);
+  border-radius: var(--kit-radius-sm);
+  cursor: pointer;
+  transition: background var(--kit-fast) var(--kit-ease);
+}
+
+.kit-baton__item-head:hover {
+  background: color-mix(in srgb, var(--kit-raised) 60%, var(--kit-surface));
+}
+
+.kit-baton__item-head:focus-visible {
+  outline: 2px solid var(--kit-accent);
+  outline-offset: 2px;
+}
+
+.kit-baton__item-text {
+  flex: 1 1 8rem;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.kit-baton__item[data-dropped="true"] .kit-baton__item-text {
+  text-decoration: line-through;
+  color: var(--kit-ink-muted);
+}
+
+.kit-baton__kind,
+.kit-baton__dropped {
+  flex: 0 0 auto;
+  font-size: var(--kit-text-xs);
+  line-height: 18px;
+  padding: 0 7px;
+  border-radius: var(--kit-radius-pill);
+  background: var(--kit-raised);
+  color: var(--kit-ink-muted);
+  white-space: nowrap;
+}
+
+.kit-baton__dropped {
+  background: color-mix(in srgb, var(--kit-fault) 16%, transparent);
+  color: var(--kit-fault-ink);
+}
+
+.kit-baton__reason {
+  display: grid;
+  gap: var(--kit-space-1);
+  padding: 6px 2px;
+  font-size: var(--kit-text-sm);
+  line-height: 16px;
+  color: var(--kit-ink-muted);
+}
+
+.kit-baton__add-back {
+  justify-self: start;
+  font: inherit;
+  font-size: var(--kit-text-sm);
+  height: 28px;
+  padding: 0 var(--kit-space-2);
+  color: var(--kit-ink);
+  background: var(--kit-surface);
+  border: 1px solid var(--kit-rule);
+  border-radius: var(--kit-radius-sm);
+  cursor: pointer;
+}
+
+.kit-baton__add-back:hover {
+  background: var(--kit-raised);
+}
+
+.kit-baton__pending {
+  display: grid;
+  gap: 10px;
+  padding-top: var(--kit-space-3);
+  border-top: 1px solid var(--kit-rule-soft);
+}
+
+.kit-baton__pending-title {
+  margin: 0;
+  font-size: var(--kit-text-md);
+  font-weight: 600;
+  line-height: 18px;
+}
+
+.kit-baton__pending-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--kit-space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.kit-baton__card-pick {
+  display: grid;
+  gap: 2px;
+  min-width: 160px;
+  padding: 10px var(--kit-space-3);
+  font: inherit;
+  text-align: left;
+  color: inherit;
+  background: var(--kit-surface);
+  border: 1px solid var(--kit-rule-soft);
+  border-radius: var(--kit-radius-card);
+  box-shadow: var(--kit-shadow-card);
+  cursor: grab;
+  transition: border-color var(--kit-fast) var(--kit-ease), background var(--kit-fast) var(--kit-ease);
+}
+
+.kit-baton__card-pick:hover {
+  background: color-mix(in srgb, var(--kit-raised) 60%, var(--kit-surface));
+}
+
+.kit-baton__card-pick:focus-visible {
+  outline: 2px solid var(--kit-accent);
+  outline-offset: 2px;
+}
+
+.kit-baton__card-pick[aria-pressed="true"] {
+  border-color: var(--kit-ink);
+}
+
+.kit-baton__caption {
+  font-size: var(--kit-text-md);
+  font-weight: 600;
+  line-height: 18px;
+}
+
+.kit-baton__empty {
+  margin: 0;
+  font-size: var(--kit-text-md);
+  color: var(--kit-ink-faint);
+}
+
+/* Below this width three columns leave each lane too narrow, so the relay stacks in order. */
+@container (min-width: 720px) {
+  .kit-baton__relay {
+    display: grid;
+    grid-template-columns: repeat(var(--kit-baton-cols, 1), minmax(0, 1fr));
+    gap: 0;
+    align-items: start;
+  }
+
+  /* Side margins leave each card's centre on its column centre, where the links land. */
+  .kit-baton__agent {
+    grid-column: var(--kit-baton-col);
+    grid-row: 1;
+    margin-inline: var(--kit-space-2);
+  }
+
+  .kit-baton__links {
+    display: block;
+    grid-column: 1 / -1;
+    grid-row: 2;
+    width: 100%;
+    height: 24px;
+  }
+
+  /* A lane spans the two columns it joins, so its centre sits on the gap between them. */
+  .kit-baton__lane {
+    grid-column: var(--kit-baton-col) / span 2;
+    grid-row: 3;
+    justify-self: center;
+    width: 45%;
+    padding-left: 0;
+    border-left: 0;
+  }
+}
+
+@keyframes kit-baton-arrive {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+}
+
+@keyframes kit-baton-breathe {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kit-baton__agent,
+  .kit-baton__transfer,
+  .kit-baton__state::before {
+    transition: none;
+    animation: none;
+  }
+}

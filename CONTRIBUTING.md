@@ -38,7 +38,7 @@ no way to tell which won.
 | No new HTTP dependency brings `native-tls` | `deny.toml` bans `openssl-sys` and `native-tls`. **Check the TLS feature of anything that speaks HTTP** — two dependencies here defaulted to native TLS, so treat it as the expectation |
 | Every crate declares its layer and depends only on strictly lower ones | Review, and the crate-level doc comment on each `lib.rs` |
 | An app writes no raw `button`, `input`, `select`, `textarea`, `h1`–`h4` or `a`; it uses the `rv2-ui` instruction, or marks the exception `isa-raw-ok: <why>` | `cargo xtask ci`, step `apps speak the kit` (UI7 in [`docs/architecture/003-ui-semantic-isa.md`](docs/architecture/003-ui-semantic-isa.md)) |
-| A public `rv2-ui` component has an intent row in the Instructions table, and `docs/design-system/kit-index.{md,json}` is regenerated with it (`cargo run -p rv2-kit -- index --write`) | `cargo xtask ci`, step `component index is current` |
+| A public `rv2-ui` component has an intent row in the Instructions table, and `docs/design-system/kit-index.{md,json}` is regenerated with it (`cargo run -p rv2-isa -- index --write`) | `cargo xtask ci`, step `component index is current` |
 | A colour is named for its job, and `class` on a kit component carries layout only | `no hardcoded hues` for the first; review for the second (UI1, UI5) |
 | A background job is idempotent and safe to skip | Review. `rv2-jobs` runs **every job on every instance** — a job whose second concurrent execution is a defect does not belong there |
 | A metric label has bounded cardinality | Review. Label by matched route, never by path or entity id |

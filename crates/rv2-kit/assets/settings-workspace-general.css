@@ -1,0 +1,45 @@
+.kit-gen__slug {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  min-width: 0;
+  width: 100%;
+}
+
+.kit-gen__prefix {
+  color: var(--kit-ink-muted);
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.kit-gen__slug-input {
+  flex: 1 1 160px;
+  width: auto;
+  min-width: 0;
+}
+
+.kit-gen__warning {
+  color: var(--kit-warn-ink);
+  font-size: 13px;
+  margin: 0;
+  flex-basis: 100%;
+}
+
+.kit-gen__danger {
+  background: var(--kit-fault);
+  border-color: var(--kit-fault);
+  color: var(--kit-on-ink);
+}
+
+.kit-gen__danger:disabled {
+  background: var(--kit-raised);
+  border-color: var(--kit-rule-soft);
+  color: var(--kit-ink-faint);
+}
+
+@container kit-set (max-width: 640px) {
+  .kit-gen__slug-input {
+    width: 100%;
+  }
+}

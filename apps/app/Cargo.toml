@@ -7,6 +7,7 @@ version.workspace = true
 # Never published: internal workspace crate. Also what makes cargo-deny's
 # `allow-wildcard-paths` apply — it is skipped for publishable crates.
 publish = false
+autoexamples = false
 
 [lib]
 name = "app"
@@ -34,3 +35,23 @@ rv2-api-types.workspace = true
 rv2-client.workspace = true
 rv2-ui.workspace = true
 uuid.workspace = true
+
+[dev-dependencies]
+rv2-affect.workspace = true
+rv2-kit.workspace = true
+
+[[example]]
+name = "affect_gallery"
+path = "examples/affect_gallery.rs"
+
+[[example]]
+name = "command_select"
+path = "examples/command_select.rs"
+
+[[example]]
+name = "kit_gallery"
+path = "examples/kit_gallery.rs"
+
+[[example]]
+name = "longhand_gallery"
+path = "examples/longhand_gallery.rs"

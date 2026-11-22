@@ -1,0 +1,325 @@
+.kit-spend {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  min-width: 0;
+  background: var(--kit-ground);
+  color: var(--kit-ink);
+  font-family: var(--kit-font);
+}
+
+.kit-spend__thread {
+  display: grid;
+  align-content: start;
+  gap: 18px;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  padding: 24px 16px;
+  box-sizing: border-box;
+  max-width: 820px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.kit-spend__composer {
+  padding: 8px 16px 16px;
+  border-top: 1px solid var(--kit-rule-soft);
+  min-width: 0;
+}
+
+.kit-spend__question p {
+  margin: 0;
+  justify-self: end;
+  max-width: 80%;
+  padding: 10px 14px;
+  border-radius: var(--kit-radius-lg);
+  background: var(--kit-raised);
+  overflow-wrap: anywhere;
+}
+
+.kit-spend__question {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.kit-spend__answer {
+  display: grid;
+  gap: 14px;
+  min-width: 0;
+}
+
+.kit-spend__note {
+  margin: 0;
+  color: var(--kit-ink-muted);
+}
+
+.kit-spend__empty {
+  display: grid;
+  gap: 12px;
+  justify-items: start;
+  padding: 24px 0;
+}
+
+.kit-spend__starters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.kit-spend__starter,
+.kit-spend__rules,
+.kit-spend__ask {
+  min-height: 34px;
+  padding: 0 12px;
+  border: 1px solid var(--kit-rule);
+  border-radius: var(--kit-radius-pill);
+  background: var(--kit-surface);
+  color: var(--kit-ink);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.kit-spend__cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 10px;
+  min-width: 0;
+}
+
+.kit-spend__chart,
+.kit-spend__plan {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 14px;
+  border: 1px solid var(--kit-rule-soft);
+  border-radius: var(--kit-radius-lg);
+  background: var(--kit-surface);
+  min-width: 0;
+}
+
+.kit-spend__chart-title {
+  font-weight: 650;
+}
+
+.kit-spend__bars-wrap {
+  min-width: 0;
+  overflow-x: auto;
+}
+
+/* 640 is the viewBox width: a narrower box would scale the 11px labels below readable size, so the chart scrolls. */
+.kit-spend__bars {
+  width: 100%;
+  min-width: 640px;
+  height: auto;
+  min-height: 200px;
+  overflow: visible;
+}
+
+.kit-spend__segment {
+  fill: color-mix(in srgb, var(--kit-ink) 70%, transparent);
+  stroke: var(--kit-surface);
+  stroke-width: 1;
+}
+
+.kit-spend__segment[data-part="1"] { fill: color-mix(in srgb, var(--kit-ok) 80%, transparent); }
+.kit-spend__segment[data-part="2"] { fill: color-mix(in srgb, var(--kit-warn) 80%, transparent); }
+.kit-spend__segment[data-part="3"] { fill: color-mix(in srgb, var(--kit-fault) 60%, transparent); }
+
+.kit-spend__bar {
+  cursor: pointer;
+}
+
+.kit-spend__bar:focus-visible {
+  outline: 2px solid var(--kit-ink-hover);
+  outline-offset: 2px;
+}
+
+.kit-spend__bar:focus-visible .kit-spend__segment {
+  stroke: var(--kit-ink-hover);
+  stroke-width: 3;
+}
+
+.kit-spend__bar[data-selected] .kit-spend__segment {
+  stroke: var(--kit-ink);
+  stroke-width: 2;
+}
+
+.kit-spend__axis {
+  fill: var(--kit-ink-muted);
+  font-size: 11px;
+  text-anchor: middle;
+}
+
+.kit-spend__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.kit-spend__table th,
+.kit-spend__table td {
+  padding: 5px 6px;
+  border-bottom: 1px solid var(--kit-rule-soft);
+  text-align: left;
+}
+
+.kit-spend__num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.kit-spend__total td {
+  font-weight: 650;
+}
+
+.kit-spend__chart-foot {
+  margin: 0;
+  color: var(--kit-ink-muted);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+
+.kit-spend__trend {
+  min-width: 0;
+}
+
+.kit-spend__levers {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.kit-spend__lever {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.kit-spend__lever-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 14px;
+}
+
+.kit-spend__lever-value,
+.kit-spend__lever-saving,
+.kit-spend__lever-detail {
+  color: var(--kit-ink-muted);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  margin: 0;
+}
+
+.kit-spend__lever input[type="range"] {
+  width: 100%;
+  min-height: 28px;
+  accent-color: var(--kit-accent);
+}
+
+.kit-spend__switch {
+  appearance: none;
+  position: relative;
+  flex: none;
+  width: 40px;
+  height: 22px;
+  margin: 0;
+  border: 1px solid var(--kit-rule);
+  border-radius: var(--kit-radius-pill);
+  background: var(--kit-raised);
+  cursor: pointer;
+}
+
+.kit-spend__switch::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  border-radius: var(--kit-radius-pill);
+  background: var(--kit-surface);
+  box-shadow: var(--kit-shadow);
+  transition: transform var(--kit-fast) var(--kit-ease);
+}
+
+.kit-spend__switch:checked {
+  background: var(--kit-accent);
+  border-color: var(--kit-accent);
+}
+
+.kit-spend__switch:checked::after {
+  transform: translateX(18px);
+}
+
+.kit-spend__switch:focus-visible {
+  outline: 2px solid var(--kit-ink-hover);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kit-spend__switch::after {
+    transition: none;
+  }
+}
+
+.kit-spend__summary {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.kit-spend__figure {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.kit-spend__figure-label {
+  color: var(--kit-ink-muted);
+  font-size: 12px;
+}
+
+.kit-spend__figure-value {
+  font-size: 18px;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+}
+
+.kit-spend__working {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  color: var(--kit-ink-muted);
+  font-size: 13px;
+}
+
+.kit-spend__mark {
+  width: 10px;
+  height: 10px;
+  border-radius: var(--kit-radius-pill);
+  background: var(--kit-accent);
+  animation: kit-spend-pulse 1.4s var(--kit-ease) infinite;
+}
+
+.kit-spend__skeleton {
+  display: grid;
+  gap: 14px;
+}
+
+@keyframes kit-spend-pulse {
+  50% { opacity: 0.35; }
+}
+
+@media (max-width: 480px) {
+  .kit-spend__summary {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

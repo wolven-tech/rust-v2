@@ -236,9 +236,9 @@ an element whose markup is the thing being demonstrated — and the
 directly above it. "The instruction did not support my case" is not an
 exception; it is an operand to add.
 
-The check (`apps speak the kit`, `tooling/kit/src/isa.rs`) scans
+The check (`apps speak the kit`, `tooling/isa/src/isa.rs`) scans
 `apps/*/src`. Repositories built on the kit run the same scan with
-`rv2-kit check`; each finding names the instructions that replace the raw
+`rv2-isa check`; each finding names the instructions that replace the raw
 element. It does not scan `examples/`, which preview the kit's own markup,
 or the kit itself, whose job is emitting markup. At the time of writing no
 exception exists; the first one was `apps/hiring`'s skip link.

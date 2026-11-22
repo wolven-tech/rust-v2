@@ -1,0 +1,195 @@
+/* Colors and motion as variables – override them on .ui-dpkc (see Theming in the docs) */
+.ui-dpkc {
+  --ui-dpkc-title: var(--aui-ink, rgba(0, 0, 0, 0.88));
+  --ui-dpkc-strong: var(--aui-ink, #000000);
+  --ui-dpkc-ink: var(--aui-ink, rgba(0, 0, 0, 0.88));
+  --ui-dpkc-subtle: var(--aui-muted, rgba(0, 0, 0, 0.45));
+  --ui-dpkc-faint: var(--aui-placeholder, rgba(0, 0, 0, 0.27));
+  --ui-dpkc-icon: var(--aui-muted, rgba(0, 0, 0, 0.447));
+  --ui-dpkc-surface: var(--aui-surface, #ffffff);
+  --ui-dpkc-card: var(--aui-overlay, var(--aui-surface, #ffffff));
+  --ui-dpkc-wash: rgba(0, 0, 0, 0.045);
+  --ui-dpkc-readonly: rgba(0, 0, 0, 0.02);
+  /* The chosen day: a dark chip; today: blue text and a dot */
+  --ui-dpkc-chip: var(--aui-primary, rgba(0, 0, 0, 0.88));
+  --ui-dpkc-on-chip: var(--aui-on-primary, #fcfcfc);
+  --ui-dpkc-accent: rgba(0, 96, 226, 0.765);
+  --ui-dpkc-today-on-chip: var(--aui-blue, #4fb0fe);
+  --ui-dpkc-shadow: 0 0 0 0.5px var(--aui-border, rgba(0, 0, 0, 0.08)), 0 1px 1px -1px rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --ui-dpkc-shadow-hover: 0 0 0 0.5px var(--aui-border-strong, rgba(0, 0, 0, 0.13)), 0 1px 1px -1px rgba(0, 0, 0, 0.12), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  --ui-dpkc-shadow-open: 0 0 0 1px var(--aui-border-strong, rgba(0, 0, 0, 0.28)), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  --ui-dpkc-shadow-pop: var(--aui-shadow-popover, 0 0 0 0.5px rgba(0, 0, 0, 0.08), 0 8px 24px -6px rgba(0, 0, 0, 0.14), 0 2px 6px -2px rgba(0, 0, 0, 0.06));
+  --ui-dpkc-danger: var(--aui-danger, #c4320a);
+  --ui-dpkc-danger-edge: color-mix(in srgb, var(--aui-red, #f04438) 55%, transparent);
+  --ui-dpkc-focus: var(--aui-focus, rgba(0, 96, 226, 0.7));
+  --ui-dpkc-ease: var(--aui-ease, cubic-bezier(0.22, 1, 0.36, 1));
+  --ui-dpkc-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  --h: 32px;
+  --px: 10px;
+  --fs: 13px;
+  --radius: var(--aui-radius, 7px);
+  --cell: 32px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  font-family: var(--aui-font, "Inter", "InterVariable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif);
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--ui-dpkc-ink);
+  -webkit-font-smoothing: antialiased;
+}
+.ui-dpkc[data-size="sm"] { --h: 28px; --px: 8px; --radius: calc(var(--aui-radius, 7px) - 1px); }
+.ui-dpkc[data-size="lg"] { --h: 36px; --px: 12px; --fs: 14px; --radius: calc(var(--aui-radius, 7px) + 1px); }
+/* Touch screens: a comfortable tap height, 16px text and bigger days */
+@media (pointer: coarse) {
+  .ui-dpkc { --fs: 16px; --cell: 40px; }
+  .ui-dpkc[data-size="sm"] { --h: 34px; }
+  .ui-dpkc[data-size="md"] { --h: 38px; }
+  .ui-dpkc[data-size="lg"] { --h: 40px; }
+}
+.ui-dpkc *, .ui-dpkc *::before, .ui-dpkc *::after { box-sizing: border-box; }
+:where(.ui-dpkc) button { margin: 0; padding: 0; border: 0; background: none; font: inherit; color: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+:where(.ui-dpkc) svg { display: block; flex: none; }
+.ui-dpkc button:focus-visible { outline: 2px solid var(--ui-dpkc-focus); outline-offset: 2px; }
+
+.ui-dpkc__head { display: flex; align-items: baseline; gap: 6px; min-width: 0; }
+.ui-dpkc__label { min-width: 0; font-weight: 500; color: var(--ui-dpkc-title); overflow-wrap: anywhere; cursor: default; }
+.ui-dpkc__optional { flex: none; font-size: 12px; line-height: 16px; color: var(--ui-dpkc-subtle); }
+
+/* The field: the Text Field's look – white, a hairline edge that firms up on hover and while open */
+.ui-dpkc__trigger {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  height: var(--h);
+  min-width: 0;
+  padding: 0 calc(var(--px) - 2px) 0 var(--px);
+  border-radius: var(--radius);
+  background: var(--ui-dpkc-surface);
+  box-shadow: var(--ui-dpkc-shadow);
+  font-size: var(--fs);
+  color: var(--ui-dpkc-ink);
+  text-align: start;
+  transition: box-shadow 140ms ease, background-color 140ms ease;
+}
+.ui-dpkc__trigger:hover { box-shadow: var(--ui-dpkc-shadow-hover); }
+.ui-dpkc[data-open] .ui-dpkc__trigger { box-shadow: var(--ui-dpkc-shadow-open); }
+.ui-dpkc[data-invalid] .ui-dpkc__trigger { box-shadow: 0 0 0 1px var(--ui-dpkc-danger-edge), 0 1px 2px 0 rgba(0, 0, 0, 0.05); }
+.ui-dpkc__trigger:disabled { background: var(--ui-dpkc-readonly); box-shadow: 0 0 0 0.5px rgba(0, 0, 0, 0.06); cursor: not-allowed; }
+.ui-dpkc[data-disabled] { opacity: 0.55; }
+.ui-dpkc__icon, .ui-dpkc__chevron { display: grid; flex: none; place-items: center; width: 16px; height: 16px; color: var(--ui-dpkc-icon); }
+.ui-dpkc__chevron { transition: transform 240ms var(--ui-dpkc-ease); }
+.ui-dpkc[data-open] .ui-dpkc__chevron { transform: rotate(180deg); }
+.ui-dpkc__value { flex: 1; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-variant-numeric: tabular-nums; animation: ui-dpkc-value 240ms var(--ui-dpkc-ease) both; }
+.ui-dpkc__value[data-empty] { color: var(--ui-dpkc-faint); animation: none; }
+
+/* The card: white in the top layer, a 0.5px edge and a soft drop */
+.ui-dpkc__panel {
+  position: fixed;
+  inset: auto;
+  z-index: 1000;
+  width: calc(var(--cell) * 7 + 16px);
+  max-width: calc(100vw - 16px);
+  margin: 0;
+  padding: 8px;
+  border: 0;
+  border-radius: 10px;
+  background: var(--ui-dpkc-card);
+  box-shadow: var(--ui-dpkc-shadow-pop);
+  color: var(--ui-dpkc-ink);
+  font: inherit;
+  font-size: 13px;
+  overflow: hidden;
+  transform-origin: top left;
+  animation: ui-dpkc-open 200ms var(--ui-dpkc-ease) both;
+}
+.ui-dpkc__panel:dir(rtl) { transform-origin: top right; }
+.ui-dpkc__panel[data-up] { transform-origin: bottom left; animation-name: ui-dpkc-open-up; }
+.ui-dpkc__panel::backdrop { display: none; }
+
+/* Month name between the two arrows */
+.ui-dpkc__nav { display: flex; align-items: center; gap: 4px; height: 28px; margin-bottom: 4px; }
+.ui-dpkc__title { flex: 1; min-width: 0; overflow: hidden; text-align: center; font-weight: 500; white-space: nowrap; color: var(--ui-dpkc-strong); }
+.ui-dpkc__title > span { display: block; overflow: hidden; text-overflow: ellipsis; animation: ui-dpkc-fade 220ms var(--ui-dpkc-ease) both; }
+.ui-dpkc__arrow { display: grid; flex: none; place-items: center; width: 28px; height: 28px; border-radius: 6px; color: var(--ui-dpkc-icon); transition: background-color 120ms ease, color 120ms ease; }
+.ui-dpkc__arrow:hover:not(:disabled) { background: var(--ui-dpkc-wash); color: var(--ui-dpkc-ink); }
+.ui-dpkc__arrow:disabled { opacity: 0.35; cursor: default; }
+.ui-dpkc__arrow:dir(rtl) svg { transform: scaleX(-1); }
+
+/* The month: weekday heads and six weeks of days that touch */
+.ui-dpkc__grid { display: grid; }
+.ui-dpkc__weekdays, .ui-dpkc__week { display: grid; grid-template-columns: repeat(7, minmax(0, var(--cell))); justify-content: center; }
+.ui-dpkc__weekday { height: 24px; overflow: hidden; font-size: 10px; font-weight: 500; line-height: 24px; letter-spacing: 0.5px; text-transform: uppercase; text-align: center; white-space: nowrap; color: var(--ui-dpkc-subtle); }
+.ui-dpkc__weekday abbr { text-decoration: none; cursor: default; }
+.ui-dpkc__weeks { animation: ui-dpkc-slide 260ms var(--ui-dpkc-ease) both; }
+.ui-dpkc__weeks[data-dir="-1"] { animation-name: ui-dpkc-slide-back; }
+.ui-dpkc__cell { display: grid; height: var(--cell); }
+.ui-dpkc__day {
+  position: relative;
+  margin: 2px;
+  border-radius: 6px;
+  font-size: 13px;
+  line-height: 20px;
+  font-variant-numeric: tabular-nums;
+  color: var(--ui-dpkc-ink);
+  transition: background-color 120ms ease, color 120ms ease, transform 160ms var(--ui-dpkc-ease);
+}
+.ui-dpkc__day:hover:not([aria-disabled]):not([data-chosen]) { background: var(--ui-dpkc-wash); }
+.ui-dpkc__day:active:not([aria-disabled]) { transform: scale(0.94); }
+/* Days of the months around: quieter, still a press away */
+.ui-dpkc__day[data-outside] { color: var(--ui-dpkc-subtle); }
+.ui-dpkc__day[aria-disabled] { color: var(--ui-dpkc-faint); cursor: default; }
+/* The days touch each other: their ring sits inside */
+.ui-dpkc .ui-dpkc__day:focus-visible { outline-offset: -2px; }
+/* Today: blue, with a small dot under the number */
+.ui-dpkc__day[aria-current="date"] { color: var(--ui-dpkc-accent); font-weight: 500; }
+.ui-dpkc__day[aria-current="date"]::after { content: ""; position: absolute; left: 50%; bottom: 3px; width: 4px; height: 4px; margin-left: -2px; border-radius: 50%; background: currentColor; }
+/* The chosen day: a dark chip that pops in */
+.ui-dpkc__day[data-chosen] { background: var(--ui-dpkc-chip); color: var(--ui-dpkc-on-chip); font-weight: 500; animation: ui-dpkc-pick 380ms var(--ui-dpkc-spring); }
+.ui-dpkc__day[data-chosen][aria-current="date"]::after { background: var(--ui-dpkc-today-on-chip); }
+
+.ui-dpkc__message { margin: 0; font-size: 12px; line-height: 16px; color: var(--ui-dpkc-subtle); overflow-wrap: anywhere; animation: ui-dpkc-message 260ms var(--ui-dpkc-ease); }
+.ui-dpkc[data-invalid] .ui-dpkc__message { color: var(--ui-dpkc-danger); }
+
+@keyframes ui-dpkc-open { from { opacity: 0; transform: translateY(-4px) scale(0.98); } }
+@keyframes ui-dpkc-open-up { from { opacity: 0; transform: translateY(4px) scale(0.98); } }
+@keyframes ui-dpkc-slide { from { opacity: 0; transform: translateX(12px); } }
+@keyframes ui-dpkc-slide-back { from { opacity: 0; transform: translateX(-12px); } }
+@keyframes ui-dpkc-fade { from { opacity: 0; } }
+@keyframes ui-dpkc-value { from { opacity: 0; transform: translateY(3px); } }
+@keyframes ui-dpkc-pick { 0% { transform: scale(0.82); } 60% { transform: scale(1.06); } 100% { transform: scale(1); } }
+@keyframes ui-dpkc-message { from { opacity: 0; transform: translateY(-3px); filter: blur(2px); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-dpkc *, .ui-dpkc *::before, .ui-dpkc *::after { animation-duration: 1ms !important; transition-duration: 1ms !important; }
+}
+
+/* Dark mode: follows a .dark class or data-theme="dark" on any ancestor, e.g. <html> */
+:where(.dark, [data-theme="dark"]) .ui-dpkc {
+  --ui-dpkc-title: var(--aui-ink, rgba(255, 255, 255, 0.92));
+  --ui-dpkc-strong: var(--aui-ink, #ffffff);
+  --ui-dpkc-ink: var(--aui-ink, rgba(255, 255, 255, 0.9));
+  --ui-dpkc-subtle: var(--aui-muted, rgba(255, 255, 255, 0.46));
+  --ui-dpkc-faint: var(--aui-placeholder, rgba(255, 255, 255, 0.28));
+  --ui-dpkc-icon: var(--aui-muted, rgba(255, 255, 255, 0.5));
+  --ui-dpkc-surface: var(--aui-surface, #1c1c1e);
+  --ui-dpkc-card: var(--aui-overlay, var(--aui-surface, #1f1f22));
+  --ui-dpkc-wash: rgba(255, 255, 255, 0.07);
+  --ui-dpkc-readonly: rgba(255, 255, 255, 0.03);
+  --ui-dpkc-chip: var(--aui-primary, rgba(255, 255, 255, 0.9));
+  --ui-dpkc-on-chip: var(--aui-on-primary, #111113);
+  --ui-dpkc-accent: var(--aui-blue, #4fb0fe);
+  --ui-dpkc-today-on-chip: #0070d6;
+  --ui-dpkc-shadow: 0 0 0 0.5px var(--aui-border, rgba(255, 255, 255, 0.14)), 0 1px 2px 0 rgba(0, 0, 0, 0.4);
+  --ui-dpkc-shadow-hover: 0 0 0 0.5px var(--aui-border-strong, rgba(255, 255, 255, 0.2)), 0 1px 2px 0 rgba(0, 0, 0, 0.4);
+  --ui-dpkc-shadow-open: 0 0 0 1px var(--aui-border-strong, rgba(255, 255, 255, 0.3)), 0 1px 2px 0 rgba(0, 0, 0, 0.4);
+  --ui-dpkc-shadow-pop: var(--aui-shadow-popover, 0 0 0 0.5px rgba(255, 255, 255, 0.12), 0 12px 32px -8px rgba(0, 0, 0, 0.6));
+  --ui-dpkc-danger: var(--aui-danger, #ff8a7a);
+  --ui-dpkc-danger-edge: color-mix(in srgb, var(--aui-red, #ff6b5f) 50%, transparent);
+  --ui-dpkc-focus: var(--aui-focus, rgba(77, 141, 255, 0.8));
+  color-scheme: dark;
+}

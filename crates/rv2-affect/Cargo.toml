@@ -1,0 +1,14 @@
+[package]
+name = "rv2-affect"
+description = "Dioxus port of affectUI's MIT components. WASM-safe (layer 2), opt-in beside rv2-ui."
+edition.workspace = true
+license.workspace = true
+version.workspace = true
+publish = false
+
+[dependencies]
+# Same renderer-agnostic set as rv2-ui: the apps choose `web` / `fullstack`.
+dioxus = { workspace = true, default-features = false, features = ["lib", "mounted"] }
+
+[dev-dependencies]
+dioxus-ssr.workspace = true

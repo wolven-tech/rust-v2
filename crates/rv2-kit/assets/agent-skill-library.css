@@ -1,0 +1,436 @@
+.kit-asl {
+  display: grid;
+  gap: var(--kit-gap);
+  min-width: 0;
+  padding: 16px;
+  color: var(--kit-ink);
+  font-family: var(--kit-font);
+  background: var(--kit-ground);
+  overflow-x: hidden;
+}
+
+.kit-asl > * {
+  min-width: 0;
+}
+
+.kit-asl__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.kit-asl__title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.kit-asl__meta {
+  margin: 0;
+  font-size: 13px;
+  color: var(--kit-ink-muted);
+}
+
+.kit-asl__filters {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.kit-asl__chips {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  max-width: 100%;
+}
+
+.kit-asl__chip {
+  min-height: 32px;
+  padding: 0 12px;
+  border: 1px solid var(--kit-rule-soft);
+  border-radius: var(--kit-radius-pill);
+  background: var(--kit-surface);
+  color: var(--kit-ink-muted);
+  font: inherit;
+  font-size: 13px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.kit-asl__chip[aria-checked="true"] {
+  border-color: var(--kit-accent);
+  color: var(--kit-ink);
+}
+
+.kit-asl__search,
+.kit-asl__input {
+  min-height: 32px;
+  padding: 6px 10px;
+  border: 1px solid var(--kit-rule);
+  border-radius: var(--kit-radius-sm);
+  background: var(--kit-surface);
+  color: var(--kit-ink);
+  font: inherit;
+  font-size: 14px;
+  width: 220px;
+  max-width: 100%;
+}
+
+.kit-asl__primary,
+.kit-asl__ghost,
+.kit-asl__danger,
+.kit-asl__entry,
+.kit-asl__link {
+  min-height: 32px;
+  padding: 0 12px;
+  border-radius: var(--kit-radius-sm);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.kit-asl__primary {
+  border: 1px solid var(--kit-accent);
+  background: var(--kit-accent);
+  color: var(--kit-on-ink);
+  font-weight: 500;
+}
+
+.kit-asl__primary:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+
+.kit-asl__ghost,
+.kit-asl__entry {
+  border: 1px solid var(--kit-rule);
+  background: var(--kit-surface);
+  color: var(--kit-ink);
+}
+
+.kit-asl__entry[aria-checked="true"] {
+  border-color: var(--kit-accent);
+}
+
+.kit-asl__danger {
+  border: 1px solid var(--kit-fault-ink);
+  background: var(--kit-fault-ink);
+  color: var(--kit-on-ink);
+}
+
+.kit-asl__link {
+  border: 0;
+  background: transparent;
+  color: var(--kit-ink-muted);
+  text-decoration: underline;
+  padding: 0 4px;
+}
+
+.kit-asl__chip:focus-visible,
+.kit-asl__primary:focus-visible,
+.kit-asl__ghost:focus-visible,
+.kit-asl__entry:focus-visible,
+.kit-asl__card:focus-visible {
+  outline: 2px solid var(--kit-accent);
+  outline-offset: 2px;
+}
+
+.kit-asl__dialog,
+.kit-asl__panel {
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+  border: 1px solid var(--kit-rule-soft);
+  border-radius: var(--kit-radius-lg);
+  background: var(--kit-surface);
+  box-shadow: var(--kit-shadow);
+}
+
+.kit-asl__entries {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.kit-asl__describe,
+.kit-asl__upload,
+.kit-asl__draft {
+  display: grid;
+  gap: 8px;
+}
+
+.kit-asl__describe textarea {
+  resize: vertical;
+}
+
+.kit-asl__draft {
+  padding: 10px 12px;
+  border-radius: var(--kit-radius);
+  background: var(--kit-raised);
+  font-size: 13px;
+}
+
+.kit-asl__draft p {
+  margin: 0;
+}
+
+.kit-asl__steps {
+  margin: 0;
+  padding-inline-start: 20px;
+  display: grid;
+  gap: 4px;
+}
+
+.kit-asl__create {
+  display: flex;
+  gap: 8px;
+  align-items: end;
+  flex-wrap: wrap;
+}
+
+.kit-asl__input[aria-invalid="true"] {
+  border-color: var(--kit-fault-ink);
+}
+
+.kit-asl__error {
+  font-size: 12px;
+  color: var(--kit-fault-ink);
+}
+
+.kit-asl__error:empty {
+  display: none;
+}
+
+.kit-asl__field {
+  display: grid;
+  gap: 4px;
+  font-size: 13px;
+  color: var(--kit-ink-muted);
+}
+
+.kit-asl__body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(260px, 340px);
+  gap: var(--kit-gap);
+  align-items: start;
+}
+
+.kit-asl__sections {
+  display: grid;
+  gap: 16px;
+  min-width: 0;
+}
+
+.kit-asl__section-title {
+  margin: 0 0 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--kit-ink-muted);
+}
+
+.kit-asl__grid {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.kit-asl__item {
+  position: relative;
+  min-width: 0;
+  display: grid;
+}
+
+.kit-asl__card {
+  width: 100%;
+  display: grid;
+  gap: 4px;
+  padding: 12px 56px 12px 12px;
+  border: 1px solid var(--kit-rule-soft);
+  border-radius: var(--kit-radius);
+  background: var(--kit-surface);
+  color: inherit;
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+  box-shadow: var(--kit-shadow);
+}
+
+.kit-asl__card--discover {
+  cursor: default;
+  padding-right: 12px;
+  margin-bottom: 6px;
+}
+
+.kit-asl__card[aria-current="true"] {
+  border-color: var(--kit-accent);
+}
+
+.kit-asl__item[data-enabled="false"] .kit-asl__card {
+  opacity: 0.55;
+}
+
+.kit-asl__card-name {
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.kit-asl__tag {
+  justify-self: start;
+  padding: 1px 8px;
+  border-radius: var(--kit-radius-pill);
+  background: var(--kit-raised);
+  font-size: 12px;
+}
+
+.kit-asl__switch {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+}
+
+.kit-asl__item > .kit-asl__primary {
+  width: 100%;
+  margin-top: -1px;
+  border-radius: 0 0 var(--kit-radius) var(--kit-radius);
+}
+
+.kit-asl__card--discover {
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.kit-asl__switch--panel {
+  position: relative;
+  top: auto;
+  right: auto;
+  align-self: start;
+  max-width: 100%;
+}
+
+@media (max-width: 480px) {
+  .kit-asl__switch {
+    right: 8px;
+  }
+
+  .kit-asl__switch:not(.kit-asl__switch--panel) .ui-swc__text {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+}
+
+.kit-asl__panel-head {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.kit-asl__panel-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.kit-asl__block {
+  display: grid;
+  gap: 4px;
+  font-size: 13px;
+}
+
+.kit-asl__list {
+  margin: 0;
+  padding: 0 0 0 18px;
+  display: grid;
+  gap: 4px;
+}
+
+.kit-asl__bars {
+  height: 64px;
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+}
+
+.kit-asl__bar {
+  flex: 1 1 0;
+  min-height: 2px;
+  border-radius: 2px 2px 0 0;
+  background: var(--kit-ink-muted);
+  transform-origin: bottom;
+  animation: kit-asl-grow var(--kit-slow) var(--kit-ease);
+}
+
+@keyframes kit-asl-grow {
+  from {
+    transform: scaleY(0);
+  }
+  to {
+    transform: scaleY(1);
+  }
+}
+
+.kit-asl__confirm {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+  font-size: 13px;
+}
+
+.kit-asl__meta {
+  font-size: 12px;
+  color: var(--kit-ink-faint);
+}
+
+.kit-asl__empty {
+  display: grid;
+  gap: 10px;
+  justify-items: start;
+  padding: 24px;
+  border: 1px dashed var(--kit-rule);
+  border-radius: var(--kit-radius);
+  color: var(--kit-ink-muted);
+}
+
+.kit-asl__ph {
+  height: 96px;
+  border-radius: var(--kit-radius);
+  background: var(--kit-rule-soft);
+}
+
+@media (max-width: 900px) {
+  .kit-asl__body {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .kit-asl {
+    padding: 12px;
+  }
+
+  .kit-asl__grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .kit-asl__search {
+    width: 100%;
+  }
+}

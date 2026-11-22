@@ -1,0 +1,112 @@
+.ui-rbc {
+  --ui-rbc-ink: var(--aui-ink, rgba(0, 0, 0, 0.88));
+  --ui-rbc-text: var(--aui-muted, rgba(0, 0, 0, 0.61));
+  --ui-rbc-icon: var(--aui-muted, rgba(0, 0, 0, 0.447));
+  --ui-rbc-line: var(--aui-border, rgba(0, 0, 0, 0.06));
+  --ui-rbc-wash: var(--aui-subtle, rgba(0, 0, 0, 0.03));
+  --ui-rbc-accent: rgba(0, 96, 226, 0.765);
+  --ui-rbc-mine: rgba(0, 96, 226, 0.05);
+  --ui-rbc-mine-line: rgba(0, 96, 226, 0.35);
+  --ui-rbc-focus: var(--aui-focus, rgba(0, 96, 226, 0.7));
+  --ui-rbc-ease: cubic-bezier(0.85, 0, 0.15, 1);
+  --ui-rbc-h: 28px;
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+  max-width: 100%;
+  font-family: var(--aui-font, "Inter", "InterVariable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif);
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 20px;
+  color: var(--ui-rbc-text);
+  -webkit-font-smoothing: antialiased;
+}
+.ui-rbc *, .ui-rbc *::before, .ui-rbc *::after { box-sizing: border-box; }
+:where(.ui-rbc) button { margin: 0; padding: 0; border: 0; background: none; font: inherit; color: inherit; cursor: pointer; }
+:where(.ui-rbc) svg { display: block; flex: none; }
+
+/* A chip: the tab-chip look – inset hairline, radius 6. Without a count it is a square-ish icon chip */
+.ui-rbc__btn {
+  position: relative;
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  height: var(--ui-rbc-h);
+  padding: 0 8px;
+  border-radius: calc(var(--aui-radius-sm, 5px) + 1px);
+  box-shadow: inset 0 0 0 0.5px var(--ui-rbc-line);
+  color: var(--ui-rbc-text);
+  transition: background-color 90ms ease, box-shadow 160ms ease, color 160ms ease;
+  -webkit-tap-highlight-color: transparent;
+}
+.ui-rbc__btn:focus-visible { outline: 2px solid var(--ui-rbc-focus); outline-offset: 2px; }
+@media (hover: hover) {
+  .ui-rbc__btn:hover { background-color: var(--ui-rbc-wash); color: var(--ui-rbc-ink); }
+  .ui-rbc__btn:hover .ui-rbc__icon { color: var(--ui-rbc-ink); }
+}
+/* Your own reaction: a minimal blue tint with a light blue hairline */
+.ui-rbc__btn[aria-pressed="true"],
+.ui-rbc__btn[aria-pressed="true"]:hover {
+  background-color: var(--ui-rbc-mine);
+  box-shadow: inset 0 0 0 0.5px var(--ui-rbc-mine-line);
+  color: var(--ui-rbc-accent);
+}
+
+.ui-rbc__icon { display: grid; place-items: center; flex: none; width: 16px; height: 16px; color: var(--ui-rbc-icon); transition: color 160ms ease; }
+.ui-rbc__fill { fill: transparent; transition: fill 160ms ease; }
+.ui-rbc__btn[aria-pressed="true"] .ui-rbc__icon { color: var(--ui-rbc-accent); }
+.ui-rbc__btn[aria-pressed="true"] .ui-rbc__fill { fill: currentColor; }
+/* Press pop: shrinks, springs past full size, settles */
+.ui-rbc__icon[data-pop] { animation: ui-rbc-pop 320ms cubic-bezier(0.65, 0, 0.35, 1); }
+
+/* Count: the width glides, digits roll */
+.ui-rbc__count {
+  display: inline-block;
+  overflow: hidden;
+  width: 0;
+  height: 20px;
+}
+.ui-rbc__count[data-smooth] { transition: width 400ms var(--ui-rbc-ease); }
+.ui-rbc__digits {
+  display: inline-flex;
+  padding: 0 2px 0 6px;
+  line-height: 20px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.ui-rbc__digits:empty { padding: 0; }
+.ui-rbc__digit { display: inline-block; animation: ui-rbc-roll 400ms var(--ui-rbc-ease) both; }
+
+@keyframes ui-rbc-pop {
+  0% { transform: scale(1); }
+  35% { transform: scale(0.75); }
+  70% { transform: scale(1.12); }
+  100% { transform: scale(1); }
+}
+@keyframes ui-rbc-roll {
+  from { opacity: 0; transform: translateY(70%); }
+}
+
+/* Touch screens: taller chips */
+@media (hover: none) and (pointer: coarse) {
+  .ui-rbc { --ui-rbc-h: 36px; gap: 6px; }
+  .ui-rbc__btn { padding: 0 10px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ui-rbc__icon[data-pop], .ui-rbc__digit { animation: none; }
+  .ui-rbc__count[data-smooth] { transition: none; }
+}
+
+/* Dark mode: follows a .dark class or data-theme="dark" on any ancestor, e.g. <html> */
+:where(.dark, [data-theme="dark"]) .ui-rbc {
+  --ui-rbc-ink: var(--aui-ink, rgba(255, 255, 255, 0.9));
+  --ui-rbc-text: var(--aui-muted, rgba(255, 255, 255, 0.62));
+  --ui-rbc-icon: var(--aui-muted, rgba(255, 255, 255, 0.46));
+  --ui-rbc-line: var(--aui-border, rgba(255, 255, 255, 0.08));
+  --ui-rbc-wash: var(--aui-subtle, rgba(255, 255, 255, 0.04));
+  --ui-rbc-accent: var(--aui-blue, #4fb0fe);
+  --ui-rbc-mine: rgba(77, 141, 255, 0.14);
+  --ui-rbc-mine-line: rgba(77, 141, 255, 0.4);
+  --ui-rbc-focus: var(--aui-focus, rgba(77, 141, 255, 0.8));
+}

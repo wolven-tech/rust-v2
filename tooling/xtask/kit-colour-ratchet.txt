@@ -1,0 +1,3 @@
+# rv2-kit stylesheets that still contain a literal colour.
+# This list may only shrink: move a file onto --kit-* tokens, then delete its
+# line here. See tooling/xtask/src/kit_colours.rs.

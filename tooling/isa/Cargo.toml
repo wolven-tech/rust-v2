@@ -1,0 +1,18 @@
+[package]
+name = "rv2-isa"
+description = "Find, read and enforce the rv2-ui instruction set from any repository."
+edition.workspace = true
+license.workspace = true
+version.workspace = true
+publish = false
+
+[[bin]]
+name = "rv2-isa"
+path = "src/main.rs"
+
+[dependencies]
+proc-macro2 = "1"
+quote = "1"
+serde.workspace = true
+serde_json.workspace = true
+syn = { version = "2", features = ["full"] }

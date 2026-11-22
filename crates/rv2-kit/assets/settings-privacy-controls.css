@@ -1,0 +1,140 @@
+.kit-prv__switch {
+  border-top: 1px solid var(--kit-rule-soft);
+  padding: 12px 20px;
+}
+
+.kit-prv__switch:first-of-type {
+  border-top: 0;
+}
+
+.kit-prv__cookies {
+  border-top: 1px solid var(--kit-rule-soft);
+}
+
+.kit-prv__choices {
+  animation: kit-prv-unfold var(--kit-fast) var(--kit-ease);
+  border: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0 20px 12px 36px;
+}
+
+@keyframes kit-prv-unfold {
+  from { opacity: 0; transform: translateY(-3px); }
+}
+
+.kit-prv__scope {
+  border-top: 1px solid var(--kit-rule-soft);
+  padding: 12px 20px;
+}
+
+.kit-prv__card-action {
+  display: flex;
+  justify-content: flex-end;
+  padding: 0 20px 8px;
+}
+
+.kit-prv__only {
+  padding: 0 20px 8px;
+  margin: 0;
+}
+
+.kit-prv__rows {
+  display: flex;
+  flex-direction: column;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.kit-prv__row {
+  align-items: center;
+  border-top: 1px solid var(--kit-rule-soft);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  justify-content: space-between;
+  padding: 10px 20px;
+  animation: kit-prv-rise var(--kit-fast) var(--kit-ease);
+}
+
+@keyframes kit-prv-rise {
+  from { opacity: 0; }
+}
+
+.kit-prv__row-text {
+  display: flex;
+  flex: 1 1 220px;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.kit-prv__tabs {
+  border-bottom: 1px solid var(--kit-rule-soft);
+  display: flex;
+  gap: 4px;
+  padding: 0 20px;
+}
+
+.kit-prv__tab {
+  appearance: none;
+  background: none;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  color: var(--kit-ink-muted);
+  cursor: pointer;
+  font: inherit;
+  font-size: 14px;
+  margin-bottom: -1px;
+  padding: 8px 10px;
+}
+
+.kit-prv__tab[aria-selected="true"] {
+  border-bottom-color: var(--kit-accent);
+  color: var(--kit-ink);
+  font-weight: 600;
+}
+
+.kit-prv__tab:focus-visible {
+  outline: 2px solid var(--kit-accent);
+  outline-offset: 2px;
+}
+
+.kit-prv__count {
+  color: var(--kit-ink-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.kit-prv__empty {
+  align-items: flex-start;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px 20px;
+}
+
+.kit-prv__danger {
+  padding: 0;
+}
+
+@container kit-set (max-width: 640px) {
+  .kit-prv__row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .kit-prv__choices {
+    padding-left: 16px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kit-prv__choices,
+  .kit-prv__row {
+    animation: none;
+  }
+}

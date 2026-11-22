@@ -1,0 +1,20 @@
+.ui-ls {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 3 / 2;
+  overflow: hidden;
+}
+.ui-ls-art {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* Dark mode: follows a .dark class or data-theme="dark" on any ancestor, e.g. <html> */
+:where(.dark, [data-theme="dark"]) .ui-ls-tile { fill: #232326; stroke: rgba(255, 255, 255, 0.08); }
+:where(.dark, [data-theme="dark"]) .ui-ls-drop { flood-opacity: 0.4; }
+:where(.dark, [data-theme="dark"]) .ui-ls-sliver { flood-color: #1a1a1c; }
+:where(.dark, [data-theme="dark"]) .ui-ls-gray { stop-color: #3a3a3f; }
+:where(.dark, [data-theme="dark"]) .ui-ls-mark { fill: #ededed; }

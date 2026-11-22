@@ -1,0 +1,476 @@
+.kit-ot {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 420px;
+  min-width: 0;
+  color: var(--kit-ink);
+  font-family: var(--kit-font);
+  background: var(--kit-ground);
+  overflow: hidden;
+}
+
+.kit-ot > * {
+  min-width: 0;
+}
+
+.kit-ot__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 12px 16px 4px;
+  flex-wrap: wrap;
+}
+
+.kit-ot__title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.kit-ot__counts {
+  margin: 0;
+  font-size: 13px;
+  color: var(--kit-ink-muted);
+}
+
+.kit-ot__count-btn,
+.kit-ot__link {
+  padding: 0 4px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.kit-ot__banner {
+  margin: 0 16px;
+  padding: 8px 12px;
+  border-radius: var(--kit-radius-sm);
+  background: color-mix(in srgb, var(--kit-warn) 20%, var(--kit-surface));
+  color: var(--kit-warn-ink);
+  font-size: 13px;
+}
+
+.kit-ot > * {
+  flex: none;
+}
+
+.kit-ot__scroll {
+  flex: 1 1 0;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 12px 16px;
+  display: grid;
+  align-content: start;
+  gap: 14px;
+  position: relative;
+}
+
+.kit-ot__log {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 14px;
+  width: 100%;
+  max-width: 720px;
+  justify-self: center;
+}
+
+.kit-ot__msg {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.kit-ot__msg--user {
+  justify-items: end;
+}
+
+.kit-ot__bubble {
+  max-width: min(90%, 520px);
+  margin: 0;
+  padding: 8px 12px;
+  border-radius: var(--kit-radius-lg);
+  background: var(--kit-raised);
+  font-size: 14px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.kit-ot__msg--agent {
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 10px;
+}
+
+.kit-ot__mark {
+  width: 28px;
+  height: 28px;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--kit-accent);
+  color: var(--kit-on-ink);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.kit-ot__agent-body {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+  font-size: 14px;
+}
+
+.kit-ot__text {
+  margin: 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.kit-ot__caret {
+  display: inline-block;
+  color: var(--kit-ink-muted);
+  animation: kit-ot-caret 1s steps(2, start) infinite;
+}
+
+@keyframes kit-ot-caret {
+  to {
+    visibility: hidden;
+  }
+}
+
+.kit-ot__tools {
+  padding: 6px 10px;
+  border: 1px solid var(--kit-rule-soft);
+  border-radius: var(--kit-radius);
+  font-size: 13px;
+  background: var(--kit-surface);
+}
+
+.kit-ot__tools summary {
+  cursor: pointer;
+  color: var(--kit-ink-muted);
+}
+
+.kit-ot__tool-rows {
+  margin: 6px 0 0;
+  padding: 0 0 0 16px;
+  display: grid;
+  gap: 4px;
+}
+
+.kit-ot__tool-rows li {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.kit-ot__task {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 4px 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--kit-rule-soft);
+  border-radius: var(--kit-radius);
+  background: var(--kit-surface);
+}
+
+.kit-ot__task-title {
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+
+.kit-ot__meta {
+  font-size: 12px;
+  color: var(--kit-ink-faint);
+}
+
+.kit-ot__error {
+  margin: 0;
+  color: var(--kit-fault-ink);
+  font-size: 13px;
+}
+
+.kit-ot__chips {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.kit-ot__chip {
+  padding: 2px 10px;
+  border: 1px solid var(--kit-rule);
+  border-radius: var(--kit-radius-pill);
+  font-size: 12px;
+}
+
+.kit-ot__away {
+  display: grid;
+  gap: 8px;
+  max-width: 720px;
+  width: 100%;
+  justify-self: center;
+  padding: 14px;
+  border: 1px solid var(--kit-rule-soft);
+  border-radius: var(--kit-radius-lg);
+  background: var(--kit-surface);
+  box-shadow: var(--kit-shadow);
+  font-size: 14px;
+}
+
+.kit-ot__away p {
+  margin: 0;
+}
+
+.kit-ot__away-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.kit-ot__jump {
+  position: sticky;
+  bottom: 8px;
+  justify-self: center;
+  min-height: 32px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: var(--kit-radius-pill);
+  background: var(--kit-accent);
+  color: var(--kit-on-ink);
+  font: inherit;
+  font-size: 13px;
+  box-shadow: var(--kit-shadow-pop);
+  cursor: pointer;
+}
+
+.kit-ot__dock {
+  display: grid;
+  gap: 8px;
+  margin: 0 16px;
+  padding: 12px;
+  border: 1px solid var(--kit-rule);
+  border-radius: var(--kit-radius-lg);
+  background: var(--kit-surface);
+  box-shadow: var(--kit-shadow);
+}
+
+.kit-ot__question {
+  margin: 0;
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.kit-ot__options {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 6px;
+}
+
+.kit-ot__option {
+  width: 100%;
+  display: grid;
+  gap: 2px;
+  padding: 8px 10px;
+  border: 1px solid var(--kit-rule-soft);
+  border-radius: var(--kit-radius);
+  background: var(--kit-surface);
+  color: inherit;
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+
+.kit-ot__option:focus-visible,
+.kit-ot__primary:focus-visible,
+.kit-ot__ghost:focus-visible,
+.kit-ot__danger:focus-visible,
+.kit-ot__link:focus-visible,
+.kit-ot__input:focus-visible {
+  outline: 2px solid var(--kit-accent);
+  outline-offset: 2px;
+}
+
+.kit-ot__option[aria-selected="true"] {
+  border-color: var(--kit-accent);
+}
+
+.kit-ot__option-title {
+  font-weight: 500;
+}
+
+.kit-ot__attachments {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 13px;
+}
+
+.kit-ot__attachment {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+.kit-ot__attach-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+}
+
+.kit-ot__progress {
+  width: 96px;
+  height: 8px;
+  accent-color: var(--kit-accent);
+}
+
+.kit-ot__recording {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-size: 13px;
+}
+
+.kit-ot__dock-foot {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.kit-ot__composer {
+  display: grid;
+  gap: 6px;
+  margin: 8px 16px 12px;
+  padding: 10px;
+  border: 1px solid var(--kit-rule);
+  border-radius: var(--kit-radius-lg);
+  background: var(--kit-surface);
+  box-shadow: var(--kit-shadow);
+}
+
+.kit-ot__input {
+  width: 100%;
+  min-height: 44px;
+  max-height: 240px;
+  padding: 6px 4px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  color: var(--kit-ink);
+  font: inherit;
+  font-size: 14px;
+  resize: vertical;
+}
+
+.kit-ot__input:focus {
+  outline: none;
+  border-bottom-color: var(--kit-rule);
+}
+
+.kit-ot__composer-foot {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.kit-ot__primary,
+.kit-ot__ghost,
+.kit-ot__danger {
+  min-height: 32px;
+  padding: 0 12px;
+  border-radius: var(--kit-radius-sm);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.kit-ot__primary {
+  border: 1px solid var(--kit-accent);
+  background: var(--kit-accent);
+  color: var(--kit-on-ink);
+  font-weight: 500;
+}
+
+.kit-ot__ghost {
+  border: 1px solid var(--kit-rule);
+  background: var(--kit-surface);
+  color: var(--kit-ink);
+}
+
+.kit-ot__ghost:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.kit-ot__danger {
+  border: 1px solid var(--kit-fault-ink);
+  background: var(--kit-fault-ink);
+  color: var(--kit-on-ink);
+}
+
+.kit-ot__empty {
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  padding: 32px 16px;
+  text-align: center;
+  color: var(--kit-ink-muted);
+}
+
+.kit-ot__ph {
+  height: 56px;
+  max-width: 720px;
+  width: 100%;
+  justify-self: center;
+  border-radius: var(--kit-radius-lg);
+  background: var(--kit-rule-soft);
+  animation: kit-ot-sheen 1.4s var(--kit-ease) infinite;
+}
+
+.kit-ot__ph--user {
+  width: 60%;
+  justify-self: end;
+}
+
+@keyframes kit-ot-sheen {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@media (max-width: 480px) {
+  .kit-ot__scroll {
+    padding: 10px 12px;
+  }
+
+  .kit-ot__dock,
+  .kit-ot__composer {
+    margin: 8px 12px;
+  }
+}

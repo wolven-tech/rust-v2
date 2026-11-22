@@ -1,0 +1,32 @@
+.kit-fda { display: flex; flex-direction: column; gap: var(--kit-gap); max-width: 640px; width: 100%; font-family: var(--kit-font); color: var(--kit-ink); }
+.kit-fda__zone { position: relative; display: flex; flex-direction: column; align-items: center; gap: var(--kit-space-1); padding: var(--kit-space-6) var(--kit-space-4); border: 1.5px dashed var(--kit-rule); border-radius: var(--kit-radius-lg); background: var(--kit-surface); text-align: center; cursor: pointer; transition: border-color var(--kit-fast) var(--kit-ease), background var(--kit-fast) var(--kit-ease); }
+.kit-fda[data-dragging] .kit-fda__zone { border-color: var(--kit-ink-muted); background: var(--kit-raised); }
+.kit-fda__zone:focus-visible { outline: 2px solid var(--kit-ink-muted); outline-offset: 2px; }
+.kit-fda__symbol { width: 28px; height: 28px; color: var(--kit-ink-muted); transition: transform var(--kit-fast) var(--kit-ease), color var(--kit-fast) var(--kit-ease); }
+.kit-fda[data-dragging] .kit-fda__symbol { color: var(--kit-ink); transform: translateY(-2px); }
+.kit-fda__title { font-weight: 600; }
+.kit-fda__hint { font-size: var(--kit-text-md); color: var(--kit-ink-muted); }
+.kit-fda__picker { position: absolute; inset: 0; opacity: 0; pointer-events: none; }
+.kit-fda__list { display: flex; flex-direction: column; border: 1px solid var(--kit-rule-soft); border-radius: var(--kit-radius); background: var(--kit-surface); box-shadow: var(--kit-shadow-card); }
+.kit-fda__rows { display: flex; flex-direction: column; }
+.kit-fda__row { display: flex; align-items: flex-start; gap: var(--kit-space-3); padding: var(--kit-space-3); border-top: 1px solid var(--kit-rule-soft); }
+.kit-fda__row:first-child { border-top: 0; }
+.kit-fda__badge { flex: none; min-width: 44px; text-align: center; font-family: var(--kit-mono); font-size: var(--kit-text-xs); padding: var(--kit-space-1) var(--kit-space-2); border-radius: var(--kit-radius-sm); background: var(--kit-raised); }
+.kit-fda__badge[data-group="image"] { background: var(--kit-ok-soft); }
+.kit-fda__badge[data-group="data"] { background: var(--kit-raised); color: var(--kit-ink-muted); }
+.kit-fda__meta { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: var(--kit-space-1); }
+.kit-fda__name { display: flex; align-items: center; gap: var(--kit-space-2); min-width: 0; font-size: var(--kit-text-lg); }
+.kit-fda__file { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.kit-fda__mark { flex: none; width: 16px; height: 16px; color: var(--kit-ok-ink); }
+.kit-fda__size, .kit-fda__status { font-size: var(--kit-text-sm); color: var(--kit-ink-muted); font-variant-numeric: tabular-nums; }
+.kit-fda__bar { display: block; height: 4px; border-radius: calc(var(--kit-space-1) / 2); background: var(--kit-rule-soft); overflow: hidden; }
+.kit-fda__fill { display: block; height: 100%; background: var(--kit-ink); transition: width var(--kit-slow) var(--kit-ease); }
+.kit-fda__row[data-state="failed"] .kit-fda__fill { background: var(--kit-fault); }
+.kit-fda__row[data-state="failed"] .kit-fda__status { color: var(--kit-fault-ink); }
+.kit-fda__row[data-state="rejected"] .kit-fda__status { color: var(--kit-warn-ink); }
+.kit-fda__actions { display: flex; gap: var(--kit-space-2); }
+.kit-fda__action { min-height: 32px; padding: 0 var(--kit-space-3); border: 1px solid var(--kit-rule-soft); background: var(--kit-surface); color: var(--kit-ink); border-radius: var(--kit-radius-sm); font: inherit; font-size: var(--kit-text-md); cursor: pointer; }
+.kit-fda__summary { padding: var(--kit-space-3); border-top: 1px solid var(--kit-rule-soft); font-size: var(--kit-text-sm); color: var(--kit-ink-muted); font-variant-numeric: tabular-nums; }
+.kit-fda__notice { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+@media (max-width: 640px) { .kit-fda__action { min-height: 44px; } .kit-fda__zone { padding: var(--kit-space-5) var(--kit-space-3); } }
+@media (prefers-reduced-motion: reduce) { .kit-fda__fill, .kit-fda__zone, .kit-fda__symbol { transition: none; } }

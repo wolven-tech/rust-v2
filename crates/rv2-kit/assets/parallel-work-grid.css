@@ -1,0 +1,157 @@
+.kit-pwg {
+  container-type: inline-size;
+  display: grid;
+  gap: var(--kit-gap);
+  padding: var(--kit-space-4);
+  border: 1px solid var(--kit-rule-soft);
+  border-radius: var(--kit-radius-lg);
+  background: var(--kit-surface);
+  color: var(--kit-ink);
+  font-family: var(--kit-font);
+  font-size: var(--kit-text-md);
+  box-shadow: var(--kit-shadow);
+  position: relative;
+}
+.kit-pwg__head { display: flex; align-items: baseline; gap: var(--kit-space-2); flex-wrap: wrap; }
+.kit-pwg__icon { color: var(--kit-ink-muted); }
+.kit-pwg__title { margin: 0; font-size: var(--kit-text-lg); font-weight: 600; }
+.kit-pwg__job { margin: 0; color: var(--kit-ink-muted); font-size: var(--kit-text-sm); }
+.kit-pwg__stats { display: flex; gap: var(--kit-gap); flex-wrap: wrap; margin: 0; }
+.kit-pwg__stats > div { display: grid; gap: 0; min-width: 72px; }
+.kit-pwg__stats dt { font-size: var(--kit-text-sm); color: var(--kit-ink-muted); }
+.kit-pwg__stats dd { margin: 0; font-size: 18px; font-weight: 600; font-variant-numeric: tabular-nums; }
+
+.kit-pwg__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(20px, 1fr));
+  gap: var(--kit-space-1);
+}
+.kit-pwg__cell {
+  position: relative;
+  aspect-ratio: 1;
+  overflow: hidden;
+  padding: 0;
+  border: 1px solid var(--kit-rule-soft);
+  border-radius: var(--kit-radius-sm);
+  background: var(--kit-raised);
+  cursor: pointer;
+  animation: kit-pwg-wave 360ms var(--kit-ease) backwards;
+  animation-delay: var(--pwg-wave);
+  transition: opacity var(--kit-fast) var(--kit-ease);
+}
+.kit-pwg__cell:focus-visible { outline: 2px solid var(--kit-ink); outline-offset: 2px; }
+.kit-pwg__cell[aria-pressed="true"] { border-color: var(--kit-ink); box-shadow: var(--kit-shadow); }
+.kit-pwg__dot { position: absolute; inset: 0; }
+.kit-pwg__cell[data-state="Queued"] { opacity: 0.6; border-style: dashed; }
+.kit-pwg__cell[data-state="InProgress"] { background: var(--kit-id-1); border-color: var(--kit-id-1); }
+.kit-pwg__cell[data-state="InProgress"]::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, var(--kit-raised), transparent);
+  transform: translateX(-100%);
+  animation: kit-pwg-sweep 1.4s linear infinite;
+}
+.kit-pwg__cell[data-state="Retrying"] { background: var(--kit-warn); border-color: var(--kit-warn); animation: kit-pwg-wave 360ms var(--kit-ease) backwards, kit-pwg-pulse 1.2s ease-in-out infinite; }
+.kit-pwg__cell[data-state="Done"] { background: color-mix(in srgb, var(--kit-ok) 70%, var(--kit-surface)); border-color: transparent; }
+.kit-pwg__cell[data-state="Failed"] { background: var(--kit-fault); border-color: var(--kit-fault); }
+.kit-pwg__cell[data-dim="true"] { opacity: 0.25; }
+
+.kit-pwg__details {
+  position: absolute;
+  top: 56px;
+  right: var(--kit-gap);
+  z-index: 2;
+  display: grid;
+  gap: var(--kit-space-1);
+  max-width: 260px;
+  padding: var(--kit-space-2) var(--kit-space-3);
+  border: 1px solid var(--kit-rule-soft);
+  border-radius: var(--kit-radius);
+  background: var(--kit-surface);
+  box-shadow: var(--kit-shadow-pop);
+  animation: kit-pwg-open var(--kit-fast) var(--kit-ease);
+}
+.kit-pwg__item { margin: 0; font-size: var(--kit-text-md); overflow-wrap: anywhere; }
+.kit-pwg__line { margin: 0; color: var(--kit-ink-muted); font-variant-numeric: tabular-nums; }
+.kit-pwg__outcome {
+  margin: 0;
+  padding: var(--kit-space-1);
+  border-radius: var(--kit-radius-sm);
+  background: var(--kit-raised);
+  font-family: var(--kit-mono);
+  font-size: var(--kit-text-xs);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.kit-pwg__foot { display: flex; gap: var(--kit-gap); align-items: center; flex-wrap: wrap; }
+.kit-pwg__filters { display: inline-flex; gap: var(--kit-space-1); flex-wrap: wrap; }
+.kit-pwg__filter {
+  padding: 2px var(--kit-space-2);
+  border: 1px solid var(--kit-rule);
+  border-radius: var(--kit-radius-pill);
+  background: var(--kit-surface);
+  font: inherit;
+  color: var(--kit-ink-muted);
+  cursor: pointer;
+}
+.kit-pwg__filter {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--kit-space-1);
+}
+.kit-pwg__swatch {
+  width: var(--kit-space-2);
+  height: var(--kit-space-2);
+  border-radius: 50%;
+  background: var(--kit-raised);
+  border: 1px solid var(--kit-rule);
+}
+.kit-pwg__swatch[data-state="Done"] { background: color-mix(in srgb, var(--kit-ok) 70%, var(--kit-surface)); border-color: transparent; }
+.kit-pwg__swatch[data-state="InProgress"] { background: var(--kit-id-1); border-color: transparent; }
+.kit-pwg__swatch[data-state="Retrying"] { background: var(--kit-warn); border-color: transparent; }
+.kit-pwg__swatch[data-state="Failed"] { background: var(--kit-fault); border-color: transparent; }
+.kit-pwg__filter[aria-pressed="true"] { background: var(--kit-primary); color: var(--kit-on-primary); border-color: var(--kit-primary); }
+.kit-pwg__filter:focus-visible,
+.kit-pwg__retry:focus-visible { outline: 2px solid var(--kit-ink); outline-offset: 2px; }
+.kit-pwg__count { margin: 0; color: var(--kit-ink-muted); font-variant-numeric: tabular-nums; }
+.kit-pwg__retry {
+  padding: var(--kit-space-1) var(--kit-space-3);
+  border: 1px solid var(--kit-fault);
+  border-radius: var(--kit-radius-pill);
+  background: none;
+  color: var(--kit-fault-ink);
+  cursor: pointer;
+}
+.kit-pwg__live { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+
+@container (max-width: 560px) {
+  .kit-pwg__stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .kit-pwg__stats dd { overflow-wrap: anywhere; }
+  .kit-pwg__grid { grid-template-columns: repeat(auto-fill, minmax(12px, 1fr)); }
+  .kit-pwg__details { position: static; max-width: none; margin-top: var(--kit-gap); }
+}
+
+@keyframes kit-pwg-wave {
+  from { opacity: 0; transform: scale(0.6); }
+  to { opacity: 1; transform: scale(1); }
+}
+@keyframes kit-pwg-sweep {
+  to { transform: translateX(100%); }
+}
+@keyframes kit-pwg-pulse {
+  50% { filter: brightness(0.8); }
+}
+@keyframes kit-pwg-open {
+  from { opacity: 0; transform: scale(0.96); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kit-pwg__cell,
+  .kit-pwg__cell[data-state],
+  .kit-pwg__cell::after,
+  .kit-pwg__details { animation: none; }
+  .kit-pwg__cell { transition: none; }
+}

@@ -1,0 +1,148 @@
+/* Colors and motion as variables – override them on .ui-tvc (see Theming in the docs) */
+.ui-tvc {
+  --ui-tvc-ink: var(--aui-ink, rgba(0, 0, 0, 0.88));
+  --ui-tvc-icon: var(--aui-muted, rgba(0, 0, 0, 0.447));
+  --ui-tvc-meta: var(--aui-muted, rgba(0, 0, 0, 0.45));
+  --ui-tvc-faint: var(--aui-placeholder, rgba(0, 0, 0, 0.27));
+  --ui-tvc-wash: rgba(0, 0, 0, 0.03);
+  --ui-tvc-fill: rgba(0, 0, 0, 0.06);
+  --ui-tvc-guide: rgba(0, 0, 0, 0.07);
+  --ui-tvc-guide-on: rgba(0, 0, 0, 0.2);
+  --ui-tvc-focus: var(--aui-focus, rgba(0, 96, 226, 0.7));
+  --ui-tvc-ease: var(--aui-ease, cubic-bezier(0.25, 0.9, 0.3, 1));
+  /* Sizes: 28px rows, 16px per level */
+  --ui-tvc-h: 28px;
+  --ui-tvc-pad: 6px;
+  --ui-tvc-indent: 16px;
+  --ui-tvc-chev: 16px;
+  --ui-tvc-r: var(--aui-radius, 6px);
+
+  display: block;
+  box-sizing: border-box;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-family: var(--aui-font, "Inter", "InterVariable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif);
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 20px;
+  color: var(--ui-tvc-ink);
+  -webkit-font-smoothing: antialiased;
+}
+.ui-tvc *, .ui-tvc *::before, .ui-tvc *::after { box-sizing: border-box; }
+.ui-tvc__group { position: relative; min-height: 0; margin: 0; padding: 0; list-style: none; overflow: hidden; }
+.ui-tvc__item { display: block; margin: 0; padding: 0; }
+
+/* A row: chevron, glyph, name, meta – one fixed height; deeper levels indent (at most to 45% of the width) */
+.ui-tvc__row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: var(--ui-tvc-h);
+  padding-inline: calc(var(--ui-tvc-pad) + min(var(--ui-tvc-d, 0) * var(--ui-tvc-indent), 45%)) var(--ui-tvc-pad);
+  overflow: hidden;
+  border-radius: var(--ui-tvc-r);
+  cursor: pointer;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color 90ms ease;
+}
+.ui-tvc__item[aria-selected="true"] > .ui-tvc__row { background: var(--ui-tvc-fill); }
+@media (hover: hover) {
+  .ui-tvc__item:not([aria-selected="true"]):not([aria-disabled="true"]) > .ui-tvc__row:hover { background: var(--ui-tvc-wash); }
+  .ui-tvc__row:hover .ui-tvc__chev { color: var(--ui-tvc-meta); }
+}
+.ui-tvc__item[aria-disabled="true"] > .ui-tvc__row { opacity: 0.4; cursor: not-allowed; }
+
+/* The ring sits on the row, inside it – never around the open branch below */
+.ui-tvc__item:focus { outline: none; }
+.ui-tvc__item:focus-visible > .ui-tvc__row { outline: 2px solid var(--ui-tvc-focus); outline-offset: -2px; }
+
+.ui-tvc__chev {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: var(--ui-tvc-chev);
+  height: var(--ui-tvc-chev);
+  color: var(--ui-tvc-faint);
+  transition: transform 200ms var(--ui-tvc-ease), color 90ms ease;
+}
+.ui-tvc__chev svg { display: block; }
+.ui-tvc__chev:dir(rtl) svg { transform: scaleX(-1); }
+.ui-tvc__item[aria-expanded="true"] > .ui-tvc__row > .ui-tvc__chev { transform: rotate(90deg); }
+.ui-tvc__item[aria-expanded="true"] > .ui-tvc__row > .ui-tvc__chev:dir(rtl) { transform: rotate(-90deg); }
+
+.ui-tvc__icon { display: grid; flex: none; place-items: center; width: 16px; height: 16px; margin-inline-end: 4px; overflow: hidden; color: var(--ui-tvc-icon); }
+.ui-tvc__icon svg, .ui-tvc__icon img { display: block; width: 100%; height: 100%; object-fit: contain; }
+.ui-tvc__item[aria-selected="true"] > .ui-tvc__row .ui-tvc__icon { color: var(--ui-tvc-ink); }
+
+/* Long names end in … – the full name on hover */
+.ui-tvc__label { flex: 1 1 auto; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.ui-tvc__meta {
+  flex: none;
+  max-width: 45%;
+  margin-inline-start: 8px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--ui-tvc-meta);
+  font-variant-numeric: tabular-nums;
+}
+
+/* A branch grows and shrinks in height; closed, its rows are hidden from the keyboard and screen readers too */
+.ui-tvc__fold {
+  display: grid;
+  grid-template-rows: 0fr;
+  visibility: hidden;
+  transition: grid-template-rows 220ms var(--ui-tvc-ease), visibility 0s linear 220ms;
+}
+.ui-tvc__fold[data-open] { grid-template-rows: 1fr; visibility: visible; transition: grid-template-rows 220ms var(--ui-tvc-ease), visibility 0s; }
+
+/* Guides: a thin line under each open branch's chevron – darker where the selected row is */
+.ui-tvc[data-guides] .ui-tvc__group::before {
+  content: "";
+  position: absolute;
+  top: 2px;
+  bottom: 2px;
+  inset-inline-start: calc(var(--ui-tvc-pad) + min((var(--ui-tvc-d) - 1) * var(--ui-tvc-indent), 45%) + var(--ui-tvc-chev) / 2 - 0.5px);
+  width: 1px;
+  background: var(--ui-tvc-guide);
+  pointer-events: none;
+  transition: background-color 160ms ease;
+}
+.ui-tvc[data-guides] .ui-tvc__group:has(> .ui-tvc__item[aria-selected="true"])::before { background: var(--ui-tvc-guide-on); }
+
+.ui-tvc__empty {
+  display: flex;
+  align-items: center;
+  height: var(--ui-tvc-h);
+  padding-inline: calc(var(--ui-tvc-pad) + min(var(--ui-tvc-d, 0) * var(--ui-tvc-indent), 45%) + var(--ui-tvc-chev) + 4px) var(--ui-tvc-pad);
+  font-size: 12px;
+  color: var(--ui-tvc-faint);
+  white-space: nowrap;
+}
+
+/* Touch screens: rows at least 36px tall */
+@media (pointer: coarse) {
+  .ui-tvc { --ui-tvc-h: 36px; --ui-tvc-indent: 18px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ui-tvc__row, .ui-tvc__chev, .ui-tvc__fold, .ui-tvc__fold[data-open], .ui-tvc[data-guides] .ui-tvc__group::before { transition: none; }
+}
+
+/* Dark mode: follows a .dark class or data-theme="dark" on any ancestor, e.g. <html> */
+:where(.dark, [data-theme="dark"]) .ui-tvc {
+  --ui-tvc-ink: var(--aui-ink, rgba(255, 255, 255, 0.9));
+  --ui-tvc-icon: var(--aui-muted, rgba(255, 255, 255, 0.46));
+  --ui-tvc-meta: var(--aui-muted, rgba(255, 255, 255, 0.45));
+  --ui-tvc-faint: var(--aui-placeholder, rgba(255, 255, 255, 0.28));
+  --ui-tvc-wash: rgba(255, 255, 255, 0.04);
+  --ui-tvc-fill: rgba(255, 255, 255, 0.08);
+  --ui-tvc-guide: rgba(255, 255, 255, 0.08);
+  --ui-tvc-guide-on: rgba(255, 255, 255, 0.24);
+  --ui-tvc-focus: var(--aui-focus, rgba(77, 141, 255, 0.8));
+}

@@ -1,0 +1,6 @@
+#[path = "longhand_gallery/main.rs"]
+mod gallery;
+
+fn main() {
+    gallery::main();
+}

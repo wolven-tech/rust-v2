@@ -1,0 +1,94 @@
+.kit-inv {
+  display: grid;
+  gap: 14px;
+  font-family: var(--kit-font);
+  color: var(--kit-ink);
+  min-width: 0;
+}
+.kit-inv__bar { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px; }
+.kit-inv__actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.kit-inv__stack { position: relative; display: grid; min-width: 0; }
+.kit-inv__sheet {
+  grid-area: 1 / 1;
+  display: grid;
+  gap: 14px;
+  align-content: start;
+  min-width: 0;
+  padding: 20px;
+  border: 1px solid var(--kit-rule-soft);
+  border-radius: var(--kit-radius-lg);
+  background: var(--kit-surface);
+  box-shadow: var(--kit-shadow);
+  position: relative;
+  z-index: 1;
+  transition: transform var(--kit-slow) var(--kit-ease);
+}
+.kit-inv__sheet:not([data-front]) {
+  z-index: 0;
+  transform: translate(0, -12px) scale(0.97);
+  box-shadow: none;
+  pointer-events: none;
+}
+.kit-inv__sheet:not([data-front]) > * { visibility: hidden; }
+.kit-inv__sheet-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 12px; }
+.kit-inv__heading { margin: 0; font-size: 17px; font-weight: 600; overflow-wrap: anywhere; }
+.kit-inv__status {
+  font-size: 12px;
+  padding: 1px 8px;
+  border-radius: var(--kit-radius-pill);
+  background: var(--kit-raised);
+  color: var(--kit-ink-muted);
+}
+.kit-inv__status[data-status="paid"], .kit-inv__status[data-status="issued"] { background: var(--kit-ok-soft); color: var(--kit-ok-ink); }
+.kit-inv__total { margin: 0 0 0 auto; display: grid; justify-items: end; }
+.kit-inv__total-figure { font-size: 22px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.kit-inv__due { font-size: 12px; color: var(--kit-ink-muted); }
+.kit-inv__parties { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.kit-inv__party { min-width: 0; font-size: 13px; }
+.kit-inv__party-title { margin: 0 0 4px; font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--kit-ink-muted); }
+.kit-inv__party-name { margin: 0; font-weight: 600; overflow-wrap: anywhere; }
+.kit-inv__party-line { margin: 0; color: var(--kit-ink-hover); overflow-wrap: anywhere; }
+.kit-inv__terms { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 4px 16px; margin: 0; font-size: 13px; }
+.kit-inv__terms dt { color: var(--kit-ink-muted); }
+.kit-inv__terms dd { margin: 0; font-variant-numeric: tabular-nums; }
+.kit-inv__table { width: 100%; border-collapse: collapse; font-size: 13px; font-variant-numeric: tabular-nums; }
+.kit-inv__table th, .kit-inv__table td { padding: 8px 6px; border-bottom: 1px solid var(--kit-rule-soft); text-align: left; vertical-align: middle; }
+.kit-inv__table th { font-size: 12px; font-weight: 500; color: var(--kit-ink-muted); }
+.kit-inv__table td:last-child, .kit-inv__table th:last-child { text-align: right; }
+.kit-inv__credit-row[data-picked] { background: var(--kit-raised); }
+.kit-inv__amount {
+  font: inherit;
+  width: 110px;
+  min-height: 34px;
+  padding: 0 8px;
+  border: 1px solid var(--kit-rule);
+  border-radius: var(--kit-radius-sm);
+  background: var(--kit-surface);
+  color: var(--kit-ink);
+  text-align: right;
+  box-sizing: border-box;
+}
+.kit-inv__amount[aria-invalid="true"] { border-color: var(--kit-fault); }
+.kit-inv__error { display: block; margin-top: 4px; font-size: 12px; color: var(--kit-fault-ink); }
+.kit-inv__muted, .kit-inv__hint, .kit-inv__grand { font-size: 13px; color: var(--kit-ink-muted); }
+.kit-inv__grand { margin: 0; text-align: right; }
+.kit-inv__credit-foot { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px; }
+.kit-inv__credit-total { margin: 0; display: flex; gap: 8px; align-items: baseline; font-size: 14px; }
+.kit-inv__issued { font-size: 13px; color: var(--kit-ok-ink); font-weight: 600; }
+.kit-inv button:focus-visible, .kit-inv input:focus-visible, .kit-inv [role="tab"]:focus-visible {
+  outline: 2px solid var(--kit-accent);
+  outline-offset: 2px;
+}
+.kit-inv input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--kit-accent); }
+
+@media (max-width: 640px) {
+  .kit-inv__parties { grid-template-columns: minmax(0, 1fr); }
+  .kit-inv__col-rate { display: none; }
+  .kit-inv__sheet { padding: 14px; }
+  .kit-inv__amount { width: 96px; min-height: 44px; font-size: 16px; }
+  .kit-inv input[type="checkbox"] { width: 22px; height: 22px; }
+  .kit-inv__actions button, .kit-inv__credit-foot button { min-height: 44px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .kit-inv__sheet { transition: none; }
+}

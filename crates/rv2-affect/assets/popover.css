@@ -1,0 +1,88 @@
+/* Colors and motion as variables – override them on .ui-popc (see Theming in the docs) */
+.ui-popc {
+  --ui-popc-surface: var(--aui-overlay, var(--aui-surface, #ffffff));
+  --ui-popc-strong: var(--aui-ink, #000000);
+  --ui-popc-ink: var(--aui-ink, rgba(0, 0, 0, 0.88));
+  --ui-popc-muted: var(--aui-muted, rgba(0, 0, 0, 0.45));
+  --ui-popc-shadow: var(--aui-shadow-popover, 0 0 0 0.5px var(--aui-border-strong, rgba(0, 0, 0, 0.1)), 0 12px 32px -8px rgba(0, 0, 0, 0.16));
+  --ui-popc-ease: var(--aui-ease, cubic-bezier(0.22, 1, 0.36, 1));
+
+  /* A white card in the top layer: a 0.5px edge and a soft drop */
+  position: fixed;
+  inset: auto;
+  z-index: 1000;
+  display: block;
+  box-sizing: border-box;
+  max-height: calc(100vh - 16px);
+  margin: 0;
+  border: 0;
+  transform-origin: top left;
+  animation: ui-popc-in 220ms var(--ui-popc-ease) both;
+  max-width: calc(100vw - 16px);
+}
+/* Unstyled: the browser's popover look switched off at no weight, so any class of yours wins */
+:where(.ui-popc) { padding: 0; background: none; color: inherit; overflow: visible; }
+/* The card itself – left out with unstyled, so your own classes draw it */
+.ui-popc:not([data-unstyled]) {
+  /* Fits its content up to 360px – a long URL or name wraps instead of stretching it; the width prop lifts the cap */
+  max-width: min(360px, calc(100vw - 16px));
+  padding: 14px;
+  border-radius: calc(var(--aui-radius-lg, 10px) + 2px);
+  background: var(--ui-popc-surface);
+  box-shadow: var(--ui-popc-shadow);
+  color: var(--ui-popc-ink);
+  font-family: var(--aui-font, "Inter", "InterVariable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif);
+  font-size: 13px;
+  line-height: 20px;
+  font-weight: 400;
+  text-align: start;
+  overflow: auto;
+  overscroll-behavior: contain;
+  -webkit-font-smoothing: antialiased;
+}
+.ui-popc::backdrop { display: none; }
+.ui-popc:focus { outline: none; }
+.ui-popc *, .ui-popc *::before, .ui-popc *::after { box-sizing: border-box; }
+
+/* It grows out of the side and edge it is attached to */
+.ui-popc[data-align="end"] { transform-origin: top right; }
+.ui-popc[data-align="center"] { transform-origin: top center; }
+.ui-popc[data-side="top"] { transform-origin: bottom left; animation-name: ui-popc-in-up; }
+.ui-popc[data-side="top"][data-align="end"] { transform-origin: bottom right; }
+.ui-popc[data-side="top"][data-align="center"] { transform-origin: bottom center; }
+.ui-popc[data-side="right"] { transform-origin: top left; animation-name: ui-popc-in-right; }
+.ui-popc[data-side="right"][data-align="end"] { transform-origin: bottom left; }
+.ui-popc[data-side="right"][data-align="center"] { transform-origin: center left; }
+.ui-popc[data-side="left"] { transform-origin: top right; animation-name: ui-popc-in-left; }
+.ui-popc[data-side="left"][data-align="end"] { transform-origin: bottom right; }
+.ui-popc[data-side="left"][data-align="center"] { transform-origin: center right; }
+
+.ui-popc__head { display: grid; gap: 2px; min-width: 0; }
+.ui-popc__head:not(:last-child) { margin-bottom: 12px; }
+.ui-popc__title { margin: 0; font-weight: 500; color: var(--ui-popc-strong); overflow-wrap: anywhere; }
+.ui-popc__desc { margin: 0; font-size: 12px; line-height: 16px; color: var(--ui-popc-muted); overflow-wrap: anywhere; }
+
+@keyframes ui-popc-in { from { opacity: 0; transform: scale(0.96) translateY(-4px); } }
+@keyframes ui-popc-in-up { from { opacity: 0; transform: scale(0.96) translateY(4px); } }
+@keyframes ui-popc-in-right { from { opacity: 0; transform: scale(0.96) translateX(-4px); } }
+@keyframes ui-popc-in-left { from { opacity: 0; transform: scale(0.96) translateX(4px); } }
+
+/* Touch screens: 15px text, so it reads like the rest of a phone UI */
+@media (pointer: coarse) {
+  .ui-popc { padding: 16px; font-size: 15px; line-height: 22px; }
+  .ui-popc__desc { font-size: 13px; line-height: 18px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-popc { animation-duration: 1ms; }
+}
+
+/* Dark mode: follows a .dark class or data-theme="dark" on any ancestor, e.g. <html> */
+:where(.dark, [data-theme="dark"]) .ui-popc {
+  --ui-popc-surface: var(--aui-overlay, var(--aui-surface, #1b1b1e));
+  --ui-popc-strong: var(--aui-ink, #ffffff);
+  --ui-popc-ink: var(--aui-ink, rgba(255, 255, 255, 0.9));
+  --ui-popc-muted: var(--aui-muted, rgba(255, 255, 255, 0.46));
+  --ui-popc-shadow: var(--aui-shadow-popover, 0 0 0 0.5px var(--aui-border-strong, rgba(255, 255, 255, 0.14)), 0 12px 32px -8px rgba(0, 0, 0, 0.6));
+  color-scheme: dark;
+}

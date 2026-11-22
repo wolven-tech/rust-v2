@@ -271,8 +271,10 @@ dependencies = [
  "dioxus",
  "rv2-a2ui",
  "rv2-a2ui-dioxus",
+ "rv2-affect",
  "rv2-api-types",
  "rv2-client",
+ "rv2-kit",
  "rv2-ui",
  "uuid",
 ]
@@ -4621,6 +4623,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "rv2-affect"
+version = "0.1.0"
+dependencies = [
+ "dioxus",
+ "dioxus-ssr",
+]
+
+[[package]]
 name = "rv2-ai"
 version = "0.1.0"
 dependencies = [
@@ -4715,6 +4725,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "rv2-isa"
+version = "0.1.0"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "serde",
+ "serde_json",
+ "syn 2.0.119",
+]
+
+[[package]]
 name = "rv2-jobs"
 version = "0.1.0"
 dependencies = [
@@ -4727,11 +4748,9 @@ dependencies = [
 name = "rv2-kit"
 version = "0.1.0"
 dependencies = [
- "proc-macro2",
- "quote",
- "serde",
- "serde_json",
- "syn 2.0.119",
+ "dioxus",
+ "dioxus-ssr",
+ "rv2-affect",
 ]
 
 [[package]]
@@ -6429,7 +6448,7 @@ checksum = "1ffae5123b2d3fc086436f8834ae3ab053a283cfac8fe0a0b8eaae044768a4c4"
 name = "xtask"
 version = "0.1.0"
 dependencies = [
- "rv2-kit",
+ "rv2-isa",
  "sha2 0.11.1",
 ]
 

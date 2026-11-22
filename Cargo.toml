@@ -7,6 +7,7 @@ members = [
   "crates/rv2-a2ui",
   "crates/rv2-a2ui-dioxus",
   "crates/rv2-allsource",
+  "crates/rv2-affect",
   "crates/rv2-ai",
   "crates/rv2-analytics",
   "crates/rv2-api-types",
@@ -15,9 +16,10 @@ members = [
   "crates/rv2-email",
   "crates/rv2-events",
   "crates/rv2-jobs",
+  "crates/rv2-kit",
   "crates/rv2-shared",
   "crates/rv2-ui",
-  "tooling/kit",
+  "tooling/isa",
   "tooling/xtask",
 ]
 resolver = "3"
@@ -190,6 +192,8 @@ rv2-email = { path = "crates/rv2-email" }
 rv2-events = { path = "crates/rv2-events" }
 rv2-jobs = { path = "crates/rv2-jobs" }
 rv2-shared = { path = "crates/rv2-shared" }
+rv2-affect = { path = "crates/rv2-affect" }
+rv2-kit = { path = "crates/rv2-kit" }
 rv2-ui = { path = "crates/rv2-ui" }
 
 # Full debug info for every dependency is most of a dev build's size on disk.
@@ -212,6 +216,14 @@ strip = true
 # and never reached the browser. Defining it explicitly is what actually sizes
 # the bundle. `opt-level = "z"` over `"s"` because a wasm payload is downloaded
 # before it runs, so bytes cost more than the marginal speed does.
+# What `dx serve` builds for the browser. The dev profile's full debug info
+# and no optimisation produced a 246 MB wasm for apps/app's kit_gallery that
+# Chrome could not instantiate in a usable time.
+[profile.wasm-dev]
+inherits = "dev"
+opt-level = 1
+debug = false
+
 [profile.wasm-release]
 inherits = "release"
 codegen-units = 1

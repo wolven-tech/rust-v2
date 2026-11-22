@@ -1,0 +1,65 @@
+.kit-rd {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+
+.kit-rd__summary {
+  display: grid;
+  gap: 0;
+  margin: 0;
+  border: 1px solid var(--kit-rule-soft);
+  border-radius: var(--kit-radius);
+  background: var(--kit-surface);
+  min-width: 0;
+}
+
+.kit-rd__row {
+  display: grid;
+  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.4fr) auto;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  min-width: 0;
+}
+
+.kit-rd__row + .kit-rd__row {
+  border-top: 1px solid var(--kit-rule-soft);
+}
+
+.kit-rd__label {
+  color: var(--kit-ink-muted);
+  font-size: 13px;
+}
+
+.kit-rd__value {
+  margin: 0;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 550;
+}
+
+.kit-rd__edit {
+  flex: none;
+  min-height: 32px;
+  padding: 0 10px;
+  border: 1px solid var(--kit-rule);
+  border-radius: var(--kit-radius-sm);
+  background: transparent;
+  color: var(--kit-ink);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.kit-rd__edit:hover {
+  background: var(--kit-raised);
+}
+
+.kit-rd__actions {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 8px;
+}

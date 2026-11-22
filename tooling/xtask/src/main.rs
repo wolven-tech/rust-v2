@@ -16,6 +16,8 @@
 //!
 //! - `cargo xtask ci` — everything CI's `check` and `wasm32 boundary` jobs run.
 //! - `cargo xtask styles` — compile each app's Tailwind stylesheet.
+//! - `cargo xtask kit-colours` — the rv2-kit stylesheet colour scan alone.
+//! - `cargo xtask kit-prefixes` — the rv2-kit class-block ownership scan alone.
 //! - `cargo xtask live` — run the tests that need a live Core.
 //! - `cargo xtask core` — run AllSource Core with the dev settings.
 //! - `cargo xtask stage-web` — validate and stage an SSG release bundle.
@@ -26,6 +28,8 @@
 //! and the release bundle (slow, and `meta build` owns it).
 
 mod discovery;
+mod kit_colours;
+mod kit_prefixes;
 mod styles;
 
 use std::process::{Command, Stdio};
@@ -39,6 +43,10 @@ fn main() -> std::process::ExitCode {
                 println!("{app}: {bytes} bytes");
             }
         }),
+        Some("kit-colours") => styles::workspace_root().and_then(|root| kit_colours::check(&root)),
+        Some("kit-prefixes") => {
+            styles::workspace_root().and_then(|root| kit_prefixes::check(&root))
+        }
         Some("live") => live(),
         Some("core") => core(),
         Some("stage-web") => discovery::stage(),
@@ -48,7 +56,9 @@ fn main() -> std::process::ExitCode {
             if let Some(name) = other {
                 eprintln!("unknown task: {name}\n");
             }
-            eprintln!("usage: cargo xtask <ci|styles|live|core|stage-web|stage-app|indexnow>");
+            eprintln!(
+                "usage: cargo xtask <ci|styles|kit-colours|kit-prefixes|live|core|stage-web|stage-app|indexnow>"
+            );
             return std::process::ExitCode::FAILURE;
         }
     };
@@ -118,12 +128,16 @@ fn ci() -> Fallible {
 
     step("no hardcoded hues");
     no_hardcoded_hues()?;
+    kit_colours::check(&styles::workspace_root()?)?;
+
+    step("rv2-kit class blocks are owned once");
+    kit_prefixes::check(&styles::workspace_root()?)?;
 
     step("apps speak the kit");
-    rv2_kit::isa::check(&styles::workspace_root()?)?;
+    rv2_isa::isa::check(&styles::workspace_root()?)?;
 
     step("component index is current");
-    rv2_kit::index::check(&styles::workspace_root()?)?;
+    rv2_isa::index::check(&styles::workspace_root()?)?;
 
     step("wasm32 boundary");
     wasm_boundary()?;
@@ -331,6 +345,10 @@ fn wasm_boundary() -> Fallible {
             "rv2-a2ui-dioxus",
             "-p",
             "rv2-ui",
+            "-p",
+            "rv2-affect",
+            "-p",
+            "rv2-kit",
             "-p",
             "rv2-client",
             "-p",

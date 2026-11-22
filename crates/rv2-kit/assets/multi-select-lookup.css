@@ -1,0 +1,33 @@
+/* Every list item is one unit tall, so a fixed-height list ends on a whole row. */
+.kit-msl { --kit-msl-unit: 44px; position: relative; font-family: var(--kit-font); color: var(--kit-ink); }
+.kit-msl__caption { display: block; font-size: var(--kit-text-sm); color: var(--kit-ink-muted); margin-bottom: var(--kit-space-1); }
+.kit-msl__field { display: flex; flex-wrap: wrap; align-items: center; gap: var(--kit-space-2); min-height: 40px; padding: var(--kit-space-2) var(--kit-space-3); background: var(--kit-surface); border: 1px solid var(--kit-rule-soft); border-radius: var(--kit-radius); }
+.kit-msl[data-open] .kit-msl__field { border-color: var(--kit-rule); }
+.kit-msl__input { flex: 1 1 120px; min-width: 0; border: 0; outline: 0; background: transparent; font: inherit; font-size: var(--kit-text-xl); color: inherit; }
+.kit-msl__chip { display: inline-flex; align-items: center; gap: var(--kit-space-1); max-width: 100%; padding: calc(var(--kit-space-1) / 2) var(--kit-space-1) calc(var(--kit-space-1) / 2) var(--kit-space-2); border-radius: var(--kit-radius-sm); background: var(--kit-raised); font-size: var(--kit-text-md); transition: transform var(--kit-fast) var(--kit-ease); }
+.kit-msl__chip[data-highlight] { box-shadow: inset 0 0 0 1px var(--kit-ink-faint); }
+.kit-msl__chip--more { color: var(--kit-ink-muted); }
+.kit-msl__chip-remove { border: 0; background: transparent; color: var(--kit-ink-muted); cursor: pointer; padding: 0 var(--kit-space-1); }
+.kit-msl__single { font-size: var(--kit-text-lg); }
+.kit-msl__list { position: absolute; z-index: 20; left: 0; right: 0; top: calc(100% + var(--kit-space-2)); display: grid; grid-auto-rows: var(--kit-msl-unit); align-content: start; max-height: calc(var(--kit-msl-unit) * 7 + 2px); overflow: auto; scroll-snap-type: y mandatory; background: var(--kit-surface); border: 1px solid var(--kit-rule-soft); border-radius: var(--kit-radius); box-shadow: var(--kit-shadow-pop); }
+.kit-msl__list > * { scroll-snap-align: start; }
+.kit-msl__group { display: flex; align-items: flex-end; padding: 0 var(--kit-space-3) calc(var(--kit-space-1) * 1.5); font-size: var(--kit-text-xs); text-transform: uppercase; letter-spacing: 0.04em; color: var(--kit-ink-muted); }
+.kit-msl__row { display: flex; align-items: center; gap: var(--kit-space-3); margin: 0 var(--kit-space-1); padding: 0 var(--kit-space-3); border-radius: var(--kit-radius-sm); cursor: pointer; transition: background var(--kit-fast) var(--kit-ease); }
+.kit-msl__row[data-active] { background: var(--kit-raised); }
+.kit-msl__row--create { color: var(--kit-ink-muted); }
+.kit-msl__avatar { width: var(--kit-space-6); height: var(--kit-space-6); flex: none; display: grid; place-items: center; border-radius: 50%; background: var(--kit-raised); font-size: var(--kit-text-sm); overflow: hidden; }
+.kit-msl__img { width: 100%; height: 100%; object-fit: cover; }
+.kit-msl__swatch { width: 100%; height: 100%; display: block; }
+.kit-msl__text { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.kit-msl__label, .kit-msl__hint { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.kit-msl__hit { font-style: normal; font-weight: 600; }
+.kit-msl__hint { font-size: var(--kit-text-sm); color: var(--kit-ink-muted); }
+.kit-msl__check { color: var(--kit-ok-ink); }
+.kit-msl__empty { display: flex; align-items: center; padding: 0 var(--kit-space-3); color: var(--kit-ink-muted); font-size: var(--kit-text-lg); }
+.kit-msl__foot { display: flex; align-items: center; justify-content: space-between; gap: var(--kit-space-2); padding: 0 var(--kit-space-3); border-top: 1px solid var(--kit-rule-soft); font-size: var(--kit-text-sm); color: var(--kit-ink-muted); }
+.kit-msl__keys { display: inline-flex; align-items: center; gap: var(--kit-space-1); white-space: nowrap; }
+.kit-msl__key { min-width: var(--kit-space-5); padding: 0 var(--kit-space-1); border: 1px solid var(--kit-rule-soft); border-radius: var(--kit-radius-sm); background: var(--kit-raised); font-size: var(--kit-text-xs); text-align: center; }
+@media (max-width: 640px) {
+  .kit-msl__input { font-size: var(--kit-text-xl); }
+}
+@media (prefers-reduced-motion: reduce) { .kit-msl__chip, .kit-msl__row { transition: none; } }
