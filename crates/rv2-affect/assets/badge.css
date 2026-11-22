@@ -1,0 +1,141 @@
+/* Colors as variables – override them on .ui-bdgc (see Theming in the docs) */
+.ui-bdgc {
+  --ui-bdgc-neutral-bg: var(--aui-subtle, rgba(0, 0, 0, 0.06));
+  --ui-bdgc-neutral-fg: rgba(0, 0, 0, 0.61);
+  --ui-bdgc-neutral-dot: rgba(0, 0, 0, 0.3);
+  --ui-bdgc-info-bg: var(--aui-info-soft, #008ff519);
+  --ui-bdgc-info-fg: var(--aui-info, #006dcbf2);
+  --ui-bdgc-success-bg: var(--aui-success-soft, #00a43319);
+  --ui-bdgc-success-fg: var(--aui-success, #007d2ee0);
+  --ui-bdgc-warning-bg: var(--aui-warning-soft, #ff9c0029);
+  --ui-bdgc-warning-fg: var(--aui-warning, #b25e00);
+  --ui-bdgc-danger-bg: var(--aui-danger-soft, #f52b0018);
+  --ui-bdgc-danger-fg: var(--aui-danger, #d72400da);
+  --ui-bdgc-purple-bg: color-mix(in srgb, var(--aui-purple, #a651f0) 11%, transparent);
+  --ui-bdgc-purple-fg: #8a35d6;
+
+  --bg: var(--ui-bdgc-neutral-bg);
+  --fg: var(--ui-bdgc-neutral-fg);
+  --dot: currentColor;
+  --h: 18px;
+  --pad: 6px;
+  --lead: 4px;
+  --mark: 12px;
+
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 4px;
+  box-sizing: border-box;
+  max-width: 100%;
+  height: var(--h);
+  padding: 0 var(--pad);
+  border-radius: calc(var(--aui-radius-sm, 5px) - 1px);
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--aui-font, "Inter", "InterVariable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif);
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 16px;
+  letter-spacing: 0;
+  white-space: nowrap;
+  vertical-align: middle;
+  font-variant-numeric: tabular-nums;
+  -webkit-font-smoothing: antialiased;
+}
+.ui-bdgc[data-size="md"] {
+  --h: 20px;
+  --pad: 7px;
+  --lead: 5px;
+  --mark: 13px;
+  gap: 5px;
+  border-radius: var(--aui-radius-sm, 5px);
+  font-size: 12px;
+}
+/* A dot or icon in front sits a little closer to the edge, so it looks as far in as the text on the other side */
+.ui-bdgc[data-lead] {
+  padding-inline-start: var(--lead);
+}
+
+.ui-bdgc[data-tone="neutral"] { --dot: var(--ui-bdgc-neutral-dot); }
+.ui-bdgc[data-tone="info"] { --bg: var(--ui-bdgc-info-bg); --fg: var(--ui-bdgc-info-fg); }
+.ui-bdgc[data-tone="success"] { --bg: var(--ui-bdgc-success-bg); --fg: var(--ui-bdgc-success-fg); }
+.ui-bdgc[data-tone="warning"] { --bg: var(--ui-bdgc-warning-bg); --fg: var(--ui-bdgc-warning-fg); }
+.ui-bdgc[data-tone="danger"] { --bg: var(--ui-bdgc-danger-bg); --fg: var(--ui-bdgc-danger-fg); }
+.ui-bdgc[data-tone="purple"] { --bg: var(--ui-bdgc-purple-bg); --fg: var(--ui-bdgc-purple-fg); }
+
+/* Long text ends in … instead of pushing the row wider */
+.ui-bdgc__label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ui-bdgc__dot {
+  position: relative;
+  flex: none;
+  width: 6px;
+  height: 6px;
+  margin: 0 1px;
+  border-radius: 50%;
+  background: var(--dot);
+}
+/* Live: a soft halo grows out of the dot and fades, over and over */
+.ui-bdgc__dot[data-live]::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: var(--dot);
+  animation: ui-bdgc-live 1.8s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+}
+@keyframes ui-bdgc-live {
+  0% { transform: scale(1); opacity: 0.5; }
+  70%, 100% { transform: scale(2.6); opacity: 0; }
+}
+
+.ui-bdgc__icon {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: var(--mark);
+  height: var(--mark);
+}
+.ui-bdgc__icon > svg,
+.ui-bdgc__icon > img {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* Count: round, at least as wide as it is high, the number centred */
+.ui-bdgc[data-count] {
+  justify-content: center;
+  min-width: var(--h);
+  padding: 0 5px;
+  border-radius: 999px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-bdgc__dot[data-live]::after {
+    animation: none;
+    opacity: 0;
+  }
+}
+
+/* Dark mode: follows a .dark class or data-theme="dark" on any ancestor, e.g. <html> */
+:where(.dark, [data-theme="dark"]) .ui-bdgc {
+  --ui-bdgc-neutral-bg: var(--aui-subtle, rgba(255, 255, 255, 0.08));
+  --ui-bdgc-neutral-fg: rgba(255, 255, 255, 0.62);
+  --ui-bdgc-neutral-dot: rgba(255, 255, 255, 0.34);
+  --ui-bdgc-info-bg: var(--aui-info-soft, #0077ff3a);
+  --ui-bdgc-info-fg: var(--aui-info, #70b8ff);
+  --ui-bdgc-success-bg: var(--aui-success-soft, #00f04a1f);
+  --ui-bdgc-success-fg: var(--aui-success, #5fc88a);
+  --ui-bdgc-warning-bg: var(--aui-warning-soft, #fb6a0025);
+  --ui-bdgc-warning-fg: var(--aui-warning, #ffb35c);
+  --ui-bdgc-danger-bg: var(--aui-danger-soft, #ff35232b);
+  --ui-bdgc-danger-fg: var(--aui-danger, #ff8a7a);
+  --ui-bdgc-purple-bg: color-mix(in srgb, var(--aui-purple, #b98af0) 16%, transparent);
+  --ui-bdgc-purple-fg: #c9a2f5;
+}

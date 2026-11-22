@@ -1,0 +1,482 @@
+.kit-tcn {
+  box-sizing: border-box;
+  position: relative;
+  container-type: inline-size;
+  display: grid;
+  align-content: start;
+  gap: var(--kit-space-3);
+  width: 100%;
+  max-width: 600px;
+  margin-inline: auto;
+  padding: var(--kit-space-4);
+  font-family: var(--kit-font);
+  color: var(--kit-ink);
+  background: var(--kit-surface);
+  border: 1px solid var(--kit-rule-soft);
+  border-radius: var(--kit-radius-card);
+  box-shadow: var(--kit-shadow-card);
+  font-variant-numeric: tabular-nums;
+}
+
+.kit-tcn button {
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+.kit-tcn__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px var(--kit-space-3);
+  font-size: var(--kit-text-sm);
+  line-height: 16px;
+  color: var(--kit-ink-muted);
+}
+
+.kit-tcn__heading {
+  margin: 0;
+  font-size: var(--kit-text-lg);
+  font-weight: 600;
+  line-height: 20px;
+  color: var(--kit-ink);
+}
+
+.kit-tcn__spend {
+  margin-left: auto;
+  color: var(--kit-ink);
+}
+
+.kit-tcn__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 20px;
+  padding: 0 8px 0 7px;
+  border: 0;
+  border-radius: var(--kit-radius-pill);
+  background: var(--kit-raised);
+  font-size: var(--kit-text-sm);
+  line-height: 1;
+}
+
+.kit-tcn__chip:focus-visible {
+  outline: 2px solid var(--kit-accent);
+  outline-offset: 2px;
+}
+
+.kit-tcn__chip::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.kit-tcn__chip[data-tone="waiting"] {
+  background: color-mix(in srgb, var(--kit-warn) 20%, transparent);
+  color: var(--kit-warn-ink);
+}
+
+.kit-tcn__chip[data-tone="error"] {
+  background: color-mix(in srgb, var(--kit-fault) 16%, transparent);
+  color: var(--kit-fault-ink);
+}
+
+.kit-tcn__canvas {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  border-radius: var(--kit-radius);
+  background:
+    radial-gradient(circle closest-side, transparent calc(100% - 1px), var(--kit-rule-soft) calc(100% - 1px), var(--kit-rule-soft) 100%, transparent 100%) 50% 50% / 46% 46% no-repeat,
+    radial-gradient(circle closest-side, transparent calc(100% - 1px), var(--kit-rule-soft) calc(100% - 1px), var(--kit-rule-soft) 100%, transparent 100%) 50% 50% / 80% 80% no-repeat,
+    var(--kit-ground);
+  overflow: hidden;
+}
+
+.kit-tcn__links {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.kit-tcn__links line {
+  stroke: var(--kit-rule);
+  vector-effect: non-scaling-stroke;
+  transition: stroke var(--kit-fast) var(--kit-ease);
+}
+
+.kit-tcn__links line[data-busy="true"] {
+  stroke: var(--kit-ink-muted);
+}
+
+.kit-tcn__links line[data-flash="true"] {
+  animation: kit-tcn-flash 1.2s var(--kit-ease) 2;
+}
+
+/* The inline left/top clamp on each node uses these sizes, so an edge node is pulled inside the canvas. */
+.kit-tcn__node {
+  --kit-tcn-node-w: 17.6%;
+  --kit-tcn-node-h: 96px;
+  position: absolute;
+  transform: translate(-50%, -50%);
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: 3px;
+  width: var(--kit-tcn-node-w);
+  padding: 8px 8px 7px;
+  border: 1px solid var(--kit-rule-soft);
+  border-radius: var(--kit-radius-card);
+  background: var(--kit-surface);
+  box-shadow: var(--kit-shadow);
+  font-size: var(--kit-text-sm);
+  line-height: 16px;
+  text-align: center;
+  z-index: 1;
+  transition: border-color var(--kit-fast) var(--kit-ease), background var(--kit-fast) var(--kit-ease);
+}
+
+.kit-tcn__node:hover {
+  background: color-mix(in srgb, var(--kit-raised) 50%, var(--kit-surface));
+}
+
+.kit-tcn__node:focus-visible {
+  outline: 2px solid var(--kit-accent);
+  outline-offset: 2px;
+}
+
+.kit-tcn__node[data-neighbour="true"] {
+  border-color: var(--kit-accent);
+}
+
+.kit-tcn__node[data-condition="working"] {
+  animation: kit-tcn-breathe 2.4s var(--kit-ease) infinite;
+}
+
+.kit-tcn__node[data-condition="waiting"],
+.kit-tcn__node[data-condition="error"] {
+  --kit-tcn-attn: var(--kit-warn);
+  border-color: var(--kit-tcn-attn);
+  animation: kit-tcn-breathe 1.6s var(--kit-ease) infinite;
+}
+
+.kit-tcn__node[data-condition="error"] {
+  --kit-tcn-attn: var(--kit-fault);
+}
+
+.kit-tcn__node[data-condition="waiting"]::before,
+.kit-tcn__node[data-condition="error"]::before {
+  content: "";
+  position: absolute;
+  inset: -4px;
+  border: 1px solid var(--kit-tcn-attn);
+  border-radius: calc(var(--kit-radius-card) + 4px);
+  animation: kit-tcn-ring 1.6s var(--kit-ease) infinite;
+  pointer-events: none;
+}
+
+.kit-tcn__node[data-condition="waiting"]::after,
+.kit-tcn__node[data-condition="error"]::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(100deg, transparent 35%, color-mix(in srgb, var(--kit-tcn-attn) 22%, transparent) 50%, transparent 65%) 0 0 / 300% 100%;
+  animation: kit-tcn-sweep 2.4s var(--kit-ease) infinite;
+  pointer-events: none;
+}
+
+.kit-tcn__glyph {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 7px;
+  background: oklch(var(--kit-tint-bg-l) var(--kit-tint-bg-c) var(--kit-tcn-hue, 250));
+  color: oklch(var(--kit-tint-ink-l) var(--kit-tint-ink-c) var(--kit-tcn-hue, 250));
+  font-size: var(--kit-text-xs);
+  font-weight: 600;
+  line-height: 1;
+}
+
+.kit-tcn__name {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--kit-text-sm);
+  font-weight: 600;
+}
+
+.kit-tcn__role,
+.kit-tcn__summary {
+  font-size: var(--kit-text-xs);
+  line-height: 14px;
+  color: var(--kit-ink-muted);
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.kit-tcn__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 16px;
+  padding: 0 6px 0 5px;
+  border-radius: var(--kit-radius-pill);
+  background: var(--kit-raised);
+  font-size: var(--kit-text-xs);
+  line-height: 1;
+  white-space: nowrap;
+  color: var(--kit-ink-muted);
+}
+
+.kit-tcn__badge::before {
+  content: "";
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.kit-tcn__node[data-condition="waiting"] .kit-tcn__badge {
+  background: color-mix(in srgb, var(--kit-warn) 20%, transparent);
+  color: var(--kit-warn-ink);
+}
+
+.kit-tcn__node[data-condition="error"] .kit-tcn__badge {
+  background: color-mix(in srgb, var(--kit-fault) 16%, transparent);
+  color: var(--kit-fault-ink);
+}
+
+.kit-tcn__node[data-condition="waiting"] .kit-tcn__badge::before {
+  content: "◷";
+  width: auto;
+  height: auto;
+  border-radius: 0;
+  background: none;
+}
+
+.kit-tcn__node[data-condition="error"] .kit-tcn__badge::before {
+  content: "!";
+  width: auto;
+  height: auto;
+  border-radius: 0;
+  background: none;
+  font-weight: 700;
+}
+
+.kit-tcn__pulse {
+  position: absolute;
+  left: var(--fx);
+  top: var(--fy);
+  width: 8px;
+  height: 8px;
+  margin: -4px 0 0 -4px;
+  border-radius: 50%;
+  background: var(--kit-accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--kit-surface) 70%, transparent);
+  pointer-events: none;
+  animation: kit-tcn-travel 1.2s var(--kit-ease) forwards;
+}
+
+.kit-tcn__pulse[data-phase="back"] {
+  background: var(--kit-ok);
+  animation-delay: 1.2s;
+}
+
+.kit-tcn__pulse[data-result="error"] {
+  background: var(--kit-fault);
+}
+
+.kit-tcn__card {
+  display: grid;
+  gap: var(--kit-space-2);
+  padding: 14px;
+  border: 1px solid var(--kit-rule-soft);
+  border-radius: var(--kit-radius-card);
+  background: var(--kit-surface);
+  box-shadow: var(--kit-shadow-pop);
+  font-size: var(--kit-text-md);
+  line-height: 18px;
+}
+
+.kit-tcn__card-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px var(--kit-space-2);
+}
+
+.kit-tcn__card-name {
+  font-size: var(--kit-text-lg);
+  font-weight: 600;
+  line-height: 20px;
+}
+
+.kit-tcn__card-role,
+.kit-tcn__card-condition,
+.kit-tcn__latency,
+.kit-tcn__spend-line {
+  font-size: var(--kit-text-sm);
+  line-height: 16px;
+  color: var(--kit-ink-muted);
+}
+
+.kit-tcn__close {
+  margin-left: auto;
+  width: 28px;
+  height: 28px;
+  border: 0;
+  border-radius: var(--kit-radius-sm);
+  background: transparent;
+}
+
+.kit-tcn__close:hover {
+  background: var(--kit-raised);
+}
+
+.kit-tcn__close:focus-visible {
+  outline: 2px solid var(--kit-accent);
+  outline-offset: 2px;
+}
+
+.kit-tcn__recent {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--kit-text-sm);
+  line-height: 16px;
+}
+
+.kit-tcn__recent li {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--kit-space-2);
+}
+
+.kit-tcn__activity,
+.kit-tcn__spend-line {
+  margin: 0;
+}
+
+.kit-tcn__sr,
+.kit-tcn__live {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+@keyframes kit-tcn-travel {
+  from {
+    left: var(--fx);
+    top: var(--fy);
+    opacity: 1;
+  }
+  to {
+    left: var(--tx);
+    top: var(--ty);
+    opacity: 0;
+  }
+}
+
+@keyframes kit-tcn-breathe {
+  0%,
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1.04);
+  }
+}
+
+@keyframes kit-tcn-ring {
+  0% {
+    opacity: 0.9;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.08);
+  }
+}
+
+@keyframes kit-tcn-sweep {
+  from {
+    background-position: 100% 0;
+  }
+  to {
+    background-position: 0 0;
+  }
+}
+
+@keyframes kit-tcn-flash {
+  0%,
+  100% {
+    stroke: var(--kit-rule);
+  }
+  50% {
+    stroke: var(--kit-fault);
+  }
+}
+
+/* Node width is a share of the canvas, so the role line goes before nodes overlap their rings. */
+@container (max-width: 520px) {
+  .kit-tcn__role {
+    display: none;
+  }
+}
+
+@container (max-width: 420px) {
+  .kit-tcn__summary,
+  .kit-tcn__stat {
+    display: none;
+  }
+
+  .kit-tcn__canvas {
+    aspect-ratio: auto;
+    display: grid;
+    gap: 10px;
+    padding: var(--kit-space-3);
+    background: var(--kit-ground);
+  }
+
+  .kit-tcn__links,
+  .kit-tcn__pulse {
+    display: none;
+  }
+
+  .kit-tcn__node,
+  .kit-tcn__node[data-condition] {
+    position: static;
+    transform: none;
+    animation: none;
+    width: 100%;
+  }
+
+  .kit-tcn__node::before,
+  .kit-tcn__node::after {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kit-tcn * {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  .kit-tcn__links line[data-busy="true"] {
+    stroke-width: 2.5;
+  }
+}

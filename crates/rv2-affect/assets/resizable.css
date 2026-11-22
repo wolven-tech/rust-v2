@@ -1,0 +1,94 @@
+/* Colors as variables – override them on .ui-rszc (see Theming in the docs) */
+.ui-rszc {
+  --ui-rszc-line: var(--aui-border, rgba(0, 0, 0, 0.06));
+  --ui-rszc-line-active: rgba(0, 0, 0, 0.22);
+  --ui-rszc-grip: var(--aui-surface, #ffffff);
+  --ui-rszc-grip-edge: rgba(0, 0, 0, 0.1);
+  --ui-rszc-focus: var(--aui-focus, rgba(0, 96, 226, 0.7));
+  --ui-rszc-ease: var(--aui-ease, cubic-bezier(0.22, 1, 0.36, 1));
+
+  /* Fills what it is put in; the panes share it by their sizes */
+  display: flex;
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+.ui-rszc[data-direction="vertical"] { flex-direction: column; }
+.ui-rszc *, .ui-rszc *::before, .ui-rszc *::after { box-sizing: border-box; }
+.ui-rszc[data-resizing] { user-select: none; -webkit-user-select: none; }
+.ui-rszc[data-direction="horizontal"][data-resizing] { cursor: col-resize; }
+.ui-rszc[data-direction="vertical"][data-resizing] { cursor: row-resize; }
+/* While dragging, iframes and text under the pointer don't catch it */
+.ui-rszc[data-resizing] > .ui-rszc__panel { pointer-events: none; }
+
+/* A pane: its share of the room, never pushed wider by its content; it scrolls when the content doesn't fit */
+.ui-rszc__panel { position: relative; min-width: 0; min-height: 0; overflow: auto; }
+.ui-rszc[data-snap] > .ui-rszc__panel { transition: flex-grow 220ms var(--ui-rszc-ease); }
+
+/* The handle: a 0.5px hairline in the layout, a 12px grab strip over it */
+.ui-rszc__handle {
+  position: relative;
+  z-index: 1;
+  flex: none;
+  outline: none;
+  touch-action: none;
+  user-select: none;
+  border: 0 solid var(--ui-rszc-line);
+  transition: border-color 150ms ease;
+}
+/* A border, so it stays one crisp device pixel on any screen */
+.ui-rszc[data-direction="horizontal"] > .ui-rszc__handle { width: 0; border-inline-start-width: 0.5px; cursor: col-resize; }
+.ui-rszc[data-direction="vertical"] > .ui-rszc__handle { height: 0; border-top-width: 0.5px; cursor: row-resize; }
+.ui-rszc__handle::after { content: ""; position: absolute; border-radius: 4px; }
+.ui-rszc[data-direction="horizontal"] > .ui-rszc__handle::after { top: 0; bottom: 0; left: -6px; right: -6px; }
+.ui-rszc[data-direction="vertical"] > .ui-rszc__handle::after { left: 0; right: 0; top: -6px; bottom: -6px; }
+/* The line firms up under the pointer (after a short rest, so passing over it stays calm) and while dragging */
+.ui-rszc__handle:hover { border-color: var(--ui-rszc-line-active); transition-delay: 120ms; }
+.ui-rszc__handle[data-dragging], .ui-rszc__handle:focus-visible { border-color: var(--ui-rszc-line-active); transition-delay: 0ms; }
+/* Keyboard focus: the ring around the grab strip, inside it, so the panes' edges never cut it */
+.ui-rszc__handle:focus-visible::after { outline: 2px solid var(--ui-rszc-focus); outline-offset: -2px; }
+
+/* The grip: a small white pill on the line */
+.ui-rszc__grip {
+  position: absolute;
+  z-index: 1;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  border-radius: 999px;
+  background: var(--ui-rszc-grip);
+  box-shadow: 0 0 0 0.5px var(--ui-rszc-grip-edge), 0 1px 2px rgba(0, 0, 0, 0.06);
+  pointer-events: none;
+}
+.ui-rszc[data-direction="horizontal"] .ui-rszc__grip { width: 6px; height: 24px; }
+.ui-rszc[data-direction="vertical"] .ui-rszc__grip { width: 24px; height: 6px; }
+
+/* Touch screens: a wider strip for the finger and a bigger grip */
+@media (pointer: coarse) {
+  .ui-rszc[data-direction="horizontal"] > .ui-rszc__handle::after { left: -12px; right: -12px; }
+  .ui-rszc[data-direction="vertical"] > .ui-rszc__handle::after { top: -12px; bottom: -12px; }
+  .ui-rszc[data-direction="horizontal"] .ui-rszc__grip { width: 8px; height: 32px; }
+  .ui-rszc[data-direction="vertical"] .ui-rszc__grip { width: 32px; height: 8px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-rszc[data-snap] > .ui-rszc__panel { transition: none; }
+  .ui-rszc__handle { transition: none; }
+}
+
+/* Windows high contrast: the line keeps a system color */
+@media (forced-colors: active) {
+  .ui-rszc__handle { border-color: CanvasText; }
+}
+
+/* Dark mode: follows a .dark class or data-theme="dark" on any ancestor, e.g. <html> */
+:where(.dark, [data-theme="dark"]) .ui-rszc {
+  --ui-rszc-line: var(--aui-border, rgba(255, 255, 255, 0.08));
+  --ui-rszc-line-active: rgba(255, 255, 255, 0.3);
+  --ui-rszc-grip: var(--aui-surface, #1f1f22);
+  --ui-rszc-grip-edge: rgba(255, 255, 255, 0.16);
+  --ui-rszc-focus: var(--aui-focus, rgba(77, 141, 255, 0.8));
+}

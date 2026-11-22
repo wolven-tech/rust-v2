@@ -1,0 +1,33 @@
+.kit-ier {
+  container-type: inline-size; display: grid; gap: var(--kit-space-3); width: 100%; max-width: 40rem; box-sizing: border-box;
+  padding: var(--kit-space-4) 18px; border: 1px solid var(--kit-rule-soft); border-radius: var(--kit-radius-card); background: var(--kit-surface);
+  box-shadow: var(--kit-shadow); color: var(--kit-ink); font-family: var(--kit-font); font-size: var(--kit-text-lg); line-height: 1.7;
+}
+.kit-ier__caption { display: flex; align-items: center; gap: var(--kit-space-2); margin: 0; font-size: var(--kit-text-sm); line-height: 16px; font-weight: 600; color: var(--kit-ink-muted); }
+.kit-ier__caption::before { content: ""; flex: none; width: 3px; height: 12px; border-radius: 2px; background: var(--kit-id-1); }
+.kit-ier__body { margin: 0; overflow-wrap: anywhere; }
+.kit-ier__change { display: inline; }
+.kit-ier__hit { display: inline; padding: 0 1px; margin: 0; border: 0; border-radius: var(--kit-radius-sm); background: transparent; color: inherit; font: inherit; cursor: pointer; text-align: inherit; }
+.kit-ier__hit:hover { box-shadow: inset 0 0 0 1px var(--kit-rule); }
+.kit-ier__hit:focus-visible { outline: 2px solid var(--kit-ink-hover); outline-offset: 2px; }
+.kit-ier__removed { color: var(--kit-fault-ink); text-decoration: line-through; text-decoration-color: color-mix(in srgb, var(--kit-fault) 60%, transparent); background: color-mix(in srgb, var(--kit-fault) 12%, transparent); border-radius: var(--kit-radius-sm); transition: opacity var(--kit-fast) var(--kit-ease); }
+.kit-ier__inserted { color: var(--kit-ok-ink); text-decoration: none; background: color-mix(in srgb, var(--kit-ok) 16%, transparent); border-radius: var(--kit-radius-sm); box-shadow: inset 0 -2px 0 color-mix(in srgb, var(--kit-ok) 55%, transparent); animation: kit-ier-settle var(--kit-fast) var(--kit-ease) both; }
+.kit-ier__change[data-active="true"] .kit-ier__hit { outline: 2px solid var(--kit-ink-hover); outline-offset: 2px; border-radius: var(--kit-radius-sm); }
+.kit-ier__change[data-state="rejected"] .kit-ier__inserted { display: none; }
+.kit-ier__change[data-state="accepted"] .kit-ier__removed { display: none; }
+.kit-ier__toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: var(--kit-space-2); padding-top: var(--kit-space-3); border-top: 1px solid var(--kit-rule-soft); }
+.kit-ier__count { display: inline-flex; align-items: center; gap: 6px; height: 24px; box-sizing: border-box; margin-right: auto; padding: 0 10px; border-radius: var(--kit-radius-pill); font-size: var(--kit-text-sm); line-height: 1; font-variant-numeric: tabular-nums; color: var(--kit-warn-ink); background: color-mix(in srgb, var(--kit-warn) 18%, var(--kit-surface)); }
+.kit-ier__count::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.kit-ier[data-state="reviewed"] .kit-ier__count { color: var(--kit-ok-ink); background: var(--kit-ok-soft); }
+.kit-ier__toolbar button { min-height: 30px; box-sizing: border-box; padding: 0 var(--kit-space-3); border-radius: var(--kit-radius); border: 1px solid var(--kit-rule); background: var(--kit-surface); color: var(--kit-ink); font: inherit; font-size: var(--kit-text-md); cursor: pointer; }
+.kit-ier__toolbar button:hover:not(:disabled) { background: var(--kit-ground); }
+.kit-ier__toolbar button:active:not(:disabled) { background: var(--kit-raised); }
+.kit-ier__toolbar button:disabled { opacity: 0.45; cursor: default; }
+.kit-ier__toolbar button:focus-visible { outline: 2px solid var(--kit-ink-hover); outline-offset: 2px; }
+.kit-ier__toolbar .kit-ier__accept-all { background: var(--kit-accent); color: var(--kit-on-ink); border-color: var(--kit-accent); }
+.kit-ier__toolbar .kit-ier__accept-all:hover:not(:disabled) { background: var(--kit-ink-hover); }
+.kit-ier__toolbar .kit-ier__undo { border-color: transparent; background: transparent; color: var(--kit-ink-muted); }
+.kit-ier__live { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+@keyframes kit-ier-settle { from { opacity: 0; } to { opacity: 1; } }
+@container (max-width: 28rem) { .kit-ier__toolbar .kit-ier__count { width: 100%; margin-right: 0; } }
+@media (prefers-reduced-motion: reduce) { .kit-ier__inserted { animation: none; } .kit-ier__removed { transition: none; } }

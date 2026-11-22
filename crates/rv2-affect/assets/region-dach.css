@@ -1,0 +1,240 @@
+.ui-rd {
+  --ui-rd-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  position: relative;
+  width: 100%;
+  aspect-ratio: 540 / 440;
+}
+.ui-rd-map,
+.ui-rd-art {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* One full loop around the border every 14 seconds; the offsets keep the layers slightly staggered */
+.ui-rd-band {
+  animation: ui-rd-travel 14s linear infinite;
+}
+.ui-rd-band--1 {
+  animation-delay: -0.42s;
+}
+.ui-rd-band--2 {
+  animation-delay: -0.84s;
+}
+@keyframes ui-rd-travel {
+  from {
+    stroke-dashoffset: 0;
+  }
+  to {
+    stroke-dashoffset: -1000;
+  }
+}
+
+/* Switching: the old map fades and grows away, the new one settles in from slightly smaller */
+.ui-rd-layer {
+  transform-box: view-box;
+  transform-origin: 270px 220px;
+}
+.ui-rd-layer[data-phase="enter"] {
+  animation: ui-rd-in 520ms var(--ui-rd-ease) both;
+}
+.ui-rd-layer[data-phase="exit"] {
+  animation: ui-rd-out 320ms cubic-bezier(0.4, 0, 1, 1) both;
+}
+@keyframes ui-rd-in {
+  from {
+    opacity: 0;
+    transform: scale(0.94);
+  }
+}
+@keyframes ui-rd-out {
+  to {
+    opacity: 0;
+    transform: scale(1.04);
+  }
+}
+
+/* ---------- Region menu ---------- */
+.ui-rd-switch {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 1;
+  padding: 12px;
+  transform: scale(var(--ui-rd-s, 1));
+  transform-origin: 0 0;
+  font-family: inherit;
+  -webkit-font-smoothing: antialiased;
+}
+.ui-rd-trigger {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: 28px;
+  margin: 0;
+  padding: 0 8px 0 12px;
+  border: 1px solid #e5e5e5;
+  border-radius: 999px;
+  background: #ffffff;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  color: #171717;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: transform 160ms var(--ui-rd-ease);
+}
+.ui-rd-trigger:active {
+  transform: scale(0.96);
+}
+.ui-rd-trigger:focus-visible {
+  outline: 2px solid #a8b5ff;
+  outline-offset: 2px;
+}
+.ui-rd-chevron {
+  width: 14px;
+  height: 14px;
+  transition: transform 220ms var(--ui-rd-ease);
+}
+.ui-rd-trigger[aria-expanded="true"] .ui-rd-chevron {
+  transform: rotate(180deg);
+}
+
+/* Opening morphs the panel out of a trigger-sized pill in its top-left corner */
+.ui-rd-menu {
+  --morph: 420ms cubic-bezier(0.32, 0.72, 0, 1);
+  position: absolute;
+  top: calc(12px + 28px + 6px);
+  left: 12px;
+  width: 172px;
+  /* the shadow sits on the wrapper, so it follows the morphing shape */
+  filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.08)) drop-shadow(0 1px 2.5px rgba(0, 0, 0, 0.05));
+  transition: visibility 0s linear 0s;
+}
+.ui-rd-menu[data-open="false"] {
+  visibility: hidden;
+  pointer-events: none;
+  transition: visibility 0s linear 300ms;
+}
+.ui-rd-panel {
+  position: relative;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  padding: 5px;
+  background: #ffffff;
+  border: 1px solid #e5e5e5;
+  border-radius: 16px;
+  outline: none;
+  clip-path: inset(0 0 0 0 round 16px);
+  transition: clip-path var(--morph);
+}
+.ui-rd-menu[data-open="false"] .ui-rd-panel {
+  clip-path: inset(0 calc(100% - var(--from-w)) calc(100% - var(--from-h)) 0 round calc(var(--from-h) / 2));
+  transition: clip-path 300ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+/* The rows fade in once the shape has opened up, and out first when closing */
+.ui-rd-panel > * {
+  transition:
+    opacity 220ms ease-out 110ms,
+    transform 380ms var(--ui-rd-ease) 60ms;
+}
+.ui-rd-menu[data-open="false"] .ui-rd-panel > * {
+  opacity: 0;
+  transition: opacity 120ms ease-in;
+}
+.ui-rd-menu[data-open="false"] .ui-rd-option {
+  transform: translateY(-4px);
+}
+.ui-rd-fill {
+  position: absolute;
+  top: 0;
+  left: 5px;
+  right: 5px;
+  border-radius: 10px;
+  background: #f5f5f5;
+  pointer-events: none;
+  transition:
+    transform 190ms cubic-bezier(0.25, 1, 0.3, 1),
+    height 190ms cubic-bezier(0.25, 1, 0.3, 1),
+    opacity 160ms ease-out;
+}
+.ui-rd-fill[data-glide="false"] {
+  transition: opacity 160ms ease-out;
+}
+.ui-rd-option {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 8px 7px 10px;
+  border-radius: 10px;
+  color: #171717;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 18px;
+  cursor: pointer;
+}
+.ui-rd-option-name {
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+}
+.ui-rd-check {
+  flex: none;
+  width: 15px;
+  height: 15px;
+  opacity: 0;
+  transform: scale(0.6);
+  transition:
+    opacity 160ms ease-out,
+    transform 260ms cubic-bezier(0.34, 1.5, 0.64, 1);
+}
+.ui-rd-check svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.ui-rd-option[aria-selected="true"] .ui-rd-check {
+  opacity: 1;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-rd-band,
+  .ui-rd-layer {
+    animation: none !important;
+  }
+  .ui-rd-layer[data-phase="exit"] {
+    display: none;
+  }
+  .ui-rd-panel,
+  .ui-rd-panel > *,
+  .ui-rd-fill,
+  .ui-rd-check,
+  .ui-rd-chevron {
+    transition: none !important;
+  }
+}
+
+/* Dark mode: follows a .dark class or data-theme="dark" on any ancestor, e.g. <html> */
+:where(.dark, [data-theme="dark"]) .ui-rd-neighbors { stroke: #5c5c63; }
+:where(.dark, [data-theme="dark"]) .ui-rd-land { fill: #2c2c30; stroke: #4a4a50; }
+:where(.dark, [data-theme="dark"]) .ui-rd-drop { flood-color: #000000; flood-opacity: 0.45; }
+:where(.dark, [data-theme="dark"]) .ui-rd-trigger {
+  border-color: rgba(255, 255, 255, 0.08);
+  background: #232326;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+  color: #ededed;
+}
+:where(.dark, [data-theme="dark"]) .ui-rd-chevron-ink { stroke: #8f8f8f; }
+:where(.dark, [data-theme="dark"]) .ui-rd-menu {
+  filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.4)) drop-shadow(0 1px 2.5px rgba(0, 0, 0, 0.35));
+}
+:where(.dark, [data-theme="dark"]) .ui-rd-panel { background: #232326; border-color: rgba(255, 255, 255, 0.08); }
+:where(.dark, [data-theme="dark"]) .ui-rd-fill { background: #2a2a2d; }
+:where(.dark, [data-theme="dark"]) .ui-rd-option { color: #ededed; }

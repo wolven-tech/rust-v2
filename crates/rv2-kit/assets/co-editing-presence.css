@@ -1,0 +1,571 @@
+.kit-cocopy {
+  --kit-cocopy-gutter: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--kit-space-2);
+  width: 100%;
+  max-width: 720px;
+  margin-inline: auto;
+  color: var(--kit-ink);
+  font-family: var(--kit-font);
+  font-size: var(--kit-text-md);
+  line-height: 18px;
+  font-variant-numeric: tabular-nums;
+}
+
+.kit-cocopy__sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.kit-cocopy__views,
+.kit-cocopy__faces {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--kit-space-1);
+}
+
+.kit-cocopy__views {
+  align-self: flex-start;
+  padding: 2px;
+  border: 1px solid var(--kit-rule-soft);
+  border-radius: var(--kit-radius-sm);
+  background: var(--kit-raised);
+}
+
+.kit-cocopy__view {
+  font: inherit;
+  font-size: var(--kit-text-md);
+  line-height: 18px;
+  color: var(--kit-ink-muted);
+  background: transparent;
+  border: 0;
+  border-radius: var(--kit-radius-sm);
+  padding: var(--kit-space-1) 10px;
+  cursor: pointer;
+}
+
+.kit-cocopy__view:hover {
+  color: var(--kit-ink);
+}
+
+.kit-cocopy__view[aria-pressed="true"] {
+  background: var(--kit-surface);
+  color: var(--kit-ink);
+  box-shadow: var(--kit-shadow);
+}
+
+.kit-cocopy__card {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--kit-rule-soft);
+  border-radius: var(--kit-radius-card);
+  background: var(--kit-surface);
+  box-shadow: var(--kit-shadow-card);
+}
+
+.kit-cocopy__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--kit-space-2) var(--kit-space-3);
+  padding: var(--kit-space-3) var(--kit-space-4);
+  border-bottom: 1px solid var(--kit-rule-soft);
+  font-size: var(--kit-text-sm);
+  line-height: 16px;
+  color: var(--kit-ink-muted);
+}
+
+.kit-cocopy__crumbs ol {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: var(--kit-ink);
+  font-size: var(--kit-text-md);
+  font-weight: 600;
+  line-height: 18px;
+}
+
+.kit-cocopy__crumbs li + li::before {
+  content: "›";
+  margin: 0 6px;
+  color: var(--kit-ink-muted);
+  font-weight: 400;
+}
+
+.kit-cocopy__present {
+  margin-left: auto;
+  white-space: nowrap;
+}
+
+.kit-cocopy__face {
+  display: inline-grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 1px solid var(--kit-cocopy-solid);
+  border-radius: var(--kit-radius-pill);
+  background: var(--kit-cocopy-soft);
+  color: var(--kit-ink);
+  font: inherit;
+  font-size: var(--kit-text-sm);
+  font-weight: 600;
+  line-height: 1;
+  cursor: pointer;
+  overflow: visible;
+  transition: box-shadow var(--kit-fast) var(--kit-ease), opacity var(--kit-fast) var(--kit-ease);
+}
+
+.kit-cocopy__face:hover {
+  box-shadow: 0 0 0 2px var(--kit-surface), 0 0 0 3px var(--kit-cocopy-solid);
+}
+
+.kit-cocopy__face:active {
+  opacity: 0.8;
+}
+
+.kit-cocopy__face[data-presence="absent"] {
+  opacity: 0.5;
+}
+
+.kit-cocopy__face[data-presence="typing"] {
+  box-shadow: 0 0 0 2px var(--kit-ok-soft), 0 0 0 4px var(--kit-ok);
+}
+
+.kit-cocopy__face[aria-pressed="true"] {
+  background: var(--kit-ink);
+  border-color: var(--kit-ink);
+  color: var(--kit-on-ink);
+  box-shadow: 0 0 0 2px var(--kit-surface), 0 0 0 3px var(--kit-cocopy-solid);
+}
+
+.kit-cocopy__picture {
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  object-fit: cover;
+}
+
+.kit-cocopy__apply-all,
+.kit-cocopy__apply,
+.kit-cocopy__dismiss,
+.kit-cocopy__pin-close {
+  font: inherit;
+  font-size: var(--kit-text-md);
+  min-height: 28px;
+  padding: 0 var(--kit-space-3);
+  border-radius: var(--kit-radius-sm);
+  border: 1px solid var(--kit-rule);
+  background: var(--kit-surface);
+  color: var(--kit-ink);
+  cursor: pointer;
+  transition: background var(--kit-fast) var(--kit-ease);
+}
+
+.kit-cocopy__apply-all:hover,
+.kit-cocopy__dismiss:hover,
+.kit-cocopy__pin-close:hover {
+  background: var(--kit-raised);
+}
+
+.kit-cocopy__apply-all:active,
+.kit-cocopy__dismiss:active,
+.kit-cocopy__pin-close:active {
+  background: var(--kit-rule-soft);
+}
+
+.kit-cocopy__apply {
+  background: var(--kit-primary);
+  color: var(--kit-on-primary);
+  border-color: var(--kit-primary);
+}
+
+.kit-cocopy__apply:hover {
+  opacity: 0.9;
+}
+
+.kit-cocopy__page {
+  position: relative;
+  padding: var(--kit-space-4) clamp(14px, 4vw, 40px) var(--kit-space-4) calc(clamp(14px, 4vw, 40px) + var(--kit-cocopy-gutter));
+  overflow-x: hidden;
+  overflow-y: auto;
+  font-size: var(--kit-text-lg);
+  line-height: 1.6;
+}
+
+.kit-cocopy__page[data-faded="true"]::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 48px;
+  background: linear-gradient(to bottom, transparent, var(--kit-surface));
+  pointer-events: none;
+}
+
+.kit-cocopy__block {
+  position: relative;
+  container-type: inline-size;
+  margin: 0 0 0.6em;
+}
+
+/* Containment would hold the float inside its block, so the next paragraph would not wrap beside it. */
+.kit-cocopy__block[data-kind="image"] {
+  container-type: normal;
+}
+
+.kit-cocopy__title,
+.kit-cocopy__heading {
+  margin: 0 0 0.4em;
+  line-height: 1.25;
+}
+
+.kit-cocopy__title {
+  font-size: 22px;
+  font-weight: 600;
+}
+
+.kit-cocopy__heading {
+  font-size: var(--kit-text-xl);
+  font-weight: 600;
+}
+
+.kit-cocopy__para {
+  margin: 0;
+}
+
+.kit-cocopy__list {
+  margin: 0 0 0.6em;
+  padding-left: 1.4em;
+}
+
+.kit-cocopy__code {
+  margin: 0;
+  padding: 10px var(--kit-space-3);
+  border-radius: var(--kit-radius-sm);
+  background: var(--kit-raised);
+  font-family: var(--kit-mono);
+  font-size: var(--kit-text-md);
+  white-space: pre-wrap;
+}
+
+.kit-cocopy__image {
+  margin: 0;
+  max-width: 100%;
+  position: relative;
+}
+
+.kit-cocopy__image[data-wrap="left"] {
+  float: left;
+  margin: 0 1em var(--kit-space-2) 0;
+}
+
+.kit-cocopy__image[data-wrap="right"] {
+  float: right;
+  margin: 0 0 var(--kit-space-2) 1em;
+}
+
+.kit-cocopy__image img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: var(--kit-radius-sm);
+  animation: kit-cocopy-fade var(--kit-slow) var(--kit-ease);
+}
+
+.kit-cocopy__image figcaption {
+  font-size: var(--kit-text-sm);
+  line-height: 16px;
+  color: var(--kit-ink-muted);
+}
+
+.kit-cocopy__sweep {
+  display: block;
+  aspect-ratio: 16 / 9;
+  border-radius: var(--kit-radius-sm);
+  background: linear-gradient(90deg, var(--kit-raised) 30%, var(--kit-surface) 50%, var(--kit-raised) 70%);
+  background-size: 200% 100%;
+  animation: kit-cocopy-sweep 1.4s linear infinite;
+}
+
+.kit-cocopy__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--kit-text-md);
+}
+
+.kit-cocopy__table th,
+.kit-cocopy__table td {
+  padding: var(--kit-space-2) 10px;
+  border-bottom: 1px solid var(--kit-rule-soft);
+  text-align: left;
+}
+
+.kit-cocopy__table th {
+  font-size: var(--kit-text-sm);
+  font-weight: 600;
+  color: var(--kit-ink-muted);
+}
+
+@container (max-width: 480px) {
+  .kit-cocopy__table thead { display: none; }
+  .kit-cocopy__table,
+  .kit-cocopy__table tbody,
+  .kit-cocopy__table tr,
+  .kit-cocopy__table td { display: block; width: 100%; }
+  .kit-cocopy__table tr { padding: var(--kit-space-2) 0; border-bottom: 1px solid var(--kit-rule-soft); }
+  .kit-cocopy__table td { padding: 2px 0; border-bottom: 0; }
+  .kit-cocopy__table td[data-label]::before {
+    content: attr(data-label); display: block; font-size: var(--kit-text-sm); font-weight: 600; color: var(--kit-ink-muted);
+  }
+}
+
+.kit-cocopy__badge {
+  display: inline-block;
+  padding: 1px var(--kit-space-2);
+  border-radius: var(--kit-radius-pill);
+  background: var(--kit-ok-soft);
+  color: var(--kit-ok-ink);
+  font-size: var(--kit-text-sm);
+}
+
+.kit-cocopy__removed {
+  color: var(--kit-fault-ink);
+  text-decoration: line-through;
+  text-decoration-color: var(--kit-fault);
+}
+
+.kit-cocopy__inserted {
+  color: var(--kit-ok-ink);
+  text-decoration: underline;
+  text-decoration-color: var(--kit-ok);
+  text-underline-offset: 3px;
+}
+
+.kit-cocopy__selected {
+  background: color-mix(in srgb, var(--kit-cocopy-solid) 22%, transparent);
+  border-radius: 3px;
+  transition: opacity var(--kit-slow) var(--kit-ease);
+}
+
+.kit-cocopy__selected[data-faded="true"] {
+  opacity: 0.25;
+}
+
+.kit-cocopy__removed[role="button"],
+.kit-cocopy__inserted[role="button"] {
+  cursor: pointer;
+  border-radius: 3px;
+  transition: background var(--kit-fast) var(--kit-ease);
+}
+
+.kit-cocopy__removed[role="button"]:hover {
+  background: color-mix(in srgb, var(--kit-fault) 12%, transparent);
+}
+
+.kit-cocopy__inserted[role="button"]:hover {
+  background: color-mix(in srgb, var(--kit-ok) 14%, transparent);
+}
+
+.kit-cocopy__removed:focus-visible,
+.kit-cocopy__inserted:focus-visible,
+.kit-cocopy__face:focus-visible,
+.kit-cocopy__pin-marker:focus-visible,
+.kit-cocopy__view:focus-visible,
+.kit-cocopy__apply-all:focus-visible,
+.kit-cocopy__apply:focus-visible,
+.kit-cocopy__dismiss:focus-visible,
+.kit-cocopy__pin-close:focus-visible,
+.kit-cocopy__pin-reply:focus-visible {
+  outline: 2px solid var(--kit-accent);
+  outline-offset: 2px;
+}
+
+/* The margin reserves a band above the line for the glyph and flag, so neither covers document text. */
+.kit-cocopy__caret {
+  position: relative;
+  display: inline-block;
+  width: 0;
+  height: 1.1em;
+  margin-top: var(--kit-space-6);
+  vertical-align: text-bottom;
+  transition: opacity var(--kit-slow) var(--kit-ease);
+}
+
+.kit-cocopy__caret[data-typing="true"]::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -1px;
+  width: 2px;
+  background: var(--kit-cocopy-solid);
+}
+
+.kit-cocopy__caret[data-faded="true"] {
+  opacity: 0.25;
+}
+
+.kit-cocopy__pointer {
+  position: absolute;
+  bottom: calc(100% + var(--kit-space-1));
+  left: -9px;
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  border-radius: var(--kit-radius-pill);
+  background: var(--kit-cocopy-solid);
+  color: var(--kit-on-ink);
+  font-size: var(--kit-text-xs);
+  font-weight: 600;
+  line-height: 1;
+}
+
+.kit-cocopy__flag {
+  position: absolute;
+  bottom: calc(100% + var(--kit-space-1));
+  left: 12px;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  white-space: nowrap;
+  padding: 2px 6px;
+  border-radius: var(--kit-radius-sm);
+  background: var(--kit-cocopy-solid);
+  color: var(--kit-on-ink);
+  font-size: var(--kit-text-xs);
+  font-weight: 600;
+  line-height: 14px;
+  box-shadow: var(--kit-shadow);
+}
+
+.kit-cocopy__flag-activity {
+  font-weight: 400;
+}
+
+.kit-cocopy__flag-spend {
+  padding: 0 4px;
+  border-radius: var(--kit-radius-pill);
+  background: color-mix(in srgb, var(--kit-on-ink) 22%, transparent);
+}
+
+.kit-cocopy__window {
+  position: absolute;
+  z-index: 3;
+  top: 100%;
+  left: 0;
+  display: grid;
+  gap: var(--kit-space-2);
+  min-width: 220px;
+  max-width: min(320px, 100%);
+  padding: var(--kit-space-3) 14px;
+  border: 1px solid var(--kit-rule-soft);
+  border-radius: var(--kit-radius);
+  background: var(--kit-surface);
+  box-shadow: var(--kit-shadow-pop);
+  font-size: var(--kit-text-md);
+  line-height: 18px;
+}
+
+.kit-cocopy__reason {
+  margin: 0;
+  color: var(--kit-ink-muted);
+}
+
+.kit-cocopy__actions {
+  display: flex;
+  gap: 6px;
+}
+
+/* Pin markers sit in the page's left gutter; the top comes from the anchor's measured offset. */
+.kit-cocopy__pin {
+  position: absolute;
+  z-index: 2;
+  left: calc(var(--kit-cocopy-gutter) * -1);
+  line-height: 0;
+}
+
+.kit-cocopy__pin-marker {
+  display: inline-grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: 1px solid var(--kit-cocopy-solid);
+  border-radius: var(--kit-radius-pill);
+  background: var(--kit-cocopy-soft);
+  color: var(--kit-ink);
+  font: inherit;
+  font-size: var(--kit-text-xs);
+  font-weight: 600;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.kit-cocopy__pin-marker:hover {
+  box-shadow: 0 0 0 2px var(--kit-surface), 0 0 0 3px var(--kit-cocopy-solid);
+}
+
+/* The width is the space to the right of the marker inside its block, so a note never leaves the page. */
+.kit-cocopy__pin-window {
+  position: absolute;
+  z-index: 4;
+  top: 26px;
+  left: calc(100% + var(--kit-space-2));
+  display: flex;
+  flex-direction: column;
+  gap: var(--kit-space-2);
+  width: min(240px, calc(100cqi - 2px));
+  padding: var(--kit-space-3) 14px;
+  border: 1px solid var(--kit-rule-soft);
+  border-radius: var(--kit-radius);
+  background: var(--kit-surface);
+  box-shadow: var(--kit-shadow-pop);
+  font-size: var(--kit-text-md);
+  line-height: 18px;
+}
+
+.kit-cocopy__pin-body {
+  color: var(--kit-ink);
+}
+
+.kit-cocopy__pin-reply {
+  font: inherit;
+  font-size: var(--kit-text-md);
+  height: 30px;
+  padding: 0 10px;
+  border: 1px solid var(--kit-rule);
+  border-radius: var(--kit-radius-sm);
+  background: var(--kit-surface);
+  color: var(--kit-ink);
+}
+
+@keyframes kit-cocopy-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes kit-cocopy-sweep {
+  from { background-position: 100% 0; }
+  to { background-position: -100% 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kit-cocopy__caret,
+  .kit-cocopy__face,
+  .kit-cocopy__image img,
+  .kit-cocopy__sweep {
+    transition: none;
+    animation: none;
+  }
+}

@@ -1,0 +1,80 @@
+/* --kit-flow-fill is set inline from the gradient token in flowing_gradient_text.rs. */
+.kit-gradient-text {
+  overflow-wrap: break-word;
+}
+
+.kit-gradient-text__fill {
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+  color: var(--kit-ink);
+}
+
+.kit-gradient-text__fill[data-phase="sweeping"],
+.kit-gradient-text__fill[data-phase="flowing"] {
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  background-image: var(--kit-flow-fill);
+  background-size: 200% 100%;
+  background-repeat: repeat-x;
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
+.kit-gradient-text__fill[data-phase="sweeping"] {
+  animation: kit-gradient-sweep 1200ms var(--kit-ease) 1 both;
+}
+
+.kit-gradient-text__fill[data-phase="flowing"] {
+  animation: kit-gradient-flow 9000ms linear infinite;
+}
+
+.kit-gradient-text__replay {
+  display: inline-block;
+  margin-left: 0.5em;
+  padding: 0.125em 0.5em;
+  vertical-align: middle;
+  font: inherit;
+  font-size: 0.8rem;
+  color: var(--kit-ink-muted);
+  background: none;
+  border: 1px solid var(--kit-rule-soft);
+  border-radius: var(--kit-radius-sm);
+  cursor: pointer;
+}
+
+.kit-gradient-text__replay:focus-visible {
+  outline: 2px solid var(--kit-ink);
+  outline-offset: 2px;
+}
+
+@keyframes kit-gradient-sweep {
+  from {
+    background-position: 100% 0;
+  }
+  to {
+    background-position: 0% 0;
+  }
+}
+
+@keyframes kit-gradient-flow {
+  from {
+    background-position: 0% 0;
+  }
+  to {
+    background-position: 200% 0;
+  }
+}
+
+/* Reduced motion: the fixed gradient shows in every phase, with no sweep or flow. */
+@media (prefers-reduced-motion: reduce) {
+  .kit-gradient-text__fill[data-phase] {
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+    background-image: var(--kit-flow-fill);
+    background-size: 200% 100%;
+    background-repeat: repeat-x;
+    -webkit-background-clip: text;
+    background-clip: text;
+    animation: none;
+  }
+}

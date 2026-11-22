@@ -1,0 +1,110 @@
+.ui-lc {
+  --ui-lc-bubble: #ffffff;
+  --ui-lc-mid: #ffffff;
+  --ui-lc-ring: rgba(0, 0, 0, 0.06);
+  --ui-lc-shadow: 0 1px 2px rgba(0, 0, 0, 0.05), 0 8px 20px -8px rgba(0, 0, 0, 0.12);
+  --ui-lc-shadow-hover: 0 2px 4px rgba(0, 0, 0, 0.06), 0 14px 28px -10px rgba(0, 0, 0, 0.18);
+  --ui-lc-ink: #171717;
+  --ui-lc-ease-out: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ui-lc-spin: 48s;
+  container-type: inline-size;
+  width: 100%;
+  max-width: 420px;
+  aspect-ratio: 1;
+}
+.ui-lc-frame {
+  --ui-lc-u: calc(100cqw / 320);
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+/* The middle: a white disc that appears first */
+.ui-lc-mid {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: calc(132 * var(--ui-lc-u));
+  height: calc(132 * var(--ui-lc-u));
+  translate: -50% -50%;
+  border-radius: 50%;
+  background: var(--ui-lc-mid);
+  box-shadow: 0 0 0 1px var(--ui-lc-ring), var(--ui-lc-shadow);
+  color: var(--ui-lc-ink);
+  opacity: 0;
+  scale: 0.6;
+}
+.ui-lc-mid svg { width: 34%; height: auto; }
+.ui-lc[data-shown] .ui-lc-mid { animation: ui-lc-mid 420ms var(--ui-lc-ease-out) both; }
+
+/* Bubbles start hidden behind the middle and bounce out to their spot */
+.ui-lc-bubble {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: calc(calc(1 * var(--ui-lc-u)) * var(--s));
+  height: calc(calc(1 * var(--ui-lc-u)) * var(--s));
+  margin: calc(calc(-0.5 * var(--ui-lc-u)) * var(--s)) 0 0 calc(calc(-0.5 * var(--ui-lc-u)) * var(--s));
+  opacity: 0;
+  translate: 0 0;
+  scale: 0.3;
+}
+.ui-lc[data-shown] .ui-lc-bubble { animation: ui-lc-out 520ms var(--ui-lc-ease-out) var(--delay) both; }
+/* After the last bubble has landed, the whole ring turns slowly clockwise */
+.ui-lc-orbit { position: absolute; inset: 0; }
+.ui-lc[data-shown] .ui-lc-orbit { animation: ui-lc-spin var(--ui-lc-spin) linear 0.8s infinite; }
+.ui-lc-face {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: var(--ui-lc-bubble);
+  box-shadow: 0 0 0 1px var(--ui-lc-ring), var(--ui-lc-shadow);
+  color: inherit;
+}
+/* Each logo turns back at the same pace, so it stays upright while the ring turns */
+.ui-lc[data-shown] .ui-lc-face { animation: ui-lc-spin var(--ui-lc-spin) linear 0.8s infinite reverse; }
+.ui-lc-face svg { width: 50%; height: 50%; }
+/* Hover: the bubble grows a little and lifts with a softer, wider shadow */
+.ui-lc-face {
+  transition: scale 260ms var(--ui-lc-ease-out), box-shadow 260ms ease;
+}
+@media (hover: hover) {
+  .ui-lc-face:hover {
+    scale: 1.12;
+    box-shadow: 0 0 0 1px var(--ui-lc-ring), var(--ui-lc-shadow-hover);
+  }
+}
+.ui-lc[data-paused] .ui-lc-orbit, .ui-lc[data-paused] .ui-lc-face { animation-play-state: paused; }
+.ui-lc-bubble:not([style*="color"]) { color: var(--ui-lc-ink); }
+
+@keyframes ui-lc-mid {
+  to { opacity: 1; scale: 1; }
+}
+@keyframes ui-lc-out {
+  0% { opacity: 0; translate: 0 0; scale: 0.3; }
+  25% { opacity: 1; }
+  100% { opacity: 1; translate: calc(calc(1 * var(--ui-lc-u)) * var(--x)) calc(calc(1 * var(--ui-lc-u)) * var(--y)); scale: 1; }
+}
+@keyframes ui-lc-spin {
+  to { rotate: 360deg; }
+}
+
+:where(.dark, [data-theme="dark"]) .ui-lc {
+  --ui-lc-bubble: #232326;
+  --ui-lc-mid: #2a2a2e;
+  --ui-lc-ring: rgba(255, 255, 255, 0.08);
+  --ui-lc-shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 8px 20px -8px rgba(0, 0, 0, 0.6);
+  --ui-lc-shadow-hover: 0 2px 4px rgba(0, 0, 0, 0.45), 0 14px 28px -10px rgba(0, 0, 0, 0.7);
+  --ui-lc-ink: #ededed;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-lc .ui-lc-mid, .ui-lc .ui-lc-bubble, .ui-lc .ui-lc-face, .ui-lc .ui-lc-orbit { animation: none !important; opacity: 1; scale: 1; }
+  .ui-lc .ui-lc-face { transition: none; }
+  .ui-lc .ui-lc-bubble { translate: calc(calc(1 * var(--ui-lc-u)) * var(--x)) calc(calc(1 * var(--ui-lc-u)) * var(--y)); }
+}

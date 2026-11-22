@@ -1,0 +1,260 @@
+/* Keyboard prompt input. Keys lift and waves spread by transform and opacity; the spot moves by transform. */
+.kit-kbp {
+  display: grid;
+  gap: 14px;
+  width: 100%;
+  max-width: 520px;
+  min-width: 0;
+  margin: 0 auto;
+  padding: 0 6px;
+  box-sizing: border-box;
+  color: var(--kit-ink);
+  font-family: var(--kit-font);
+}
+
+.kit-kbp[data-mode="decorative"] {
+  pointer-events: none;
+}
+
+.kit-kbp__field {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  isolation: isolate;
+  min-height: 48px;
+  box-sizing: border-box;
+  padding: 0 18px;
+  border: 1px solid var(--kit-rule-soft);
+  border-radius: var(--kit-radius-pill);
+  background: var(--kit-surface);
+  box-shadow: var(--kit-shadow);
+  transition: border-color var(--kit-fast) var(--kit-ease), box-shadow var(--kit-fast) var(--kit-ease);
+}
+
+.kit-kbp__field::before {
+  content: "";
+  position: absolute;
+  inset: -4px;
+  z-index: -1;
+  border-radius: inherit;
+  border: 1px solid var(--kit-accent);
+  opacity: 0.25;
+  animation: kit-kbp-ring 2.6s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.kit-kbp[data-paused] .kit-kbp__field::before {
+  animation: none;
+  opacity: 0.08;
+}
+
+.kit-kbp__field:focus-within {
+  border-color: var(--kit-accent);
+  box-shadow: var(--kit-shadow-pop);
+  outline: 2px solid var(--kit-accent);
+  outline-offset: 2px;
+}
+
+.kit-kbp__text {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: 15px;
+  transition: opacity var(--kit-fast) var(--kit-ease);
+}
+
+.kit-kbp__text.is-fading {
+  opacity: 0;
+}
+
+.kit-kbp__placeholder {
+  color: var(--kit-ink-faint);
+}
+
+.kit-kbp__caret {
+  display: inline-block;
+  width: 1px;
+  height: 1.1em;
+  margin-left: 2px;
+  vertical-align: text-bottom;
+  background: var(--kit-ink);
+  animation: kit-kbp-caret 1s steps(1) infinite;
+}
+
+.kit-kbp__input {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 12px 0;
+  border: 0;
+  background: transparent;
+  color: var(--kit-ink);
+  font: inherit;
+  font-size: 15px;
+  line-height: 1.4;
+  resize: none;
+  outline: none;
+}
+
+.kit-kbp__sending {
+  flex: none;
+  font-size: 12px;
+  color: var(--kit-ink-muted);
+}
+
+.kit-kbp[data-sending] .kit-kbp__field {
+  animation: kit-kbp-send var(--kit-slow) var(--kit-ease);
+}
+
+.kit-kbp__floor-wrap {
+  padding: 4px 0 12px;
+}
+
+.kit-kbp__keyboard {
+  position: relative;
+  container-type: inline-size;
+  isolation: isolate;
+  display: grid;
+  gap: 6px;
+  padding: 12px 10px 16px;
+  box-sizing: border-box;
+  border: 1px solid var(--kit-rule-soft);
+  border-radius: var(--kit-radius-lg);
+  background: var(--kit-surface);
+  overflow: hidden;
+}
+
+.kit-kbp__row {
+  --kit-kbp-unit: calc((100cqw - 45px) / 10);
+  position: relative;
+  z-index: 1;
+  display: flex;
+  justify-content: center;
+  gap: 5px;
+}
+
+.kit-kbp__row[data-row="0"] {
+  --kit-kbp-unit: calc((100cqw - 60px) / 13);
+}
+
+.kit-kbp__key {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: var(--kit-kbp-unit);
+  height: calc(var(--kit-kbp-unit) * 0.9);
+  box-sizing: border-box;
+  border: 1px solid var(--kit-rule-soft);
+  border-bottom-width: 2px;
+  border-radius: var(--kit-radius-sm);
+  background: var(--kit-raised);
+  color: var(--kit-ink-muted);
+  font-family: var(--kit-mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  transition: transform var(--kit-fast) var(--kit-ease), background var(--kit-fast) var(--kit-ease);
+}
+
+.kit-kbp__key--mod {
+  width: calc(var(--kit-kbp-unit) * 1.5);
+}
+
+.kit-kbp__key--space {
+  width: 46%;
+}
+
+@container (max-width: 300px) {
+  .kit-kbp__row[data-row="0"] {
+    display: none;
+  }
+}
+
+.kit-kbp__key[data-lit] {
+  transform: translateY(-3px);
+  background: var(--kit-surface);
+  color: var(--kit-ink);
+  box-shadow: var(--kit-shadow);
+}
+
+.kit-kbp__spot {
+  position: absolute;
+  top: 40%;
+  z-index: 0;
+  width: 40%;
+  height: 60%;
+  pointer-events: none;
+  background: radial-gradient(ellipse at center, color-mix(in srgb, var(--kit-accent) 22%, transparent), transparent 70%);
+  left: calc(var(--gx) * 1% - 20%);
+  transition: left var(--kit-fast) var(--kit-ease);
+}
+
+.kit-kbp__wave {
+  position: absolute;
+  z-index: 2;
+  left: var(--wx);
+  top: var(--wy);
+  width: 56px;
+  height: 56px;
+  border: 1.5px solid var(--kit-accent);
+  border-radius: 50%;
+  pointer-events: none;
+  transform: translate(-50%, -50%) scale(0.2);
+  opacity: 0.6;
+  animation: kit-kbp-wave 900ms var(--kit-ease) forwards;
+}
+
+@keyframes kit-kbp-caret {
+  0%, 50% { opacity: 1; }
+  50.01%, 100% { opacity: 0; }
+}
+
+@keyframes kit-kbp-ring {
+  0%, 100% { opacity: 0.15; }
+  50% { opacity: 0.45; }
+}
+
+@keyframes kit-kbp-wave {
+  from {
+    transform: translate(-50%, -50%) scale(0.2);
+    opacity: 0.6;
+  }
+  to {
+    transform: translate(-50%, -50%) scale(2.6);
+    opacity: 0;
+  }
+}
+
+@keyframes kit-kbp-send {
+  0% { transform: translateY(0); }
+  40% { transform: translateY(-4px); }
+  100% { transform: translateY(0); }
+}
+
+@media (max-width: 560px) {
+  .kit-kbp__keyboard,
+  .kit-kbp__floor-wrap {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kit-kbp__field::before,
+  .kit-kbp__caret,
+  .kit-kbp__wave,
+  .kit-kbp[data-sending] .kit-kbp__field {
+    animation: none;
+  }
+  .kit-kbp__wave {
+    display: none;
+  }
+  .kit-kbp__key[data-lit] {
+    transform: none;
+  }
+  .kit-kbp__spot,
+  .kit-kbp__key {
+    transition: none;
+  }
+}

@@ -1,0 +1,41 @@
+.kit-per { position: relative; display: inline-block; font-family: var(--kit-font); color: var(--kit-ink); }
+.kit-per__trigger { display: inline-flex; align-items: center; gap: var(--kit-space-2); min-height: 36px; padding: var(--kit-space-1) var(--kit-space-3); background: var(--kit-surface); color: inherit; border: 1px solid var(--kit-rule-soft); border-radius: var(--kit-radius); font: inherit; font-size: var(--kit-text-lg); font-variant-numeric: tabular-nums; cursor: pointer; }
+.kit-per__panel { position: absolute; z-index: 30; top: calc(100% + var(--kit-space-2)); left: 0; width: min(640px, calc(100vw - 32px)); background: var(--kit-surface); border: 1px solid var(--kit-rule-soft); border-radius: var(--kit-radius-card); box-shadow: var(--kit-shadow-pop); padding: var(--kit-space-3); animation: kit-per-in var(--kit-fast) var(--kit-ease); }
+.kit-per__body { display: grid; grid-template-columns: 150px 1fr; gap: var(--kit-space-3); }
+.kit-per__presets { display: flex; flex-direction: column; gap: 2px; }
+.kit-per__preset, .kit-per__radio { text-align: left; padding: var(--kit-space-1) var(--kit-space-2); border: 0; background: transparent; border-radius: var(--kit-radius-sm); font: inherit; font-size: var(--kit-text-md); color: inherit; cursor: pointer; }
+.kit-per__preset[aria-pressed="true"], .kit-per__radio[aria-checked="true"] { background: var(--kit-raised); font-weight: 600; }
+.kit-per__calendars { display: grid; grid-template-columns: 1fr 1fr; }
+.kit-per__month { min-width: 0; }
+.kit-per__month-head { display: grid; grid-template-columns: var(--kit-space-6) 1fr var(--kit-space-6); align-items: center; margin-bottom: var(--kit-space-1); font-weight: 600; font-size: var(--kit-text-lg); }
+.kit-per__month-title { text-align: center; }
+.kit-per__nav { min-height: 28px; border: 0; background: transparent; font: inherit; font-size: var(--kit-text-xl); cursor: pointer; color: var(--kit-ink-muted); padding: 0; }
+.kit-per__weekdays, .kit-per__week { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); }
+.kit-per__weekdays span { text-align: center; font-size: var(--kit-text-xs); color: var(--kit-ink-muted); padding: 2px 0; }
+.kit-per__day { position: relative; aspect-ratio: 1; min-height: 32px; padding: 0; border: 0; background: transparent; font: inherit; font-size: var(--kit-text-md); font-variant-numeric: tabular-nums; border-radius: var(--kit-radius-sm); cursor: pointer; color: inherit; }
+.kit-per__day[data-outside] { color: color-mix(in srgb, var(--kit-ink-muted) 75%, var(--kit-ink)); }
+.kit-per__day[data-comparison] { background: color-mix(in srgb, var(--kit-ink-muted) 12%, var(--kit-surface)); border-radius: 0; }
+.kit-per__day[data-inside] { background: color-mix(in srgb, var(--kit-accent) 18%, var(--kit-surface)); border-radius: 0; }
+.kit-per__day[data-candidate] { background: var(--kit-raised); opacity: 0.7; }
+.kit-per__day[data-start], .kit-per__day[data-end] { background: var(--kit-accent); color: var(--kit-on-ink); }
+.kit-per__day[data-today] { font-weight: 700; }
+.kit-per__day[data-today]::after { content: ""; position: absolute; left: 50%; bottom: 3px; width: 4px; height: 4px; margin-left: -2px; border-radius: 50%; background: currentColor; }
+.kit-per__day:disabled { opacity: 0.35; cursor: not-allowed; }
+.kit-per__foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--kit-space-2); margin-top: var(--kit-space-3); padding-top: var(--kit-space-3); border-top: 1px solid var(--kit-rule-soft); }
+.kit-per__comparison { display: flex; flex-wrap: wrap; gap: var(--kit-space-1); }
+.kit-per__radio { border: 1px solid var(--kit-rule-soft); }
+.kit-per__actions { display: flex; align-items: center; gap: var(--kit-space-2); margin-left: auto; }
+.kit-per__summary { font-size: var(--kit-text-md); color: var(--kit-ink-muted); overflow-wrap: anywhere; }
+@keyframes kit-per-in { from { opacity: 0; transform: scale(0.98); } to { opacity: 1; transform: scale(1); } }
+@media (max-width: 640px) {
+  .kit-per { display: block; }
+  .kit-per__panel { position: static; width: auto; margin-top: var(--kit-space-2); }
+  .kit-per__body { grid-template-columns: 1fr; }
+  .kit-per__presets { flex-direction: row; flex-wrap: wrap; }
+  .kit-per__preset { flex: none; white-space: nowrap; }
+  .kit-per__calendars { grid-template-columns: 1fr; }
+  .kit-per__day { min-height: 44px; }
+  .kit-per__foot { flex-direction: column; align-items: stretch; }
+  .kit-per__actions { margin-left: 0; }
+}
+@media (prefers-reduced-motion: reduce) { .kit-per__panel { animation: none; } }

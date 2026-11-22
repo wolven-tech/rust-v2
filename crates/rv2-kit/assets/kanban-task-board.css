@@ -1,0 +1,157 @@
+.kit-kb__drop { display: block; height: 4px; border-radius: var(--kit-radius-pill); background: var(--kit-accent); pointer-events: none; }
+.kit-kb__card-item { position: relative; animation: kit-kb-rise var(--kit-slow) var(--kit-ease) both; animation-delay: calc(var(--kit-i, 0) * 40ms + 120ms); }
+.kit-kb__card-item > .kit-kb__drop { position: absolute; top: -6px; left: 0; right: 0; }
+.kit-kb__star {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--kit-radius-sm);
+  background: none;
+  color: var(--kit-ink-faint);
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+}
+.kit-kb__star[aria-pressed="true"] { color: var(--kit-warn); }
+.kit-kb__star:focus-visible { outline: 2px solid var(--kit-accent); outline-offset: 1px; }
+.kit-kb {
+  position: relative;
+  display: grid;
+  gap: 12px;
+  font-family: var(--kit-font);
+  color: var(--kit-ink);
+  min-width: 0;
+}
+.kit-kb__top { display: grid; gap: 4px; }
+.kit-kb__crumbs ol { display: flex; flex-wrap: wrap; gap: 4px; margin: 0; padding: 0; list-style: none; font-size: 12px; color: var(--kit-ink-muted); }
+.kit-kb__crumbs li:not(:last-child)::after { content: "/"; margin-left: 4px; color: var(--kit-ink-faint); }
+.kit-kb__name { margin: 0; font-size: 18px; font-weight: 600; }
+.kit-kb__toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.kit-kb__count { font-size: 12px; color: var(--kit-ink-muted); font-variant-numeric: tabular-nums; }
+.kit-kb__search, .kit-kb__quick {
+  font: inherit;
+  font-size: 14px;
+  min-height: 34px;
+  padding: 0 10px;
+  border: 1px solid var(--kit-rule);
+  border-radius: var(--kit-radius-sm);
+  background: var(--kit-surface);
+  color: var(--kit-ink);
+  box-sizing: border-box;
+}
+.kit-kb__search { width: 220px; max-width: 100%; }
+.kit-kb__labels, .kit-kb__view, .kit-kb__radios, .kit-kb__labels-line { display: flex; flex-wrap: wrap; gap: 6px; }
+.kit-kb__chip, .kit-kb__add {
+  font: inherit;
+  font-size: 12px;
+  min-height: 30px;
+  padding: 0 10px;
+  border: 1px solid var(--kit-rule);
+  border-radius: var(--kit-radius-pill);
+  background: var(--kit-surface);
+  color: var(--kit-ink-hover);
+  cursor: pointer;
+}
+.kit-kb__chip[aria-pressed="true"], .kit-kb__chip[aria-checked="true"] { background: var(--kit-accent); color: var(--kit-on-ink); border-color: var(--kit-accent); }
+.kit-kb__add { border-radius: var(--kit-radius-sm); min-width: 28px; padding: 0 8px; font-size: 16px; line-height: 1; }
+.kit-kb button:focus-visible, .kit-kb input:focus-visible, .kit-kb .kit-kb__card:focus-visible {
+  outline: 2px solid var(--kit-accent);
+  outline-offset: 2px;
+}
+.kit-kb__columns {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(230px, 1fr);
+  gap: var(--kit-gap);
+  overflow-x: auto;
+  padding-bottom: 6px;
+  min-width: 0;
+}
+.kit-kb__column {
+  display: grid;
+  align-content: start;
+  gap: 8px;
+  min-width: 230px;
+  padding: 10px;
+  border: 1px solid var(--kit-rule-soft);
+  border-radius: var(--kit-radius);
+  background: var(--kit-raised);
+  transition: background-color var(--kit-fast) var(--kit-ease);
+  animation: kit-kb-rise var(--kit-slow) var(--kit-ease) both;
+}
+.kit-kb__column[data-over] { background: color-mix(in srgb, var(--kit-accent) 8%, var(--kit-raised)); }
+.kit-kb__col-head { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
+.kit-kb__col-title { margin: 0; font-size: 13px; font-weight: 600; }
+.kit-kb__cards, .kit-kb__panel-head { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.kit-kb__card {
+  all: unset;
+  box-sizing: border-box;
+  display: grid;
+  gap: 6px;
+  width: 100%;
+  padding: 10px 30px 10px 12px;
+  border: 1px solid var(--kit-rule-soft);
+  border-radius: var(--kit-radius);
+  background: var(--kit-surface);
+  box-shadow: var(--kit-shadow);
+  cursor: grab;
+  /* `all: unset` above resets Chrome's UA value, and a card left at `auto` never starts a native drag. */
+  -webkit-user-drag: element;
+  -webkit-touch-callout: none;
+  transition: opacity var(--kit-fast) var(--kit-ease), transform var(--kit-slow) var(--kit-ease);
+}
+.kit-kb__card[data-selected] { border-color: var(--kit-accent); }
+.kit-kb__card[data-dragging] { opacity: 0.45; }
+.kit-kb__title { font-size: 14px; font-weight: 500; overflow-wrap: anywhere; }
+.kit-kb__foot { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; font-size: 12px; color: var(--kit-ink-muted); font-variant-numeric: tabular-nums; }
+.kit-kb__due[data-late] { color: var(--kit-fault-ink); font-weight: 600; }
+.kit-kb__avatar { margin-left: auto; display: grid; place-items: center; width: 22px; height: 22px; border-radius: var(--kit-radius-pill); background: var(--kit-raised); font-size: 11px; color: var(--kit-ink); }
+.kit-kb__more { font: inherit; font-size: 12px; min-height: 32px; border: 1px dashed var(--kit-rule); border-radius: var(--kit-radius-sm); background: none; color: var(--kit-ink-muted); cursor: pointer; }
+.kit-kb[data-compact] .kit-kb__card { padding: 6px 10px; gap: 2px; }
+.kit-kb[data-compact] .kit-kb__foot, .kit-kb[data-compact] .kit-kb__labels-line { display: none; }
+.kit-kb__panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 20;
+  width: min(380px, 100vw);
+  display: grid;
+  align-content: start;
+  gap: 14px;
+  padding: 18px;
+  overflow-y: auto;
+  border-left: 1px solid var(--kit-rule-soft);
+  background: var(--kit-surface);
+  box-shadow: var(--kit-shadow-pop);
+  animation: kit-kb-slide var(--kit-slow) var(--kit-ease);
+}
+.kit-kb__panel-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+.kit-kb__panel-title { margin: 0; font-size: 16px; font-weight: 600; overflow-wrap: anywhere; }
+.kit-kb__radio-group { margin: 0; padding: 0; border: 0; display: grid; gap: 6px; }
+.kit-kb__radio-group legend { font-size: 12px; color: var(--kit-ink-muted); padding: 0; margin-bottom: 4px; }
+.kit-kb__meta { margin: 0; font-size: 13px; color: var(--kit-ink-hover); }
+.kit-kb__quick { width: 100%; }
+
+@keyframes kit-kb-rise { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+@keyframes kit-kb-slide { from { transform: translateX(100%); } to { transform: none; } }
+
+@media (max-width: 640px) {
+  .kit-kb__search { width: 100%; }
+  .kit-kb__columns { grid-auto-columns: minmax(78vw, 78vw); }
+  .kit-kb__column { min-width: 0; }
+  .kit-kb__card { padding: 12px; }
+  .kit-kb__panel { width: 100vw; }
+  .kit-kb__chip, .kit-kb__add { min-height: 40px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .kit-kb__column, .kit-kb__panel, .kit-kb__card-item { animation: none; }
+  .kit-kb__card { transition: none; }
+}

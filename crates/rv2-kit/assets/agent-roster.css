@@ -1,0 +1,452 @@
+.kit-ro {
+  display: grid;
+  gap: var(--kit-gap);
+  min-width: 0;
+  padding: 16px;
+  color: var(--kit-ink);
+  font-family: var(--kit-font);
+  background: var(--kit-ground);
+  overflow-x: hidden;
+}
+
+.kit-ro > * {
+  min-width: 0;
+}
+
+.kit-ro__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.kit-ro__title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.kit-ro__summary,
+.kit-ro__meta {
+  margin: 0;
+  font-size: 13px;
+  color: var(--kit-ink-muted);
+}
+
+.kit-ro__tools {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.kit-ro__views {
+  display: inline-flex;
+  padding: 2px;
+  border: 1px solid var(--kit-rule-soft);
+  border-radius: var(--kit-radius-sm);
+  background: var(--kit-raised);
+}
+
+.kit-ro__view {
+  min-height: 32px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: var(--kit-radius-sm);
+  background: transparent;
+  color: var(--kit-ink-muted);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.kit-ro__view[aria-checked="true"] {
+  background: var(--kit-surface);
+  color: var(--kit-ink);
+  box-shadow: var(--kit-shadow);
+}
+
+.kit-ro__primary,
+.kit-ro__ghost,
+.kit-ro__link {
+  min-height: 32px;
+  padding: 0 12px;
+  border-radius: var(--kit-radius-sm);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.kit-ro__primary {
+  border: 1px solid var(--kit-accent);
+  background: var(--kit-accent);
+  color: var(--kit-on-ink);
+  font-weight: 500;
+}
+
+.kit-ro__primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.kit-ro__ghost {
+  border: 1px solid var(--kit-rule);
+  background: var(--kit-surface);
+  color: var(--kit-ink);
+}
+
+.kit-ro__link {
+  border: 0;
+  background: transparent;
+  color: var(--kit-ink);
+  text-decoration: underline;
+  padding: 0;
+  text-align: start;
+}
+
+.kit-ro__primary:focus-visible,
+.kit-ro__ghost:focus-visible,
+.kit-ro__link:focus-visible,
+.kit-ro__view:focus-visible,
+.kit-ro__card:focus-visible {
+  outline: 2px solid var(--kit-accent);
+  outline-offset: 2px;
+}
+
+.kit-ro__form {
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+  border: 1px solid var(--kit-rule-soft);
+  border-radius: var(--kit-radius);
+  background: var(--kit-surface);
+  box-shadow: var(--kit-shadow);
+}
+
+.kit-ro__preview {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.kit-ro__field {
+  display: grid;
+  gap: 4px;
+  font-size: 13px;
+  color: var(--kit-ink-muted);
+}
+
+.kit-ro__input {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--kit-rule);
+  border-radius: var(--kit-radius-sm);
+  background: var(--kit-surface);
+  color: var(--kit-ink);
+  font: inherit;
+  font-size: 14px;
+}
+
+.kit-ro__tones {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  font-size: 13px;
+}
+
+.kit-ro__tone {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.kit-ro__form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.kit-ro__body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(260px, 340px);
+  gap: var(--kit-gap);
+  align-items: start;
+}
+
+.kit-ro__cards {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  min-width: 0;
+}
+
+.kit-ro__cards[data-view="list"] {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 6px;
+}
+
+.kit-ro__item {
+  min-width: 0;
+}
+
+.kit-ro__card {
+  width: 100%;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 4px 12px;
+  padding: 12px;
+  border: 1px solid var(--kit-rule-soft);
+  border-radius: var(--kit-radius-lg);
+  background: var(--kit-surface);
+  color: inherit;
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+  box-shadow: var(--kit-shadow);
+}
+
+.kit-ro__cards[data-view="list"] .kit-ro__card {
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  padding: 8px 12px;
+  box-shadow: none;
+}
+
+.kit-ro__card[aria-current="true"] {
+  border-color: var(--kit-accent);
+}
+
+.kit-ro__body-text {
+  min-width: 0;
+  display: grid;
+}
+
+.kit-ro__name {
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.kit-ro__role {
+  font-size: 13px;
+  color: var(--kit-ink-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.kit-ro__figures {
+  grid-column: 2 / -1;
+  display: flex;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--kit-ink-faint);
+  font-variant-numeric: tabular-nums;
+  flex-wrap: wrap;
+}
+
+.kit-ro__cards[data-view="list"] .kit-ro__figures {
+  grid-column: auto;
+}
+
+.kit-ro__mark {
+  width: 32px;
+  height: 32px;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--kit-raised);
+  font-weight: 600;
+}
+
+.kit-ro__mark--lg {
+  width: 40px;
+  height: 40px;
+}
+
+.kit-ro__mark[data-hue="ok"] {
+  background: var(--kit-ok-soft);
+  color: var(--kit-ok-ink);
+}
+
+.kit-ro__mark[data-hue="warn"] {
+  background: var(--kit-warn);
+  color: var(--kit-warn-ink);
+}
+
+.kit-ro__mark[data-hue="fault"] {
+  background: var(--kit-fault-ink);
+  color: var(--kit-on-ink);
+}
+
+.kit-ro__mark[data-hue="teal"] {
+  background: color-mix(in srgb, var(--kit-ok) 55%, var(--kit-accent));
+  color: var(--kit-on-ink);
+}
+
+.kit-ro__mark[data-hue="plum"] {
+  background: color-mix(in srgb, var(--kit-fault) 50%, var(--kit-accent));
+  color: var(--kit-on-ink);
+}
+
+.kit-ro__mark[data-hue="slate"] {
+  background: var(--kit-ink-muted);
+  color: var(--kit-on-ink);
+}
+
+.kit-ro__mark[data-hue="accent"] {
+  background: var(--kit-accent);
+  color: var(--kit-on-ink);
+}
+
+.kit-ro__badge {
+  padding: 2px 8px;
+  border-radius: var(--kit-radius-pill);
+  background: var(--kit-raised);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.kit-ro__badge[data-state="working"] {
+  background: var(--kit-accent);
+  color: var(--kit-on-ink);
+}
+
+.kit-ro__badge[data-state="paused"] {
+  background: var(--kit-warn-ink);
+  color: var(--kit-on-ink);
+}
+
+.kit-ro__panel {
+  display: grid;
+  align-content: start;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid var(--kit-rule-soft);
+  border-radius: var(--kit-radius-lg);
+  background: var(--kit-surface);
+  box-shadow: var(--kit-shadow);
+}
+
+.kit-ro__panel-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.kit-ro__panel-meta {
+  min-width: 0;
+}
+
+.kit-ro__panel-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.kit-ro__state-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.kit-ro__block {
+  display: grid;
+  gap: 6px;
+  font-size: 13px;
+}
+
+.kit-ro__block p {
+  margin: 0;
+}
+
+.kit-ro__section {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.kit-ro__bars {
+  height: 56px;
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+}
+
+.kit-ro__bar {
+  flex: 1 1 0;
+  min-height: 2px;
+  border-radius: 2px 2px 0 0;
+  background: var(--kit-rule);
+}
+
+.kit-ro__apps,
+.kit-ro__tasks {
+  margin: 0;
+  padding: 0 0 0 16px;
+  display: grid;
+  gap: 4px;
+  font-size: 13px;
+}
+
+.kit-ro__tasks li {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.kit-ro__empty {
+  display: grid;
+  justify-items: start;
+  gap: 8px;
+  padding: 24px;
+  border: 1px dashed var(--kit-rule);
+  border-radius: var(--kit-radius);
+  color: var(--kit-ink-muted);
+}
+
+.kit-ro__ph {
+  height: 96px;
+  border-radius: var(--kit-radius-lg);
+  background: var(--kit-rule-soft);
+  animation: kit-ro-sheen 1.4s var(--kit-ease) infinite;
+}
+
+@keyframes kit-ro-sheen {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@media (max-width: 900px) {
+  .kit-ro__body {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .kit-ro {
+    padding: 12px;
+  }
+
+  .kit-ro__cards {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .kit-ro__role {
+    display: none;
+  }
+}

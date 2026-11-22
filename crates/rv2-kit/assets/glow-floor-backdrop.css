@@ -1,0 +1,103 @@
+/* Glow floor backdrop. Colour, opacity and drift period are set inline per instance. */
+.kit-glow {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  --kit-glow-fade: 70%;
+}
+
+.kit-glow__backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  -webkit-mask-image: linear-gradient(to top, var(--kit-ink), transparent var(--kit-glow-fade));
+  mask-image: linear-gradient(to top, var(--kit-ink), transparent var(--kit-glow-fade));
+}
+
+.kit-glow[data-anchor="top"] .kit-glow__backdrop {
+  -webkit-mask-image: linear-gradient(to bottom, var(--kit-ink), transparent var(--kit-glow-fade));
+  mask-image: linear-gradient(to bottom, var(--kit-ink), transparent var(--kit-glow-fade));
+}
+
+.kit-glow__layer {
+  position: absolute;
+  left: -10%;
+  right: -10%;
+  bottom: 0;
+  height: 70%;
+  border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+  background: radial-gradient(ellipse at 50% 100%, var(--kit-glow-color) 0%, transparent 70%);
+  filter: blur(40px);
+  opacity: var(--kit-glow-opacity);
+  transition: opacity var(--kit-slow) var(--kit-ease);
+  animation: kit-glow-drift 23000ms ease-in-out infinite alternate;
+  will-change: transform, border-radius;
+}
+
+.kit-glow[data-anchor="top"] .kit-glow__layer {
+  top: 0;
+  bottom: auto;
+  border-radius: 0 0 50% 50% / 0 0 100% 100%;
+  background: radial-gradient(ellipse at 50% 0%, var(--kit-glow-color) 0%, transparent 70%);
+}
+
+.kit-glow__layer[data-layer="b"] {
+  animation-name: kit-glow-drift-b;
+}
+
+.kit-glow[data-paused] .kit-glow__layer {
+  animation-play-state: paused;
+}
+
+.kit-glow__content {
+  position: relative;
+  z-index: 1;
+}
+
+@keyframes kit-glow-drift {
+  0% {
+    transform: translateX(-6%) scaleY(1);
+    border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+  }
+  50% {
+    transform: translateX(5%) scaleY(0.9);
+    border-radius: 60% 40% 0 0 / 80% 100% 0 0;
+  }
+  100% {
+    transform: translateX(-3%) scaleY(1.05);
+    border-radius: 40% 60% 0 0 / 100% 80% 0 0;
+  }
+}
+
+@keyframes kit-glow-drift-b {
+  0% {
+    transform: translateX(4%) scaleY(1.02);
+    border-radius: 45% 55% 0 0 / 90% 100% 0 0;
+  }
+  50% {
+    transform: translateX(-5%) scaleY(0.94);
+    border-radius: 55% 45% 0 0 / 100% 85% 0 0;
+  }
+  100% {
+    transform: translateX(3%) scaleY(1);
+    border-radius: 50% 50% 0 0 / 85% 100% 0 0;
+  }
+}
+
+@media (max-width: 640px) {
+  .kit-glow {
+    --kit-glow-fade: 45%;
+  }
+  .kit-glow__layer {
+    height: 45%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kit-glow__layer,
+  .kit-glow__layer[data-layer] {
+    animation: none;
+  }
+}

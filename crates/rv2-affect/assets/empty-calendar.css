@@ -1,0 +1,72 @@
+.ui-ec {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 3 / 2;
+  overflow: hidden;
+  font-family: "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
+}
+.ui-ec-art {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* Placeholder lines shimmer softly */
+.ui-ec-bar { animation: ui-ec-shimmer 2.4s ease-in-out infinite; }
+@keyframes ui-ec-shimmer {
+  0%, 100% { fill: #EFF1F4; }
+  50% { fill: #DDE1E5; }
+}
+
+/* The glow under the front card breathes */
+.ui-ec-blob {
+  transform-origin: 160px 152px;
+  animation: ui-ec-breathe 5s ease-in-out infinite;
+}
+@keyframes ui-ec-breathe {
+  0%, 100% { opacity: 0.85; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.06); }
+}
+
+/* Front card: lifts and tilts on hover */
+.ui-ec-front {
+  transform-origin: 160px 90px;
+  transition: transform 0.35s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+.ui-ec-front:hover { transform: translate(0, -8px) rotate(2deg); }
+
+/* Back cards: fanned out, slide further on hover */
+.ui-ec-back {
+  transform-box: fill-box;
+  transform-origin: center;
+  transition: transform 0.35s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+.ui-ec-back-left { transform: translate(-22px, 0) rotate(-3deg); }
+.ui-ec-back-left:hover { transform: translate(-48px, 4px) rotate(-7deg); }
+.ui-ec-back-right { transform: translate(22px, 0) rotate(3deg); }
+.ui-ec-back-right:hover { transform: translate(48px, 4px) rotate(7deg); }
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-ec-bar, .ui-ec-blob { animation: none; }
+  .ui-ec-front, .ui-ec-back { transition: none; }
+}
+
+/* Dark mode: follows a .dark class or data-theme="dark" on any ancestor, e.g. <html> */
+:where(.dark, [data-theme="dark"]) .ui-ec-card { fill: #232326; stroke: rgba(255, 255, 255, 0.08); }
+:where(.dark, [data-theme="dark"]) .ui-ec-drop { flood-opacity: 0.4; }
+:where(.dark, [data-theme="dark"]) .ui-ec-edge { stop-color: #3a3a3f; }
+:where(.dark, [data-theme="dark"]) .ui-ec-title { fill: #8f8f8f; }
+:where(.dark, [data-theme="dark"]) .ui-ec-badge { fill: rgba(250, 176, 130, 0.16); }
+:where(.dark, [data-theme="dark"]) .ui-ec-bar { fill: #2a2a2d; }
+@media (prefers-reduced-motion: no-preference) {
+  :where(.dark, [data-theme="dark"]) .ui-ec-bar { animation-name: ui-ec-shimmer-dark; }
+}
+:where(.dark, [data-theme="dark"]) .ui-ec-btn { fill: #2a2a2d; stroke: rgba(255, 255, 255, 0.08); }
+:where(.dark, [data-theme="dark"]) .ui-ec-btn-ink { stroke: #6b6b70; }
+:where(.dark, [data-theme="dark"]) .ui-ec-btn-label { fill: #6b6b70; }
+@keyframes ui-ec-shimmer-dark {
+  0%, 100% { fill: #2a2a2d; }
+  50% { fill: #36363b; }
+}

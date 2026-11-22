@@ -1,0 +1,204 @@
+/* Colors and motion as variables – override them on .ui-tpkc (see Theming in the docs) */
+.ui-tpkc {
+  --ui-tpkc-title: var(--aui-ink, rgba(0, 0, 0, 0.88));
+  --ui-tpkc-ink: var(--aui-ink, rgba(0, 0, 0, 0.88));
+  --ui-tpkc-subtle: var(--aui-muted, rgba(0, 0, 0, 0.45));
+  --ui-tpkc-faint: var(--aui-placeholder, rgba(0, 0, 0, 0.3));
+  --ui-tpkc-icon: var(--aui-muted, rgba(0, 0, 0, 0.447));
+  --ui-tpkc-surface: var(--aui-surface, #ffffff);
+  --ui-tpkc-menu: var(--aui-overlay, var(--aui-surface, #ffffff));
+  --ui-tpkc-glow: rgba(0, 0, 0, 0.045);
+  --ui-tpkc-readonly: rgba(0, 0, 0, 0.02);
+  --ui-tpkc-shadow: 0 0 0 0.5px var(--aui-border, rgba(0, 0, 0, 0.08)), 0 1px 1px -1px rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --ui-tpkc-shadow-hover: 0 0 0 0.5px var(--aui-border-strong, rgba(0, 0, 0, 0.13)), 0 1px 1px -1px rgba(0, 0, 0, 0.12), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  --ui-tpkc-edge-focus: 0 0 0 1px var(--aui-border-strong, rgba(0, 0, 0, 0.28)), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  --ui-tpkc-shadow-menu: var(--aui-shadow-popover, 0 0 0 0.5px rgba(0, 0, 0, 0.08), 0 8px 24px -6px rgba(0, 0, 0, 0.14), 0 2px 6px -2px rgba(0, 0, 0, 0.06));
+  --ui-tpkc-danger: var(--aui-danger, #c4320a);
+  --ui-tpkc-danger-edge: color-mix(in srgb, var(--aui-red, #f04438) 55%, transparent);
+  --ui-tpkc-focus: var(--aui-focus, rgba(0, 96, 226, 0.7));
+  --ui-tpkc-ease: var(--aui-ease, cubic-bezier(0.22, 1, 0.36, 1));
+
+  --h: 32px;
+  --px: 10px;
+  --fs: 13px;
+  --radius: var(--aui-radius, 7px);
+
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  font-family: var(--aui-font, "Inter", "InterVariable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif);
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--ui-tpkc-ink);
+  -webkit-font-smoothing: antialiased;
+}
+.ui-tpkc[data-size="sm"] { --h: 28px; --px: 8px; --radius: calc(var(--aui-radius, 7px) - 1px); }
+.ui-tpkc[data-size="lg"] { --h: 36px; --px: 12px; --fs: 14px; --radius: calc(var(--aui-radius, 7px) + 1px); }
+/* Touch screens: a comfortable tap height, and 16px text so iOS doesn't zoom in on focus */
+@media (pointer: coarse) {
+  .ui-tpkc { --fs: 16px; }
+  .ui-tpkc[data-size="sm"] { --h: 34px; }
+  .ui-tpkc[data-size="md"] { --h: 38px; }
+  .ui-tpkc[data-size="lg"] { --h: 40px; }
+}
+.ui-tpkc *, .ui-tpkc *::before, .ui-tpkc *::after { box-sizing: border-box; }
+
+.ui-tpkc__head { display: flex; align-items: baseline; gap: 6px; min-width: 0; }
+.ui-tpkc__label { min-width: 0; font-weight: 500; color: var(--ui-tpkc-title); overflow-wrap: anywhere; cursor: default; }
+.ui-tpkc__optional { flex: none; font-size: 12px; line-height: 16px; color: var(--ui-tpkc-subtle); }
+
+/* The field: white, a hairline edge that firms up on hover and while typing – no ring on a text field */
+.ui-tpkc__box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  height: var(--h);
+  min-width: 0;
+  padding: 0 calc(var(--px) - 6px) 0 var(--px);
+  border-radius: var(--radius);
+  background: var(--ui-tpkc-surface);
+  box-shadow: var(--ui-tpkc-shadow);
+  cursor: text;
+  transition: box-shadow 140ms ease, background-color 140ms ease;
+}
+.ui-tpkc__box:hover { box-shadow: var(--ui-tpkc-shadow-hover); }
+.ui-tpkc__box:focus-within, .ui-tpkc[data-open] .ui-tpkc__box { box-shadow: var(--ui-tpkc-edge-focus); }
+.ui-tpkc[data-invalid] .ui-tpkc__box { box-shadow: 0 0 0 1px var(--ui-tpkc-danger-edge), 0 1px 2px 0 rgba(0, 0, 0, 0.05); }
+.ui-tpkc[data-disabled] .ui-tpkc__box { background: var(--ui-tpkc-readonly); box-shadow: 0 0 0 0.5px rgba(0, 0, 0, 0.06); cursor: not-allowed; }
+.ui-tpkc[data-disabled] { opacity: 0.55; }
+.ui-tpkc__icon { display: grid; flex: none; place-items: center; width: 16px; height: 16px; color: var(--ui-tpkc-icon); }
+.ui-tpkc__icon svg { display: block; }
+.ui-tpkc__input {
+  flex: 1;
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  outline: none;
+  background: none;
+  font: inherit;
+  font-size: var(--fs);
+  font-variant-numeric: tabular-nums;
+  color: var(--ui-tpkc-ink);
+  text-overflow: ellipsis;
+}
+.ui-tpkc__input::placeholder { color: var(--ui-tpkc-faint); opacity: 1; }
+.ui-tpkc__input:disabled { cursor: not-allowed; }
+.ui-tpkc__toggle {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 5px;
+  background: none;
+  color: var(--ui-tpkc-icon);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color 120ms ease, color 120ms ease;
+}
+.ui-tpkc__toggle svg { display: block; transition: transform 240ms var(--ui-tpkc-ease); }
+.ui-tpkc__toggle:hover:not(:disabled) { background: var(--ui-tpkc-glow); color: var(--ui-tpkc-ink); }
+.ui-tpkc__toggle:focus-visible { outline: 2px solid var(--ui-tpkc-focus); outline-offset: -2px; }
+.ui-tpkc__toggle:disabled { cursor: not-allowed; }
+.ui-tpkc[data-open] .ui-tpkc__toggle svg { transform: rotate(180deg); }
+
+/* The list: a white card in the top layer, at the field's edge */
+.ui-tpkc__list {
+  position: fixed;
+  inset: auto;
+  z-index: 1000;
+  margin: 0;
+  padding: 4px;
+  border: 0;
+  border-radius: 10px;
+  background: var(--ui-tpkc-menu);
+  box-shadow: var(--ui-tpkc-shadow-menu);
+  color: var(--ui-tpkc-ink);
+  font: inherit;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  transform-origin: top center;
+  animation: ui-tpkc-in 200ms var(--ui-tpkc-ease) both;
+}
+.ui-tpkc__list[data-up] { transform-origin: bottom center; animation-name: ui-tpkc-in-up; }
+.ui-tpkc__list::backdrop { display: none; }
+
+/* One soft highlight that glides between the rows */
+.ui-tpkc__glow {
+  position: absolute;
+  top: 0;
+  left: 4px;
+  right: 4px;
+  border-radius: 6px;
+  background: var(--ui-tpkc-glow);
+  pointer-events: none;
+  transition: transform 160ms var(--ui-tpkc-ease), height 160ms var(--ui-tpkc-ease);
+}
+
+.ui-tpkc__option {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 32px;
+  padding: 0 8px;
+  border-radius: 6px;
+  font-size: 13px;
+  line-height: 20px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
+}
+.ui-tpkc__time { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.ui-tpkc__option[aria-selected="true"] .ui-tpkc__time { font-weight: 500; }
+.ui-tpkc__check { display: grid; flex: none; place-items: center; width: 16px; height: 16px; color: var(--ui-tpkc-ink); }
+.ui-tpkc__check svg { display: block; }
+.ui-tpkc__tick { stroke-dasharray: 1; animation: ui-tpkc-draw 280ms 40ms var(--ui-tpkc-ease) both; }
+@media (pointer: coarse) {
+  .ui-tpkc__option { height: 40px; font-size: 15px; }
+  .ui-tpkc__toggle { width: 32px; height: 32px; }
+}
+
+.ui-tpkc__message { margin: 0; font-size: 12px; line-height: 16px; color: var(--ui-tpkc-subtle); overflow-wrap: anywhere; animation: ui-tpkc-message 260ms var(--ui-tpkc-ease); }
+.ui-tpkc[data-invalid] .ui-tpkc__message { color: var(--ui-tpkc-danger); }
+
+@keyframes ui-tpkc-in { from { opacity: 0; transform: translateY(-4px) scale(0.98); } }
+@keyframes ui-tpkc-in-up { from { opacity: 0; transform: translateY(4px) scale(0.98); } }
+@keyframes ui-tpkc-draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+@keyframes ui-tpkc-message { from { opacity: 0; transform: translateY(-3px); filter: blur(2px); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-tpkc *, .ui-tpkc *::before, .ui-tpkc *::after { animation-duration: 1ms !important; transition-duration: 1ms !important; }
+}
+
+/* Dark mode: follows a .dark class or data-theme="dark" on any ancestor, e.g. <html> */
+:where(.dark, [data-theme="dark"]) .ui-tpkc {
+  --ui-tpkc-title: var(--aui-ink, rgba(255, 255, 255, 0.92));
+  --ui-tpkc-ink: var(--aui-ink, rgba(255, 255, 255, 0.9));
+  --ui-tpkc-subtle: var(--aui-muted, rgba(255, 255, 255, 0.46));
+  --ui-tpkc-faint: var(--aui-placeholder, rgba(255, 255, 255, 0.3));
+  --ui-tpkc-icon: var(--aui-muted, rgba(255, 255, 255, 0.5));
+  --ui-tpkc-surface: var(--aui-surface, #1c1c1e);
+  --ui-tpkc-menu: var(--aui-overlay, var(--aui-surface, #1f1f22));
+  --ui-tpkc-glow: rgba(255, 255, 255, 0.07);
+  --ui-tpkc-readonly: rgba(255, 255, 255, 0.03);
+  --ui-tpkc-shadow: 0 0 0 0.5px var(--aui-border, rgba(255, 255, 255, 0.14)), 0 1px 2px 0 rgba(0, 0, 0, 0.4);
+  --ui-tpkc-shadow-hover: 0 0 0 0.5px var(--aui-border-strong, rgba(255, 255, 255, 0.2)), 0 1px 2px 0 rgba(0, 0, 0, 0.4);
+  --ui-tpkc-edge-focus: 0 0 0 1px var(--aui-border-strong, rgba(255, 255, 255, 0.3)), 0 1px 2px 0 rgba(0, 0, 0, 0.4);
+  --ui-tpkc-shadow-menu: var(--aui-shadow-popover, 0 0 0 0.5px rgba(255, 255, 255, 0.12), 0 12px 32px -8px rgba(0, 0, 0, 0.6));
+  --ui-tpkc-danger: var(--aui-danger, #ff8a7a);
+  --ui-tpkc-danger-edge: color-mix(in srgb, var(--aui-red, #ff6b5f) 50%, transparent);
+  --ui-tpkc-focus: var(--aui-focus, rgba(77, 141, 255, 0.8));
+  color-scheme: dark;
+}
+:where(.dark, [data-theme="dark"]) .ui-tpkc[data-disabled] .ui-tpkc__box { box-shadow: 0 0 0 0.5px rgba(255, 255, 255, 0.12); }

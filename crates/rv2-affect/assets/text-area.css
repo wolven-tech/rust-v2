@@ -1,0 +1,173 @@
+/* Colors and motion as variables – override them on .ui-tac (see Theming in the docs) */
+.ui-tac {
+  --ui-tac-title: var(--aui-ink, rgba(0, 0, 0, 0.88));
+  --ui-tac-ink: var(--aui-ink, rgba(0, 0, 0, 0.88));
+  --ui-tac-muted: var(--aui-muted, rgba(0, 0, 0, 0.61));
+  --ui-tac-subtle: var(--aui-muted, rgba(0, 0, 0, 0.45));
+  --ui-tac-faint: var(--aui-placeholder, rgba(0, 0, 0, 0.3));
+  --ui-tac-icon: var(--aui-muted, rgba(0, 0, 0, 0.447));
+  --ui-tac-surface: var(--aui-surface, #ffffff);
+  --ui-tac-wash: rgba(0, 0, 0, 0.04);
+  --ui-tac-readonly: rgba(0, 0, 0, 0.02);
+  --ui-tac-shadow: 0 0 0 0.5px var(--aui-border, rgba(0, 0, 0, 0.08)), 0 1px 1px -1px rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --ui-tac-shadow-hover: 0 0 0 0.5px var(--aui-border-strong, rgba(0, 0, 0, 0.13)), 0 1px 1px -1px rgba(0, 0, 0, 0.12), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  --ui-tac-shadow-focus: 0 0 0 1px var(--aui-border-strong, rgba(0, 0, 0, 0.28)), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  --ui-tac-danger: var(--aui-danger, #c4320a);
+  --ui-tac-danger-edge: color-mix(in srgb, var(--aui-red, #f04438) 55%, transparent);
+  --ui-tac-danger-edge-focus: rgba(229, 72, 77, 0.8);
+  --ui-tac-focus: var(--aui-focus, rgba(0, 96, 226, 0.7));
+  --ui-tac-ease: cubic-bezier(0.22, 1, 0.36, 1);
+
+  --fs: 13px;
+  --lh: 20px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  font-family: var(--aui-font, "Inter", "InterVariable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif);
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--ui-tac-ink);
+  -webkit-font-smoothing: antialiased;
+}
+/* Touch screens: 16px text, so iOS doesn't zoom in on focus */
+@media (pointer: coarse) {
+  .ui-tac { --fs: 16px; --lh: 24px; }
+}
+
+.ui-tac__head { display: flex; align-items: baseline; gap: 6px; min-width: 0; }
+.ui-tac__label { min-width: 0; font-weight: 500; color: var(--ui-tac-title); overflow-wrap: anywhere; cursor: default; }
+.ui-tac__optional { flex: none; font-size: 12px; line-height: 16px; color: var(--ui-tac-subtle); }
+
+/* The box: white, a hairline shadow as its edge; hover and focus only make that edge firmer */
+.ui-tac__box {
+  position: relative;
+  display: flex;
+  min-width: 0;
+  border-radius: var(--aui-radius, 8px);
+  background: var(--ui-tac-surface);
+  box-shadow: var(--ui-tac-shadow);
+  cursor: text;
+  transition: box-shadow 140ms ease, background-color 140ms ease;
+}
+.ui-tac__box:hover { box-shadow: var(--ui-tac-shadow-hover); }
+.ui-tac__box:focus-within { box-shadow: var(--ui-tac-shadow-focus); }
+.ui-tac[data-invalid] .ui-tac__box { box-shadow: 0 0 0 1px var(--ui-tac-danger-edge), 0 1px 2px 0 rgba(0, 0, 0, 0.05); animation: ui-tac-nudge 320ms var(--ui-tac-ease); }
+.ui-tac[data-invalid] .ui-tac__box:focus-within { box-shadow: 0 0 0 1px var(--ui-tac-danger-edge-focus), 0 1px 2px 0 rgba(0, 0, 0, 0.05); }
+.ui-tac[data-readonly] .ui-tac__box { background: var(--ui-tac-readonly); box-shadow: 0 0 0 0.5px rgba(0, 0, 0, 0.08); cursor: default; }
+.ui-tac[data-disabled] .ui-tac__box { background: var(--ui-tac-readonly); box-shadow: 0 0 0 0.5px rgba(0, 0, 0, 0.06); cursor: not-allowed; }
+.ui-tac[data-disabled] { opacity: 0.55; }
+
+.ui-tac__input {
+  display: block;
+  flex: 1;
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+  padding: 7px 10px;
+  border: 0;
+  border-radius: inherit;
+  outline: 0;
+  background: transparent;
+  font: inherit;
+  font-size: var(--fs);
+  line-height: var(--lh);
+  color: var(--ui-tac-ink);
+  overflow-wrap: anywhere;
+  resize: none;
+  overflow-y: hidden;
+  scrollbar-width: thin;
+  -webkit-appearance: none;
+  appearance: none;
+}
+/* The corner button keeps clear of the text */
+.ui-tac[data-expandable] .ui-tac__input { padding-inline-end: 36px; }
+.ui-tac__input::placeholder { color: var(--ui-tac-faint); opacity: 1; }
+.ui-tac__input:disabled { cursor: not-allowed; }
+.ui-tac__input[data-gliding] { transition: height 300ms var(--ui-tac-ease); }
+
+/* More room: a small ghost button in the top corner */
+.ui-tac__expand {
+  position: absolute;
+  top: 4px;
+  inset-inline-end: 4px;
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--ui-tac-icon);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color 140ms ease, color 140ms ease;
+}
+.ui-tac__expand:hover { background: var(--ui-tac-wash); color: var(--ui-tac-ink); }
+.ui-tac__expand:focus-visible { outline: 2px solid var(--ui-tac-focus); outline-offset: -2px; }
+.ui-tac__expand svg { display: block; }
+.ui-tac__swap { display: grid; animation: ui-tac-swap 280ms var(--ui-tac-ease); }
+@media (pointer: coarse) {
+  .ui-tac__expand { width: 32px; height: 32px; }
+  .ui-tac__expand::before { content: ""; position: absolute; inset: -4px; }
+  .ui-tac[data-expandable] .ui-tac__input { padding-inline-end: 42px; }
+}
+
+/* Under the field: the hint, or the error in its place, and the count */
+.ui-tac__foot { display: flex; align-items: flex-start; gap: 12px; min-width: 0; }
+.ui-tac__message {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--ui-tac-subtle);
+  overflow-wrap: anywhere;
+  animation: ui-tac-message 260ms var(--ui-tac-ease);
+}
+.ui-tac[data-invalid] .ui-tac__message { color: var(--ui-tac-danger); }
+.ui-tac__count { flex: none; margin-left: auto; font-size: 12px; line-height: 16px; font-variant-numeric: tabular-nums; color: var(--ui-tac-faint); transition: color 140ms ease; }
+.ui-tac__count[data-full] { color: var(--ui-tac-muted); }
+.ui-tac__count[data-over] { color: var(--ui-tac-danger); }
+
+@keyframes ui-tac-nudge {
+  30% { transform: translateX(-3px); }
+  65% { transform: translateX(2px); }
+}
+@keyframes ui-tac-message {
+  from { opacity: 0; transform: translateY(-3px); filter: blur(2px); }
+}
+@keyframes ui-tac-swap {
+  from { opacity: 0; transform: scale(0.6); filter: blur(2px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-tac *, .ui-tac[data-invalid] .ui-tac__box { animation-duration: 1ms !important; }
+  .ui-tac__box, .ui-tac__input[data-gliding] { transition-duration: 1ms; }
+}
+
+/* Dark mode: follows a .dark class or data-theme="dark" on any ancestor, e.g. <html> */
+:where(.dark, [data-theme="dark"]) .ui-tac {
+  --ui-tac-title: var(--aui-ink, rgba(255, 255, 255, 0.92));
+  --ui-tac-ink: var(--aui-ink, rgba(255, 255, 255, 0.9));
+  --ui-tac-muted: var(--aui-muted, rgba(255, 255, 255, 0.62));
+  --ui-tac-subtle: var(--aui-muted, rgba(255, 255, 255, 0.46));
+  --ui-tac-faint: var(--aui-placeholder, rgba(255, 255, 255, 0.3));
+  --ui-tac-icon: var(--aui-muted, rgba(255, 255, 255, 0.5));
+  --ui-tac-surface: var(--aui-surface, #1c1c1e);
+  --ui-tac-wash: rgba(255, 255, 255, 0.07);
+  --ui-tac-readonly: rgba(255, 255, 255, 0.03);
+  --ui-tac-shadow: 0 0 0 0.5px var(--aui-border, rgba(255, 255, 255, 0.14)), 0 1px 2px 0 rgba(0, 0, 0, 0.4);
+  --ui-tac-shadow-hover: 0 0 0 0.5px var(--aui-border-strong, rgba(255, 255, 255, 0.2)), 0 1px 2px 0 rgba(0, 0, 0, 0.4);
+  --ui-tac-shadow-focus: 0 0 0 1px var(--aui-border-strong, rgba(255, 255, 255, 0.3)), 0 1px 2px 0 rgba(0, 0, 0, 0.4);
+  --ui-tac-danger: var(--aui-danger, #ff8a7a);
+  --ui-tac-danger-edge: color-mix(in srgb, var(--aui-red, #ff6b5f) 50%, transparent);
+  --ui-tac-danger-edge-focus: rgba(255, 99, 105, 0.75);
+  --ui-tac-focus: var(--aui-focus, rgba(77, 141, 255, 0.8));
+}
+:where(.dark, [data-theme="dark"]) .ui-tac[data-readonly] .ui-tac__box,
+:where(.dark, [data-theme="dark"]) .ui-tac[data-disabled] .ui-tac__box { box-shadow: 0 0 0 0.5px rgba(255, 255, 255, 0.12); }

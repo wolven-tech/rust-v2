@@ -1,0 +1,113 @@
+.kit-pref__toggle {
+  align-items: center;
+  display: inline-flex;
+  font-size: 14px;
+  gap: 8px;
+}
+
+.kit-pref__toggle input {
+  height: 18px;
+  margin: 0;
+  width: 34px;
+  accent-color: var(--kit-accent);
+}
+
+.kit-pref__tiles {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  padding: 0 20px 16px;
+}
+
+.kit-pref__tile {
+  background: var(--kit-ground);
+  border: 1px solid var(--kit-rule-soft);
+  border-radius: var(--kit-radius);
+  cursor: pointer;
+  display: grid;
+  gap: 2px 8px;
+  grid-template-columns: auto 1fr;
+  padding: 12px;
+  min-width: 0;
+}
+
+.kit-pref__tile[data-enabled="true"] {
+  border-color: var(--kit-accent);
+  background: var(--kit-surface);
+}
+
+.kit-pref__tile input {
+  grid-row: span 2;
+  margin: 2px 0 0;
+  accent-color: var(--kit-accent);
+}
+
+.kit-pref__tile:focus-within {
+  outline: 2px solid var(--kit-accent);
+  outline-offset: 2px;
+}
+
+.kit-pref__tile-name {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.kit-pref__instructions {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  transition: opacity var(--kit-slow) var(--kit-ease);
+}
+
+.kit-pref__instructions[data-paused="true"] {
+  opacity: 0.6;
+}
+
+.kit-pref__memories {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  list-style: none;
+  margin: 0;
+  padding: 0 20px 4px;
+}
+
+.kit-pref__memory {
+  align-items: center;
+  border: 1px solid var(--kit-rule-soft);
+  border-radius: var(--kit-radius-sm);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  justify-content: space-between;
+  padding: 10px 12px;
+}
+
+.kit-pref__memory-text {
+  display: flex;
+  flex: 1 1 240px;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.kit-pref__empty {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 0 20px 16px;
+  align-items: flex-start;
+}
+
+@container kit-set (max-width: 640px) {
+  .kit-pref__tiles {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kit-pref__instructions {
+    transition: none;
+  }
+}

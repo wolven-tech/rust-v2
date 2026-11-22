@@ -1,0 +1,315 @@
+/* Colors and motion as variables – override them on .ui-ctc */
+.ui-ctc {
+  --ui-ctc-card: var(--aui-surface, #ffffff);
+  --ui-ctc-strong: var(--aui-ink, #000000);
+  --ui-ctc-ink: var(--aui-ink, rgba(0, 0, 0, 0.88));
+  --ui-ctc-text: var(--aui-muted, rgba(0, 0, 0, 0.61));
+  --ui-ctc-muted: var(--aui-muted, rgba(0, 0, 0, 0.45));
+  --ui-ctc-faint: var(--aui-placeholder, rgba(0, 0, 0, 0.27));
+  --ui-ctc-icon: var(--aui-muted, rgba(0, 0, 0, 0.447));
+  --ui-ctc-line: var(--aui-border, rgba(0, 0, 0, 0.06));
+  --ui-ctc-tree: rgba(0, 0, 0, 0.1);
+  --ui-ctc-fill: rgba(0, 0, 0, 0.06);
+  --ui-ctc-wash: var(--aui-subtle, rgba(0, 0, 0, 0.03));
+  --ui-ctc-solid: var(--aui-primary, rgba(0, 0, 0, 0.88));
+  --ui-ctc-on-solid: var(--aui-on-primary, #fcfcfc);
+  --ui-ctc-accent: rgba(0, 96, 226, 0.765);
+  --ui-ctc-ok: var(--aui-success, #1e8a4f);
+  --ui-ctc-shine: rgba(255, 255, 255, 0.82);
+  --ui-ctc-avatar-ring: rgba(0, 0, 0, 0.08);
+  /* Strokes are shadows: a 0.5px hairline plus a soft lift */
+  --ui-ctc-shadow: var(--aui-shadow-card, 0 0 0 0.5px var(--aui-border, rgba(0, 0, 0, 0.06)), 0 1px 1px -1px rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.05));
+  --ui-ctc-focus: var(--aui-focus, rgba(0, 96, 226, 0.7));
+  --ui-ctc-ease: var(--aui-ease, cubic-bezier(0.22, 1, 0.36, 1));
+  box-sizing: border-box;
+  container-type: inline-size;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 420px;
+  overflow: hidden;
+  border-radius: var(--aui-radius-lg, 10px);
+  background: var(--ui-ctc-card);
+  box-shadow: var(--ui-ctc-shadow);
+  font-family: var(--aui-font, "Inter", "InterVariable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif);
+  font-size: 13px;
+  line-height: 20px;
+  font-weight: 400;
+  color: var(--ui-ctc-ink);
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+}
+.ui-ctc *, .ui-ctc *::before, .ui-ctc *::after { box-sizing: border-box; }
+:where(.ui-ctc) button {
+  appearance: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+:where(.ui-ctc) svg { display: block; flex: none; }
+.ui-ctc button:focus-visible { outline: 2px solid var(--ui-ctc-focus); outline-offset: 2px; }
+.ui-ctc__glyph { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.1; stroke-linecap: round; stroke-linejoin: round; }
+
+/* ---------- Header ---------- */
+.ui-ctc__head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 48px;
+  padding: 10px 10px 10px 16px;
+  border-bottom: 0.5px solid var(--ui-ctc-line);
+}
+/* A long title takes two lines at most – the count and close stay in place */
+.ui-ctc__title { display: -webkit-box; min-width: 0; overflow: hidden; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow-wrap: anywhere; margin: 0; font-size: 13px; font-weight: 500; line-height: 20px; color: var(--ui-ctc-strong); }
+.ui-ctc__count { flex: none; margin-right: auto; white-space: nowrap; font-size: 12px; line-height: 16px; color: var(--ui-ctc-muted); font-variant-numeric: tabular-nums; }
+/* Close: a ghost icon button */
+.ui-ctc__icon-btn {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 28px;
+  height: 28px;
+  border-radius: calc(var(--aui-radius-sm, 5px) + 1px);
+  color: var(--ui-ctc-icon);
+  transition: background-color 160ms ease, color 160ms ease;
+}
+.ui-ctc__icon-btn:hover { background: var(--ui-ctc-wash); color: var(--ui-ctc-ink); }
+
+/* ---------- The conversation ---------- */
+.ui-ctc__scroll {
+  display: grid;
+  gap: 16px;
+  align-content: start;
+  min-height: var(--ui-ctc-min-height, 0px);
+  max-height: var(--ui-ctc-max-height, 340px);
+  padding: 16px 16px 12px;
+  overflow-y: auto;
+  scrollbar-width: none;
+  /* Soft edges at the top and towards the reply row, so nothing ends in a hard cut */
+  -webkit-mask-image: linear-gradient(transparent, #000 12px, #000 calc(100% - 10px), transparent);
+  mask-image: linear-gradient(transparent, #000 12px, #000 calc(100% - 10px), transparent);
+}
+.ui-ctc__scroll::-webkit-scrollbar { display: none; }
+/* Each message builds up piece by piece: name row, text, status – the assistant's first reply a beat later */
+.ui-ctc__msg { --ui-ctc-d: 0ms; min-width: 0; }
+.ui-ctc__msg[data-delayed] { --ui-ctc-d: 700ms; }
+.ui-ctc__msg > * { animation: ui-ctc-in 420ms var(--ui-ctc-ease) both; animation-delay: var(--ui-ctc-d); }
+.ui-ctc__msg > :nth-child(2) { animation-delay: calc(var(--ui-ctc-d) + 80ms); }
+.ui-ctc__msg > :nth-child(3) { animation-delay: calc(var(--ui-ctc-d) + 160ms); }
+.ui-ctc__meta { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.ui-ctc__avatar {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  object-fit: cover;
+  overflow: hidden;
+}
+img.ui-ctc__avatar { box-shadow: 0 0 0 0.5px var(--ui-ctc-avatar-ring); }
+.ui-ctc__avatar svg { width: 100%; height: 100%; }
+.ui-ctc__avatar--initials { background: var(--ui-ctc-fill); font-size: 9px; font-weight: 500; line-height: 1; color: var(--ui-ctc-text); }
+.ui-ctc__name { min-width: 0; overflow: hidden; font-size: 13px; font-weight: 500; line-height: 20px; white-space: nowrap; text-overflow: ellipsis; color: var(--ui-ctc-strong); }
+.ui-ctc__time { flex: none; margin-left: auto; font-size: 12px; line-height: 16px; white-space: nowrap; color: var(--ui-ctc-faint); font-variant-numeric: tabular-nums; }
+/* Text and status line up with the name, not the avatar */
+.ui-ctc__text { margin: 4px 0 0 28px; font-size: 13px; line-height: 20px; overflow-wrap: anywhere; white-space: pre-line; text-align: start; color: var(--ui-ctc-ink); }
+/* "/edit": a small gray tag */
+.ui-ctc__command {
+  display: inline-block;
+  margin-right: 1px;
+  padding: 0 5px;
+  border-radius: var(--aui-radius-sm, 5px);
+  background: var(--aui-subtle, var(--ui-ctc-fill));
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 18px;
+  color: var(--ui-ctc-text);
+}
+
+/* Status: a ghost row – a green check, the line, and a chevron to fold the details open */
+.ui-ctc__status { margin: 4px 0 0 22px; }
+.ui-ctc__status-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 100%;
+  height: 28px;
+  padding: 0 4px 0 6px;
+  border-radius: calc(var(--aui-radius-sm, 5px) + 1px);
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 20px;
+  color: var(--ui-ctc-ink);
+  transition: background-color 160ms ease;
+}
+.ui-ctc__status-btn:hover:not(:disabled) { background: var(--ui-ctc-wash); }
+.ui-ctc__status-btn:disabled { cursor: default; }
+.ui-ctc__status-text { min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.ui-ctc__check { width: 16px; height: 16px; fill: var(--ui-ctc-ok); }
+.ui-ctc__chevron { display: grid; flex: none; color: var(--ui-ctc-icon); transition: transform 260ms var(--ui-ctc-ease), color 160ms ease; }
+.ui-ctc__status-btn:hover .ui-ctc__chevron { color: var(--ui-ctc-ink); }
+.ui-ctc__status-btn[aria-expanded="true"] .ui-ctc__chevron { transform: rotate(180deg); }
+.ui-ctc__details {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 320ms var(--ui-ctc-ease);
+}
+.ui-ctc__details[data-open] { grid-template-rows: 1fr; }
+.ui-ctc__details ul {
+  min-height: 0;
+  overflow: hidden;
+  margin: 0;
+  padding: 0 0 0 28px;
+  list-style: none;
+}
+.ui-ctc__details li {
+  position: relative;
+  margin-top: 4px;
+  font-size: 13px;
+  line-height: 20px;
+  overflow-wrap: anywhere;
+  text-align: start;
+  color: var(--ui-ctc-text);
+  /* Closing: lines fade out quickly while the box folds */
+  opacity: 0;
+  transform: translateY(-4px);
+  transition: opacity 160ms ease, transform 220ms var(--ui-ctc-ease);
+}
+/* Opening: lines come in one after another */
+.ui-ctc__details[data-open] li {
+  opacity: 1;
+  transform: none;
+  transition-duration: 320ms, 420ms;
+  transition-delay: calc(60ms + var(--i, 0) * 60ms);
+}
+/* Thin tree lines: each line gets its own corner – down on the axis of the check icon, then a rounded turn right */
+.ui-ctc__details li:first-child { margin-top: 2px; }
+.ui-ctc__details li::before {
+  content: "";
+  position: absolute;
+  left: -14.5px;
+  top: -3px;
+  width: 9px;
+  height: 13.5px;
+  border-left: 1px solid var(--ui-ctc-tree);
+  border-bottom: 1px solid var(--ui-ctc-tree);
+  border-bottom-left-radius: 5px;
+}
+/* The first branch starts with a small gap under the check icon */
+.ui-ctc__details li:first-child::before { top: -6px; height: 16.5px; }
+
+/* "Thinking…": a lighter band sweeps across the gray text */
+.ui-ctc__thinking { position: relative; display: inline-block; color: var(--ui-ctc-muted); }
+.ui-ctc__thinking::after {
+  content: attr(data-text);
+  content: attr(data-text) / "";
+  position: absolute;
+  inset: 0;
+  white-space: nowrap;
+  color: transparent;
+  background: linear-gradient(90deg, transparent 38%, var(--ui-ctc-shine) 50%, transparent 62%) 100% 0 / 300% 100% no-repeat;
+  -webkit-background-clip: text;
+  background-clip: text;
+  animation: ui-ctc-sweep 1.4s linear infinite;
+  pointer-events: none;
+}
+
+/* ---------- Reply row: lies right in the card ---------- */
+.ui-ctc__composer {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  padding: 4px 10px 10px 16px;
+}
+.ui-ctc__input {
+  flex: 1;
+  min-width: 0;
+  height: 28px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  outline: none;
+  background: transparent;
+  font: inherit;
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--ui-ctc-strong);
+  caret-color: var(--ui-ctc-accent);
+}
+.ui-ctc__input::placeholder { color: var(--ui-ctc-faint); opacity: 1; }
+/* Send: the dark chip – a quiet gray tile until there is something to send */
+.ui-ctc__send {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 28px;
+  height: 28px;
+  border-radius: calc(var(--aui-radius-sm, 5px) + 1px);
+  background: var(--ui-ctc-solid);
+  color: var(--ui-ctc-on-solid);
+  transition: background-color 180ms ease, color 180ms ease, transform 160ms var(--ui-ctc-ease);
+}
+.ui-ctc__send:disabled { background: var(--ui-ctc-fill); color: var(--ui-ctc-faint); cursor: default; }
+.ui-ctc__send:not(:disabled):active { transform: scale(0.94); }
+.ui-ctc__send svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+
+@keyframes ui-ctc-in { from { opacity: 0; transform: translateY(4px); } }
+@keyframes ui-ctc-sweep { from { background-position: 100% 0; } to { background-position: 0% 0; } }
+
+/* Height changes glide instead of jumping */
+.ui-ctc__morph { flex: none; overflow: hidden; }
+.ui-ctc__morph[data-smooth] { transition: height 380ms var(--ui-ctc-ease); }
+
+/* Narrow containers: a little less padding */
+@container (max-width: 340px) {
+  .ui-ctc__head { padding-left: 12px; }
+  .ui-ctc__scroll { padding-left: 12px; padding-right: 12px; }
+  .ui-ctc__composer { padding-left: 12px; }
+}
+/* Touch screens: taller hit targets */
+@media (pointer: coarse) {
+  .ui-ctc__icon-btn, .ui-ctc__send { width: 34px; height: 34px; }
+  .ui-ctc__status-btn { height: 34px; }
+  .ui-ctc__input { height: 34px; }
+  .ui-ctc__details li:first-child::before { top: -9px; height: 19.5px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ui-ctc__msg > *, .ui-ctc__thinking::after { animation: none; }
+  .ui-ctc__details, .ui-ctc__details li, .ui-ctc__chevron, .ui-ctc__morph[data-smooth] { transition: none; }
+}
+
+/* Text fields: no focus box while typing – also against global :focus-visible rules of the host page */
+.ui-ctc input:not([type="checkbox"]):not([type="radio"]):focus-visible,
+.ui-ctc textarea:focus-visible,
+.ui-ctc [contenteditable]:focus-visible { outline: none; }
+
+/* Dark mode: follows a .dark class or data-theme="dark" on any ancestor, e.g. <html> */
+:where(.dark, [data-theme="dark"]) .ui-ctc {
+  --ui-ctc-card: var(--aui-surface, #1c1c1e);
+  --ui-ctc-strong: var(--aui-ink, #ffffff);
+  --ui-ctc-ink: var(--aui-ink, rgba(255, 255, 255, 0.9));
+  --ui-ctc-text: var(--aui-muted, rgba(255, 255, 255, 0.62));
+  --ui-ctc-muted: var(--aui-muted, rgba(255, 255, 255, 0.46));
+  --ui-ctc-faint: var(--aui-placeholder, rgba(255, 255, 255, 0.3));
+  --ui-ctc-icon: var(--aui-muted, rgba(255, 255, 255, 0.5));
+  --ui-ctc-line: var(--aui-border, rgba(255, 255, 255, 0.08));
+  --ui-ctc-tree: rgba(255, 255, 255, 0.14);
+  --ui-ctc-fill: rgba(255, 255, 255, 0.08);
+  --ui-ctc-wash: var(--aui-subtle, rgba(255, 255, 255, 0.04));
+  --ui-ctc-solid: var(--aui-primary, rgba(255, 255, 255, 0.92));
+  --ui-ctc-on-solid: var(--aui-on-primary, #161618);
+  --ui-ctc-accent: var(--aui-blue, #4fb0fe);
+  --ui-ctc-ok: var(--aui-green, #5fc88a);
+  --ui-ctc-shine: #ffffff;
+  --ui-ctc-avatar-ring: rgba(255, 255, 255, 0.1);
+  --ui-ctc-shadow: var(--aui-shadow-card, 0 0 0 0.5px var(--aui-border, rgba(255, 255, 255, 0.1)), 0 1px 2px 0 rgba(0, 0, 0, 0.4));
+  --ui-ctc-focus: var(--aui-focus, rgba(77, 141, 255, 0.8));
+}

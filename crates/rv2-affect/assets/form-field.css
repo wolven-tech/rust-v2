@@ -1,0 +1,59 @@
+/* Colors and motion as variables – override them on .ui-fldc (see Theming in the docs) */
+.ui-fldc {
+  --ui-fldc-title: var(--aui-ink, rgba(0, 0, 0, 0.88));
+  --ui-fldc-ink: var(--aui-ink, rgba(0, 0, 0, 0.88));
+  --ui-fldc-muted: var(--aui-muted, rgba(0, 0, 0, 0.61));
+  --ui-fldc-subtle: var(--aui-muted, rgba(0, 0, 0, 0.45));
+  --ui-fldc-faint: var(--aui-placeholder, rgba(0, 0, 0, 0.3));
+  --ui-fldc-danger: var(--aui-danger, #c4320a);
+  --ui-fldc-ease: cubic-bezier(0.22, 1, 0.36, 1);
+
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  font-family: var(--aui-font, "Inter", "InterVariable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif);
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--ui-fldc-ink);
+  -webkit-font-smoothing: antialiased;
+}
+.ui-fldc[data-disabled] { opacity: 0.55; }
+
+.ui-fldc__head { display: flex; align-items: baseline; gap: 6px; min-width: 0; }
+.ui-fldc__label { min-width: 0; font-weight: 500; color: var(--ui-fldc-title); overflow-wrap: anywhere; cursor: default; }
+/* The required mark: quiet, right after the last word, never alone on a line */
+.ui-fldc__required { margin-inline-start: 2px; color: var(--ui-fldc-subtle); font-weight: 400; white-space: nowrap; }
+.ui-fldc__optional { flex: none; font-size: 12px; line-height: 16px; color: var(--ui-fldc-subtle); }
+
+/* Under the control: the hint, or the error in its place, and the count */
+.ui-fldc__foot { display: flex; align-items: flex-start; gap: 12px; min-width: 0; }
+.ui-fldc__message {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--ui-fldc-subtle);
+  overflow-wrap: anywhere;
+  animation: ui-fldc-message 260ms var(--ui-fldc-ease);
+}
+.ui-fldc[data-invalid] .ui-fldc__message { color: var(--ui-fldc-danger); }
+.ui-fldc__count { flex: none; margin-inline-start: auto; font-size: 12px; line-height: 16px; font-variant-numeric: tabular-nums; color: var(--ui-fldc-faint); white-space: nowrap; }
+
+@keyframes ui-fldc-message {
+  from { opacity: 0; transform: translateY(-3px); filter: blur(2px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ui-fldc__message { animation-duration: 1ms; }
+}
+
+/* Dark mode: follows a .dark class or data-theme="dark" on any ancestor, e.g. <html> */
+:where(.dark, [data-theme="dark"]) .ui-fldc {
+  --ui-fldc-title: var(--aui-ink, rgba(255, 255, 255, 0.92));
+  --ui-fldc-ink: var(--aui-ink, rgba(255, 255, 255, 0.9));
+  --ui-fldc-muted: var(--aui-muted, rgba(255, 255, 255, 0.62));
+  --ui-fldc-subtle: var(--aui-muted, rgba(255, 255, 255, 0.46));
+  --ui-fldc-faint: var(--aui-placeholder, rgba(255, 255, 255, 0.3));
+  --ui-fldc-danger: var(--aui-danger, #ff8a7a);
+}

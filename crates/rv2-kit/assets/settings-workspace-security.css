@@ -1,0 +1,138 @@
+.kit-sec__toolbar {
+  display: flex;
+  justify-content: flex-end;
+  padding: 0 20px 8px;
+}
+
+.kit-sec__empty {
+  padding: 0 20px 14px;
+}
+
+.kit-sec__rows,
+.kit-sec__ranges {
+  display: flex;
+  flex-direction: column;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.kit-sec__row {
+  border-top: 1px solid var(--kit-rule-soft);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 20px;
+}
+
+.kit-sec__row-main {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-width: 0;
+}
+
+.kit-sec__row-main .kit-set__row-label {
+  overflow-wrap: anywhere;
+}
+
+.kit-sec__txt {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  font-size: 13px;
+  gap: 6px;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.kit-sec__txt code,
+.kit-sec__range code {
+  background: var(--kit-raised);
+  border-radius: var(--kit-radius-sm);
+  font-family: var(--kit-mono);
+  font-size: 12px;
+  padding: 2px 6px;
+  overflow-wrap: anywhere;
+}
+
+.kit-sec__remove {
+  appearance: none;
+  background: none;
+  border: 1px solid transparent;
+  border-radius: var(--kit-radius-sm);
+  color: var(--kit-fault-ink);
+  cursor: pointer;
+  font: inherit;
+  font-size: 13px;
+  opacity: 0;
+  padding: 4px 8px;
+}
+
+.kit-sec__row:hover .kit-sec__remove,
+.kit-sec__range:hover .kit-sec__remove,
+.kit-sec__remove:focus {
+  opacity: 1;
+}
+
+.kit-sec__remove:focus-visible {
+  outline: 2px solid var(--kit-accent);
+  outline-offset: 2px;
+}
+
+@media (pointer: coarse) {
+  .kit-sec__remove {
+    opacity: 1;
+  }
+}
+
+.kit-sec__copy {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 20px;
+  border-top: 1px solid var(--kit-rule-soft);
+  min-width: 0;
+}
+
+.kit-sec__readonly {
+  font-family: var(--kit-mono);
+  font-size: 13px;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.kit-sec__ranges {
+  padding: 0 20px 14px;
+  gap: 6px;
+}
+
+.kit-sec__range {
+  align-items: center;
+  border: 1px solid var(--kit-rule-soft);
+  border-radius: var(--kit-radius-sm);
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 10px;
+  min-width: 0;
+}
+
+.kit-sec__open {
+  color: var(--kit-ink-muted);
+  font-size: 14px;
+  margin: 0;
+  padding: 0 20px 14px;
+}
+
+@container kit-set (max-width: 640px) {
+  .kit-sec__row-main {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .kit-sec__row .kit-set__inline {
+    align-self: flex-start;
+  }
+}

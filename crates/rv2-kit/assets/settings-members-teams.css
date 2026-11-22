@@ -1,0 +1,338 @@
+.kit-mem__summary {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.kit-mem__stat {
+  background: var(--kit-surface);
+  border: 1px solid var(--kit-rule-soft);
+  border-radius: var(--kit-radius);
+  box-shadow: var(--kit-shadow);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  padding: 14px 16px;
+}
+
+.kit-mem__figure {
+  font-size: 22px;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+}
+
+.kit-mem__label {
+  color: var(--kit-ink-muted);
+  font-size: 13px;
+}
+
+.kit-mem__tabs {
+  border-bottom: 1px solid var(--kit-rule-soft);
+  display: flex;
+  gap: 4px;
+}
+
+.kit-mem__tab {
+  appearance: none;
+  background: none;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  color: var(--kit-ink-muted);
+  cursor: pointer;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: -1px;
+  padding: 8px 12px;
+}
+
+.kit-mem__tab[aria-selected="true"] {
+  border-bottom-color: var(--kit-accent);
+  color: var(--kit-ink);
+}
+
+.kit-mem__tab:focus-visible,
+.kit-mem__team-toggle:focus-visible {
+  outline: 2px solid var(--kit-accent);
+  outline-offset: 2px;
+}
+
+.kit-mem__panel {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+}
+
+.kit-mem__toolbar {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: space-between;
+}
+
+.kit-mem__search {
+  flex: 1 1 220px;
+  width: auto;
+  max-width: 340px;
+}
+
+.kit-mem__filter {
+  flex: 0 0 auto;
+  width: auto;
+}
+
+.kit-mem__invite {
+  background: var(--kit-surface);
+  border: 1px solid var(--kit-rule-soft);
+  border-radius: var(--kit-radius);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 520px;
+  padding: 14px 16px;
+}
+
+.kit-mem__invite label {
+  color: var(--kit-ink-muted);
+  font-size: 13px;
+}
+
+.kit-mem__bulk {
+  align-items: center;
+  background: var(--kit-raised);
+  border: 1px solid var(--kit-rule-soft);
+  border-radius: var(--kit-radius);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 8px 12px;
+}
+
+.kit-mem__bulk-count {
+  font-size: 14px;
+  font-weight: 600;
+  margin-right: auto;
+}
+
+.kit-mem__empty {
+  align-items: flex-start;
+  background: var(--kit-surface);
+  border: 1px dashed var(--kit-rule);
+  border-radius: var(--kit-radius);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 18px;
+}
+
+.kit-mem__table-wrap {
+  background: var(--kit-surface);
+  border: 1px solid var(--kit-rule-soft);
+  border-radius: var(--kit-radius-lg);
+  box-shadow: var(--kit-shadow);
+  overflow-x: auto;
+}
+
+.kit-mem__table {
+  border-collapse: collapse;
+  font-size: 14px;
+  width: 100%;
+}
+
+.kit-mem__table th,
+.kit-mem__table td {
+  border-top: 1px solid var(--kit-rule-soft);
+  padding: 10px 12px;
+  text-align: left;
+  vertical-align: middle;
+}
+
+.kit-mem__table th {
+  color: var(--kit-ink-muted);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.kit-mem__check {
+  height: 16px;
+  width: 16px;
+  margin: 0;
+  accent-color: var(--kit-accent);
+}
+
+.kit-mem__who {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.kit-mem__name {
+  font-weight: 500;
+}
+
+.kit-mem__you {
+  color: var(--kit-ink-muted);
+  font-weight: 400;
+}
+
+.kit-mem__email {
+  color: var(--kit-ink-muted);
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+
+.kit-mem__role {
+  min-width: 120px;
+  width: auto;
+}
+
+.kit-mem__usage {
+  background: var(--kit-raised);
+  border-radius: var(--kit-radius-pill);
+  height: 6px;
+  overflow: hidden;
+  width: 96px;
+}
+
+.kit-mem__usage-fill {
+  background: var(--kit-accent);
+  display: block;
+  height: 100%;
+}
+
+.kit-mem__usage-text {
+  color: var(--kit-ink-muted);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  margin-left: 8px;
+}
+
+.kit-mem__teams {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.kit-mem__team {
+  background: var(--kit-surface);
+  border: 1px solid var(--kit-rule-soft);
+  border-radius: var(--kit-radius);
+  padding: 10px 14px;
+}
+
+.kit-mem__team-head {
+  align-items: center;
+  display: flex;
+  gap: 8px;
+  justify-content: space-between;
+}
+
+.kit-mem__team-toggle {
+  align-items: baseline;
+  appearance: none;
+  background: none;
+  border: 0;
+  color: var(--kit-ink);
+  cursor: pointer;
+  display: flex;
+  flex-wrap: wrap;
+  font: inherit;
+  gap: 4px 10px;
+  padding: 0;
+  text-align: left;
+}
+
+.kit-mem__team-name {
+  font-weight: 600;
+}
+
+.kit-mem__team-members {
+  color: var(--kit-ink-muted);
+  font-size: 14px;
+  margin: 8px 0 0;
+  padding-left: 18px;
+}
+
+.kit-mem__actions {
+  position: relative;
+}
+
+.kit-mem__more {
+  min-width: 34px;
+  padding: 0 8px;
+}
+
+.kit-mem__menu {
+  background: var(--kit-surface);
+  border: 1px solid var(--kit-rule-soft);
+  border-radius: var(--kit-radius);
+  box-shadow: var(--kit-shadow-pop);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 200px;
+  padding: 6px;
+  position: absolute;
+  right: 0;
+  top: calc(100% + 4px);
+  z-index: 20;
+}
+
+.kit-mem__menu-item {
+  appearance: none;
+  background: none;
+  border: 0;
+  border-radius: var(--kit-radius-sm);
+  color: var(--kit-ink);
+  cursor: pointer;
+  font: inherit;
+  font-size: 14px;
+  padding: 7px 10px;
+  text-align: left;
+}
+
+.kit-mem__menu-item:hover:not(:disabled) {
+  background: var(--kit-raised);
+}
+
+.kit-mem__menu-item:disabled {
+  color: var(--kit-ink-faint);
+  cursor: not-allowed;
+}
+
+@container kit-set (max-width: 640px) {
+  .kit-mem__summary {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .kit-mem__search,
+  .kit-mem__filter {
+    flex: 1 1 100%;
+    max-width: none;
+    width: 100%;
+  }
+
+  .kit-mem__hide-narrow {
+    display: none;
+  }
+
+  .kit-mem__table td,
+  .kit-mem__table th {
+    padding: 10px 8px;
+  }
+
+  .kit-mem__role {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .kit-mem__table td:nth-child(3) {
+    min-width: 0;
+  }
+}

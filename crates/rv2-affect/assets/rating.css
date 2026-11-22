@@ -1,0 +1,121 @@
+/* Colors and motion as variables – override them on .ui-rtgc (see Theming in the docs) */
+.ui-rtgc {
+  --ui-rtgc-star: #e8b000;
+  --ui-rtgc-empty: rgba(0, 0, 0, 0.1);
+  --ui-rtgc-empty-hover: rgba(0, 0, 0, 0.16);
+  --ui-rtgc-icon: var(--aui-muted, rgba(0, 0, 0, 0.447));
+  --ui-rtgc-ink: var(--aui-ink, rgba(0, 0, 0, 0.88));
+  --ui-rtgc-wash: rgba(0, 0, 0, 0.04);
+  --ui-rtgc-wash-on: rgba(0, 0, 0, 0.06);
+  --ui-rtgc-focus: var(--aui-focus, rgba(0, 96, 226, 0.7));
+  --ui-rtgc-ease: var(--aui-ease, cubic-bezier(0.22, 1, 0.36, 1));
+
+  /* A star's size, the space around it (its hit area) and a thumb button's size */
+  --s: 18px;
+  --pad: 3px;
+  --b: 28px;
+  --i: 16px;
+
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  min-width: 0;
+  max-width: 100%;
+  flex-wrap: wrap;
+  vertical-align: middle;
+  -webkit-tap-highlight-color: transparent;
+}
+.ui-rtgc[data-size="sm"] { --s: 14px; --pad: 2px; --b: 24px; --i: 14px; gap: 1px; }
+.ui-rtgc[data-size="lg"] { --s: 24px; --pad: 3px; --b: 32px; --i: 18px; }
+.ui-rtgc[data-readonly] { gap: 2px; }
+.ui-rtgc[data-readonly][data-size="sm"] { gap: 1px; }
+.ui-rtgc[data-disabled] { opacity: 0.5; }
+
+/* A star: its button is the glyph plus a little room, so the hit area is bigger than the star */
+.ui-rtgc__star {
+  display: grid;
+  flex: none;
+  place-items: center;
+  margin: 0;
+  padding: var(--pad);
+  border: 0;
+  border-radius: 6px;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+.ui-rtgc[data-readonly] .ui-rtgc__star { padding: 0; cursor: default; }
+.ui-rtgc__star:disabled { cursor: not-allowed; }
+.ui-rtgc__star:focus-visible { outline: 2px solid var(--ui-rtgc-focus); outline-offset: 2px; }
+
+.ui-rtgc__glyph { position: relative; display: block; width: var(--s); height: var(--s); transition: transform 160ms var(--ui-rtgc-ease); }
+.ui-rtgc__glyph svg { position: absolute; inset: 0; display: block; width: 100%; height: 100%; overflow: visible; }
+.ui-rtgc__empty { color: var(--ui-rtgc-empty); transition: color 140ms ease; }
+/* The fill is a second star on top, clipped from the start side – whole, or half for a read-only 4.5 */
+.ui-rtgc__fill { color: var(--ui-rtgc-star); clip-path: inset(0 calc((1 - var(--ui-rtgc-f)) * 100%) 0 0); }
+.ui-rtgc:dir(rtl) .ui-rtgc__fill { clip-path: inset(0 0 0 calc((1 - var(--ui-rtgc-f)) * 100%)); }
+.ui-rtgc__star:not(:disabled):hover .ui-rtgc__empty { color: var(--ui-rtgc-empty-hover); }
+.ui-rtgc__star[data-hover] .ui-rtgc__glyph { transform: scale(1.12); }
+.ui-rtgc__star:not(:disabled):active .ui-rtgc__glyph { transform: scale(0.9); }
+/* A choice: the stars up to it pop one after the other */
+.ui-rtgc__glyph[data-pop] { animation: ui-rtgc-pop 420ms var(--ui-rtgc-ease) both; }
+
+/* Thumbs: two quiet icon buttons; the chosen one fills in ink and sits on a soft wash */
+.ui-rtgc__thumb {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: var(--b);
+  height: var(--b);
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: none;
+  color: var(--ui-rtgc-icon);
+  font: inherit;
+  cursor: pointer;
+  transition: background-color 140ms ease, color 140ms ease;
+}
+.ui-rtgc[data-readonly] .ui-rtgc__thumb { width: auto; height: auto; cursor: default; }
+.ui-rtgc[data-readonly] .ui-rtgc__thumb:not([data-on]) { opacity: 0.45; }
+.ui-rtgc__thumb:not(:disabled):hover { background: var(--ui-rtgc-wash); color: var(--ui-rtgc-ink); }
+.ui-rtgc__thumb[data-on] { color: var(--ui-rtgc-ink); }
+.ui-rtgc:not([data-readonly]) .ui-rtgc__thumb[data-on] { background: var(--ui-rtgc-wash-on); }
+.ui-rtgc__thumb:disabled { cursor: not-allowed; }
+.ui-rtgc__thumb:focus-visible { outline: 2px solid var(--ui-rtgc-focus); outline-offset: 2px; }
+.ui-rtgc__icon { display: block; width: var(--i); height: var(--i); }
+.ui-rtgc__icon[data-pop] { animation: ui-rtgc-thumb 460ms var(--ui-rtgc-ease); transform-origin: 30% 70%; }
+.ui-rtgc__icon[data-pop][data-down] { animation-name: ui-rtgc-thumb-down; transform-origin: 30% 30%; }
+
+@keyframes ui-rtgc-pop { 0% { transform: scale(0.6); } 55% { transform: scale(1.22); } 100% { transform: scale(1); } }
+@keyframes ui-rtgc-thumb { 0% { transform: scale(0.8) rotate(0); } 45% { transform: scale(1.18) rotate(-12deg); } 100% { transform: scale(1) rotate(0); } }
+@keyframes ui-rtgc-thumb-down { 0% { transform: scale(0.8) rotate(0); } 45% { transform: scale(1.18) rotate(12deg); } 100% { transform: scale(1) rotate(0); } }
+
+/* Touch screens: a hit area of at least 32px per star and 36px per thumb */
+@media (pointer: coarse) {
+  .ui-rtgc { --pad: 7px; --b: 36px; }
+  .ui-rtgc[data-size="sm"] { --pad: 9px; --b: 32px; }
+  .ui-rtgc[data-size="lg"] { --pad: 6px; --b: 40px; }
+  .ui-rtgc:not([data-readonly]) { gap: 0; }
+  .ui-rtgc__star[data-hover] .ui-rtgc__glyph { transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-rtgc__glyph, .ui-rtgc__empty, .ui-rtgc__thumb { transition: none; }
+  .ui-rtgc__glyph[data-pop], .ui-rtgc__icon[data-pop] { animation: none; }
+  .ui-rtgc__star[data-hover] .ui-rtgc__glyph, .ui-rtgc__star:active .ui-rtgc__glyph { transform: none; }
+}
+
+/* Dark mode: follows a .dark class or data-theme="dark" on any ancestor, e.g. <html> */
+:where(.dark, [data-theme="dark"]) .ui-rtgc {
+  --ui-rtgc-star: #f0bd1a;
+  --ui-rtgc-empty: rgba(255, 255, 255, 0.14);
+  --ui-rtgc-empty-hover: rgba(255, 255, 255, 0.22);
+  --ui-rtgc-icon: var(--aui-muted, rgba(255, 255, 255, 0.46));
+  --ui-rtgc-ink: var(--aui-ink, rgba(255, 255, 255, 0.9));
+  --ui-rtgc-wash: rgba(255, 255, 255, 0.06);
+  --ui-rtgc-wash-on: rgba(255, 255, 255, 0.09);
+  --ui-rtgc-focus: var(--aui-focus, rgba(77, 141, 255, 0.8));
+}

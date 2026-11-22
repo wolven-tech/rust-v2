@@ -1,0 +1,19 @@
+/* kit-shares: kit-frame — the flat style of the frame owned by workspace-frame-inset.css */
+.kit-frame[data-style="flat"] {
+  background: var(--kit-surface);
+}
+
+.kit-frame[data-style="flat"] .kit-frame__page {
+  background: var(--kit-surface);
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.kit-frame[data-style="flat"] .kit-frame__sidebar {
+  background: var(--kit-ground);
+}
+
+.kit-frame[data-style="flat"] .kit-frame__work {
+  border-left: 1px solid var(--kit-rule-soft);
+}

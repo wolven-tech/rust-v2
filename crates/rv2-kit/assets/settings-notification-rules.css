@@ -1,0 +1,124 @@
+.kit-nrules__switch {
+  padding: 12px 20px;
+  border-top: 1px solid var(--kit-rule-soft);
+}
+
+.kit-nrules__switch:first-of-type {
+  border-top: 0;
+}
+
+.kit-nrules__dependent {
+  animation: kit-nrules-rise var(--kit-fast) var(--kit-ease);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 0 20px 12px;
+}
+
+@keyframes kit-nrules-rise {
+  from { opacity: 0; transform: translateY(4px); }
+}
+
+.kit-nrules__field {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  font-size: 14px;
+}
+
+.kit-nrules__time {
+  width: auto;
+  min-width: 140px;
+}
+
+.kit-nrules__zone {
+  margin: 0;
+}
+
+.kit-nrules__window {
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+
+.kit-nrules__table-wrap {
+  overflow-x: auto;
+  padding-bottom: 8px;
+}
+
+.kit-nrules__table {
+  border-collapse: collapse;
+  font-size: 14px;
+  width: 100%;
+}
+
+.kit-nrules__table th,
+.kit-nrules__table td {
+  border-top: 1px solid var(--kit-rule-soft);
+  padding: 10px 20px;
+  text-align: left;
+  vertical-align: middle;
+}
+
+.kit-nrules__table th {
+  color: var(--kit-ink-muted);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.kit-nrules__set-all {
+  align-items: center;
+  display: inline-flex;
+  gap: 8px;
+  font-weight: 600;
+}
+
+.kit-nrules__type {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.kit-nrules__type-name {
+  font-weight: 500;
+}
+
+.kit-nrules__select {
+  width: auto;
+  min-width: 180px;
+}
+
+@container kit-set (max-width: 640px) {
+  .kit-nrules__table thead {
+    display: none;
+  }
+
+  .kit-nrules__table,
+  .kit-nrules__table tbody {
+    display: block;
+  }
+
+  .kit-nrules__table tr {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 10px 20px;
+    border-top: 1px solid var(--kit-rule-soft);
+  }
+
+  .kit-nrules__table td {
+    border: 0;
+    padding: 0;
+  }
+
+  .kit-nrules__select {
+    min-width: 0;
+    width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kit-nrules__dependent {
+    animation: none;
+  }
+}
