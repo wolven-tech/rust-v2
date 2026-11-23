@@ -19,7 +19,9 @@
 //!
 //! That is not theoretical. It made `POST /posts` return 404: the handler
 //! appends, then reads back through the fold to prove the write landed, and the
-//! read returned empty. The append had succeeded.
+//! read returned empty. The append had succeeded. `GET /users/{id}` and the
+//! `GET /posts` fallback later shipped with the same defect, which is why
+//! `apps/api/tests/tenant_reads.rs` forbids the SDK read calls in handlers.
 //!
 //! So single-node reads go through here, which sends `tenant_id` and folds with
 //! the same [`allsource::EventFolder`] the gateway path uses. Point
@@ -30,51 +32,101 @@ use allsource::{Event, EventFolder};
 use serde::Deserialize;
 
 /// Core's default tenant. Overridable for multi-tenant deployments.
-const DEFAULT_TENANT: &str = "default";
+pub const DEFAULT_TENANT: &str = "default";
+
+/// How many events one tenant-scoped read asks Core for.
+pub const READ_LIMIT: usize = 10_000;
+
+/// A tenant-scoped read failed: Core unreachable, or a non-success status.
+///
+/// Distinct from "no events": callers map this to 502, never to 404.
+#[derive(Debug, thiserror::Error)]
+#[error("tenant-scoped read failed: {0}")]
+pub struct ReadError(#[from] reqwest::Error);
 
 #[derive(Debug, Deserialize)]
 struct QueryResponse {
     events: Vec<Event>,
 }
 
-/// Read one entity's events from Core and fold them.
-///
-/// Returns `None` when the entity genuinely has no events — the same contract
-/// as [`allsource::EventFolder::finalize`].
-///
-/// # Errors
-///
-/// [`reqwest::Error`] if Core is unreachable or answers with a non-success
-/// status.
-pub async fn fold_entity<F: EventFolder>(
-    query_url: &str,
-    api_key: &str,
-    entity_id: &str,
-) -> Result<Option<F::State>, reqwest::Error> {
-    let tenant =
-        std::env::var("ALLSOURCE_TENANT_ID").unwrap_or_else(|_| DEFAULT_TENANT.to_string());
+/// Where, and as which tenant, a read goes. One connection pool for all reads.
+#[derive(Debug, Clone)]
+pub struct TenantReader {
+    http: reqwest::Client,
+    query_url: String,
+    api_key: String,
+    tenant: String,
+}
 
-    let response: QueryResponse = reqwest::Client::new()
-        .get(format!(
-            "{}/api/v1/events/query",
-            query_url.trim_end_matches('/')
-        ))
-        .header("X-API-Key", api_key)
-        // `tenant_id` is the whole point of this module — see the module docs.
-        .query(&[
-            ("entity_id", entity_id),
-            ("tenant_id", &tenant),
-            ("limit", "10000"),
-        ])
-        .send()
-        .await?
-        .error_for_status()?
-        .json()
-        .await?;
-
-    let mut folder = F::default();
-    for event in &response.events {
-        folder.apply(event);
+impl TenantReader {
+    /// A reader scoped to `tenant`.
+    #[must_use]
+    pub fn new(query_url: &str, api_key: &str, tenant: &str) -> Self {
+        Self {
+            http: reqwest::Client::new(),
+            query_url: query_url.trim_end_matches('/').to_string(),
+            api_key: api_key.to_string(),
+            tenant: tenant.to_string(),
+        }
     }
-    Ok(folder.finalize())
+
+    /// The tenant every read is scoped to.
+    #[must_use]
+    pub fn tenant(&self) -> &str {
+        &self.tenant
+    }
+
+    async fn query(&self, filter: (&str, &str)) -> Result<Vec<Event>, ReadError> {
+        let limit = READ_LIMIT.to_string();
+        let response: QueryResponse = self
+            .http
+            .get(format!("{}/api/v1/events/query", self.query_url))
+            .header("X-API-Key", &self.api_key)
+            .query(&[
+                filter,
+                // `tenant_id` is the whole point of this module — see the module docs.
+                ("tenant_id", self.tenant.as_str()),
+                ("limit", limit.as_str()),
+            ])
+            .send()
+            .await?
+            .error_for_status()?
+            .json()
+            .await?;
+        Ok(response.events)
+    }
+
+    /// Read one entity's events from Core and fold them.
+    ///
+    /// Returns `None` when the entity genuinely has no events — the same
+    /// contract as [`allsource::EventFolder::finalize`].
+    ///
+    /// # Errors
+    ///
+    /// [`ReadError`] if Core is unreachable or answers with a non-success
+    /// status.
+    pub async fn fold_entity<F: EventFolder>(
+        &self,
+        entity_id: &str,
+    ) -> Result<Option<F::State>, ReadError> {
+        let events = self.query(("entity_id", entity_id)).await?;
+        let mut folder = F::default();
+        for event in &events {
+            folder.apply(event);
+        }
+        Ok(folder.finalize())
+    }
+
+    /// Every event whose type starts with `prefix`, at most [`READ_LIMIT`].
+    ///
+    /// A result of exactly [`READ_LIMIT`] events may be truncated; the caller
+    /// decides what that means.
+    ///
+    /// # Errors
+    ///
+    /// [`ReadError`] if Core is unreachable or answers with a non-success
+    /// status.
+    pub async fn events_by_type_prefix(&self, prefix: &str) -> Result<Vec<Event>, ReadError> {
+        self.query(("event_type_prefix", prefix)).await
+    }
 }

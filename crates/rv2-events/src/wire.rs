@@ -42,7 +42,7 @@ impl DomainEvent {
     ];
 
     /// Wire types on the `content.post.*` stream family. Used to scope the
-    /// `posts_v1` projection worker's subscription.
+    /// `posts_v2` projection worker's subscription.
     pub const POST_WIRE_TYPES: &'static [&'static str] = &[
         "content.post.created",
         "content.post.edited",

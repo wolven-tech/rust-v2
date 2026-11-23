@@ -235,7 +235,7 @@ pub async fn sign_out() -> Result<(), ApiError> {
 // Posts
 // ═════════════════════════════════════════════════════════════════════════════
 
-/// `GET /posts` — served from the `posts_v1` projection worker.
+/// `GET /posts` — every live post, newest first.
 ///
 /// # Errors
 ///

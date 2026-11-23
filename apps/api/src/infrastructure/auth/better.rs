@@ -23,7 +23,7 @@
 use std::sync::Arc;
 
 use better_auth::{
-    AuthBuilder, AuthConfig, BetterAuth,
+    AuthBuilder, AuthConfig, BetterAuth, core_paths,
     plugins::{EmailPasswordPlugin, SessionManagementPlugin},
 };
 use rv2_shared::ServerConfig;
@@ -34,6 +34,21 @@ pub type ApiAuthDb = better_auth_allsource::AllsourceAuthAdapter;
 pub type ApiAuthDb = better_auth::adapters::MemoryDatabaseAdapter;
 
 pub type ApiBetterAuth = BetterAuth<ApiAuthDb>;
+
+/// better-auth's core user routes, none of which this API mounts.
+///
+/// `/update-user` writes `role` and `metadata` (which holds the password hash)
+/// straight from the request body, so any signed-in user could grant
+/// themselves a role or replace their hash without the old password.
+/// `/change-email` skips verification and uniqueness. The delete pair trusts
+/// any unexpired verification value. Profile edits go through
+/// `PATCH /users/{id}` instead.
+const UNMOUNTED_USER_ROUTES: [&str; 4] = [
+    core_paths::UPDATE_USER,
+    core_paths::CHANGE_EMAIL,
+    core_paths::DELETE_USER,
+    core_paths::DELETE_USER_CALLBACK,
+];
 
 #[cfg(feature = "allsource-auth")]
 fn adapter(config: &ServerConfig) -> ApiAuthDb {
@@ -64,6 +79,10 @@ pub async fn build_auth(config: &ServerConfig) -> Result<Arc<ApiBetterAuth>, Str
         // (§5.4).
         .base_url(&config.auth_base_url)
         .password_min_length(8);
+
+    for path in UNMOUNTED_USER_ROUTES {
+        auth_config = auth_config.disabled_path(path);
+    }
 
     for origin in &config.cors_origins {
         auth_config = auth_config.trusted_origin(origin.clone());
@@ -139,6 +158,19 @@ mod tests {
             "base_url was {}",
             auth.config().base_url
         );
+    }
+
+    #[tokio::test]
+    async fn the_user_routes_that_write_role_or_email_are_not_mounted() {
+        let auth = build_auth(&config()).await.unwrap();
+        for path in UNMOUNTED_USER_ROUTES {
+            let mut request = better_auth::AuthRequest::new(better_auth::HttpMethod::Post, path);
+            request
+                .headers
+                .insert("origin".into(), "http://localhost:4402".into());
+            let response = auth.handle_request(request).await.unwrap();
+            assert_eq!(response.status, 404, "{path} is still reachable");
+        }
     }
 
     #[tokio::test]

@@ -35,7 +35,8 @@ pub fn Shell() -> Element {
     };
 
     let navigator = use_navigator();
-    let bootstrap = use_resource(move || async move { rv2_client::get_session().await });
+    let mut bootstrap = use_resource(move || async move { rv2_client::get_session().await });
+    let mut sign_out_error = use_signal(|| None::<String>);
 
     // The redirect that replaces `proxy.ts`. Only fires once the resource has
     // actually resolved — redirecting while it is still `None`-because-pending
@@ -46,6 +47,24 @@ pub fn Shell() -> Element {
             if result.is_none() {
                 navigator.replace(Route::Login {});
             }
+        }
+    });
+
+    let sign_out = move |_| async move {
+        sign_out_error.set(None);
+        match rv2_client::sign_out().await {
+            Ok(()) => {
+                session.set(None);
+                navigator.replace(Route::Login {});
+            }
+            Err(error) => sign_out_error.set(Some(error.to_string())),
+        }
+    };
+
+    let tail = session.read().as_ref().map(|current| {
+        rsx! {
+            span { "{current.email}" }
+            Button { variant: Variant::Outline, onclick: sign_out, "Sign out" }
         }
     });
 
@@ -60,15 +79,42 @@ pub fn Shell() -> Element {
                     NavLink::route("posts", "Posts", "/posts"),
                 ],
                 current,
-                tail: session.read().as_ref().map(|current| rsx! {
-                    span { "{current.email}" }
-                }),
+                tail,
             }
             main { class: "py-8",
-                Container { Outlet::<Route> {} }
+                Container {
+                    if let Some(message) = sign_out_error() {
+                        ErrorBanner { message: "Sign-out failed, so you are still signed in: {message}" }
+                    }
+                    match &*bootstrap.read() {
+                        Some(Err(error)) => rsx! {
+                            ErrorBanner {
+                                message: "Could not reach the API: {error}",
+                                onretry: move |_| bootstrap.restart(),
+                            }
+                        },
+                        _ => rsx! { Outlet::<Route> {} },
+                    }
+                }
             }
         }
     }
+}
+
+/// Rendered where a request came back 401: the session ended mid-visit.
+///
+/// The shell only checks the session on mount, so without this an expired
+/// cookie leaves the user on the dashboard with a raw 401 and a Retry that
+/// can only fail again.
+#[component]
+fn SessionExpired() -> Element {
+    let navigator = use_navigator();
+    let Session(mut session) = use_context::<Session>();
+    use_effect(move || {
+        session.set(None);
+        navigator.replace(Route::Login {});
+    });
+    rsx! {}
 }
 
 #[component]
@@ -82,9 +128,9 @@ pub fn Dashboard() -> Element {
             p { class: "text-sm text-ink-muted",
                 "The vertical slice lives under Posts: a create appends "
                 code { "content.post.created" }
-                " to AllSource, and the list is served from the "
-                code { "posts_v1" }
-                " projection."
+                " to AllSource, and the list folds every "
+                code { "content.post.*" }
+                " event on read."
             }
         }
     }
@@ -99,6 +145,7 @@ pub fn Posts() -> Element {
     let mut content = use_signal(String::new);
     let mut submit_error = use_signal(|| None::<String>);
     let mut submitting = use_signal(|| false);
+    let mut expired = use_signal(|| false);
 
     let create = move |_| async move {
         submitting.set(true);
@@ -116,13 +163,17 @@ pub fn Posts() -> Element {
                 // and re-reading is what proves the fold actually happened.
                 posts.restart();
             }
+            Err(error) if error.is_unauthenticated() => expired.set(true),
             Err(error) => submit_error.set(Some(error.to_string())),
         }
         submitting.set(false);
     };
 
     rsx! {
-        PageHeader { title: "Posts", subtitle: "Served from the posts_v1 projection." }
+        if expired() {
+            SessionExpired {}
+        }
+        PageHeader { title: "Posts", subtitle: "Folded from AllSource events on every read." }
 
         Card {
             form {
@@ -153,6 +204,7 @@ pub fn Posts() -> Element {
         div { class: "mt-6 space-y-3",
             match &*posts.read() {
                 None => rsx! { Skeleton { lines: 4 } },
+                Some(Err(error)) if error.is_unauthenticated() => rsx! { SessionExpired {} },
                 Some(Err(error)) => rsx! {
                     ErrorBanner {
                         message: error.to_string(),
@@ -193,6 +245,7 @@ pub fn PostDetail(id: Uuid) -> Element {
     rsx! {
         match &*post.read() {
             None => rsx! { Skeleton { lines: 5 } },
+            Some(Err(error)) if error.is_unauthenticated() => rsx! { SessionExpired {} },
             Some(Err(error)) => rsx! { ErrorBanner { message: error.to_string() } },
             Some(Ok(view)) => rsx! { PostBody { post: view.clone() } },
         }

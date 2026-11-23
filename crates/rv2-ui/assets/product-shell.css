@@ -162,6 +162,9 @@ html:has(.rv2-product-header) {
 
 .rv2-product-header__tail {
   min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
   color: var(--rv2-shell-muted);
   font-size: 0.8rem;
 }
@@ -226,6 +229,17 @@ html:has(.rv2-product-header) {
 
 .rv2-product-header__mobile-action {
   padding: 0.55rem;
+}
+
+.rv2-product-header__mobile-tail {
+  padding: 0.65rem 0.85rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  border-top: 1px solid var(--rv2-shell-rule);
+  color: var(--rv2-shell-muted);
+  font-size: 0.8rem;
 }
 
 .rv2-product-header__mobile-action .rv2-product-header__action {

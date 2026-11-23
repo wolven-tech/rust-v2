@@ -132,3 +132,26 @@ fn only_the_route_whose_key_is_current_is_marked_as_the_page() {
         "{html}"
     );
 }
+
+/// The desktop tail is `display: none` on narrow screens, so a sign-out placed
+/// there would be unreachable on a phone unless the mobile menu carries it too.
+#[test]
+fn the_header_tail_is_reachable_from_the_mobile_menu() {
+    let html = render(|| {
+        rsx! {
+            ProductHeader {
+                brand: "Brand",
+                tail: rsx! { button { "Sign out" } },
+            }
+        }
+    });
+    let mobile = html
+        .split(r#"class="rv2-product-header__mobile""#)
+        .nth(1)
+        .expect("mobile menu");
+    assert!(
+        mobile.contains("rv2-product-header__mobile-tail") && mobile.contains("Sign out"),
+        "{html}"
+    );
+    assert_eq!(html.matches("Sign out").count(), 2, "{html}");
+}

@@ -174,7 +174,7 @@ pub struct ReadinessResponse {
     pub ready: bool,
     /// Core answered its own `/health`.
     pub allsource_reachable: bool,
-    /// The `posts_v1` projection has replayed history and is following the log.
+    /// The `posts_v2` projection has replayed history and is following the log.
     ///
     /// `false` while it is still catching up after a boot — the instance serves
     /// *stale* data in that window, which is exactly what readiness exists to

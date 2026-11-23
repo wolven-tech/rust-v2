@@ -11,6 +11,9 @@ use serde::{de::DeserializeOwned, Deserialize, Serialize};
 /// through the gateway does not need this. Talking to Core directly does.
 const DEFAULT_TENANT: &str = "default";
 
+/// How many events one family scan reads.
+const SCAN_LIMIT: &str = "10000";
+
 /// Low-level HTTP client for Allsource Core and Query Service.
 #[derive(Clone)]
 pub struct AllsourceClient {
@@ -35,7 +38,18 @@ struct QueryResponse {
 
 #[derive(Debug, Deserialize)]
 pub struct StoredEvent {
+    #[serde(default)]
+    pub entity_id: String,
+    #[serde(default)]
+    pub timestamp: String,
     pub payload: serde_json::Value,
+}
+
+fn is_tombstone(payload: &serde_json::Value) -> bool {
+    payload
+        .get("_deleted")
+        .and_then(|v| v.as_bool())
+        .unwrap_or(false)
 }
 
 /// Given an entity's events in AllSource order (OLDEST-first), return the
@@ -47,16 +61,62 @@ pub struct StoredEvent {
 /// `*.updated`/delete — breaking user role updates and session sign-out.
 fn latest_live_payload(events: &[StoredEvent]) -> Option<&serde_json::Value> {
     let event = events.last()?;
-    let deleted = event
-        .payload
-        .get("_deleted")
-        .and_then(|v| v.as_bool())
-        .unwrap_or(false);
-    if deleted {
+    if is_tombstone(&event.payload) {
         None
     } else {
         Some(&event.payload)
     }
+}
+
+/// The event-type prefix covering every event of an entity family.
+///
+/// Callers name a family by its `*.created` type. Scanning only that type
+/// returns each entity's first snapshot and never its updates or tombstones:
+/// consumed verification tokens stayed redeemable, deleted entities stayed
+/// listed, and changed fields (email, expiry, password hash) read stale.
+fn family_prefix(event_type: &str) -> &str {
+    event_type
+        .strip_suffix("created")
+        .filter(|family| family.ends_with('.'))
+        .unwrap_or(event_type)
+}
+
+/// The current state of every live entity in `events`: per `entity_id`, the
+/// newest payload by timestamp, unless that payload is a tombstone.
+///
+/// Entities come back in the order they first appear. Timestamps compare as
+/// strings, which orders Core's uniform RFC 3339 UTC stamps correctly; the sort
+/// is stable, so equal stamps keep Core's order.
+fn current_states(events: Vec<StoredEvent>) -> Vec<serde_json::Value> {
+    let mut order: Vec<String> = Vec::new();
+    let mut streams: std::collections::HashMap<String, Vec<StoredEvent>> =
+        std::collections::HashMap::new();
+    for event in events {
+        let key = if event.entity_id.is_empty() {
+            event
+                .payload
+                .get("id")
+                .and_then(|v| v.as_str())
+                .unwrap_or_default()
+                .to_string()
+        } else {
+            event.entity_id.clone()
+        };
+        let stream = streams.entry(key.clone()).or_insert_with(|| {
+            order.push(key);
+            Vec::new()
+        });
+        stream.push(event);
+    }
+
+    order
+        .into_iter()
+        .filter_map(|key| {
+            let mut stream = streams.remove(&key)?;
+            stream.sort_by(|a, b| a.timestamp.cmp(&b.timestamp));
+            latest_live_payload(&stream).cloned()
+        })
+        .collect()
 }
 
 impl AllsourceClient {
@@ -169,271 +229,86 @@ impl AllsourceClient {
         }
     }
 
-    /// Query all non-deleted entities of a given type by event_type prefix.
-    /// Scans events, groups by entity_id, takes the latest per entity.
+    /// The current state of every live entity in the family `event_type`
+    /// names.
+    async fn scan_family(
+        &self,
+        event_type: &str,
+    ) -> Result<Vec<serde_json::Value>, AllsourceAuthError> {
+        let url = format!("{}/api/v1/events/query", self.query_url);
+
+        let resp = self
+            .http
+            .get(&url)
+            .header("Authorization", format!("Bearer {}", self.api_key))
+            .query(&[
+                ("event_type_prefix", family_prefix(event_type)),
+                ("tenant_id", &self.tenant_id),
+                ("limit", SCAN_LIMIT),
+            ])
+            .send()
+            .await?;
+
+        let status = resp.status();
+        if !status.is_success() {
+            let message = extract_error_message(resp).await;
+            return Err(AllsourceAuthError::Api {
+                status: status.as_u16(),
+                message,
+            });
+        }
+
+        let query_resp: QueryResponse = resp.json().await?;
+        Ok(current_states(query_resp.events))
+    }
+
+    /// Every live entity of the family `event_type` names, in its current
+    /// state, at most `limit`.
     pub async fn query_all<T: DeserializeOwned>(
         &self,
-        event_type_prefix: &str,
+        event_type: &str,
         limit: usize,
     ) -> Result<Vec<T>, AllsourceAuthError> {
-        let url = format!("{}/api/v1/events/query", self.query_url);
-
-        let resp = self
-            .http
-            .get(&url)
-            .header("Authorization", format!("Bearer {}", self.api_key))
-            .query(&[
-                ("event_type_prefix", event_type_prefix),
-                ("tenant_id", &self.tenant_id),
-                ("limit", &limit.to_string()),
-            ])
-            .send()
-            .await?;
-
-        let status = resp.status();
-        if !status.is_success() {
-            let message = extract_error_message(resp).await;
-            return Err(AllsourceAuthError::Api {
-                status: status.as_u16(),
-                message,
-            });
-        }
-
-        let query_resp: QueryResponse = resp.json().await?;
-        let mut results = Vec::new();
-
-        // Group by entity_id, take latest per entity (events come sorted by time desc)
-        let mut seen = std::collections::HashSet::new();
-        for event in &query_resp.events {
-            let entity_id = event
-                .payload
-                .get("id")
-                .and_then(|v| v.as_str())
-                .unwrap_or("");
-
-            if seen.contains(entity_id) {
-                continue;
-            }
-            seen.insert(entity_id.to_string());
-
-            // Skip deleted entities
-            if event
-                .payload
-                .get("_deleted")
-                .and_then(|v| v.as_bool())
-                .unwrap_or(false)
-            {
-                continue;
-            }
-
-            if let Ok(entity) = serde_json::from_value::<T>(event.payload.clone()) {
-                results.push(entity);
-            }
-        }
-
-        Ok(results)
+        Ok(self
+            .scan_family(event_type)
+            .await?
+            .into_iter()
+            .filter_map(|payload| serde_json::from_value::<T>(payload).ok())
+            .take(limit)
+            .collect())
     }
 
-    /// Search for entities matching a field value using payload filtering.
+    /// The first live entity whose CURRENT `field` equals `value`.
+    ///
+    /// Matches against current state, never a past snapshot: an email changed
+    /// away from `value` no longer matches, and one changed to it does.
     pub async fn find_by_field<T: DeserializeOwned>(
         &self,
-        event_type_prefix: &str,
+        event_type: &str,
         field: &str,
         value: &str,
     ) -> Result<Option<T>, AllsourceAuthError> {
-        let url = format!("{}/api/v1/events/query", self.query_url);
-
-        let filter = serde_json::json!({
-            "field": format!("payload.{}", field),
-            "op": "eq",
-            "value": value
-        });
-
-        let resp = self
-            .http
-            .get(&url)
-            .header("Authorization", format!("Bearer {}", self.api_key))
-            .query(&[
-                ("event_type_prefix", event_type_prefix),
-                ("tenant_id", &self.tenant_id),
-                ("payload_filter", &filter.to_string()),
-                ("limit", "1"),
-            ])
-            .send()
-            .await?;
-
-        let status = resp.status();
-        if !status.is_success() {
-            // If payload_filter is not supported, fall back to scanning
-            if status.as_u16() == 400 || status.as_u16() == 422 {
-                return self
-                    .find_by_field_scan(event_type_prefix, field, value)
-                    .await;
-            }
-            let message = extract_error_message(resp).await;
-            return Err(AllsourceAuthError::Api {
-                status: status.as_u16(),
-                message,
-            });
-        }
-
-        let query_resp: QueryResponse = resp.json().await?;
-        match query_resp.events.first() {
-            Some(event) => {
-                if event
-                    .payload
-                    .get("_deleted")
-                    .and_then(|v| v.as_bool())
-                    .unwrap_or(false)
-                {
-                    return Ok(None);
-                }
-                match serde_json::from_value::<T>(event.payload.clone()) {
-                    Ok(entity) => Ok(Some(entity)),
-                    Err(_) => {
-                        self.find_by_field_scan(event_type_prefix, field, value)
-                            .await
-                    }
-                }
-            }
-            // payload_filter returned 200 but empty — AllSource may not support
-            // the filter syntax. Fall back to in-memory scan.
-            None => {
-                self.find_by_field_scan(event_type_prefix, field, value)
-                    .await
-            }
-        }
+        Ok(self
+            .find_all_by_field(event_type, field, value)
+            .await?
+            .into_iter()
+            .next())
     }
 
-    /// Fallback: scan all entities and filter in-memory.
-    async fn find_by_field_scan<T: DeserializeOwned>(
-        &self,
-        event_type_prefix: &str,
-        field: &str,
-        value: &str,
-    ) -> Result<Option<T>, AllsourceAuthError> {
-        let url = format!("{}/api/v1/events/query", self.query_url);
-
-        let resp = self
-            .http
-            .get(&url)
-            .header("Authorization", format!("Bearer {}", self.api_key))
-            .query(&[
-                ("event_type_prefix", event_type_prefix),
-                ("tenant_id", &self.tenant_id),
-                ("limit", "10000"),
-            ])
-            .send()
-            .await?;
-
-        let status = resp.status();
-        if !status.is_success() {
-            let message = extract_error_message(resp).await;
-            return Err(AllsourceAuthError::Api {
-                status: status.as_u16(),
-                message,
-            });
-        }
-
-        let query_resp: QueryResponse = resp.json().await?;
-        let mut seen = std::collections::HashSet::new();
-
-        for event in &query_resp.events {
-            let entity_id = event
-                .payload
-                .get("id")
-                .and_then(|v| v.as_str())
-                .unwrap_or("");
-
-            if seen.contains(entity_id) {
-                continue;
-            }
-            seen.insert(entity_id.to_string());
-
-            if event
-                .payload
-                .get("_deleted")
-                .and_then(|v| v.as_bool())
-                .unwrap_or(false)
-            {
-                continue;
-            }
-
-            let field_val = event.payload.get(field).and_then(|v| v.as_str());
-            if field_val == Some(value) {
-                if let Ok(entity) = serde_json::from_value::<T>(event.payload.clone()) {
-                    return Ok(Some(entity));
-                }
-            }
-        }
-
-        Ok(None)
-    }
-
-    /// Find all entities matching a field value.
+    /// Every live entity whose CURRENT `field` equals `value`.
     pub async fn find_all_by_field<T: DeserializeOwned>(
         &self,
-        event_type_prefix: &str,
+        event_type: &str,
         field: &str,
         value: &str,
     ) -> Result<Vec<T>, AllsourceAuthError> {
-        let url = format!("{}/api/v1/events/query", self.query_url);
-
-        let resp = self
-            .http
-            .get(&url)
-            .header("Authorization", format!("Bearer {}", self.api_key))
-            .query(&[
-                ("event_type_prefix", event_type_prefix),
-                ("tenant_id", &self.tenant_id),
-                ("limit", "10000"),
-            ])
-            .send()
-            .await?;
-
-        let status = resp.status();
-        if !status.is_success() {
-            let message = extract_error_message(resp).await;
-            return Err(AllsourceAuthError::Api {
-                status: status.as_u16(),
-                message,
-            });
-        }
-
-        let query_resp: QueryResponse = resp.json().await?;
-        let mut results = Vec::new();
-        let mut seen = std::collections::HashSet::new();
-
-        for event in &query_resp.events {
-            let entity_id = event
-                .payload
-                .get("id")
-                .and_then(|v| v.as_str())
-                .unwrap_or("");
-
-            if seen.contains(entity_id) {
-                continue;
-            }
-            seen.insert(entity_id.to_string());
-
-            if event
-                .payload
-                .get("_deleted")
-                .and_then(|v| v.as_bool())
-                .unwrap_or(false)
-            {
-                continue;
-            }
-
-            let field_val = event.payload.get(field).and_then(|v| v.as_str());
-            if field_val == Some(value) {
-                if let Ok(entity) = serde_json::from_value::<T>(event.payload.clone()) {
-                    results.push(entity);
-                }
-            }
-        }
-
-        Ok(results)
+        Ok(self
+            .scan_family(event_type)
+            .await?
+            .into_iter()
+            .filter(|payload| payload.get(field).and_then(|v| v.as_str()) == Some(value))
+            .filter_map(|payload| serde_json::from_value::<T>(payload).ok())
+            .collect())
     }
 
     /// Append a deletion marker event.
@@ -472,7 +347,19 @@ mod tests {
     use serde_json::json;
 
     fn ev(payload: serde_json::Value) -> StoredEvent {
-        StoredEvent { payload }
+        StoredEvent {
+            entity_id: String::new(),
+            timestamp: String::new(),
+            payload,
+        }
+    }
+
+    fn at(entity_id: &str, timestamp: &str, payload: serde_json::Value) -> StoredEvent {
+        StoredEvent {
+            entity_id: entity_id.into(),
+            timestamp: timestamp.into(),
+            payload,
+        }
     }
 
     /// AllSource returns events OLDEST-first, so the current state is the LAST
@@ -501,5 +388,60 @@ mod tests {
     #[test]
     fn latest_live_payload_is_none_for_empty_stream() {
         assert!(latest_live_payload(&[]).is_none());
+    }
+
+    #[test]
+    fn a_created_type_scans_its_whole_family() {
+        assert_eq!(
+            family_prefix("auth.verification.created"),
+            "auth.verification."
+        );
+        assert_eq!(family_prefix("auth.two_factor.created"), "auth.two_factor.");
+        assert_eq!(family_prefix("auth.user."), "auth.user.");
+        assert_eq!(family_prefix("recreated"), "recreated");
+    }
+
+    /// The tombstone's payload `id` is the stream id, not the entity id, so
+    /// grouping must go by the event's `entity_id`.
+    #[test]
+    fn a_consumed_verification_is_no_longer_current() {
+        let events = vec![
+            at(
+                "auth-verification:v1",
+                "2026-11-23T10:00:00Z",
+                json!({"id": "v1", "value": "tok"}),
+            ),
+            at(
+                "auth-verification:v1",
+                "2026-11-23T10:05:00Z",
+                json!({"id": "auth-verification:v1", "_deleted": true}),
+            ),
+        ];
+        assert!(current_states(events).is_empty());
+    }
+
+    #[test]
+    fn current_state_is_the_newest_snapshot_whatever_the_scan_order() {
+        let events = vec![
+            at(
+                "auth-user:u1",
+                "2026-11-23T10:05:00Z",
+                json!({"id": "u1", "email": "new@x.com"}),
+            ),
+            at(
+                "auth-user:u2",
+                "2026-11-23T09:00:00Z",
+                json!({"id": "u2", "email": "b@x.com"}),
+            ),
+            at(
+                "auth-user:u1",
+                "2026-11-23T10:00:00Z",
+                json!({"id": "u1", "email": "old@x.com"}),
+            ),
+        ];
+        let states = current_states(events);
+        assert_eq!(states.len(), 2);
+        assert_eq!(states[0]["email"], "new@x.com");
+        assert_eq!(states[1]["email"], "b@x.com");
     }
 }

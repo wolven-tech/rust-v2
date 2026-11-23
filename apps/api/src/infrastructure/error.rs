@@ -38,6 +38,9 @@ pub enum ApiError {
     #[error("event store error: {0}")]
     Sdk(#[from] rv2_allsource::SdkError),
 
+    #[error("event store error: {0}")]
+    Read(#[from] rv2_allsource::ReadError),
+
     #[error("internal error: {0}")]
     Internal(String),
 }
@@ -50,7 +53,9 @@ impl ApiError {
             ApiError::Unauthenticated => (StatusCode::UNAUTHORIZED, "unauthorized"),
             ApiError::Forbidden => (StatusCode::FORBIDDEN, "forbidden"),
             ApiError::RateLimited => (StatusCode::TOO_MANY_REQUESTS, "rate_limited"),
-            ApiError::Store(_) | ApiError::Sdk(_) => (StatusCode::BAD_GATEWAY, "store_unavailable"),
+            ApiError::Store(_) | ApiError::Sdk(_) | ApiError::Read(_) => {
+                (StatusCode::BAD_GATEWAY, "store_unavailable")
+            }
             ApiError::Internal(_) => (StatusCode::INTERNAL_SERVER_ERROR, "internal_error"),
         }
     }

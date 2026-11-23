@@ -94,6 +94,13 @@ pub const fn can_edit_profile(actor: Uuid, target: &UserView) -> bool {
     u128::from_be_bytes(*actor.as_bytes()) == u128::from_be_bytes(*target.id.as_bytes())
 }
 
+/// R4: only the account owner may read their profile, because it carries the
+/// email address.
+#[must_use]
+pub const fn can_view_profile(actor: Uuid, target: &UserView) -> bool {
+    can_edit_profile(actor, target)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -185,5 +192,10 @@ mod tests {
         };
         assert!(can_edit_profile(Uuid::from_u128(1), &target));
         assert!(!can_edit_profile(Uuid::from_u128(2), &target));
+        assert!(can_view_profile(Uuid::from_u128(1), &target));
+        assert!(
+            !can_view_profile(Uuid::from_u128(2), &target),
+            "another user's email is not readable"
+        );
     }
 }
