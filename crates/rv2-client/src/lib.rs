@@ -25,6 +25,7 @@
 #![forbid(unsafe_code)]
 
 use gloo_net::http::{Request, RequestBuilder};
+use rv2_a2ui::{ActionRequest, ClientMessage, ErrorMessage, ServerMessage, parse_jsonl};
 use rv2_api_types::{
     CreatePostRequest, ErrorResponse, PostView, SessionView, UpdatePostRequest,
     UpdateProfileRequest, UserView,
@@ -307,6 +308,64 @@ pub async fn get_user(id: Uuid) -> Result<UserView, ApiError> {
 pub async fn update_profile(id: Uuid, req: &UpdateProfileRequest) -> Result<UserView, ApiError> {
     let url = format!("{}/users/{id}", api_base());
     send(authed(Request::patch(&url)).json(req)?).await
+}
+
+// ═════════════════════════════════════════════════════════════════════════════
+// A2UI surfaces (docs/architecture/004-a2ui-surface.md)
+// ═════════════════════════════════════════════════════════════════════════════
+
+/// Send a request and parse a JSONL body of A2UI messages.
+async fn send_jsonl(request: gloo_net::http::Request) -> Result<Vec<ServerMessage>, ApiError> {
+    let response = request.send().await?;
+    let status = response.status();
+    let text = response
+        .text()
+        .await
+        .map_err(|e| ApiError::Decode(e.to_string()))?;
+    if !(200..300).contains(&status) {
+        let (code, message) = serde_json::from_str::<ErrorResponse>(&text).map_or_else(
+            |_| ("unexpected_response".to_string(), text.clone()),
+            |e| (e.code, e.message),
+        );
+        return Err(ApiError::Api {
+            status,
+            code,
+            message,
+        });
+    }
+    parse_jsonl(&text).map_err(|e| ApiError::Decode(e.to_string()))
+}
+
+/// `GET /a2ui/surfaces/{name}` — the messages that open a surface.
+///
+/// # Errors
+///
+/// [`ApiError`]; an unserved surface is `Api { status: 404, .. }`.
+pub async fn open_surface(name: &str) -> Result<Vec<ServerMessage>, ApiError> {
+    let url = format!("{}/a2ui/surfaces/{name}", api_base());
+    send_jsonl(authed(Request::get(&url)).build()?).await
+}
+
+/// `POST /a2ui/actions`, stamped with the browser's clock.
+///
+/// # Errors
+///
+/// [`ApiError`]; an action the surface does not offer is `Api { status: 422, .. }`.
+pub async fn send_action(action: ActionRequest) -> Result<Vec<ServerMessage>, ApiError> {
+    let url = format!("{}/a2ui/actions", api_base());
+    let timestamp: String = js_sys::Date::new_0().to_iso_string().into();
+    let body = ClientMessage::action(action.stamp(timestamp));
+    send_jsonl(authed(Request::post(&url)).json(&body)?).await
+}
+
+/// `POST /a2ui/errors` — tell the agent its message was refused.
+///
+/// # Errors
+///
+/// [`ApiError`] if the report itself fails.
+pub async fn report_surface_error(error: ErrorMessage) -> Result<(), ApiError> {
+    let url = format!("{}/a2ui/errors", api_base());
+    discard_body(authed(Request::post(&url)).json(&ClientMessage::error(error))?).await
 }
 
 #[cfg(test)]

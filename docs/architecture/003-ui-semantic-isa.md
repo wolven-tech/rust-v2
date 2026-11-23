@@ -221,6 +221,12 @@ class rather than re-typing it.
 
 `Row` and `Stack` had no consumer and are deleted (UI8).
 
+The A2UI catalog in [`004-a2ui-surface.md`](004-a2ui-surface.md) publishes a
+subset of these instructions to agents. `rv2-a2ui-dioxus` is a consumer of
+every instruction in that subset, and a catalog entry keeps its instruction
+alive under UI8 for as long as `rv2:a2ui/catalog/v1` is served. Its `Column`
+is a layout `div` in the renderer, not a kit instruction.
+
 ## Exceptions
 
 A raw element is legitimate when it is the **subject** of the page rather than

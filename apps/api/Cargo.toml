@@ -38,6 +38,7 @@ metrics-exporter-prometheus.workspace = true
 opentelemetry.workspace = true
 opentelemetry-otlp.workspace = true
 opentelemetry_sdk.workspace = true
+rv2-a2ui.workspace = true
 rv2-allsource.workspace = true
 rv2-analytics.workspace = true
 rv2-api-types.workspace = true

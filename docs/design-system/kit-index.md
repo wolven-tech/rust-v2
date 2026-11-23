@@ -223,7 +223,7 @@ Pinned by tests:
 | `error` | `Option<String>` | `Default` |  |
 | `oninput` | `EventHandler<FormEvent>` | required |  |
 
-Example, `apps/app/src/views.rs:191`:
+Example, `apps/app/src/views.rs:193`:
 
 ```rust
 TextArea {
@@ -676,12 +676,12 @@ Eyebrow { "Default theme" }
 | `subtitle` | `Option<String>` | `Default` |  |
 | `actions` | `Option<Element>` | `Default` |  |
 
-Example, `apps/app/src/views.rs:123`:
+Example, `apps/app/src/runway.rs:66`:
 
 ```rust
 PageHeader {
-    title: "Dashboard",
-    subtitle: "Everything here is folded from AllSource events. Nothing is fixture data.",
+    title: "Runway",
+    subtitle: "An A2UI surface: apps/api places the components, this page renders them from the rv2 catalog.",
 }
 ```
 
@@ -860,7 +860,7 @@ the most common way a list UI lies to the user.
 | `description` | `Option<String>` | `Default` |  |
 | `action` | `Option<Element>` | `Default` |  |
 
-Example, `apps/app/src/views.rs:215`:
+Example, `apps/app/src/views.rs:217`:
 
 ```rust
 EmptyState {
@@ -878,7 +878,7 @@ EmptyState {
 |---|---|---|---|
 | `lines` | `u32` | `3` |  |
 
-Example, `apps/app/src/views.rs:206`:
+Example, `apps/app/src/views.rs:208`:
 
 ```rust
 Skeleton { lines: 4 }
@@ -894,10 +894,10 @@ Skeleton { lines: 4 }
 | `message` | `String` | required |  |
 | `onretry` | `Option<EventHandler<MouseEvent>>` | `Default` |  |
 
-Example, `apps/app/src/views.rs:87`:
+Example, `apps/app/src/runway.rs:71`:
 
 ```rust
-ErrorBanner { message: "Sign-out failed, so you are still signed in: {message}" }
+ErrorBanner { message }
 ```
 
 
@@ -924,7 +924,7 @@ navigation outside this component.
 | `menu_label` | `String` | `"Menu".to_string()` |  |
 | `class` | `String` | `Default` |  |
 
-Example, `apps/app/src/views.rs:73`:
+Example, `apps/app/src/views.rs:74`:
 
 ```rust
 ProductHeader {
@@ -934,6 +934,7 @@ ProductHeader {
     items: vec![
         NavLink::route("dashboard", "Dashboard", "/"),
         NavLink::route("posts", "Posts", "/posts"),
+        NavLink::route("runway", "Runway", "/runway"),
     ],
     current,
     tail,

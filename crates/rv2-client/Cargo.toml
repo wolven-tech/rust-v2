@@ -10,6 +10,10 @@ publish = false
 
 [dependencies]
 gloo-net.workspace = true
+# `Date` only: the ISO timestamp an A2UI action carries. The WASM crates
+# have no clock (chrono is built without `clock`), and the browser has one.
+js-sys.workspace = true
+rv2-a2ui.workspace = true
 rv2-api-types.workspace = true
 serde.workspace = true
 serde_json.workspace = true

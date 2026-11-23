@@ -245,6 +245,7 @@ dependencies = [
  "opentelemetry-otlp",
  "opentelemetry_sdk",
  "reqwest 0.13.4",
+ "rv2-a2ui",
  "rv2-allsource",
  "rv2-analytics",
  "rv2-api-types",
@@ -268,6 +269,8 @@ name = "app"
 version = "0.1.0"
 dependencies = [
  "dioxus",
+ "rv2-a2ui",
+ "rv2-a2ui-dioxus",
  "rv2-api-types",
  "rv2-client",
  "rv2-ui",
@@ -4598,6 +4601,26 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "cf54715a573b99ac80df0bc206da022bcd442c974952c7b9720069370852e21f"
 
 [[package]]
+name = "rv2-a2ui"
+version = "0.1.0"
+dependencies = [
+ "serde",
+ "serde_json",
+ "thiserror 2.0.21",
+]
+
+[[package]]
+name = "rv2-a2ui-dioxus"
+version = "0.1.0"
+dependencies = [
+ "dioxus",
+ "dioxus-ssr",
+ "rv2-a2ui",
+ "rv2-ui",
+ "serde_json",
+]
+
+[[package]]
 name = "rv2-ai"
 version = "0.1.0"
 dependencies = [
@@ -4648,6 +4671,8 @@ name = "rv2-client"
 version = "0.1.0"
 dependencies = [
  "gloo-net 0.8.0",
+ "js-sys",
+ "rv2-a2ui",
  "rv2-api-types",
  "serde",
  "serde_json",

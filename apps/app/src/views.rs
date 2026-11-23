@@ -31,6 +31,7 @@ pub fn Shell() -> Element {
     let current = match route {
         Route::Dashboard {} => "dashboard",
         Route::Posts {} | Route::PostDetail { .. } => "posts",
+        Route::Runway {} => "runway",
         Route::Login {} => "login",
     };
 
@@ -77,6 +78,7 @@ pub fn Shell() -> Element {
                 items: vec![
                     NavLink::route("dashboard", "Dashboard", "/"),
                     NavLink::route("posts", "Posts", "/posts"),
+                    NavLink::route("runway", "Runway", "/runway"),
                 ],
                 current,
                 tail,
@@ -107,7 +109,7 @@ pub fn Shell() -> Element {
 /// cookie leaves the user on the dashboard with a raw 401 and a Retry that
 /// can only fail again.
 #[component]
-fn SessionExpired() -> Element {
+pub(crate) fn SessionExpired() -> Element {
     let navigator = use_navigator();
     let Session(mut session) = use_context::<Session>();
     use_effect(move || {

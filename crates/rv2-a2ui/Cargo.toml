@@ -1,0 +1,14 @@
+[package]
+name = "rv2-a2ui"
+description = "A2UI v0.9.1 wire types, data model, the rv2 catalog and surface state. WASM-safe (layer 1)."
+edition.workspace = true
+license.workspace = true
+version.workspace = true
+# Never published: internal workspace crate. Also what makes cargo-deny's
+# `allow-wildcard-paths` apply — it is skipped for publishable crates.
+publish = false
+
+[dependencies]
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
