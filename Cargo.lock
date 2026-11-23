@@ -3142,9 +3142,9 @@ dependencies = [
 
 [[package]]
 name = "mailparse"
-version = "0.16.1"
+version = "0.18.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "60819a97ddcb831a5614eb3b0174f3620e793e97e09195a395bfa948fd68ed2f"
+checksum = "068d4f5d1083883b9e626051dc5bdaa321f5be01093e61ade3ee3ab44dafeadd"
 dependencies = [
  "charset",
  "data-encoding",
@@ -4395,11 +4395,12 @@ dependencies = [
 
 [[package]]
 name = "resend-rs"
-version = "0.35.2"
+version = "0.37.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0945b9fcb8054832cbee16d653037294aa01bdd4fa39bd6df9bd233414dc7336"
+checksum = "723538d4e917b9e6f9d5c6e0ab63ffed6974f89438a3b8ec663b048d851563bc"
 dependencies = [
  "ecow",
+ "futures-timer",
  "getrandom 0.4.3",
  "governor 0.10.4",
  "mailparse",
