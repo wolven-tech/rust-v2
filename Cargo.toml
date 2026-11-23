@@ -4,6 +4,8 @@ members = [
   "apps/app",
   "apps/web",
   "crates/better-auth-allsource",
+  "crates/rv2-a2ui",
+  "crates/rv2-a2ui-dioxus",
   "crates/rv2-allsource",
   "crates/rv2-ai",
   "crates/rv2-analytics",
@@ -112,6 +114,7 @@ gloo-net = { version = "0.8", default-features = false, features = [
   "http",
   "json",
 ] }
+js-sys = "0.3"
 web-sys = { version = "0.3" }
 
 # ── Shared, WASM-safe ────────────────────────────────────────────────────────
@@ -175,6 +178,8 @@ opentelemetry-otlp = { version = "0.33", default-features = false, features = [
 tracing-opentelemetry = "0.34"
 
 # ── Internal ─────────────────────────────────────────────────────────────────
+rv2-a2ui = { path = "crates/rv2-a2ui" }
+rv2-a2ui-dioxus = { path = "crates/rv2-a2ui-dioxus" }
 rv2-allsource = { path = "crates/rv2-allsource" }
 rv2-ai = { path = "crates/rv2-ai" }
 rv2-analytics = { path = "crates/rv2-analytics" }

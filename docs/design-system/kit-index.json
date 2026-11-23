@@ -808,7 +808,7 @@
       ],
       "example": {
         "file": "apps/app/src/views.rs",
-        "line": 191,
+        "line": 193,
         "code": "TextArea {\n    label: \"Content\",\n    value: content(),\n    rows: 4,\n    oninput: move |event: FormEvent| content.set(event.value()),\n}"
       },
       "guarantees": []
@@ -1586,9 +1586,9 @@
         }
       ],
       "example": {
-        "file": "apps/app/src/views.rs",
-        "line": 123,
-        "code": "PageHeader {\n    title: \"Dashboard\",\n    subtitle: \"Everything here is folded from AllSource events. Nothing is fixture data.\",\n}"
+        "file": "apps/app/src/runway.rs",
+        "line": 66,
+        "code": "PageHeader {\n    title: \"Runway\",\n    subtitle: \"An A2UI surface: apps/api places the components, this page renders them from the rv2 catalog.\",\n}"
       },
       "guarantees": []
     },
@@ -1920,7 +1920,7 @@
       ],
       "example": {
         "file": "apps/app/src/views.rs",
-        "line": 215,
+        "line": 217,
         "code": "EmptyState {\n    title: \"No posts yet\",\n    description: \"Publish one above to move an event through AllSource.\",\n}"
       },
       "guarantees": []
@@ -1943,7 +1943,7 @@
       ],
       "example": {
         "file": "apps/app/src/views.rs",
-        "line": 206,
+        "line": 208,
         "code": "Skeleton { lines: 4 }"
       },
       "guarantees": []
@@ -1972,9 +1972,9 @@
         }
       ],
       "example": {
-        "file": "apps/app/src/views.rs",
-        "line": 87,
-        "code": "ErrorBanner { message: \"Sign-out failed, so you are still signed in: {message}\" }"
+        "file": "apps/app/src/runway.rs",
+        "line": 71,
+        "code": "ErrorBanner { message }"
       },
       "guarantees": []
     },
@@ -2059,8 +2059,8 @@
       ],
       "example": {
         "file": "apps/app/src/views.rs",
-        "line": 73,
-        "code": "ProductHeader {\n    brand: PUBLIC_PRODUCT_NAME,\n    brand_href: PUBLIC_SITE_URL,\n    brand_subtitle: \"Application\",\n    items: vec![\n        NavLink::route(\"dashboard\", \"Dashboard\", \"/\"),\n        NavLink::route(\"posts\", \"Posts\", \"/posts\"),\n    ],\n    current,\n    tail,\n}"
+        "line": 74,
+        "code": "ProductHeader {\n    brand: PUBLIC_PRODUCT_NAME,\n    brand_href: PUBLIC_SITE_URL,\n    brand_subtitle: \"Application\",\n    items: vec![\n        NavLink::route(\"dashboard\", \"Dashboard\", \"/\"),\n        NavLink::route(\"posts\", \"Posts\", \"/posts\"),\n        NavLink::route(\"runway\", \"Runway\", \"/runway\"),\n    ],\n    current,\n    tail,\n}"
       },
       "guarantees": [
         {

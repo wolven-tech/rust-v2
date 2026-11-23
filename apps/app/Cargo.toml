@@ -28,6 +28,8 @@ dioxus = { workspace = true, features = [
   "router",
   "web",
 ] }
+rv2-a2ui.workspace = true
+rv2-a2ui-dioxus.workspace = true
 rv2-api-types.workspace = true
 rv2-client.workspace = true
 rv2-ui.workspace = true

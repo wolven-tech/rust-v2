@@ -13,6 +13,8 @@
 
 @source "../src";
 @source "../../../crates/rv2-ui/src";
+/* The A2UI renderer lays out `Column` and `Card` children itself. */
+@source "../../../crates/rv2-a2ui-dioxus/src";
 
 /* The kit's registers. This app takes the light system unchanged, so it
  * declares no `@theme` of its own. */

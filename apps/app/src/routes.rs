@@ -8,6 +8,7 @@
 use dioxus::prelude::*;
 use uuid::Uuid;
 
+use crate::runway::Runway;
 use crate::views::{Dashboard, Login, PostDetail, Posts, Shell};
 
 #[derive(Clone, Debug, PartialEq, Routable)]
@@ -19,6 +20,8 @@ pub enum Route {
     Posts {},
     #[route("/posts/:id")]
     PostDetail { id: Uuid },
+    #[route("/runway")]
+    Runway {},
     #[end_layout]
     #[route("/login")]
     Login {},
