@@ -107,7 +107,7 @@ dioxus = { version = "0.7.10", default-features = false }
 # `apps/web`'s SSG entry point with `cannot find 'server' in 'dioxus'`. Taking
 # the renderer as its own crate touches no `dioxus` feature at all.
 dioxus-ssr = { version = "0.7.10", default-features = false }
-gloo-net = { version = "0.7", default-features = false, features = [
+gloo-net = { version = "0.8", default-features = false, features = [
   "http",
   "json",
 ] }
