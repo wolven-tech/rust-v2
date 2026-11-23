@@ -212,6 +212,44 @@ async fn b7_query_results_are_oldest_first() {
     );
 }
 
+// ── B18 — queried events carry no per-entity sequence ────────────────────────
+
+/// `ProjectionWorker` skips any event whose `version` is at or below the last
+/// it applied for that entity. Core's append response numbers an entity's
+/// events 1, 2, 3 (B1), but the events read back all say `version: 1`, so the
+/// worker drops every edit and delete after a post's first event. That is why
+/// `apps/api` does not start the posts worker (foundation doc C.2-f).
+///
+/// When this fails, Core reports a real sequence on read: restart the worker in
+/// `build_state` and delete this test.
+#[tokio::test]
+#[ignore = "requires a live AllSource Core"]
+async fn b18_queried_events_do_not_carry_the_append_version() {
+    let client = reqwest::Client::new();
+    let id = entity("b18");
+
+    for n in 1..=3 {
+        append(&client, &id, "contract.probe.updated", json!({"n": n})).await;
+    }
+
+    let response = query(
+        &client,
+        &[("entity_id", id.as_str()), ("tenant_id", &tenant())],
+    )
+    .await;
+    let versions: Vec<i64> = events(&response)
+        .iter()
+        .map(|e| e["version"].as_i64().unwrap_or(0))
+        .collect();
+
+    assert_eq!(
+        versions,
+        vec![1, 1, 1],
+        "queried events now carry a per-entity sequence; the posts worker can \
+         be restarted (see this test's docs)"
+    );
+}
+
 // ── B11 — read-after-write ───────────────────────────────────────────────────
 
 /// `posts::create` appends and then reads back through the fold to prove the

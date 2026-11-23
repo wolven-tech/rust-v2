@@ -28,6 +28,7 @@ use rv2_events::EventEnvelope;
 
 pub use crate::{
     folders::{PostFolder, UserFolder},
+    tenant_query::{READ_LIMIT, ReadError, TenantReader},
     workers::{PostsReadModel, start_posts_worker},
     writer::{AppendError, EventWriter},
 };
@@ -51,10 +52,8 @@ pub struct AllSource {
     /// `QueryClient::query_events` calls Core's own `/api/v1/events/query`.
     /// See the README's "one Core, no Query Service" note.
     pub query: QueryClient,
-    /// Kept so [`AllSource::fold_entity`] can issue tenant-scoped reads, which
-    /// the SDK cannot express. See [`tenant_query`].
-    query_url: String,
-    api_key: String,
+    /// Tenant-scoped reads, which the SDK cannot express. See [`tenant_query`].
+    reader: TenantReader,
 }
 
 impl AllSource {
@@ -65,12 +64,15 @@ impl AllSource {
     /// [`SdkError`] if either URL or the API key is empty — the SDK validates
     /// this at construction, which is why `ALLSOURCE_API_KEY` is required even
     /// when Core runs in dev mode and ignores its value.
+    ///
+    /// Reads are scoped to `ALLSOURCE_TENANT_ID`, or Core's `default` tenant.
     pub fn new(core_url: &str, query_url: &str, api_key: &str) -> Result<Self, SdkError> {
+        let tenant = std::env::var("ALLSOURCE_TENANT_ID")
+            .unwrap_or_else(|_| tenant_query::DEFAULT_TENANT.to_string());
         Ok(Self {
             core: CoreClient::new(core_url, api_key)?,
             query: QueryClient::new(query_url, api_key)?,
-            query_url: query_url.to_string(),
-            api_key: api_key.to_string(),
+            reader: TenantReader::new(query_url, api_key, &tenant),
         })
     }
 
@@ -83,12 +85,21 @@ impl AllSource {
     ///
     /// # Errors
     ///
-    /// [`reqwest::Error`] if the query endpoint is unreachable or fails.
+    /// [`ReadError`] if the query endpoint is unreachable or fails.
     pub async fn fold_entity<F: allsource::EventFolder>(
         &self,
         entity_id: &str,
-    ) -> Result<Option<F::State>, reqwest::Error> {
-        tenant_query::fold_entity::<F>(&self.query_url, &self.api_key, entity_id).await
+    ) -> Result<Option<F::State>, ReadError> {
+        self.reader.fold_entity::<F>(entity_id).await
+    }
+
+    /// Every event whose type starts with `prefix`, scoped to the tenant.
+    ///
+    /// # Errors
+    ///
+    /// [`ReadError`] if the query endpoint is unreachable or fails.
+    pub async fn events_by_type_prefix(&self, prefix: &str) -> Result<Vec<SdkEvent>, ReadError> {
+        self.reader.events_by_type_prefix(prefix).await
     }
 
     /// A writer over the Core client.

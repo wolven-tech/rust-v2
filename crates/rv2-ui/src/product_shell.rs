@@ -132,7 +132,7 @@ pub fn ProductHeader(
                 if let Some(action) = action.as_ref() {
                     div { class: "rv2-product-header__desktop-action", {render_header_action(action)} }
                 }
-                if let Some(tail) = tail {
+                if let Some(tail) = tail.clone() {
                     div { class: "rv2-product-header__tail", {tail} }
                 }
 
@@ -153,6 +153,12 @@ pub fn ProductHeader(
                             }
                             if let Some(action) = action.as_ref() {
                                 li { class: "rv2-product-header__mobile-action", {render_header_action(action)} }
+                            }
+                            // The desktop tail is hidden on narrow screens, so
+                            // whatever it holds (who is signed in, sign-out)
+                            // must also be reachable here.
+                            if let Some(tail) = tail {
+                                li { class: "rv2-product-header__mobile-tail", {tail} }
                             }
                         }
                     }

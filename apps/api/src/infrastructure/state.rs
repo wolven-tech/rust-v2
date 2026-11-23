@@ -14,9 +14,8 @@ use crate::infrastructure::auth::{ApiBetterAuth, build_auth};
 pub struct AppState {
     pub allsource: AllSource,
     pub writer: EventWriter,
-    /// The `posts_v1` continuous projection (§4.2). `None` when the worker
-    /// could not start — the service still serves everything else, and
-    /// `GET /posts` degrades to fold-on-read rather than 500ing. See
+    /// The `posts_v2` continuous projection (§4.2). Always `None` while the
+    /// worker is suspended (`build_state`); `GET /posts` folds on read. See
     /// [`Self::posts_handle`].
     pub posts: Option<ProjectionHandle<PostsReadModel>>,
     pub auth: Arc<ApiBetterAuth>,
@@ -50,10 +49,7 @@ impl AppState {
 
 /// Build the whole application state from configuration.
 ///
-/// The projection worker is started **best-effort**: a Core that is reachable
-/// for writes but refuses a WebSocket subscription must not stop the service
-/// from booting, because `GET /posts` has a working fold-on-read fallback. The
-/// failure is logged at `warn` with the real error.
+/// The posts projection worker is not started; see the note in the body.
 ///
 /// # Errors
 ///
@@ -78,22 +74,13 @@ pub async fn build_state(config: &ServerConfig) -> Result<AppState, String> {
     let analytics = Analytics::from_env().await;
     let mailer = Mailer::from_env();
 
-    let posts = match rv2_allsource::start_posts_worker(allsource.core.clone()).await {
-        Ok(handle) => {
-            tracing::info!(
-                worker = rv2_allsource::workers::POSTS_WORKER_NAME,
-                "posts projection worker started"
-            );
-            Some(handle)
-        }
-        Err(error) => {
-            tracing::warn!(
-                %error,
-                "posts projection worker did not start; GET /posts falls back to fold-on-read"
-            );
-            None
-        }
-    };
+    // Not started: Core 0.23 reports `version: 1` on every queried and streamed
+    // event, and the SDK worker drops any event at or below an entity's last
+    // applied version, so it never applies an edit or a delete (foundation doc
+    // C.2-f; contract test B18 fails once Core reports a real sequence).
+    // `GET /posts` folds on read meanwhile, and `/ready` treats no worker as a
+    // supported mode.
+    let posts: Option<ProjectionHandle<PostsReadModel>> = None;
 
     Ok(AppState {
         writer: allsource.writer(),

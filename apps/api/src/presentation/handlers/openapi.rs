@@ -63,7 +63,7 @@ fn document() -> Value {
             "/me": { "get": { "summary": "The authenticated principal", "responses": { "200": { "description": "session" }, "401": { "description": "unauthorized" } } } },
             "/posts": {
                 "get": {
-                    "summary": "List posts (posts_v1 projection)",
+                    "summary": "List posts",
                     "parameters": [
                         { "name": "limit", "in": "query", "required": false, "description": "Clamped to the range, not rejected.", "schema": { "type": "integer", "default": 50, "minimum": 1, "maximum": 200 } },
                         { "name": "offset", "in": "query", "required": false, "schema": { "type": "integer", "default": 0, "minimum": 0 } }

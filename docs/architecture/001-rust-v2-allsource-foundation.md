@@ -718,6 +718,10 @@ impl EventFolder for PostFolder {
 - `GET /posts` (the list) → **`ProjectionWorker`**. Folding on read would mean scanning every
   `content.post.*` event in the store on every page load.
 
+  **Suspended 2026-11-23 (C.2-f):** the worker is not started, and `GET /posts` folds on read
+  with a tenant-scoped scan, until Core reports a per-entity sequence on queried and streamed
+  events.
+
 `apps/api` starts exactly one worker per cross-entity read model at boot, holds the
 `ProjectionHandle` in `AppState`, and blocks readiness until `handle.is_caught_up()`:
 
@@ -1665,6 +1669,20 @@ before the cursor, the worker replays forward from the cursor, and the reducer
 is idempotent. **§4.3 should be amended:** a worker checkpoint alone is not a
 durable read model, and any new `ProjectionWorker` in this codebase must wire
 flush + hydrate together or it will have the same bug.
+
+Hydration must also run **before** `start()`, into `ProjectionWorker::state()`.
+Run after, it races the replay: an edit or delete replayed into empty state
+finds no entity, and the older snapshot merged in afterwards wins.
+
+**C.2-f — the worker drops every event after an entity's first.** The append
+response reports a per-entity version (B1: 1, then 2), but events read back
+through `/api/v1/events/query` and the stream all carry `version: 1`.
+`ProjectionWorker` skips any event whose version is at or below the last one
+it applied for that entity, so after a post's `created` event its edits and
+delete never reach the reducer. Observed live on Core 0.23.0: the list showed
+deleted posts with their pre-edit titles; `GET /posts/{id}` (fold-on-read,
+no dedup) was correct throughout. The worker is not started until this
+changes; contract test B18 pins the behaviour and fails the day it does.
 
 **C.2-e — D5's allframe role is wrong about what allframe is.** D5 reads
 "`allframe 0.1.28` for router / health / openapi / resilience / rate-limit".

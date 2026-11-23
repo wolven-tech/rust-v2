@@ -95,6 +95,7 @@ fn ci() -> Fallible {
         "cargo",
         &[
             "clippy",
+            "--locked",
             "--workspace",
             "--all-targets",
             "--all-features",
@@ -105,10 +106,10 @@ fn ci() -> Fallible {
     )?;
 
     step("build");
-    run("cargo", &["build", "--workspace"])?;
+    run("cargo", &["build", "--locked", "--workspace"])?;
 
     step("test");
-    run("cargo", &["test", "--workspace"])?;
+    run("cargo", &["test", "--locked", "--workspace"])?;
 
     step("stylesheets are current");
     styles_are_current()?;

@@ -3,10 +3,11 @@
 //! ## Which read path, and why (§4.2)
 //!
 //! - `GET /posts/{id}` → **fold-on-read**. `entity_id` is known and the stream
-//!   is a handful of events, so `QueryClient::query_and_fold` is one HTTP call
-//!   and is perfectly fresh.
-//! - `GET /posts` → **the `posts_v1` worker**. Folding on read would mean
-//!   scanning every `content.post.*` event in the store on every page load.
+//!   is a handful of events, so a tenant-scoped fold is one HTTP call and is
+//!   perfectly fresh.
+//! - `GET /posts` → **the `posts_v2` worker** by design, since folding on read
+//!   scans every `content.post.*` event on every page load. The worker is
+//!   suspended (`build_state`), so today the list folds on read.
 //!
 //! ## Authorization (R4)
 //!
@@ -22,7 +23,6 @@ use axum::{
     http::StatusCode,
 };
 use chrono::Utc;
-use rv2_allsource::QueryEventsParams;
 use rv2_api_types::{CreatePostRequest, ListPostsQuery, PostView, UpdatePostRequest};
 use rv2_domain::post;
 use rv2_events::{DomainEvent, StreamKind, stream};
@@ -41,8 +41,7 @@ async fn load(state: &AppState, id: Uuid) -> Result<PostView, ApiError> {
     state
         .allsource
         .fold_entity::<rv2_allsource::PostFolder>(&stream(StreamKind::Post, id))
-        .await
-        .map_err(|_| ApiError::NotFound { kind: "post" })?
+        .await?
         .ok_or(ApiError::NotFound { kind: "post" })
 }
 
@@ -83,11 +82,10 @@ pub async fn create(
     Ok((StatusCode::CREATED, Json(view)))
 }
 
-/// `GET /posts` — from the `posts_v1` worker, falling back to a store scan.
+/// `GET /posts` — from the `posts_v2` worker, falling back to a store scan.
 ///
-/// The fallback exists because the worker is started best-effort (see
-/// `build_state`). It is honestly slower — it scans every `content.post.*`
-/// event — but a degraded list beats a 500.
+/// The worker is suspended (see `build_state`), so the scan serves every
+/// request today. It reads every `content.post.*` event.
 ///
 /// ## Pagination
 ///
@@ -115,7 +113,7 @@ pub async fn list(
         // value, so locking it inline would drop the temporary while borrowed.
         let shared = handle.state();
         let guard = shared.read().await;
-        guard.values().cloned().collect()
+        guard.posts().cloned().collect()
     } else {
         tracing::debug!("posts worker unavailable; falling back to a full fold-on-read");
         fold_all_posts(&state).await?
@@ -143,27 +141,22 @@ pub async fn list(
 /// to fold it, so it cannot page. Crossing it means the fold is now working
 /// from a truncated history and some posts will be **wrong**, not merely
 /// missing, which is why hitting it logs at `error`.
-const FALLBACK_SCAN_LIMIT: u32 = 10_000;
+const FALLBACK_SCAN_LIMIT: usize = rv2_allsource::READ_LIMIT;
 
 /// The `GET /posts` fallback: scan every post event and fold per entity.
 async fn fold_all_posts(state: &AppState) -> Result<Vec<PostView>, ApiError> {
     use std::collections::BTreeMap;
 
-    let response = state
+    let events = state
         .allsource
-        .query
-        .query_events(
-            QueryEventsParams::new()
-                .event_type_prefix("content.post.")
-                .limit(FALLBACK_SCAN_LIMIT),
-        )
+        .events_by_type_prefix("content.post.")
         .await?;
 
-    // The cap used to be silent. A truncated scan and a complete one are the
-    // same shape, so the only way to tell them apart is to check — otherwise
-    // the first symptom is a user reporting that an edit "did not save", long
-    // after the store crossed the line.
-    if response.events.len() >= FALLBACK_SCAN_LIMIT as usize {
+    // A truncated scan and a complete one are the same shape, so the only way
+    // to tell them apart is to check — otherwise the first symptom is a user
+    // reporting that an edit "did not save", long after the store crossed the
+    // line.
+    if events.len() >= FALLBACK_SCAN_LIMIT {
         tracing::error!(
             limit = FALLBACK_SCAN_LIMIT,
             "the GET /posts fallback scan hit its event ceiling; folds are now computed from a \
@@ -175,7 +168,7 @@ async fn fold_all_posts(state: &AppState) -> Result<Vec<PostView>, ApiError> {
     // Group by stream, then fold each stream with the *same* folder the
     // per-entity path uses, so the two cannot drift.
     let mut by_entity: BTreeMap<String, Vec<rv2_allsource::SdkEvent>> = BTreeMap::new();
-    for event in response.events {
+    for event in events {
         by_entity
             .entry(event.entity_id.clone())
             .or_default()

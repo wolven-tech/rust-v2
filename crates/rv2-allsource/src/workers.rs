@@ -18,11 +18,12 @@
 //! `is_caught_up()`, flip the handler, then delete the old state. Do not try to
 //! do cursor surgery.
 
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 use allsource::{CoreClient, Error, Event, EventFolder, ProjectionHandle, ProjectionWorker};
 use rv2_api_types::PostView;
 use rv2_events::DomainEvent;
+use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
 use crate::folders::PostFolder;
@@ -31,14 +32,93 @@ use crate::folders::PostFolder;
 ///
 /// **Changing this string triggers a full replay.** That is the intended
 /// rebuild mechanism — see the module docs — not an accident to avoid.
-pub const POSTS_WORKER_NAME: &str = "posts_v1";
-
-/// The cross-entity posts read model: every live post, keyed by id.
 ///
-/// `Serialize + Deserialize` are required by the SDK's `WorkerState` bound (it
-/// can push state back to Core). `Uuid` keys serialize as strings, which is
-/// what `serde_json` requires of a map key.
-pub type PostsReadModel = HashMap<Uuid, PostView>;
+/// `posts_v2`: `posts_v1`'s KV holds live snapshots of deleted and edited posts
+/// with its cursor past those events, which hydration would serve forever.
+pub const POSTS_WORKER_NAME: &str = "posts_v2";
+
+/// The cross-entity posts read model: every live post, keyed by id, plus the
+/// ids of deleted posts.
+///
+/// The deleted ids are flushed to Core's projection KV as tombstones. The SDK
+/// can only upsert KV entries, never remove one, so without a tombstone a
+/// deleted post's last live snapshot stays in the KV and is hydrated back into
+/// the list on the next boot, with the cursor already past its delete.
+///
+/// `Serialize + Deserialize` are required by the SDK's `WorkerState` bound.
+/// `Uuid` keys serialize as strings, which is what `serde_json` requires of a
+/// map key.
+#[derive(Debug, Default, Clone, Serialize, Deserialize)]
+pub struct PostsReadModel {
+    live: HashMap<Uuid, PostView>,
+    deleted: HashSet<Uuid>,
+}
+
+impl PostsReadModel {
+    /// Every live post, in no particular order.
+    pub fn posts(&self) -> impl Iterator<Item = &PostView> {
+        self.live.values()
+    }
+
+    /// One live post.
+    #[must_use]
+    pub fn get(&self, id: &Uuid) -> Option<&PostView> {
+        self.live.get(id)
+    }
+
+    /// How many live posts there are.
+    #[must_use]
+    pub fn len(&self) -> usize {
+        self.live.len()
+    }
+
+    /// Whether there are no live posts.
+    #[must_use]
+    pub fn is_empty(&self) -> bool {
+        self.live.is_empty()
+    }
+
+    fn delete(&mut self, id: Uuid) {
+        self.live.remove(&id);
+        self.deleted.insert(id);
+    }
+
+    /// Merge one flushed KV entry read back at boot, before the replay starts.
+    ///
+    /// A tombstone always wins over a live snapshot of the same post, in
+    /// either order: a deleted post cannot come back.
+    fn hydrate(&mut self, flushed: FlushedPost) {
+        match flushed {
+            FlushedPost::Live(view) => {
+                if !self.deleted.contains(&view.id) {
+                    self.live.entry(view.id).or_insert(view);
+                }
+            }
+            FlushedPost::Deleted(tombstone) => {
+                if tombstone.deleted {
+                    self.delete(tombstone.id);
+                }
+            }
+        }
+    }
+}
+
+/// One entry of the posts worker's projection KV.
+///
+/// Untagged so entries flushed before tombstones existed, which are bare
+/// [`PostView`]s, still deserialize as [`FlushedPost::Live`].
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(untagged)]
+enum FlushedPost {
+    Live(PostView),
+    Deleted(Tombstone),
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+struct Tombstone {
+    id: Uuid,
+    deleted: bool,
+}
 
 /// Apply one event to the whole-collection read model.
 ///
@@ -61,11 +141,11 @@ pub fn apply_post_event(state: &mut PostsReadModel, event: &Event) -> Result<(),
     // Seed the folder with what we already know about this entity, so an
     // `edited` event applies on top of the existing view rather than being
     // dropped as an orphan.
-    let existing = crate::envelope_from_sdk(event)
+    let entity = crate::envelope_from_sdk(event)
         .entity_id
         .split_once(':')
-        .and_then(|(_, id)| id.parse::<Uuid>().ok())
-        .and_then(|id| state.get(&id).cloned());
+        .and_then(|(_, id)| id.parse::<Uuid>().ok());
+    let existing = entity.and_then(|id| state.live.get(&id).cloned());
 
     match existing {
         Some(view) => {
@@ -74,28 +154,42 @@ pub fn apply_post_event(state: &mut PostsReadModel, event: &Event) -> Result<(),
             if folder.apply(event) {
                 match folder.finalize() {
                     Some(updated) => {
-                        state.insert(id, updated);
+                        state.live.insert(id, updated);
                     }
                     // `finalize` returning `None` after a seeded fold means the
-                    // post was deleted. Removing is idempotent.
-                    None => {
-                        state.remove(&id);
-                    }
+                    // post was deleted. Deleting is idempotent.
+                    None => state.delete(id),
                 }
             }
         }
         None => {
-            if folder.apply(event)
-                && let Some(created) = folder.finalize()
-            {
-                state.insert(created.id, created);
+            if folder.apply(event) {
+                match folder.finalize() {
+                    Some(created) if !state.deleted.contains(&created.id) => {
+                        state.live.insert(created.id, created);
+                    }
+                    Some(_) => {}
+                    // A delete for a post this state never held still has to be
+                    // remembered, or a snapshot of it could be merged in later.
+                    None => {
+                        if let Some(id) = entity
+                            && is_delete(event)
+                        {
+                            state.delete(id);
+                        }
+                    }
+                }
             }
         }
     }
     Ok(())
 }
 
-/// Start the `posts_v1` worker and return its handle.
+fn is_delete(event: &Event) -> bool {
+    event.event_type == "content.post.deleted"
+}
+
+/// Start the posts worker and return its handle.
 ///
 /// `apps/api` holds the handle in `AppState`.
 ///
@@ -119,11 +213,17 @@ pub fn apply_post_event(state: &mut PostsReadModel, event: &Event) -> Result<(),
 /// 1. **Flush** — `state_flush_entities` pushes each entity's state into Core's
 ///    projection KV as the worker folds.
 /// 2. **Hydrate** — at boot, `get_projection_state_summary` reads that KV back
-///    before the stream is attached.
+///    into the worker's state **before `start()`**, so the replay from the
+///    cursor applies on top of it.
 ///
-/// This is safe because the flushed state always corresponds to a position at
-/// or before the cursor, the worker replays forward from the cursor, and
-/// [`apply_post_event`] is idempotent. Overlap is harmless; the gap is closed.
+/// The order matters. Hydrating after `start()` raced the replay: an edit or a
+/// delete replayed into empty state found no post, and the older snapshot
+/// merged in afterwards won. Observed against a live Core: after a restart,
+/// deleted posts were listed again with their pre-edit titles.
+///
+/// The SDK checkpoints only during replay, so the cursor is never past events
+/// the KV has not seen; replaying them over a snapshot that already has them
+/// converges because they replay in order.
 ///
 /// A hydration failure is logged and swallowed rather than propagated: a
 /// worker with cold state is strictly better than no worker at all, and
@@ -137,7 +237,7 @@ pub async fn start_posts_worker(
     core: CoreClient,
 ) -> Result<ProjectionHandle<PostsReadModel>, Error> {
     let seed = match core
-        .get_projection_state_summary::<PostView>(POSTS_WORKER_NAME)
+        .get_projection_state_summary::<FlushedPost>(POSTS_WORKER_NAME)
         .await
     {
         Ok(states) => {
@@ -158,28 +258,24 @@ pub async fn start_posts_worker(
         }
     };
 
-    let handle = ProjectionWorker::<PostsReadModel>::builder(core)
+    let worker = ProjectionWorker::<PostsReadModel>::builder(core)
         .name(POSTS_WORKER_NAME)
         .event_types(DomainEvent::POST_WIRE_TYPES)
         .reducer(apply_post_event)
         .checkpoint_interval(100)
         .state_flush_entities(flush_entities)
         .state_flush_every(25)
-        .build()?
-        .start()
-        .await?;
+        .build()?;
 
-    if !seed.is_empty() {
-        let shared = handle.state();
+    {
+        let shared = worker.state();
         let mut state = shared.write().await;
-        for (_entity_id, view) in seed {
-            // `or_insert`: anything the worker has already folded since the
-            // cursor is newer than the flushed snapshot and must win.
-            state.entry(view.id).or_insert(view);
+        for (_entity_id, flushed) in seed {
+            state.hydrate(flushed);
         }
     }
 
-    Ok(handle)
+    worker.start().await
 }
 
 /// Map the read model to `(entity_id, state)` pairs for push-back to Core.
@@ -188,15 +284,18 @@ pub async fn start_posts_worker(
 /// The entity id is the real stream id (`post:<uuid>`), not the bare uuid, so
 /// the flushed KV lines up with the events it was folded from.
 fn flush_entities(state: &PostsReadModel) -> Vec<(String, serde_json::Value)> {
-    state
+    let live = state
+        .live
         .values()
-        .filter_map(|view| {
-            serde_json::to_value(view).ok().map(|json| {
-                (
-                    rv2_events::stream(rv2_events::StreamKind::Post, view.id),
-                    json,
-                )
-            })
+        .map(|view| (view.id, serde_json::to_value(view)));
+    let deleted = state
+        .deleted
+        .iter()
+        .map(|&id| (id, serde_json::to_value(Tombstone { id, deleted: true })));
+    live.chain(deleted)
+        .filter_map(|(id, json)| {
+            json.ok()
+                .map(|json| (rv2_events::stream(rv2_events::StreamKind::Post, id), json))
         })
         .collect()
 }
@@ -247,12 +346,12 @@ mod tests {
     #[test]
     fn the_reducer_accumulates_across_entities() {
         let (a, b) = (Uuid::from_u128(10), Uuid::from_u128(11));
-        let mut state = PostsReadModel::new();
+        let mut state = PostsReadModel::default();
         apply_post_event(&mut state, &sdk_event(&created(a, "first"), 1)).unwrap();
         apply_post_event(&mut state, &sdk_event(&created(b, "second"), 1)).unwrap();
         assert_eq!(state.len(), 2);
-        assert_eq!(state[&a].title, "first");
-        assert_eq!(state[&b].title, "second");
+        assert_eq!(state.get(&a).unwrap().title, "first");
+        assert_eq!(state.get(&b).unwrap().title, "second");
     }
 
     /// The bug this seeding exists to prevent: an `edited` arriving after the
@@ -261,7 +360,7 @@ mod tests {
     #[test]
     fn an_edit_patches_the_already_stored_view() {
         let id = Uuid::from_u128(10);
-        let mut state = PostsReadModel::new();
+        let mut state = PostsReadModel::default();
         apply_post_event(&mut state, &sdk_event(&created(id, "first"), 1)).unwrap();
         apply_post_event(
             &mut state,
@@ -276,14 +375,18 @@ mod tests {
             ),
         )
         .unwrap();
-        assert_eq!(state[&id].title, "patched");
-        assert_eq!(state[&id].content, "body", "untouched field survives");
+        assert_eq!(state.get(&id).unwrap().title, "patched");
+        assert_eq!(
+            state.get(&id).unwrap().content,
+            "body",
+            "untouched field survives"
+        );
     }
 
     #[test]
     fn a_delete_removes_the_entry_idempotently() {
         let id = Uuid::from_u128(10);
-        let mut state = PostsReadModel::new();
+        let mut state = PostsReadModel::default();
         apply_post_event(&mut state, &sdk_event(&created(id, "first"), 1)).unwrap();
         let deleted = DomainEvent::PostDeleted {
             id,
@@ -299,7 +402,7 @@ mod tests {
     /// never produce one.
     #[test]
     fn a_malformed_event_never_aborts_the_worker() {
-        let mut state = PostsReadModel::new();
+        let mut state = PostsReadModel::default();
         let mut bad = sdk_event(&created(Uuid::from_u128(10), "x"), 1);
         bad.payload = serde_json::json!({"nonsense": true});
         assert!(apply_post_event(&mut state, &bad).is_ok());
@@ -325,11 +428,11 @@ mod tests {
             ),
         ];
 
-        let mut state = PostsReadModel::new();
+        let mut state = PostsReadModel::default();
         for event in &events {
             apply_post_event(&mut state, event).unwrap();
         }
-        let via_worker = state.remove(&id).unwrap();
+        let via_worker = state.get(&id).unwrap().clone();
         let via_fold = allsource::fold_events::<PostFolder>(&events).unwrap();
         assert_eq!(via_worker, via_fold);
     }
@@ -339,7 +442,7 @@ mod tests {
     #[test]
     fn flushed_entities_are_keyed_by_stream_id() {
         let id = Uuid::from_u128(10);
-        let mut state = PostsReadModel::new();
+        let mut state = PostsReadModel::default();
         apply_post_event(&mut state, &sdk_event(&created(id, "first"), 1)).unwrap();
 
         let flushed = flush_entities(&state);
@@ -352,12 +455,105 @@ mod tests {
     #[test]
     fn flushed_state_deserializes_back_into_the_read_model() {
         let id = Uuid::from_u128(10);
-        let mut state = PostsReadModel::new();
+        let mut state = PostsReadModel::default();
         apply_post_event(&mut state, &sdk_event(&created(id, "first"), 1)).unwrap();
 
         let (_entity, json) = flush_entities(&state).remove(0);
         let view: PostView = serde_json::from_value(json).expect("round-trips");
-        assert_eq!(view, state[&id]);
+        assert_eq!(&view, state.get(&id).unwrap());
+    }
+
+    fn hydrate_from(flushed: Vec<(String, serde_json::Value)>) -> PostsReadModel {
+        let mut booted = PostsReadModel::default();
+        for (_entity, json) in flushed {
+            booted.hydrate(serde_json::from_value(json).expect("flushed entry deserializes"));
+        }
+        booted
+    }
+
+    /// The KV only upserts. A delete must overwrite the post's last live
+    /// snapshot with a tombstone, or the next boot hydrates the post back.
+    #[test]
+    fn a_deleted_post_stays_deleted_across_a_restart() {
+        let id = Uuid::from_u128(10);
+        let mut state = PostsReadModel::default();
+        apply_post_event(&mut state, &sdk_event(&created(id, "first"), 1)).unwrap();
+        let stale = flush_entities(&state);
+
+        apply_post_event(
+            &mut state,
+            &sdk_event(
+                &DomainEvent::PostDeleted {
+                    id,
+                    occurred_at: at("2024-05-01T12:00:00Z"),
+                },
+                2,
+            ),
+        )
+        .unwrap();
+        let flushed = flush_entities(&state);
+        assert_eq!(flushed.len(), 1, "{flushed:?}");
+        assert_eq!(
+            flushed[0].0,
+            format!("post:{id}"),
+            "same KV key as the snapshot"
+        );
+
+        assert!(hydrate_from(flushed.clone()).is_empty());
+        let stale_first: Vec<_> = stale.iter().chain(&flushed).cloned().collect();
+        let tombstone_first: Vec<_> = flushed.iter().chain(&stale).cloned().collect();
+        assert!(hydrate_from(stale_first).is_empty());
+        assert!(
+            hydrate_from(tombstone_first).is_empty(),
+            "a tombstone wins over a live snapshot whatever the order"
+        );
+    }
+
+    /// The live-Core restart case: the KV holds a pre-edit snapshot, and the
+    /// edit and the delete come back in the replay.
+    #[test]
+    fn a_replay_over_a_stale_snapshot_converges_to_deleted() {
+        let id = Uuid::from_u128(10);
+        let mut state = PostsReadModel::default();
+        apply_post_event(&mut state, &sdk_event(&created(id, "first"), 1)).unwrap();
+        let stale = flush_entities(&state);
+
+        let mut booted = hydrate_from(stale.clone());
+        let edit = DomainEvent::PostEdited {
+            id,
+            occurred_at: at("2024-04-01T12:00:00Z"),
+            title: Some("patched".into()),
+            content: None,
+        };
+        let delete = DomainEvent::PostDeleted {
+            id,
+            occurred_at: at("2024-05-01T12:00:00Z"),
+        };
+        apply_post_event(&mut booted, &sdk_event(&edit, 2)).unwrap();
+        apply_post_event(&mut booted, &sdk_event(&delete, 3)).unwrap();
+        assert!(booted.is_empty());
+
+        // A delete for a post the state never held is still remembered.
+        let mut cold = PostsReadModel::default();
+        apply_post_event(&mut cold, &sdk_event(&delete, 3)).unwrap();
+        for (_entity, json) in stale {
+            cold.hydrate(serde_json::from_value(json).unwrap());
+        }
+        assert!(
+            cold.is_empty(),
+            "a later snapshot resurrected a deleted post"
+        );
+    }
+
+    #[test]
+    fn a_snapshot_flushed_before_tombstones_existed_still_hydrates() {
+        let id = Uuid::from_u128(10);
+        let mut state = PostsReadModel::default();
+        apply_post_event(&mut state, &sdk_event(&created(id, "first"), 1)).unwrap();
+        let bare = serde_json::to_value(state.get(&id).unwrap()).unwrap();
+
+        let booted = hydrate_from(vec![(format!("post:{id}"), bare)]);
+        assert_eq!(booted.get(&id).unwrap().title, "first");
     }
 
     #[test]

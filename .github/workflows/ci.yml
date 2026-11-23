@@ -16,9 +16,10 @@ on:
     branches: [main]
   pull_request:
 
+# No RUSTFLAGS here: `cargo xtask ci` must behave the same on a laptop, where
+# none is set. Its clippy step already denies warnings.
 env:
   CARGO_TERM_COLOR: always
-  RUSTFLAGS: -D warnings
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -28,6 +29,8 @@ jobs:
   check:
     name: check
     runs-on: ubuntu-latest
+    # A hang guard, not a budget: a cold-cache run measured 10m on 2026-11-22.
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v7
       - uses: Swatinem/rust-cache@v2
@@ -43,6 +46,7 @@ jobs:
   supply-chain:
     name: supply chain
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@v7
       # NOT EmbarkStudios/cargo-deny-action: it runs in its own container, which
@@ -85,14 +89,25 @@ jobs:
   live-core:
     name: live Core
     runs-on: ubuntu-latest
+    # A hang guard, not a budget: compiling allsource-core on a cache miss
+    # alone ran past 5m on 2026-11-23 (run 45092120595).
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v7
       - uses: Swatinem/rust-cache@v2
+      # Keyed on the version alone, so a workspace or RUSTFLAGS change that
+      # invalidates rust-cache does not recompile Core.
+      - id: core-bin
+        uses: actions/cache@v4
+        with:
+          path: ~/.cargo/bin/allsource-core
+          key: allsource-core-0.23.0-${{ runner.os }}
       # `allsource-core` is a plain crates.io binary, so CI needs no service
       # container and no registry credentials. (The public community images —
       # `ghcr.io/all-source-os/allsource-core-community` — are amd64-only and
       # would work here too; the binary is simply fewer moving parts.)
-      - run: cargo install allsource-core --version 0.23.0 --locked
+      - if: steps.core-bin.outputs.cache-hit != 'true'
+        run: cargo install allsource-core --version 0.23.0 --locked
       - name: Start Core
         run: |
           ALLSOURCE_HOST=127.0.0.1 ALLSOURCE_PORT=3900 \

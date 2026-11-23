@@ -52,4 +52,6 @@ would then fail its trait bound with an error that reads as nonsense ("expected
 
 | Date | File | Change | Why |
 |---|---|---|---|
-| — | — | none yet | — |
+| 2026-11-23 | `src/client.rs` | `query_all`, `find_by_field` and `find_all_by_field` scan the whole event family (`auth.x.` rather than `auth.x.created`), group by the event's `entity_id`, take the newest snapshot by timestamp and drop tombstones. `find_by_field` matches current state only; the `payload_filter` fast path is removed. | Scanning `*.created` alone returned each entity's first snapshot: consumed verification tokens stayed redeemable until expiry, deleted entities stayed listed, and changed emails, expiries and hashes read stale. A `payload_filter` hit matched one past snapshot, not current state. |
+
+Earlier, unrecorded: `src/client.rs` sends `tenant_id` on every query (see its `DEFAULT_TENANT` doc) and reads an entity's newest event rather than its first (`latest_live_payload`).

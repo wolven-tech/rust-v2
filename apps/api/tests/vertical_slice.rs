@@ -9,7 +9,7 @@
 //! A scaffold that compiles but has never moved a byte through AllSource proves
 //! nothing, so this test does not mock anything below the HTTP layer. It runs
 //! the real router, the real `better-auth` stack, the real `EventWriter`, and
-//! the real `QueryClient::query_and_fold`.
+//! the real tenant-scoped fold.
 //!
 //! ## Running it
 //!
@@ -225,9 +225,13 @@ async fn an_event_travels_the_full_path() {
         .await
         .unwrap();
     println!("list: {} post(s)", list.len());
-    assert!(
-        list.iter().any(|p| p["id"] == post["id"]),
-        "the new post is missing from GET /posts"
+    let listed = list
+        .iter()
+        .find(|p| p["id"] == post["id"])
+        .expect("the new post is missing from GET /posts");
+    assert_eq!(
+        listed["title"], "On the Analytical Engine (rev. 2)",
+        "GET /posts shows the post without its edit"
     );
 
     // ── 6. Delete removes it from both read paths ────────────────────────────
@@ -249,6 +253,20 @@ async fn an_event_travels_the_full_path() {
         after.status(),
         404,
         "a deleted post must fold to 'does not exist'"
+    );
+
+    let list: Vec<serde_json::Value> = client
+        .get(format!("{base}/posts?limit=100"))
+        .bearer_auth(&token)
+        .send()
+        .await
+        .unwrap()
+        .json()
+        .await
+        .unwrap();
+    assert!(
+        list.iter().all(|p| p["id"] != post["id"]),
+        "a deleted post is still listed by GET /posts"
     );
 }
 
@@ -315,6 +333,84 @@ async fn a_different_user_cannot_edit_or_delete_someone_elses_post() {
         .await
         .unwrap();
     assert_eq!(still["title"], "Mine");
+}
+
+/// The domain profile exists on its owner's first read, its owner can edit it, nobody
+/// else can read it (it carries the email), and better-auth's own
+/// `/update-user` — which would write `role` — is not mounted.
+#[tokio::test]
+#[ignore = "requires a live AllSource Core; see the module docs"]
+async fn a_profile_belongs_to_its_owner_alone() {
+    let base = serve().await;
+    let client = reqwest::Client::new();
+
+    let owner_email = format!("owner-{}@example.com", uuid::Uuid::new_v4());
+    let owner = register(&client, &base, &owner_email).await;
+    let stranger = register(
+        &client,
+        &base,
+        &format!("stranger-{}@example.com", uuid::Uuid::new_v4()),
+    )
+    .await;
+
+    let me: serde_json::Value = client
+        .get(format!("{base}/me"))
+        .bearer_auth(&owner)
+        .send()
+        .await
+        .unwrap()
+        .json()
+        .await
+        .unwrap();
+    let id = me["user_id"].as_str().expect("user_id").to_string();
+
+    let profile = client
+        .get(format!("{base}/users/{id}"))
+        .bearer_auth(&owner)
+        .send()
+        .await
+        .unwrap();
+    assert_eq!(profile.status(), 200, "the owner has no domain profile");
+    let profile: serde_json::Value = profile.json().await.unwrap();
+    assert_eq!(profile["email"], owner_email);
+
+    let patched = client
+        .patch(format!("{base}/users/{id}"))
+        .bearer_auth(&owner)
+        .json(&json!({ "full_name": "Ada" }))
+        .send()
+        .await
+        .unwrap();
+    assert_eq!(patched.status(), 200);
+    let patched: serde_json::Value = patched.json().await.unwrap();
+    assert_eq!(patched["full_name"], "Ada");
+
+    let peek = client
+        .get(format!("{base}/users/{id}"))
+        .bearer_auth(&stranger)
+        .send()
+        .await
+        .unwrap();
+    assert_eq!(peek.status(), 403, "another user read the profile");
+
+    let escalate = client
+        .post(format!("{base}/auth/update-user"))
+        .bearer_auth(&owner)
+        .json(&json!({ "role": "admin" }))
+        .send()
+        .await
+        .unwrap();
+    assert_eq!(escalate.status(), 404, "/auth/update-user is mounted");
+    let roles: serde_json::Value = client
+        .get(format!("{base}/me"))
+        .bearer_auth(&owner)
+        .send()
+        .await
+        .unwrap()
+        .json()
+        .await
+        .unwrap();
+    assert_eq!(roles["roles"], json!(["user"]));
 }
 
 /// The unauthenticated case, separated from the forbidden case on purpose: the
