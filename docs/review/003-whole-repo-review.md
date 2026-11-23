@@ -217,7 +217,7 @@ URLs, `url 2.5.8`. The lockfile now pins 2.5.9.
 
 - ⏳ The wasm32 boundary check matches workspace crate names only; `reqwest`,
   `posthog-rs` and `resend-rs` reachability is not checked.
-- ⏳ The ISA scan misses `, button {` and `button{` (`tooling/xtask/src/isa.rs`).
+- ⏳ The ISA scan misses `, button {` and `button{` (`tooling/kit/src/isa.rs`).
 - ⏳ `deny.toml` sets `multiple-versions = "warn"` while its header says a new
   duplicate fails CI.
 - ⏳ The Tailwind binary is downloaded and run without a checksum

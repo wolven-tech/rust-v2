@@ -15,6 +15,7 @@ members = [
   "crates/rv2-jobs",
   "crates/rv2-shared",
   "crates/rv2-ui",
+  "tooling/kit",
   "tooling/xtask",
 ]
 resolver = "3"

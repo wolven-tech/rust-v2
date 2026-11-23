@@ -1,0 +1,5680 @@
+{
+  "intents": [
+    {
+      "intent": "Do something",
+      "instructions": [
+        "Button"
+      ],
+      "emits": "`button`"
+    },
+    {
+      "intent": "Go somewhere, as a CTA",
+      "instructions": [
+        "LinkButton"
+      ],
+      "emits": "`a`"
+    },
+    {
+      "intent": "Go somewhere, inline",
+      "instructions": [
+        "TextLink",
+        "ArrowLink"
+      ],
+      "emits": "`a`"
+    },
+    {
+      "intent": "Enter a value",
+      "instructions": [
+        "TextField",
+        "TextArea",
+        "Select",
+        "Input"
+      ],
+      "emits": "`label` + control"
+    },
+    {
+      "intent": "Pick from many",
+      "instructions": [
+        "CommandSelect"
+      ],
+      "emits": "button + combobox"
+    },
+    {
+      "intent": "Toggle a facet",
+      "instructions": [
+        "Checkbox",
+        "FieldSet"
+      ],
+      "emits": "native controls"
+    },
+    {
+      "intent": "Contain",
+      "instructions": [
+        "Card",
+        "Section",
+        "Container",
+        "Grid",
+        "Divider"
+      ],
+      "emits": "`div`/`section`/`hr`"
+    },
+    {
+      "intent": "Reveal",
+      "instructions": [
+        "Disclosure",
+        "Faq"
+      ],
+      "emits": "`details`"
+    },
+    {
+      "intent": "Say",
+      "instructions": [
+        "Heading",
+        "Text",
+        "Eyebrow"
+      ],
+      "emits": "`h1`–`h4`, `p`"
+    },
+    {
+      "intent": "Title a page, with its actions",
+      "instructions": [
+        "PageHeader"
+      ],
+      "emits": "`header` with `h1`, subtitle and an action slot"
+    },
+    {
+      "intent": "Label a custom control",
+      "instructions": [
+        "FieldShell"
+      ],
+      "emits": "`label` + help and error lines the caller binds by id"
+    },
+    {
+      "intent": "Number a step",
+      "instructions": [
+        "StepMarker"
+      ],
+      "emits": "`span`, zero-padded"
+    },
+    {
+      "intent": "Enter a page",
+      "instructions": [
+        "PageEntrance"
+      ],
+      "emits": "`div` with a finite CSS entrance, none under reduced motion"
+    },
+    {
+      "intent": "Ask for consent",
+      "instructions": [
+        "ConsentFooter"
+      ],
+      "emits": "the shared consent stylesheet and script; a product adapter mounts it ([`../design-system/consent-footer.md`](../design-system/consent-footer.md))"
+    },
+    {
+      "intent": "Signal",
+      "instructions": [
+        "Badge",
+        "Status",
+        "Swatch",
+        "Bar"
+      ],
+      "emits": "`span`/`div`"
+    },
+    {
+      "intent": "Report state",
+      "instructions": [
+        "EmptyState",
+        "Skeleton",
+        "ErrorBanner"
+      ],
+      "emits": "—"
+    },
+    {
+      "intent": "Navigate",
+      "instructions": [
+        "ProductHeader",
+        "NavigationRail",
+        "ProcessRail",
+        "Tabs",
+        "Footer"
+      ],
+      "emits": "`header`/`nav`"
+    },
+    {
+      "intent": "Market",
+      "instructions": [
+        "Hero",
+        "FeatureCard",
+        "StepList",
+        "FactList",
+        "PricingCard"
+      ],
+      "emits": "composites (UI6)"
+    },
+    {
+      "intent": "Do or go, with weight",
+      "instructions": [
+        "PressButton",
+        "PressLink"
+      ],
+      "emits": "`button`, `a` on a ledge"
+    },
+    {
+      "intent": "Keep for later",
+      "instructions": [
+        "SaveToggle"
+      ],
+      "emits": "`button[aria-pressed]`"
+    },
+    {
+      "intent": "Narrow a list",
+      "instructions": [
+        "ChipGroup",
+        "Chip"
+      ],
+      "emits": "`div[role=group]` + `button[aria-pressed]`"
+    },
+    {
+      "intent": "Browse",
+      "instructions": [
+        "MediaCard"
+      ],
+      "emits": "`article`"
+    },
+    {
+      "intent": "Identify an editorial site",
+      "instructions": [
+        "Masthead"
+      ],
+      "emits": "`header`"
+    },
+    {
+      "intent": "Decorate",
+      "instructions": [
+        "Sparkle"
+      ],
+      "emits": "`span[aria-hidden]`"
+    },
+    {
+      "intent": "Report a figure",
+      "instructions": [
+        "StatStrip",
+        "ResultPanel",
+        "Meter",
+        "SplitBar"
+      ],
+      "emits": "`dl`, `section[aria-live]`, `div[role=meter]`, `figure`"
+    },
+    {
+      "intent": "Judge",
+      "instructions": [
+        "Callout",
+        "Receipt"
+      ],
+      "emits": "`aside`, `article`"
+    },
+    {
+      "intent": "Enter a measure",
+      "instructions": [
+        "UnitField"
+      ],
+      "emits": "`label` + affixed input"
+    },
+    {
+      "intent": "Narrow one view",
+      "instructions": [
+        "SegmentedControl"
+      ],
+      "emits": "`div[role=group]` + `button[aria-pressed]`"
+    },
+    {
+      "intent": "Choose one, with consequences",
+      "instructions": [
+        "ChoiceGroup",
+        "Choice"
+      ],
+      "emits": "`fieldset` + `label` + `input[type=radio]`"
+    },
+    {
+      "intent": "Ask before acting",
+      "instructions": [
+        "Dialog",
+        "ConfirmDialog"
+      ],
+      "emits": "`dialog` opened with `showModal()`"
+    },
+    {
+      "intent": "Delete without a modal",
+      "instructions": [
+        "ArmedDeleteButton"
+      ],
+      "emits": "`button[data-armed]`"
+    },
+    {
+      "intent": "Tell after acting",
+      "instructions": [
+        "ToastProvider",
+        "Toaster",
+        "use_toast"
+      ],
+      "emits": "`div[role=region]` of `role=status`/`alert`"
+    },
+    {
+      "intent": "Mark a record's state",
+      "instructions": [
+        "Stamp"
+      ],
+      "emits": "`span`"
+    },
+    {
+      "intent": "Check readiness",
+      "instructions": [
+        "GateList",
+        "Gate"
+      ],
+      "emits": "`ul` with spoken state"
+    },
+    {
+      "intent": "Show an edit",
+      "instructions": [
+        "RedlineDiff",
+        "Redline"
+      ],
+      "emits": "`dl` of `del`/`ins`"
+    },
+    {
+      "intent": "Compare options",
+      "instructions": [
+        "CompareTable",
+        "CompareRow"
+      ],
+      "emits": "`table`, stacked cards below `sm`"
+    },
+    {
+      "intent": "Count a figure in",
+      "instructions": [
+        "Tally"
+      ],
+      "emits": "text number + `aria-hidden` CSS counter"
+    },
+    {
+      "intent": "Show a trend",
+      "instructions": [
+        "Sparkline"
+      ],
+      "emits": "`svg` polyline, decorative unless named"
+    },
+    {
+      "intent": "Keep a ledger",
+      "instructions": [
+        "LedgerTable",
+        "LedgerRow",
+        "LedgerCell"
+      ],
+      "emits": "`table` in a focusable scroll region, total in `tfoot`"
+    },
+    {
+      "intent": "Cite a source",
+      "instructions": [
+        "Citation"
+      ],
+      "emits": "`p` with `time[datetime]`"
+    },
+    {
+      "intent": "Queue work for someone",
+      "instructions": [
+        "AttentionQueue",
+        "QueueItem"
+      ],
+      "emits": "`ol` of links or stated rows"
+    },
+    {
+      "intent": "Offer more",
+      "instructions": [
+        "Popover",
+        "RowMenu",
+        "HelpTip"
+      ],
+      "emits": "`button[popovertarget]` + `div[popover=auto]`"
+    },
+    {
+      "intent": "Run against a plan",
+      "instructions": [
+        "TimerReadout",
+        "SectionTimer"
+      ],
+      "emits": "`role=timer` + `role=status` pace word"
+    },
+    {
+      "intent": "Say where an assistant runs",
+      "instructions": [
+        "BoundaryPill",
+        "GroundingNote"
+      ],
+      "emits": "`span`, `p`"
+    }
+  ],
+  "components": [
+    {
+      "name": "Button",
+      "module": "primitives",
+      "in_isa": true,
+      "intent": "Do something",
+      "emits": "`button`",
+      "docs": "",
+      "props": [
+        {
+          "name": "variant",
+          "ty": "Variant",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        },
+        {
+          "name": "size",
+          "ty": "Size",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        },
+        {
+          "name": "disabled",
+          "ty": "bool",
+          "required": false,
+          "default": "false",
+          "docs": ""
+        },
+        {
+          "name": "busy",
+          "ty": "bool",
+          "required": false,
+          "default": "false",
+          "docs": ""
+        },
+        {
+          "name": "autofocus",
+          "ty": "bool",
+          "required": false,
+          "default": "false",
+          "docs": "Takes first focus when its modal [`crate::Dialog`] opens."
+        },
+        {
+          "name": "type",
+          "ty": "String",
+          "required": false,
+          "default": "\"button\".to_string()",
+          "docs": ""
+        },
+        {
+          "name": "class",
+          "ty": "String",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        },
+        {
+          "name": "onclick",
+          "ty": "Option<EventHandler<MouseEvent>>",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        },
+        {
+          "name": "children",
+          "ty": "Element",
+          "required": false,
+          "default": null,
+          "docs": ""
+        }
+      ],
+      "example": {
+        "file": "apps/web/src/kit_catalogue.rs",
+        "line": 89,
+        "code": "Button { size: Size::Small, onclick: move |_| elapsed += 15, \"+15s\" }"
+      },
+      "guarantees": []
+    },
+    {
+      "name": "LinkButton",
+      "module": "primitives",
+      "in_isa": true,
+      "intent": "Go somewhere, as a CTA",
+      "emits": "`a`",
+      "docs": "An anchor styled as a button.\n\nA call-to-action that navigates is an `<a>`, not a `<button>` — it must be\nmiddle-clickable, openable in a new tab, and crawlable. This crate takes\n`dioxus` without the router feature so the kit stays renderer-agnostic;\ncallers pass a plain `href` and wrap with `Link` themselves if they want\nclient-side routing.",
+      "props": [
+        {
+          "name": "href",
+          "ty": "String",
+          "required": true,
+          "default": null,
+          "docs": ""
+        },
+        {
+          "name": "variant",
+          "ty": "Variant",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        },
+        {
+          "name": "size",
+          "ty": "Size",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        },
+        {
+          "name": "class",
+          "ty": "String",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        },
+        {
+          "name": "external",
+          "ty": "bool",
+          "required": false,
+          "default": "false",
+          "docs": "Set for links leaving the site; adds `rel=\"noopener noreferrer\"`, without\nwhich the opened page can reach back through `window.opener`."
+        },
+        {
+          "name": "download",
+          "ty": "Option<String>",
+          "required": false,
+          "default": "Default",
+          "docs": "The `download` filename, for a link that saves a file rather than\nopening a page."
+        },
+        {
+          "name": "disabled",
+          "ty": "bool",
+          "required": false,
+          "default": "false",
+          "docs": "Renders the link with no `href`.\n\n`pointer-events: none` alone, which is what the hand-written version\ndid, stops a mouse and nothing else: the link stays in the tab order and\nEnter still follows it. An anchor without an `href` is not focusable and\ncannot be followed at all, which is what \"disabled\" has to mean."
+        },
+        {
+          "name": "children",
+          "ty": "Element",
+          "required": false,
+          "default": null,
+          "docs": ""
+        }
+      ],
+      "example": {
+        "file": "apps/web/src/main.rs",
+        "line": 238,
+        "code": "LinkButton { href: \"/#pricing\", size: Size::Large, \"Get started\" }"
+      },
+      "guarantees": [
+        {
+          "test": "a_disabled_link_button_has_no_href_to_follow",
+          "file": "crates/rv2-ui/tests/instructions.rs",
+          "docs": "The export link this replaced was `pointer-events: none`, which stops a\nmouse and nothing else — it stayed in the tab order and Enter followed it."
+        },
+        {
+          "test": "an_enabled_link_button_downloads_what_it_names",
+          "file": "crates/rv2-ui/tests/instructions.rs",
+          "docs": ""
+        }
+      ]
+    },
+    {
+      "name": "TextLink",
+      "module": "primitives",
+      "in_isa": true,
+      "intent": "Go somewhere, inline",
+      "emits": "`a`",
+      "docs": "An inline, underlined link that inherits its type size from the text around\nit.",
+      "props": [
+        {
+          "name": "href",
+          "ty": "String",
+          "required": true,
+          "default": null,
+          "docs": ""
+        },
+        {
+          "name": "external",
+          "ty": "bool",
+          "required": false,
+          "default": "false",
+          "docs": "Opens in a new tab with `rel=\"noopener noreferrer\"`."
+        },
+        {
+          "name": "strong",
+          "ty": "bool",
+          "required": false,
+          "default": "false",
+          "docs": "The link is the subject of its line, not a route off it."
+        },
+        {
+          "name": "class",
+          "ty": "String",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        },
+        {
+          "name": "children",
+          "ty": "Element",
+          "required": false,
+          "default": null,
+          "docs": ""
+        }
+      ],
+      "example": {
+        "file": "crates/rv2-ui/tests/instructions.rs",
+        "line": 33,
+        "code": "TextLink { href: \"https://example.com\", external: true, \"Elsewhere\" }"
+      },
+      "guarantees": [
+        {
+          "test": "an_external_text_link_cannot_reach_back_through_window_opener",
+          "file": "crates/rv2-ui/tests/instructions.rs",
+          "docs": ""
+        },
+        {
+          "test": "an_internal_text_link_opens_in_place",
+          "file": "crates/rv2-ui/tests/instructions.rs",
+          "docs": ""
+        }
+      ]
+    },
+    {
+      "name": "ArrowLink",
+      "module": "primitives",
+      "in_isa": true,
+      "intent": "Go somewhere, inline",
+      "emits": "`a`",
+      "docs": "Inline \"Read more →\" link.\n\nThe arrow is `aria-hidden` — it is decoration, and a screen reader reading\n\"rightwards arrow\" after every link is noise.",
+      "props": [
+        {
+          "name": "href",
+          "ty": "String",
+          "required": true,
+          "default": null,
+          "docs": ""
+        },
+        {
+          "name": "class",
+          "ty": "String",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        },
+        {
+          "name": "children",
+          "ty": "Element",
+          "required": false,
+          "default": null,
+          "docs": ""
+        }
+      ],
+      "example": {
+        "file": "apps/web/src/main.rs",
+        "line": 239,
+        "code": "ArrowLink { href: \"/#how-it-works\", \"See how it works\" }"
+      },
+      "guarantees": []
+    },
+    {
+      "name": "TextField",
+      "module": "form",
+      "in_isa": true,
+      "intent": "Enter a value",
+      "emits": "`label` + control",
+      "docs": "",
+      "props": [
+        {
+          "name": "label",
+          "ty": "String",
+          "required": true,
+          "default": null,
+          "docs": ""
+        },
+        {
+          "name": "value",
+          "ty": "String",
+          "required": true,
+          "default": null,
+          "docs": ""
+        },
+        {
+          "name": "id",
+          "ty": "Option<String>",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        },
+        {
+          "name": "help",
+          "ty": "Option<String>",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        },
+        {
+          "name": "disabled",
+          "ty": "bool",
+          "required": false,
+          "default": "false",
+          "docs": ""
+        },
+        {
+          "name": "placeholder",
+          "ty": "String",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        },
+        {
+          "name": "type",
+          "ty": "String",
+          "required": false,
+          "default": "\"text\".to_string()",
+          "docs": ""
+        },
+        {
+          "name": "name",
+          "ty": "Option<String>",
+          "required": false,
+          "default": "Default",
+          "docs": "The `name` attribute.\n\nOptional, but omitting it is half of what made the login screen a form\nthat could not submit anything: a native form POST serializes fields\n**by name**, and a nameless input contributes nothing to the body at\nall. Password managers key on it too — without one they cannot offer to\nsave or fill a credential."
+        },
+        {
+          "name": "autocomplete",
+          "ty": "Option<String>",
+          "required": false,
+          "default": "Default",
+          "docs": "The `autocomplete` token — `email`, `current-password`, and so on.\n\nA fixed vocabulary, not free text. Browsers need it to fill credentials\ninto the right box."
+        },
+        {
+          "name": "required",
+          "ty": "bool",
+          "required": false,
+          "default": "false",
+          "docs": ""
+        },
+        {
+          "name": "error",
+          "ty": "Option<String>",
+          "required": false,
+          "default": "Default",
+          "docs": "Field-level validation message. Rendered with `role=\"alert\"` so screen\nreaders announce it — a validation error nobody hears is not a\nvalidation error."
+        },
+        {
+          "name": "oninput",
+          "ty": "EventHandler<FormEvent>",
+          "required": true,
+          "default": null,
+          "docs": ""
+        },
+        {
+          "name": "onfocusin",
+          "ty": "Option<EventHandler<FocusEvent>>",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        }
+      ],
+      "example": {
+        "file": "apps/web/src/kit_records.rs",
+        "line": 80,
+        "code": "TextField { label: \"Name\", value: note(), oninput: move |e: FormEvent| note.set(e.value()) }"
+      },
+      "guarantees": [
+        {
+          "test": "a_bare_input_and_a_text_field_both_carry_the_focus_ring",
+          "file": "crates/rv2-ui/tests/instructions.rs",
+          "docs": "Two of the four hand-made inputs this replaced had no focus ring."
+        },
+        {
+          "test": "a_named_field_renders_its_name_and_an_unnamed_one_renders_none",
+          "file": "crates/rv2-ui/tests/instructions.rs",
+          "docs": "A nameless input contributes nothing to a native form submission, which is\nhalf of how the login screen once shipped unable to submit."
+        }
+      ]
+    },
+    {
+      "name": "TextArea",
+      "module": "form",
+      "in_isa": true,
+      "intent": "Enter a value",
+      "emits": "`label` + control",
+      "docs": "",
+      "props": [
+        {
+          "name": "label",
+          "ty": "String",
+          "required": true,
+          "default": null,
+          "docs": ""
+        },
+        {
+          "name": "value",
+          "ty": "String",
+          "required": true,
+          "default": null,
+          "docs": ""
+        },
+        {
+          "name": "id",
+          "ty": "Option<String>",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        },
+        {
+          "name": "help",
+          "ty": "Option<String>",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        },
+        {
+          "name": "disabled",
+          "ty": "bool",
+          "required": false,
+          "default": "false",
+          "docs": ""
+        },
+        {
+          "name": "rows",
+          "ty": "u32",
+          "required": false,
+          "default": "6",
+          "docs": ""
+        },
+        {
+          "name": "placeholder",
+          "ty": "String",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        },
+        {
+          "name": "error",
+          "ty": "Option<String>",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        },
+        {
+          "name": "oninput",
+          "ty": "EventHandler<FormEvent>",
+          "required": true,
+          "default": null,
+          "docs": ""
+        }
+      ],
+      "example": {
+        "file": "apps/app/src/views.rs",
+        "line": 191,
+        "code": "TextArea {\n    label: \"Content\",\n    value: content(),\n    rows: 4,\n    oninput: move |event: FormEvent| content.set(event.value()),\n}"
+      },
+      "guarantees": []
+    },
+    {
+      "name": "Select",
+      "module": "form",
+      "in_isa": true,
+      "intent": "Enter a value",
+      "emits": "`label` + control",
+      "docs": "A labelled select.\n\n`options` is `(value, label)` because the value is what goes in a URL and\nthe label is what a person reads, and the two are never the same string once\nthe copy is written in plain English.",
+      "props": [
+        {
+          "name": "label",
+          "ty": "String",
+          "required": true,
+          "default": null,
+          "docs": ""
+        },
+        {
+          "name": "value",
+          "ty": "String",
+          "required": true,
+          "default": null,
+          "docs": ""
+        },
+        {
+          "name": "options",
+          "ty": "Vec<(String, String)>",
+          "required": true,
+          "default": null,
+          "docs": ""
+        },
+        {
+          "name": "name",
+          "ty": "Option<String>",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        },
+        {
+          "name": "onchange",
+          "ty": "EventHandler<String>",
+          "required": true,
+          "default": null,
+          "docs": ""
+        }
+      ],
+      "example": null,
+      "guarantees": []
+    },
+    {
+      "name": "Input",
+      "module": "form",
+      "in_isa": true,
+      "intent": "Enter a value",
+      "emits": "`label` + control",
+      "docs": "A bare text control, for a field whose label is not a line of text above it\n— a search box labelled for screen readers only, a free-text answer under a\nquestion that is already its label.\n\n[`TextField`] is this inside a [`FieldShell`], so the field styling has one\nhome. Apps had been copying it by hand, and two of the four copies dropped\nthe focus ring.",
+      "props": [
+        {
+          "name": "value",
+          "ty": "String",
+          "required": true,
+          "default": null,
+          "docs": ""
+        },
+        {
+          "name": "oninput",
+          "ty": "EventHandler<FormEvent>",
+          "required": true,
+          "default": null,
+          "docs": ""
+        },
+        {
+          "name": "type",
+          "ty": "String",
+          "required": false,
+          "default": "\"text\".to_string()",
+          "docs": ""
+        },
+        {
+          "name": "placeholder",
+          "ty": "String",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        },
+        {
+          "name": "id",
+          "ty": "Option<String>",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        },
+        {
+          "name": "name",
+          "ty": "Option<String>",
+          "required": false,
+          "default": "Default",
+          "docs": "The `name` attribute. See [`TextField`] for why a form needs it."
+        },
+        {
+          "name": "autocomplete",
+          "ty": "Option<String>",
+          "required": false,
+          "default": "Default",
+          "docs": "The `autocomplete` token — `email`, `current-password`, `off`."
+        },
+        {
+          "name": "spellcheck",
+          "ty": "Option<bool>",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        },
+        {
+          "name": "required",
+          "ty": "bool",
+          "required": false,
+          "default": "false",
+          "docs": ""
+        },
+        {
+          "name": "disabled",
+          "ty": "bool",
+          "required": false,
+          "default": "false",
+          "docs": ""
+        },
+        {
+          "name": "describedby",
+          "ty": "Option<String>",
+          "required": false,
+          "default": "Default",
+          "docs": "Space-separated IDs of the messages describing this control; see\n[`field_description`]."
+        },
+        {
+          "name": "invalid",
+          "ty": "Option<bool>",
+          "required": false,
+          "default": "Default",
+          "docs": "`aria-invalid`. `None` omits the attribute."
+        },
+        {
+          "name": "class",
+          "ty": "String",
+          "required": false,
+          "default": "Default",
+          "docs": "Layout only: room for an adornment inside the box, say."
+        },
+        {
+          "name": "onkeydown",
+          "ty": "Option<EventHandler<KeyboardEvent>>",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        },
+        {
+          "name": "onfocusin",
+          "ty": "Option<EventHandler<FocusEvent>>",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        }
+      ],
+      "example": {
+        "file": "crates/rv2-ui/tests/instructions.rs",
+        "line": 86,
+        "code": "Input { id: \"q\", value: \"\", oninput: |_| {} }"
+      },
+      "guarantees": [
+        {
+          "test": "a_bare_input_and_a_text_field_both_carry_the_focus_ring",
+          "file": "crates/rv2-ui/tests/instructions.rs",
+          "docs": "Two of the four hand-made inputs this replaced had no focus ring."
+        },
+        {
+          "test": "a_named_field_renders_its_name_and_an_unnamed_one_renders_none",
+          "file": "crates/rv2-ui/tests/instructions.rs",
+          "docs": "A nameless input contributes nothing to a native form submission, which is\nhalf of how the login screen once shipped unable to submit."
+        }
+      ]
+    },
+    {
+      "name": "CommandSelect",
+      "module": "command_select",
+      "in_isa": true,
+      "intent": "Pick from many",
+      "emits": "button + combobox",
+      "docs": "Controlled single selection. `id` must be unique within the page.\n\nOptions use stable `(value, label)` pairs. Filtering never changes the\nselected value; only an explicit option selection calls `onchange`.",
+      "props": [
+        {
+          "name": "id",
+          "ty": "String",
+          "required": true,
+          "default": null,
+          "docs": ""
+        },
+        {
+          "name": "label",
+          "ty": "String",
+          "required": true,
+          "default": null,
+          "docs": ""
+        },
+        {
+          "name": "value",
+          "ty": "String",
+          "required": true,
+          "default": null,
+          "docs": ""
+        },
+        {
+          "name": "options",
+          "ty": "Vec<(String, String)>",
+          "required": true,
+          "default": null,
+          "docs": ""
+        },
+        {
+          "name": "onchange",
+          "ty": "EventHandler<String>",
+          "required": true,
+          "default": null,
+          "docs": ""
+        },
+        {
+          "name": "name",
+          "ty": "Option<String>",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        },
+        {
+          "name": "class",
+          "ty": "String",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        },
+        {
+          "name": "placeholder",
+          "ty": "String",
+          "required": false,
+          "default": "\"Choose…\".to_string()",
+          "docs": ""
+        },
+        {
+          "name": "search_placeholder",
+          "ty": "String",
+          "required": false,
+          "default": "\"Search options…\".to_string()",
+          "docs": ""
+        },
+        {
+          "name": "empty_message",
+          "ty": "String",
+          "required": false,
+          "default": "\"No matching options\".to_string()",
+          "docs": ""
+        },
+        {
+          "name": "disabled",
+          "ty": "bool",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        }
+      ],
+      "example": {
+        "file": "apps/app/examples/command_select.rs",
+        "line": 27,
+        "code": "CommandSelect {\n    id: \"workspace\", label: \"Your workspace\", value: workspace(), options,\n    disabled: disabled(), search_placeholder: \"Find workspace…\",\n    onchange: move |value| { workspace.set(value); count += 1; },\n}"
+      },
+      "guarantees": []
+    },
+    {
+      "name": "Checkbox",
+      "module": "form",
+      "in_isa": true,
+      "intent": "Toggle a facet",
+      "emits": "native controls",
+      "docs": "A labelled checkbox, optionally carrying a count of what it would match.\n\nThe count is the reason this is a component rather than a bare `input`. A\nfilter rail that shows a facet with no count forces the reader to click it\nto discover it matches nothing, and a rail whose zero-count options vanish\nmakes the list flicker as selections change. Showing the number, and dimming\nrather than hiding a zero, keeps the set of options stable while still\nsaying which ones are worth choosing.",
+      "props": [
+        {
+          "name": "label",
+          "ty": "String",
+          "required": true,
+          "default": null,
+          "docs": ""
+        },
+        {
+          "name": "checked",
+          "ty": "bool",
+          "required": true,
+          "default": null,
+          "docs": ""
+        },
+        {
+          "name": "count",
+          "ty": "Option<usize>",
+          "required": false,
+          "default": "Default",
+          "docs": "How many records this option would match right now. Rendered to the\nright, dimmed when nought."
+        },
+        {
+          "name": "basis",
+          "ty": "Option<String>",
+          "required": false,
+          "default": "Default",
+          "docs": "Where the value came from, when it was derived rather than recorded —\n\"headcount band, not revenue\". Shown under the label and bound as the\nbox's description, so the reader can disagree with a judgement the data\ndid not actually make. A `title` would hide it from touch and most\nscreen readers."
+        },
+        {
+          "name": "disabled",
+          "ty": "bool",
+          "required": false,
+          "default": "false",
+          "docs": ""
+        },
+        {
+          "name": "onchange",
+          "ty": "EventHandler<bool>",
+          "required": true,
+          "default": null,
+          "docs": ""
+        }
+      ],
+      "example": {
+        "file": "crates/rv2-ui/tests/field_contracts.rs",
+        "line": 153,
+        "code": "Checkbox { label: \"Mid-size\", checked: false, count: 4, basis: \"headcount band, not revenue\", onchange: |_| {} }"
+      },
+      "guarantees": []
+    },
+    {
+      "name": "FieldSet",
+      "module": "form",
+      "in_isa": true,
+      "intent": "Toggle a facet",
+      "emits": "native controls",
+      "docs": "A group of controls under a legend, with the count of how many are on.\n\n`native` fieldset and legend rather than a styled div: a screen reader\nannounces the legend with every control inside it, which is the only thing\nthat tells someone tabbing through thirty checkboxes which group they are\nin.",
+      "props": [
+        {
+          "name": "legend",
+          "ty": "String",
+          "required": true,
+          "default": null,
+          "docs": ""
+        },
+        {
+          "name": "note",
+          "ty": "Option<String>",
+          "required": false,
+          "default": "Default",
+          "docs": "A sentence under the legend saying what the group does, for a group\nwhose meaning is not obvious from its title alone."
+        },
+        {
+          "name": "active",
+          "ty": "usize",
+          "required": false,
+          "default": "Default",
+          "docs": "How many controls in this group are switched on."
+        },
+        {
+          "name": "children",
+          "ty": "Element",
+          "required": false,
+          "default": null,
+          "docs": ""
+        }
+      ],
+      "example": null,
+      "guarantees": []
+    },
+    {
+      "name": "Card",
+      "module": "feedback",
+      "in_isa": true,
+      "intent": "Contain",
+      "emits": "`div`/`section`/`hr`",
+      "docs": "A bordered surface.\n\nFlat by default, with no shadow. Every hand-made surface it replaced was\nflat, and a product that spends a shadow on meaning — one verdict that must\nstand out — cannot do so if every card already casts one. [`Surface::Slab`]\nis that one.\n\n`class` is for layout inside the card: flex direction, gaps, alignment.",
+      "props": [
+        {
+          "name": "pad",
+          "ty": "Pad",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        },
+        {
+          "name": "surface",
+          "ty": "Surface",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        },
+        {
+          "name": "class",
+          "ty": "String",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        },
+        {
+          "name": "children",
+          "ty": "Element",
+          "required": false,
+          "default": null,
+          "docs": ""
+        }
+      ],
+      "example": {
+        "file": "apps/web/src/kit_records.rs",
+        "line": 161,
+        "code": "Card { surface: Surface::Slab, pad: Pad::Roomy,\n    Heading { level: 3, \"Printed slab\" }\n    Text { class: \"mt-2\", tone: Tone::Muted, \"Surface::Slab, beside the offset press it was drawn with.\" }\n    PressButton { press: Press::Offset, class: \"mt-4\", \"Send the card\" }\n}"
+      },
+      "guarantees": [
+        {
+          "test": "a_stamp_and_a_slab_take_their_look_from_operands",
+          "file": "crates/rv2-ui/tests/records.rs",
+          "docs": ""
+        }
+      ]
+    },
+    {
+      "name": "Section",
+      "module": "layout",
+      "in_isa": true,
+      "intent": "Contain",
+      "emits": "`div`/`section`/`hr`",
+      "docs": "A page section with consistent vertical padding.\n\nTakes an optional `id` so a nav link can target it — an in-page anchor is\nthe cheapest navigation a marketing site has, and it needs no router.",
+      "props": [
+        {
+          "name": "space",
+          "ty": "Space",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        },
+        {
+          "name": "id",
+          "ty": "Option<String>",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        },
+        {
+          "name": "class",
+          "ty": "String",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        },
+        {
+          "name": "children",
+          "ty": "Element",
+          "required": false,
+          "default": null,
+          "docs": ""
+        }
+      ],
+      "example": {
+        "file": "apps/web/src/kit_catalogue.rs",
+        "line": 20,
+        "code": "Section { id: \"figures\",\n    Container {\n        Eyebrow { \"Default theme\" }\n        Heading { \"Figures that arrive\" }\n        Text { class: \"mt-2\", tone: Tone::Muted,\n            \"Counts and bars settle as they scroll in. The number is text from the first paint; with reduced motion nothing moves.\"\n        }\n        Figures {}\n    }\n}"
+      },
+      "guarantees": []
+    },
+    {
+      "name": "Container",
+      "module": "layout",
+      "in_isa": true,
+      "intent": "Contain",
+      "emits": "`div`/`section`/`hr`",
+      "docs": "Centred, padded content column.\n\n`class` is for layout inside the column — flex direction, gaps, vertical\npadding — never for its width, which is what [`Width`] is for.",
+      "props": [
+        {
+          "name": "width",
+          "ty": "Width",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        },
+        {
+          "name": "class",
+          "ty": "String",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        },
+        {
+          "name": "children",
+          "ty": "Element",
+          "required": false,
+          "default": null,
+          "docs": ""
+        }
+      ],
+      "example": {
+        "file": "apps/web/src/kit_catalogue.rs",
+        "line": 21,
+        "code": "Container {\n    Eyebrow { \"Default theme\" }\n    Heading { \"Figures that arrive\" }\n    Text { class: \"mt-2\", tone: Tone::Muted,\n        \"Counts and bars settle as they scroll in. The number is text from the first paint; with reduced motion nothing moves.\"\n    }\n    Figures {}\n}"
+      },
+      "guarantees": []
+    },
+    {
+      "name": "Grid",
+      "module": "layout",
+      "in_isa": true,
+      "intent": "Contain",
+      "emits": "`div`/`section`/`hr`",
+      "docs": "Responsive column grid.\n\nCollapses to a single column on small screens in every case; `columns` is\nthe widest arrangement, not a fixed one.",
+      "props": [
+        {
+          "name": "columns",
+          "ty": "u8",
+          "required": false,
+          "default": "3",
+          "docs": ""
+        },
+        {
+          "name": "class",
+          "ty": "String",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        },
+        {
+          "name": "children",
+          "ty": "Element",
+          "required": false,
+          "default": null,
+          "docs": ""
+        }
+      ],
+      "example": {
+        "file": "apps/web/src/kit_catalogue.rs",
+        "line": 48,
+        "code": "Grid { columns: 2, class: \"mt-6 items-start gap-8\",\n    div { class: \"space-y-4\",\n        p { class: \"text-5xl font-semibold text-ink\", Tally { value: 174 } }\n        Text { tone: Tone::Muted, \"roles counted this week\" }\n        Bar { label: \"Remote\", count: 92, of: 120, arrive: Arrive::Grow }\n        Bar { label: \"Hybrid\", count: 120, of: 120, arrive: Arrive::Grow, emphasis: true }\n        Bar { label: \"On site\", count: 31, of: 120, arrive: Arrive::Grow }\n    }\n    div { class: \"space-y-6\",\n        SplitBar {\n            label: \"Session cost\",\n            arrive: Arrive::Grow,\n            parts: vec![\n                Part::new(\"Energy\", 4.2, \"£4.20\", \"var(--color-takeable)\"),\n                Part::new(\"Fees\", 1.1, \"£1.10\", \"var(--color-caution)\"),\n                Part::new(\"VAT\", 0.27, \"£0.27\", \"var(--color-ink-muted)\"),\n            ],\n        }\n        div { class: \"flex items-end gap-4\",\n            div { class: \"w-40\", Sparkline { values: vec![61.0, 60.0, 62.0, 59.0, 58.0, 57.0], label: \"Resting heart rate, falling over 6 weeks\" } }\n            p { class: \"text-sm text-ink\", \"57 bpm\" }\n        }\n    }\n}"
+      },
+      "guarantees": []
+    },
+    {
+      "name": "Divider",
+      "module": "layout",
+      "in_isa": true,
+      "intent": "Contain",
+      "emits": "`div`/`section`/`hr`",
+      "docs": "Horizontal rule.\n\n`aria-hidden` because it is decoration; a screen reader announcing\n\"separator\" between every section is noise.",
+      "props": [
+        {
+          "name": "class",
+          "ty": "String",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        }
+      ],
+      "example": {
+        "file": "apps/web/src/main.rs",
+        "line": 245,
+        "code": "Divider {}"
+      },
+      "guarantees": []
+    },
+    {
+      "name": "Disclosure",
+      "module": "primitives",
+      "in_isa": true,
+      "intent": "Reveal",
+      "emits": "`details`",
+      "docs": "A native `details`/`summary` disclosure.\n\nNative rather than a signal and a conditional render, because the browser\nalready gives this keyboard operation, the right ARIA state and find-in-page\nthat reaches inside a closed section. A hand-rolled one gives up all three.",
+      "props": [
+        {
+          "name": "summary",
+          "ty": "String",
+          "required": true,
+          "default": null,
+          "docs": ""
+        },
+        {
+          "name": "open",
+          "ty": "bool",
+          "required": false,
+          "default": "false",
+          "docs": ""
+        },
+        {
+          "name": "class",
+          "ty": "String",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        },
+        {
+          "name": "accent",
+          "ty": "Option<String>",
+          "required": false,
+          "default": "Default",
+          "docs": "A CSS colour for a left rule down the open body, used where the\ndisclosure carries a graded judgement rather than plain detail."
+        },
+        {
+          "name": "children",
+          "ty": "Element",
+          "required": false,
+          "default": null,
+          "docs": ""
+        }
+      ],
+      "example": null,
+      "guarantees": []
+    },
+    {
+      "name": "Faq",
+      "module": "site",
+      "in_isa": true,
+      "intent": "Reveal",
+      "emits": "`details`",
+      "docs": "Expandable FAQ list.\n\nBuilt on native `<details>`/`<summary>`, which gives correct expand/collapse\nsemantics, keyboard operation and in-page find with **zero JavaScript** —\nso it works in the SSG build before (or without) hydration. A hand-rolled\naccordion would need state, an effect, and `aria-expanded` wiring to reach\nthe same place.",
+      "props": [
+        {
+          "name": "items",
+          "ty": "Vec<QandA>",
+          "required": true,
+          "default": null,
+          "docs": ""
+        }
+      ],
+      "example": {
+        "file": "apps/web/src/main.rs",
+        "line": 349,
+        "code": "Faq {\n    items: vec![\n        QandA::new(\n            \"Is everything event-sourced?\",\n            \"No. Rate-limit counters, session caches, blob bytes and search \\\n             indexes are not. AllSource has no unique index and no \\\n             cross-entity transaction, so uniqueness is enforced elsewhere.\",\n        ),\n        QandA::new(\n            \"What happens when a read model changes shape?\",\n            \"Rename the worker's durable consumer id and it replays from \\\n             zero. Run old and new in parallel, cut reads over, delete the old state.\",\n        ),\n        QandA::new(\n            \"Can an old event stop deserializing?\",\n            \"Not if evolution stays additive. Every post-v1 field carries a \\\n             serde default, and a golden-JSON corpus test proves it.\",\n        ),\n    ],\n}"
+      },
+      "guarantees": []
+    },
+    {
+      "name": "Heading",
+      "module": "typography",
+      "in_isa": true,
+      "intent": "Say",
+      "emits": "`h1`–`h4`, `p`",
+      "docs": "A heading at an explicit semantic level.\n\n`level` drives the tag, `size` drives the appearance. Defaulting `level` to\n2 is deliberate: a page has exactly one `<h1>`, and it is almost always the\nhero, so every other heading opting into 2 is the safer default.",
+      "props": [
+        {
+          "name": "level",
+          "ty": "u8",
+          "required": false,
+          "default": "2",
+          "docs": ""
+        },
+        {
+          "name": "size",
+          "ty": "HeadingSize",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        },
+        {
+          "name": "class",
+          "ty": "String",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        },
+        {
+          "name": "children",
+          "ty": "Element",
+          "required": false,
+          "default": null,
+          "docs": ""
+        }
+      ],
+      "example": {
+        "file": "apps/web/src/kit_catalogue.rs",
+        "line": 23,
+        "code": "Heading { \"Figures that arrive\" }"
+      },
+      "guarantees": []
+    },
+    {
+      "name": "Text",
+      "module": "typography",
+      "in_isa": true,
+      "intent": "Say",
+      "emits": "`h1`–`h4`, `p`",
+      "docs": "A paragraph of body copy.",
+      "props": [
+        {
+          "name": "tone",
+          "ty": "Tone",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        },
+        {
+          "name": "class",
+          "ty": "String",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        },
+        {
+          "name": "children",
+          "ty": "Element",
+          "required": false,
+          "default": null,
+          "docs": ""
+        }
+      ],
+      "example": {
+        "file": "apps/web/src/kit_catalogue.rs",
+        "line": 24,
+        "code": "Text { class: \"mt-2\", tone: Tone::Muted,\n    \"Counts and bars settle as they scroll in. The number is text from the first paint; with reduced motion nothing moves.\"\n}"
+      },
+      "guarantees": []
+    },
+    {
+      "name": "Eyebrow",
+      "module": "typography",
+      "in_isa": true,
+      "intent": "Say",
+      "emits": "`h1`–`h4`, `p`",
+      "docs": "Small uppercase label above a heading.\n\nRendered as a `<p>`, not a heading: it is a visual lead-in, and promoting it\nto `<h3>` would put a meaningless entry in the document outline.",
+      "props": [
+        {
+          "name": "class",
+          "ty": "String",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        },
+        {
+          "name": "children",
+          "ty": "Element",
+          "required": false,
+          "default": null,
+          "docs": ""
+        }
+      ],
+      "example": {
+        "file": "apps/web/src/kit_catalogue.rs",
+        "line": 22,
+        "code": "Eyebrow { \"Default theme\" }"
+      },
+      "guarantees": []
+    },
+    {
+      "name": "PageHeader",
+      "module": "feedback",
+      "in_isa": true,
+      "intent": "Title a page, with its actions",
+      "emits": "`header` with `h1`, subtitle and an action slot",
+      "docs": "",
+      "props": [
+        {
+          "name": "title",
+          "ty": "String",
+          "required": true,
+          "default": null,
+          "docs": ""
+        },
+        {
+          "name": "subtitle",
+          "ty": "Option<String>",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        },
+        {
+          "name": "actions",
+          "ty": "Option<Element>",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        }
+      ],
+      "example": {
+        "file": "apps/app/src/views.rs",
+        "line": 123,
+        "code": "PageHeader {\n    title: \"Dashboard\",\n    subtitle: \"Everything here is folded from AllSource events. Nothing is fixture data.\",\n}"
+      },
+      "guarantees": []
+    },
+    {
+      "name": "FieldShell",
+      "module": "form",
+      "in_isa": true,
+      "intent": "Label a custom control",
+      "emits": "`label` + help and error lines the caller binds by id",
+      "docs": "Labels a custom control whose ID and description attributes the caller binds.",
+      "props": [
+        {
+          "name": "id",
+          "ty": "String",
+          "required": true,
+          "default": null,
+          "docs": ""
+        },
+        {
+          "name": "label",
+          "ty": "String",
+          "required": true,
+          "default": null,
+          "docs": ""
+        },
+        {
+          "name": "help",
+          "ty": "Option<String>",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        },
+        {
+          "name": "error",
+          "ty": "Option<String>",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        },
+        {
+          "name": "children",
+          "ty": "Element",
+          "required": false,
+          "default": null,
+          "docs": ""
+        }
+      ],
+      "example": {
+        "file": "crates/rv2-ui/tests/field_contracts.rs",
+        "line": 56,
+        "code": "FieldShell { id: \"custom\", label: \"Custom amount\", help: \"Blank means unknown\",\ninput { id: \"custom\", \"aria-describedby\": \"custom-help\" }\n}"
+      },
+      "guarantees": []
+    },
+    {
+      "name": "StepMarker",
+      "module": "primitives",
+      "in_isa": true,
+      "intent": "Number a step",
+      "emits": "`span`, zero-padded",
+      "docs": "The `01` / `02` / `03` marker used by feature cards and step lists.\n\nZero-padded to two digits so the markers stay optically aligned past nine.",
+      "props": [
+        {
+          "name": "n",
+          "ty": "u8",
+          "required": true,
+          "default": null,
+          "docs": ""
+        },
+        {
+          "name": "class",
+          "ty": "String",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        }
+      ],
+      "example": null,
+      "guarantees": []
+    },
+    {
+      "name": "PageEntrance",
+      "module": "product_shell",
+      "in_isa": true,
+      "intent": "Enter a page",
+      "emits": "`div` with a finite CSS entrance, none under reduced motion",
+      "docs": "Opt-in finite page entrance. Reduced-motion users receive no animation.",
+      "props": [
+        {
+          "name": "class",
+          "ty": "String",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        },
+        {
+          "name": "children",
+          "ty": "Element",
+          "required": false,
+          "default": null,
+          "docs": ""
+        }
+      ],
+      "example": {
+        "file": "apps/web/src/main.rs",
+        "line": 190,
+        "code": "PageEntrance { {children} }"
+      },
+      "guarantees": []
+    },
+    {
+      "name": "ConsentFooter",
+      "module": "consent_footer",
+      "in_isa": true,
+      "intent": "Ask for consent",
+      "emits": "the shared consent stylesheet and script; a product adapter mounts it ([`../design-system/consent-footer.md`](../design-system/consent-footer.md))",
+      "docs": "Loads the shared browser renderer for SSG and hydrated product adapters.\nMount after `rv2-consent-ready`, or immediately when `window.Rv2ConsentFooter` exists.",
+      "props": [],
+      "example": {
+        "file": "crates/rv2-ui/tests/consent_footer.rs",
+        "line": 28,
+        "code": "ConsentFooter {}"
+      },
+      "guarantees": []
+    },
+    {
+      "name": "Badge",
+      "module": "primitives",
+      "in_isa": true,
+      "intent": "Signal",
+      "emits": "`span`/`div`",
+      "docs": "Small pill label.",
+      "props": [
+        {
+          "name": "class",
+          "ty": "String",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        },
+        {
+          "name": "fill",
+          "ty": "BadgeFill",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        },
+        {
+          "name": "colour",
+          "ty": "Option<String>",
+          "required": false,
+          "default": "Default",
+          "docs": "A CSS colour this badge takes for its text and border, instead of a fill.\n\nExists so a set of badges can encode a category rather than merely\nlabel it. A reader scanning a long list sees the colour before they\nread the word, which is the whole reason a category has a colour."
+        },
+        {
+          "name": "children",
+          "ty": "Element",
+          "required": false,
+          "default": null,
+          "docs": ""
+        }
+      ],
+      "example": {
+        "file": "apps/web/src/kit_records.rs",
+        "line": 134,
+        "code": "Badge { fill: BadgeFill::Tint, \"12\" }"
+      },
+      "guarantees": []
+    },
+    {
+      "name": "Status",
+      "module": "primitives",
+      "in_isa": true,
+      "intent": "Signal",
+      "emits": "`span`/`div`",
+      "docs": "How healthy something is, as a dot plus its label.\n\nThe dot is what makes a column of these scannable; the label is what makes\nit readable when the dot is invisible to you. Both, always — a colour on its\nown is not a status anyone can act on.",
+      "props": [
+        {
+          "name": "label",
+          "ty": "String",
+          "required": true,
+          "default": null,
+          "docs": ""
+        },
+        {
+          "name": "tone",
+          "ty": "StatusTone",
+          "required": true,
+          "default": null,
+          "docs": ""
+        },
+        {
+          "name": "detail",
+          "ty": "Option<String>",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        }
+      ],
+      "example": null,
+      "guarantees": []
+    },
+    {
+      "name": "Swatch",
+      "module": "primitives",
+      "in_isa": true,
+      "intent": "Signal",
+      "emits": "`span`/`div`",
+      "docs": "A small filled circle carrying a category's colour.\n\nSits beside a filter option so the rail and the results agree visually: the\nswatch next to \"FTSE 250\" is the same green as the badge on every FTSE 250\ncompany.",
+      "props": [
+        {
+          "name": "colour",
+          "ty": "String",
+          "required": true,
+          "default": null,
+          "docs": ""
+        },
+        {
+          "name": "class",
+          "ty": "String",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        }
+      ],
+      "example": null,
+      "guarantees": []
+    },
+    {
+      "name": "Bar",
+      "module": "primitives",
+      "in_isa": true,
+      "intent": "Signal",
+      "emits": "`span`/`div`",
+      "docs": "One labelled row of a proportional bar chart.\n\nThe number is always rendered as text and the bar sits behind it. That\norder is deliberate: the bar is the thing a reader scans and the number is\nthe thing they act on, so the number can never be the part that got\nestimated from a pixel width. A reader with the bar hidden — a screen\nreader, a high-contrast mode, a printout — loses nothing.\n\n`of` is the largest count in the set rather than the total, because the\nquestion these answer is \"which of these is biggest\" far more often than\n\"what share of the whole is this\". A bar scaled to a total where one bucket\nholds 95% is six invisible slivers and one full bar.",
+      "props": [
+        {
+          "name": "label",
+          "ty": "String",
+          "required": true,
+          "default": null,
+          "docs": ""
+        },
+        {
+          "name": "count",
+          "ty": "usize",
+          "required": true,
+          "default": null,
+          "docs": ""
+        },
+        {
+          "name": "of",
+          "ty": "usize",
+          "required": true,
+          "default": null,
+          "docs": "The largest count in the set, which sets the full width."
+        },
+        {
+          "name": "colour",
+          "ty": "Option<String>",
+          "required": false,
+          "default": "Default",
+          "docs": "A CSS colour for the fill, where the category already has one the reader\nknows."
+        },
+        {
+          "name": "emphasis",
+          "ty": "bool",
+          "required": false,
+          "default": "false",
+          "docs": "Whether this row is one the reader is hunting for."
+        },
+        {
+          "name": "arrive",
+          "ty": "crate::Arrive",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        },
+        {
+          "name": "children",
+          "ty": "Element",
+          "required": false,
+          "default": null,
+          "docs": ""
+        }
+      ],
+      "example": {
+        "file": "apps/web/src/kit_catalogue.rs",
+        "line": 52,
+        "code": "Bar { label: \"Remote\", count: 92, of: 120, arrive: Arrive::Grow }"
+      },
+      "guarantees": [
+        {
+          "test": "growing_marks_opt_in_and_stagger_their_parts",
+          "file": "crates/rv2-ui/tests/catalogue.rs",
+          "docs": ""
+        }
+      ]
+    },
+    {
+      "name": "EmptyState",
+      "module": "feedback",
+      "in_isa": true,
+      "intent": "Report state",
+      "emits": "—",
+      "docs": "Shown when a collection is legitimately empty — as distinct from loading\n(use [`Skeleton`]) or failed (use [`ErrorBanner`]). Conflating the three is\nthe most common way a list UI lies to the user.",
+      "props": [
+        {
+          "name": "title",
+          "ty": "String",
+          "required": true,
+          "default": null,
+          "docs": ""
+        },
+        {
+          "name": "description",
+          "ty": "Option<String>",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        },
+        {
+          "name": "action",
+          "ty": "Option<Element>",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        }
+      ],
+      "example": {
+        "file": "apps/app/src/views.rs",
+        "line": 215,
+        "code": "EmptyState {\n    title: \"No posts yet\",\n    description: \"Publish one above to move an event through AllSource.\",\n}"
+      },
+      "guarantees": []
+    },
+    {
+      "name": "Skeleton",
+      "module": "feedback",
+      "in_isa": true,
+      "intent": "Report state",
+      "emits": "—",
+      "docs": "",
+      "props": [
+        {
+          "name": "lines",
+          "ty": "u32",
+          "required": false,
+          "default": "3",
+          "docs": ""
+        }
+      ],
+      "example": {
+        "file": "apps/app/src/views.rs",
+        "line": 206,
+        "code": "Skeleton { lines: 4 }"
+      },
+      "guarantees": []
+    },
+    {
+      "name": "ErrorBanner",
+      "module": "feedback",
+      "in_isa": true,
+      "intent": "Report state",
+      "emits": "—",
+      "docs": "",
+      "props": [
+        {
+          "name": "message",
+          "ty": "String",
+          "required": true,
+          "default": null,
+          "docs": ""
+        },
+        {
+          "name": "onretry",
+          "ty": "Option<EventHandler<MouseEvent>>",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        }
+      ],
+      "example": {
+        "file": "apps/app/src/views.rs",
+        "line": 87,
+        "code": "ErrorBanner { message: \"Sign-out failed, so you are still signed in: {message}\" }"
+      },
+      "guarantees": []
+    },
+    {
+      "name": "ProductHeader",
+      "module": "product_shell",
+      "in_isa": true,
+      "intent": "Navigate",
+      "emits": "`header`/`nav`",
+      "docs": "Stable product header with route state and a native mobile disclosure.\n\nNavigation uses plain URLs to keep this crate router-neutral. Browser apps\nmay use these links as deliberate full navigations or keep router-specific\nnavigation outside this component.",
+      "props": [
+        {
+          "name": "brand",
+          "ty": "String",
+          "required": true,
+          "default": null,
+          "docs": ""
+        },
+        {
+          "name": "brand_href",
+          "ty": "String",
+          "required": false,
+          "default": "\"/\".to_string()",
+          "docs": ""
+        },
+        {
+          "name": "brand_subtitle",
+          "ty": "Option<String>",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        },
+        {
+          "name": "brand_mark",
+          "ty": "Option<Element>",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        },
+        {
+          "name": "items",
+          "ty": "Vec<NavLink>",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        },
+        {
+          "name": "current",
+          "ty": "Option<String>",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        },
+        {
+          "name": "action",
+          "ty": "Option<NavLink>",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        },
+        {
+          "name": "tail",
+          "ty": "Option<Element>",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        },
+        {
+          "name": "menu_label",
+          "ty": "String",
+          "required": false,
+          "default": "\"Menu\".to_string()",
+          "docs": ""
+        },
+        {
+          "name": "class",
+          "ty": "String",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        }
+      ],
+      "example": {
+        "file": "apps/app/src/views.rs",
+        "line": 73,
+        "code": "ProductHeader {\n    brand: PUBLIC_PRODUCT_NAME,\n    brand_href: PUBLIC_SITE_URL,\n    brand_subtitle: \"Application\",\n    items: vec![\n        NavLink::route(\"dashboard\", \"Dashboard\", \"/\"),\n        NavLink::route(\"posts\", \"Posts\", \"/posts\"),\n    ],\n    current,\n    tail,\n}"
+      },
+      "guarantees": [
+        {
+          "test": "only_the_route_whose_key_is_current_is_marked_as_the_page",
+          "file": "crates/rv2-ui/tests/instructions.rs",
+          "docs": ""
+        },
+        {
+          "test": "the_header_tail_is_reachable_from_the_mobile_menu",
+          "file": "crates/rv2-ui/tests/instructions.rs",
+          "docs": "The desktop tail is `display: none` on narrow screens, so a sign-out placed\nthere would be unreachable on a phone unless the mobile menu carries it too."
+        }
+      ]
+    },
+    {
+      "name": "NavigationRail",
+      "module": "product_shell",
+      "in_isa": true,
+      "intent": "Navigate",
+      "emits": "`header`/`nav`",
+      "docs": "Compact route, policy, or article index.",
+      "props": [
+        {
+          "name": "label",
+          "ty": "String",
+          "required": true,
+          "default": null,
+          "docs": ""
+        },
+        {
+          "name": "items",
+          "ty": "Vec<NavLink>",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        },
+        {
+          "name": "current",
+          "ty": "Option<String>",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        },
+        {
+          "name": "class",
+          "ty": "String",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        }
+      ],
+      "example": {
+        "file": "apps/web/src/main.rs",
+        "line": 832,
+        "code": "NavigationRail {\n    label: \"About sections\",\n    items: vec![\n        NavLink::new(\"01 Foundation\", \"#foundation\"),\n        NavLink::new(\"02 Browser boundary\", \"#boundary\"),\n        NavLink::new(\"03 Release gate\", \"#release\"),\n    ],\n}"
+      },
+      "guarantees": []
+    },
+    {
+      "name": "ProcessRail",
+      "module": "product_shell",
+      "in_isa": true,
+      "intent": "Navigate",
+      "emits": "`header`/`nav`",
+      "docs": "Ordered process with optional current-step semantics.\n\n`active_step` is one-based. Omit it for a static process explanation.",
+      "props": [
+        {
+          "name": "label",
+          "ty": "String",
+          "required": true,
+          "default": null,
+          "docs": ""
+        },
+        {
+          "name": "steps",
+          "ty": "Vec<ProcessStep>",
+          "required": true,
+          "default": null,
+          "docs": ""
+        },
+        {
+          "name": "active_step",
+          "ty": "Option<usize>",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        },
+        {
+          "name": "layout",
+          "ty": "RailLayout",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        },
+        {
+          "name": "class",
+          "ty": "String",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        }
+      ],
+      "example": {
+        "file": "apps/web/src/kit_records.rs",
+        "line": 166,
+        "code": "ProcessRail {\n    label: \"Handoff timeline\",\n    layout: RailLayout::Column,\n    active_step: Some(2),\n    steps: vec![\n        ProcessStep::new(\"Brief\", \"Signed 12 Nov\"),\n        ProcessStep::new(\"Assets\", \"Two open\"),\n        ProcessStep::new(\"Handoff\", \"Card sent to client\"),\n    ],\n}"
+      },
+      "guarantees": [
+        {
+          "test": "a_column_rail_keeps_the_current_step_semantics",
+          "file": "crates/rv2-ui/tests/records.rs",
+          "docs": ""
+        }
+      ]
+    },
+    {
+      "name": "Tabs",
+      "module": "tabs",
+      "in_isa": true,
+      "intent": "Navigate",
+      "emits": "`header`/`nav`",
+      "docs": "A tab list whose current value belongs to the caller.\n\n`label` names the group for a screen reader. Without it the list announces\nas an unlabelled set of tabs, which says what the control is but not what it\nswitches.\n\n`controls` is the `id` of the element the tabs switch, and it is required\nrather than optional: a tab list referencing no panel announces as a set of\nbuttons that change nothing. The caller marks that element `role=\"tabpanel\"`\nand points its `aria-labelledby` at `tab-{value}`.",
+      "props": [
+        {
+          "name": "tabs",
+          "ty": "Vec<Tab>",
+          "required": true,
+          "default": null,
+          "docs": ""
+        },
+        {
+          "name": "value",
+          "ty": "String",
+          "required": true,
+          "default": null,
+          "docs": ""
+        },
+        {
+          "name": "label",
+          "ty": "String",
+          "required": true,
+          "default": null,
+          "docs": ""
+        },
+        {
+          "name": "controls",
+          "ty": "String",
+          "required": true,
+          "default": null,
+          "docs": ""
+        },
+        {
+          "name": "onselect",
+          "ty": "EventHandler<String>",
+          "required": true,
+          "default": null,
+          "docs": ""
+        },
+        {
+          "name": "class",
+          "ty": "String",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        }
+      ],
+      "example": null,
+      "guarantees": []
+    },
+    {
+      "name": "Footer",
+      "module": "site",
+      "in_isa": true,
+      "intent": "Navigate",
+      "emits": "`header`/`nav`",
+      "docs": "Site footer.",
+      "props": [
+        {
+          "name": "columns",
+          "ty": "Vec<FooterColumn>",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        },
+        {
+          "name": "note",
+          "ty": "Option<Element>",
+          "required": false,
+          "default": "Default",
+          "docs": "Attribution or copyright line."
+        }
+      ],
+      "example": {
+        "file": "apps/web/src/main.rs",
+        "line": 191,
+        "code": "Footer {\n    columns: vec![\n        FooterColumn::new(\n            \"Product\",\n            vec![\n                NavLink::new(\"How it works\", \"/#how-it-works\"),\n                NavLink::new(\"Pricing\", \"/#pricing\"),\n                NavLink::new(\"FAQ\", \"/#faq\"),\n            ],\n        ),\n        FooterColumn::new(\n            \"Legal\",\n            vec![\n                NavLink::new(\"Privacy\", \"/privacy\"),\n                NavLink::new(\"Terms\", \"/terms\"),\n            ],\n        ),\n        FooterColumn::new(\n            \"Elsewhere\",\n            vec![NavLink::new(\"AllSource\", \"https://github.com/all-source-os/all-source\").external()],\n        ),\n    ],\n    note: rsx! {\n        p { \"Built on AllSource. One datastore, one language, no TypeScript in the data path.\" }\n    },\n}"
+      },
+      "guarantees": []
+    },
+    {
+      "name": "Hero",
+      "module": "site",
+      "in_isa": true,
+      "intent": "Market",
+      "emits": "composites (UI6)",
+      "docs": "Above-the-fold headline block.\n\nThe heading is a literal `<h1>` — a marketing page has exactly one, and it\nbelongs here.",
+      "props": [
+        {
+          "name": "headline",
+          "ty": "String",
+          "required": true,
+          "default": null,
+          "docs": ""
+        },
+        {
+          "name": "subheadline",
+          "ty": "Option<String>",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        },
+        {
+          "name": "eyebrow",
+          "ty": "Option<String>",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        },
+        {
+          "name": "actions",
+          "ty": "Option<Element>",
+          "required": false,
+          "default": "Default",
+          "docs": "Call-to-action row."
+        },
+        {
+          "name": "media",
+          "ty": "Option<Element>",
+          "required": false,
+          "default": "Default",
+          "docs": "Illustration or screenshot, rendered beside the copy on wide screens."
+        }
+      ],
+      "example": {
+        "file": "apps/web/src/main.rs",
+        "line": 232,
+        "code": "Hero {\n    eyebrow: \"Event-sourced by default\",\n    headline: \"See every fact before it reaches your read model\",\n    subheadline: \"One datastore, one language. Every write is an event; every \\\n                  read is a fold you can replay.\",\n    actions: rsx! {\n        LinkButton { href: \"/#pricing\", size: Size::Large, \"Get started\" }\n        ArrowLink { href: \"/#how-it-works\", \"See how it works\" }\n    },\n}"
+      },
+      "guarantees": []
+    },
+    {
+      "name": "FeatureCard",
+      "module": "site",
+      "in_isa": true,
+      "intent": "Market",
+      "emits": "composites (UI6)",
+      "docs": "Numbered card in a feature grid.",
+      "props": [
+        {
+          "name": "title",
+          "ty": "String",
+          "required": true,
+          "default": null,
+          "docs": ""
+        },
+        {
+          "name": "body",
+          "ty": "String",
+          "required": true,
+          "default": null,
+          "docs": ""
+        },
+        {
+          "name": "step",
+          "ty": "Option<u8>",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        },
+        {
+          "name": "action",
+          "ty": "Option<Element>",
+          "required": false,
+          "default": "Default",
+          "docs": "Trailing link, e.g. an `ArrowLink`."
+        }
+      ],
+      "example": {
+        "file": "apps/web/src/main.rs",
+        "line": 268,
+        "code": "FeatureCard {\n    step: 1,\n    title: \"Complete history\",\n    body: \"Nothing is overwritten. Every state the system has ever been in is still queryable.\",\n    action: rsx! {\n        ArrowLink { href: \"/#faq\", \"Read more\" }\n    },\n}"
+      },
+      "guarantees": []
+    },
+    {
+      "name": "StepList",
+      "module": "site",
+      "in_isa": true,
+      "intent": "Market",
+      "emits": "composites (UI6)",
+      "docs": "Ordered \"how it works\" list.\n\nA real `<ol>`: the order carries meaning, and the numbers are generated by\n[`StepMarker`] from the index so they can never drift out of sequence when\na step is inserted.",
+      "props": [
+        {
+          "name": "steps",
+          "ty": "Vec<Step>",
+          "required": true,
+          "default": null,
+          "docs": ""
+        }
+      ],
+      "example": {
+        "file": "apps/web/src/main.rs",
+        "line": 252,
+        "code": "StepList {\n    steps: vec![\n        Step::new(\"Append\", \"A command validates, then appends one immutable event to AllSource.\"),\n        Step::new(\"Fold\", \"A projection worker folds the stream into a read model, checkpointed as it goes.\"),\n        Step::new(\"Read\", \"The API serves the folded state. Rebuild it any time by replaying from zero.\"),\n    ],\n}"
+      },
+      "guarantees": []
+    },
+    {
+      "name": "FactList",
+      "module": "site",
+      "in_isa": true,
+      "intent": "Market",
+      "emits": "composites (UI6)",
+      "docs": "Itemised figures.\n\nA `<dl>` rather than a `<table>`: these are name/value pairs, not tabular\ndata with meaningful rows *and* columns. Values are `tabular-nums` so\ndigits align down the column.",
+      "props": [
+        {
+          "name": "facts",
+          "ty": "Vec<Fact>",
+          "required": true,
+          "default": null,
+          "docs": ""
+        },
+        {
+          "name": "class",
+          "ty": "String",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        }
+      ],
+      "example": {
+        "file": "apps/web/src/kit_catalogue.rs",
+        "line": 109,
+        "code": "FactList {\n    facts: vec![\n        Fact::new(\"3 slots × £30\", \"£90\"),\n        Fact::total(\"Computed\", \"£90\"),\n        Fact::chosen(\"Your quote\", \"£85\"),\n    ],\n}"
+      },
+      "guarantees": [
+        {
+          "test": "a_chosen_fact_is_set_apart_from_the_computed_total",
+          "file": "crates/rv2-ui/tests/catalogue.rs",
+          "docs": ""
+        }
+      ]
+    },
+    {
+      "name": "PricingCard",
+      "module": "site",
+      "in_isa": true,
+      "intent": "Market",
+      "emits": "composites (UI6)",
+      "docs": "One-off or subscription price block.",
+      "props": [
+        {
+          "name": "price",
+          "ty": "String",
+          "required": true,
+          "default": null,
+          "docs": ""
+        },
+        {
+          "name": "cadence",
+          "ty": "Option<String>",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        },
+        {
+          "name": "title",
+          "ty": "Option<String>",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        },
+        {
+          "name": "features",
+          "ty": "Vec<String>",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        },
+        {
+          "name": "action",
+          "ty": "Option<Element>",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        },
+        {
+          "name": "note",
+          "ty": "Option<String>",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        }
+      ],
+      "example": {
+        "file": "apps/web/src/main.rs",
+        "line": 320,
+        "code": "PricingCard {\n    title: \"Community\",\n    price: \"£0\",\n    cadence: \"forever\",\n    features: vec![\n        \"Full event store\".to_string(),\n        \"Projections and replay\".to_string(),\n        \"Vector and keyword search\".to_string(),\n        \"Apache 2.0\".to_string(),\n    ],\n    action: rsx! {\n        LinkButton {\n            href: \"https://github.com/all-source-os/all-source\",\n            external: true,\n            size: Size::Large,\n            class: \"w-full\",\n            \"Read the source\",\n        }\n    },\n    note: \"Replication and multi-tenancy are BSL 1.1, converting to Apache 2.0 in 2029.\",\n}"
+      },
+      "guarantees": []
+    },
+    {
+      "name": "PressButton",
+      "module": "tactile",
+      "in_isa": true,
+      "intent": "Do or go, with weight",
+      "emits": "`button`, `a` on a ledge",
+      "docs": "A button that rests on a ledge, lifts on hover and presses down on click.\n\nThe icon tilts on hover and on keyboard focus alike, so the affordance a\nmouse user sees is not withheld from a keyboard user.",
+      "props": [
+        {
+          "name": "press",
+          "ty": "Press",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        },
+        {
+          "name": "icon",
+          "ty": "Option<String>",
+          "required": false,
+          "default": "Default",
+          "docs": "Image URL for a decorative leading icon."
+        },
+        {
+          "name": "disabled",
+          "ty": "bool",
+          "required": false,
+          "default": "false",
+          "docs": ""
+        },
+        {
+          "name": "type",
+          "ty": "String",
+          "required": false,
+          "default": "\"button\".to_string()",
+          "docs": ""
+        },
+        {
+          "name": "class",
+          "ty": "String",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        },
+        {
+          "name": "onclick",
+          "ty": "Option<EventHandler<MouseEvent>>",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        },
+        {
+          "name": "children",
+          "ty": "Element",
+          "required": false,
+          "default": null,
+          "docs": ""
+        }
+      ],
+      "example": {
+        "file": "apps/web/src/kit_records.rs",
+        "line": 164,
+        "code": "PressButton { press: Press::Offset, class: \"mt-4\", \"Send the card\" }"
+      },
+      "guarantees": [
+        {
+          "test": "a_press_icon_is_hidden_from_assistive_technology",
+          "file": "crates/rv2-ui/tests/tactile.rs",
+          "docs": ""
+        },
+        {
+          "test": "the_two_press_treatments_render_different_classes",
+          "file": "crates/rv2-ui/tests/tactile.rs",
+          "docs": ""
+        }
+      ]
+    },
+    {
+      "name": "PressLink",
+      "module": "tactile",
+      "in_isa": true,
+      "intent": "Do or go, with weight",
+      "emits": "`button`, `a` on a ledge",
+      "docs": "[`PressButton`]'s look on an anchor, for a call-to-action that navigates.",
+      "props": [
+        {
+          "name": "href",
+          "ty": "String",
+          "required": true,
+          "default": null,
+          "docs": ""
+        },
+        {
+          "name": "press",
+          "ty": "Press",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        },
+        {
+          "name": "icon",
+          "ty": "Option<String>",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        },
+        {
+          "name": "external",
+          "ty": "bool",
+          "required": false,
+          "default": "false",
+          "docs": "Opens in a new tab with `rel=\"noopener noreferrer\"`."
+        },
+        {
+          "name": "class",
+          "ty": "String",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        },
+        {
+          "name": "children",
+          "ty": "Element",
+          "required": false,
+          "default": null,
+          "docs": ""
+        }
+      ],
+      "example": {
+        "file": "apps/web/src/main.rs",
+        "line": 437,
+        "code": "PressLink { href: \"#cards\", icon: STAR_ICON.to_string(), \"Find an activity\" }"
+      },
+      "guarantees": [
+        {
+          "test": "an_external_press_link_cannot_reach_back_through_window_opener",
+          "file": "crates/rv2-ui/tests/tactile.rs",
+          "docs": ""
+        }
+      ]
+    },
+    {
+      "name": "SaveToggle",
+      "module": "tactile",
+      "in_isa": true,
+      "intent": "Keep for later",
+      "emits": "`button[aria-pressed]`",
+      "docs": "A save/unsave toggle whose gem pulses each time it is pressed.\n\nThe pulse restarts on every press, including two in quick succession: the\nanimation alternates between two identical keyframe names, because a CSS\nanimation that keeps the same name does not replay when its class is\nre-applied.\n\nState is the caller's: `saved` in, `ontoggle` with the next value out.",
+      "props": [
+        {
+          "name": "saved",
+          "ty": "bool",
+          "required": true,
+          "default": null,
+          "docs": ""
+        },
+        {
+          "name": "ontoggle",
+          "ty": "EventHandler<bool>",
+          "required": true,
+          "default": null,
+          "docs": ""
+        },
+        {
+          "name": "icon",
+          "ty": "Option<String>",
+          "required": false,
+          "default": "Default",
+          "docs": "Image URL for the gem; a heart glyph when absent."
+        },
+        {
+          "name": "class",
+          "ty": "String",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        },
+        {
+          "name": "children",
+          "ty": "Element",
+          "required": false,
+          "default": null,
+          "docs": ""
+        }
+      ],
+      "example": {
+        "file": "apps/web/src/main.rs",
+        "line": 476,
+        "code": "SaveToggle {\n    saved: saved.read().contains(&title),\n    icon: HEART_ICON.to_string(),\n    ontoggle: move |next: bool| {\n        let mut list = saved.write();\n        if next { list.push(title) } else { list.retain(|t| *t != title) }\n    },\n    if saved.read().contains(&title) { \"Saved\" } else { \"Save\" }\n}"
+      },
+      "guarantees": [
+        {
+          "test": "a_save_toggle_reports_its_state_as_aria_pressed_and_does_not_pulse_on_first_render",
+          "file": "crates/rv2-ui/tests/tactile.rs",
+          "docs": ""
+        }
+      ]
+    },
+    {
+      "name": "ChipGroup",
+      "module": "tactile",
+      "in_isa": true,
+      "intent": "Narrow a list",
+      "emits": "`div[role=group]` + `button[aria-pressed]`",
+      "docs": "A labelled row of [`Chip`]s.\n\n`role=\"group\"` with a name, so a screen reader announces \"Filter\nactivities, group\" before the first chip rather than a run of unexplained\ntoggles.",
+      "props": [
+        {
+          "name": "label",
+          "ty": "String",
+          "required": true,
+          "default": null,
+          "docs": ""
+        },
+        {
+          "name": "class",
+          "ty": "String",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        },
+        {
+          "name": "children",
+          "ty": "Element",
+          "required": false,
+          "default": null,
+          "docs": ""
+        }
+      ],
+      "example": {
+        "file": "apps/web/src/main.rs",
+        "line": 449,
+        "code": "ChipGroup { label: \"Filter activities\", class: \"mt-6\",\n    for name in FILTERS {\n        Chip {\n            active: filter() == name,\n            icon: (name == \"All\").then(|| STAR_ICON.to_string()),\n            onclick: move |_| filter.set(name),\n            \"{name}\"\n        }\n    }\n}"
+      },
+      "guarantees": [
+        {
+          "test": "chips_sit_in_a_named_group_and_expose_selection_as_aria_pressed",
+          "file": "crates/rv2-ui/tests/tactile.rs",
+          "docs": ""
+        }
+      ]
+    },
+    {
+      "name": "Chip",
+      "module": "tactile",
+      "in_isa": true,
+      "intent": "Narrow a list",
+      "emits": "`div[role=group]` + `button[aria-pressed]`",
+      "docs": "One selectable filter chip. `active` is exposed as `aria-pressed`, not as\ncolour alone.",
+      "props": [
+        {
+          "name": "active",
+          "ty": "bool",
+          "required": false,
+          "default": "false",
+          "docs": ""
+        },
+        {
+          "name": "icon",
+          "ty": "Option<String>",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        },
+        {
+          "name": "onclick",
+          "ty": "Option<EventHandler<MouseEvent>>",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        },
+        {
+          "name": "children",
+          "ty": "Element",
+          "required": false,
+          "default": null,
+          "docs": ""
+        }
+      ],
+      "example": {
+        "file": "apps/web/src/main.rs",
+        "line": 451,
+        "code": "Chip {\n    active: filter() == name,\n    icon: (name == \"All\").then(|| STAR_ICON.to_string()),\n    onclick: move |_| filter.set(name),\n    \"{name}\"\n}"
+      },
+      "guarantees": [
+        {
+          "test": "chips_sit_in_a_named_group_and_expose_selection_as_aria_pressed",
+          "file": "crates/rv2-ui/tests/tactile.rs",
+          "docs": ""
+        }
+      ]
+    },
+    {
+      "name": "MediaCard",
+      "module": "tactile",
+      "in_isa": true,
+      "intent": "Browse",
+      "emits": "`article`",
+      "docs": "A browsing card: a picture that eases forward on hover, a category line, a\nlinked title, a body and actions pinned to the bottom.\n\nThe picture and the title are two links to one place. The picture link is\nnamed by `title` and taken out of the tab order, so a keyboard user tabs\nonce per card rather than twice.",
+      "props": [
+        {
+          "name": "href",
+          "ty": "String",
+          "required": true,
+          "default": null,
+          "docs": ""
+        },
+        {
+          "name": "image",
+          "ty": "String",
+          "required": true,
+          "default": null,
+          "docs": ""
+        },
+        {
+          "name": "title",
+          "ty": "String",
+          "required": true,
+          "default": null,
+          "docs": ""
+        },
+        {
+          "name": "label",
+          "ty": "Option<String>",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        },
+        {
+          "name": "actions",
+          "ty": "Option<Element>",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        },
+        {
+          "name": "class",
+          "ty": "String",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        },
+        {
+          "name": "children",
+          "ty": "Element",
+          "required": false,
+          "default": null,
+          "docs": ""
+        }
+      ],
+      "example": {
+        "file": "apps/web/src/main.rs",
+        "line": 469,
+        "code": "MediaCard {\n    key: \"{title}\",\n    href: \"#cards\",\n    image: SCENES[i].to_string(),\n    title,\n    label: format!(\"{kind} · Activity idea\"),\n    actions: rsx! {\n        SaveToggle {\n            saved: saved.read().contains(&title),\n            icon: HEART_ICON.to_string(),\n            ontoggle: move |next: bool| {\n                let mut list = saved.write();\n                if next { list.push(title) } else { list.retain(|t| *t != title) }\n            },\n            if saved.read().contains(&title) { \"Saved\" } else { \"Save\" }\n        }\n    },\n    Text { tone: Tone::Muted, \"{body}\" }\n}"
+      },
+      "guarantees": [
+        {
+          "test": "a_media_card_puts_one_link_in_the_tab_order",
+          "file": "crates/rv2-ui/tests/tactile.rs",
+          "docs": "Two links per card would double every keyboard user's tab stops."
+        }
+      ]
+    },
+    {
+      "name": "Masthead",
+      "module": "tactile",
+      "in_isa": true,
+      "intent": "Identify an editorial site",
+      "emits": "`header`",
+      "docs": "A newspaper masthead: a strap line, the wordmark, a subtitle, and a nav\nbetween a double rule and a single one.\n\nFor a site whose identity is editorial — a gazette, a desk, a journal —\nwhere [`crate::ProductHeader`]'s sticky app bar would read as software.",
+      "props": [
+        {
+          "name": "brand",
+          "ty": "String",
+          "required": true,
+          "default": null,
+          "docs": ""
+        },
+        {
+          "name": "brand_href",
+          "ty": "String",
+          "required": false,
+          "default": "\"/\".to_string()",
+          "docs": ""
+        },
+        {
+          "name": "mark",
+          "ty": "Option<String>",
+          "required": false,
+          "default": "Default",
+          "docs": "Image URL for a mark set beside the wordmark."
+        },
+        {
+          "name": "subtitle",
+          "ty": "Option<String>",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        },
+        {
+          "name": "strap",
+          "ty": "Option<(String, String)>",
+          "required": false,
+          "default": "Default",
+          "docs": "Left and right of the strap above the wordmark; the right one is\ndropped on narrow screens."
+        },
+        {
+          "name": "items",
+          "ty": "Vec<crate::NavLink>",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        },
+        {
+          "name": "current",
+          "ty": "Option<String>",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        },
+        {
+          "name": "class",
+          "ty": "String",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        }
+      ],
+      "example": {
+        "file": "apps/web/src/main.rs",
+        "line": 414,
+        "code": "Masthead {\n    brand: \"The Play Desk\",\n    mark: STAR_ICON.to_string(),\n    subtitle: \"Tactile controls, in the palette they were drawn in\",\n    strap: (\"rv2-ui · tactile\".to_string(), \"Theme: playful\".to_string()),\n    items: vec![\n        NavLink::route(\"press\", \"Buttons\", \"#press\"),\n        NavLink::route(\"chips\", \"Chips\", \"#chips\"),\n        NavLink::route(\"cards\", \"Cards\", \"#cards\"),\n    ],\n    current: \"press\",\n}"
+      },
+      "guarantees": [
+        {
+          "test": "a_masthead_marks_only_the_current_route",
+          "file": "crates/rv2-ui/tests/tactile.rs",
+          "docs": ""
+        }
+      ]
+    },
+    {
+      "name": "Sparkle",
+      "module": "tactile",
+      "in_isa": true,
+      "intent": "Decorate",
+      "emits": "`span[aria-hidden]`",
+      "docs": "A four-point star that unfolds once when it mounts. Decoration only; place\nit inside a `position: relative` parent.",
+      "props": [
+        {
+          "name": "class",
+          "ty": "String",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        }
+      ],
+      "example": {
+        "file": "apps/web/src/main.rs",
+        "line": 430,
+        "code": "Sparkle {}"
+      },
+      "guarantees": []
+    },
+    {
+      "name": "StatStrip",
+      "module": "readout",
+      "in_isa": true,
+      "intent": "Report a figure",
+      "emits": "`dl`, `section[aria-live]`, `div[role=meter]`, `figure`",
+      "docs": "A row of headline figures between rules, collapsing to two columns on a\nnarrow screen.\n\nA `dl`, so each figure is announced with its label rather than as a bare\nnumber.",
+      "props": [
+        {
+          "name": "stats",
+          "ty": "Vec<Stat>",
+          "required": true,
+          "default": null,
+          "docs": ""
+        },
+        {
+          "name": "density",
+          "ty": "Density",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        },
+        {
+          "name": "class",
+          "ty": "String",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        }
+      ],
+      "example": {
+        "file": "apps/web/src/main.rs",
+        "line": 503,
+        "code": "StatStrip {\n    density: Density::Hero,\n    stats: vec![\n        Stat::new(\"Sessions\", \"14\"),\n        Stat::new(\"Spent\", \"£212\").note(\"this month\"),\n        Stat::new(\"Budget left\", \"+£38\").lean(Lean::Good),\n        Stat::new(\"Fees\", \"£41\").lean(Lean::Close),\n    ],\n}"
+      },
+      "guarantees": [
+        {
+          "test": "a_stat_strip_pairs_every_figure_with_its_label",
+          "file": "crates/rv2-ui/tests/readout.rs",
+          "docs": ""
+        }
+      ]
+    },
+    {
+      "name": "ResultPanel",
+      "module": "readout",
+      "in_isa": true,
+      "intent": "Report a figure",
+      "emits": "`dl`, `section[aria-live]`, `div[role=meter]`, `figure`",
+      "docs": "A calculator's answer: a kicker row, one large figure, and the working\nbeneath it (a [`crate::FactList`], usually).\n\nThe figure is `aria-live=\"polite\"`, so a screen reader hears the new answer\nwhen an input changes it, without being interrupted mid-sentence. The\nworking is outside the live region: re-reading it on every keystroke\nburies the answer.",
+      "props": [
+        {
+          "name": "label",
+          "ty": "String",
+          "required": true,
+          "default": null,
+          "docs": ""
+        },
+        {
+          "name": "value",
+          "ty": "String",
+          "required": true,
+          "default": null,
+          "docs": ""
+        },
+        {
+          "name": "context",
+          "ty": "Option<String>",
+          "required": false,
+          "default": "Default",
+          "docs": "The right side of the kicker: the period, the basis, the date."
+        },
+        {
+          "name": "lean",
+          "ty": "Lean",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        },
+        {
+          "name": "class",
+          "ty": "String",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        },
+        {
+          "name": "children",
+          "ty": "Element",
+          "required": false,
+          "default": null,
+          "docs": ""
+        }
+      ],
+      "example": {
+        "file": "apps/web/src/main.rs",
+        "line": 526,
+        "code": "ResultPanel { label: \"True cost\", value: \"£18.40\", context: format!(\"per session, {}\", period()),\n    SplitBar {\n        label: \"Session cost\",\n        parts: vec![\n            Part::new(\"Energy\", 14.2, \"£14.20\", \"var(--color-ink)\"),\n            Part::new(\"Fees\", 4.2, \"£4.20\", \"var(--color-caution)\"),\n        ],\n    }\n}"
+      },
+      "guarantees": [
+        {
+          "test": "a_result_panel_announces_a_changed_answer_politely",
+          "file": "crates/rv2-ui/tests/readout.rs",
+          "docs": ""
+        }
+      ]
+    },
+    {
+      "name": "Meter",
+      "module": "readout",
+      "in_isa": true,
+      "intent": "Report a figure",
+      "emits": "`dl`, `section[aria-live]`, `div[role=meter]`, `figure`",
+      "docs": "How far along something is against its limit, coloured by threshold.\n\n`role=\"meter\"` with its value and range, so the number is available to a\nscreen reader that cannot see the fill.",
+      "props": [
+        {
+          "name": "label",
+          "ty": "String",
+          "required": true,
+          "default": null,
+          "docs": ""
+        },
+        {
+          "name": "value",
+          "ty": "f64",
+          "required": true,
+          "default": null,
+          "docs": ""
+        },
+        {
+          "name": "max",
+          "ty": "f64",
+          "required": true,
+          "default": null,
+          "docs": ""
+        },
+        {
+          "name": "readout",
+          "ty": "String",
+          "required": true,
+          "default": null,
+          "docs": "The text shown for the value — `\"412 of 500 runs\"`. The fill never\ncarries the number alone."
+        },
+        {
+          "name": "warn_at",
+          "ty": "Option<f64>",
+          "required": false,
+          "default": "Default",
+          "docs": "From this share of `max` the fill turns to caution."
+        },
+        {
+          "name": "critical_at",
+          "ty": "Option<f64>",
+          "required": false,
+          "default": "Default",
+          "docs": "From this share of `max` the fill turns to fault."
+        },
+        {
+          "name": "ticks",
+          "ty": "Option<u32>",
+          "required": false,
+          "default": "Default",
+          "docs": "Draws this many equal ticks across the track, for a quantity counted in\nwhole portions — doses, slots, sections."
+        }
+      ],
+      "example": {
+        "file": "apps/web/src/main.rs",
+        "line": 523,
+        "code": "Meter { label: \"Monthly budget\", value: 212.0, max: 250.0, readout: \"£212 of £250\", warn_at: 0.8, critical_at: 0.95, ticks: 10 }"
+      },
+      "guarantees": [
+        {
+          "test": "a_meter_exposes_its_value_and_turns_at_its_thresholds",
+          "file": "crates/rv2-ui/tests/readout.rs",
+          "docs": ""
+        },
+        {
+          "test": "a_meter_with_no_range_renders_empty_rather_than_full",
+          "file": "crates/rv2-ui/tests/readout.rs",
+          "docs": ""
+        },
+        {
+          "test": "a_meter_with_a_value_it_cannot_measure_renders_empty_and_neutral",
+          "file": "crates/rv2-ui/tests/readout.rs",
+          "docs": ""
+        }
+      ]
+    },
+    {
+      "name": "SplitBar",
+      "module": "readout",
+      "in_isa": true,
+      "intent": "Report a figure",
+      "emits": "`dl`, `section[aria-live]`, `div[role=meter]`, `figure`",
+      "docs": "A whole split into its parts — energy against fees, principal against\ninterest — as one bar with a legend that carries every figure.\n\n[`crate::Bar`] compares many things to the biggest of them; this shows what\none thing is made of.\n\nWith [`crate::Arrive::Grow`] the parts settle left to right, so the bar\nreads as one whole filling once.",
+      "props": [
+        {
+          "name": "label",
+          "ty": "String",
+          "required": true,
+          "default": null,
+          "docs": ""
+        },
+        {
+          "name": "parts",
+          "ty": "Vec<Part>",
+          "required": true,
+          "default": null,
+          "docs": ""
+        },
+        {
+          "name": "arrive",
+          "ty": "crate::Arrive",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        }
+      ],
+      "example": {
+        "file": "apps/web/src/kit_catalogue.rs",
+        "line": 57,
+        "code": "SplitBar {\n    label: \"Session cost\",\n    arrive: Arrive::Grow,\n    parts: vec![\n        Part::new(\"Energy\", 4.2, \"£4.20\", \"var(--color-takeable)\"),\n        Part::new(\"Fees\", 1.1, \"£1.10\", \"var(--color-caution)\"),\n        Part::new(\"VAT\", 0.27, \"£0.27\", \"var(--color-ink-muted)\"),\n    ],\n}"
+      },
+      "guarantees": [
+        {
+          "test": "growing_marks_opt_in_and_stagger_their_parts",
+          "file": "crates/rv2-ui/tests/catalogue.rs",
+          "docs": ""
+        },
+        {
+          "test": "a_split_bar_draws_nothing_for_an_infinite_part",
+          "file": "crates/rv2-ui/tests/readout.rs",
+          "docs": ""
+        },
+        {
+          "test": "a_split_bar_names_every_part_and_figure_for_a_screen_reader",
+          "file": "crates/rv2-ui/tests/readout.rs",
+          "docs": ""
+        }
+      ]
+    },
+    {
+      "name": "Callout",
+      "module": "feedback",
+      "in_isa": true,
+      "intent": "Judge",
+      "emits": "`aside`, `article`",
+      "docs": "A boxed aside with a coloured edge: a verdict strip, a \"what this does not\ncover\" note, a missing-evidence warning.\n\n`title` is the verdict in words, so the edge colour is never the only\nsignal. A `Stop` is announced as an alert.",
+      "props": [
+        {
+          "name": "verdict",
+          "ty": "Verdict",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        },
+        {
+          "name": "title",
+          "ty": "Option<String>",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        },
+        {
+          "name": "class",
+          "ty": "String",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        },
+        {
+          "name": "children",
+          "ty": "Element",
+          "required": false,
+          "default": null,
+          "docs": ""
+        }
+      ],
+      "example": {
+        "file": "apps/web/src/main.rs",
+        "line": 552,
+        "code": "Callout { verdict: Verdict::Clear, title: \"Applies\", \"The offer clears the floor by £38.\" }"
+      },
+      "guarantees": [
+        {
+          "test": "only_a_stop_callout_interrupts_as_an_alert",
+          "file": "crates/rv2-ui/tests/readout.rs",
+          "docs": ""
+        }
+      ]
+    },
+    {
+      "name": "Receipt",
+      "module": "feedback",
+      "in_isa": true,
+      "intent": "Judge",
+      "emits": "`aside`, `article`",
+      "docs": "The record of something done: a status in mono capitals, a grid of facts,\na note and what to do next.",
+      "props": [
+        {
+          "name": "title",
+          "ty": "String",
+          "required": true,
+          "default": null,
+          "docs": ""
+        },
+        {
+          "name": "status",
+          "ty": "Option<String>",
+          "required": false,
+          "default": "Default",
+          "docs": "The state in a word or two — `SENT`, `DRAFT`, `PAID`."
+        },
+        {
+          "name": "verdict",
+          "ty": "Verdict",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        },
+        {
+          "name": "facts",
+          "ty": "Vec<(String, String)>",
+          "required": false,
+          "default": "Default",
+          "docs": "`(term, value)` rows."
+        },
+        {
+          "name": "actions",
+          "ty": "Option<Element>",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        },
+        {
+          "name": "class",
+          "ty": "String",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        },
+        {
+          "name": "children",
+          "ty": "Element",
+          "required": false,
+          "default": null,
+          "docs": ""
+        }
+      ],
+      "example": {
+        "file": "apps/web/src/main.rs",
+        "line": 537,
+        "code": "Receipt {\n    title: \"Scope sent to client\",\n    status: \"SENT\",\n    verdict: Verdict::Clear,\n    facts: vec![\n        (\"Hours\".to_string(), \"12\".to_string()),\n        (\"Rate\".to_string(), \"£65\".to_string()),\n        (\"Total\".to_string(), \"£780\".to_string()),\n    ],\n    actions: rsx! {\n        Button { variant: Variant::Outline, size: Size::Small, \"Open receipt\" }\n    },\n    \"Logged with the client's reply attached.\"\n}"
+      },
+      "guarantees": [
+        {
+          "test": "a_receipt_renders_its_facts_as_a_definition_list",
+          "file": "crates/rv2-ui/tests/readout.rs",
+          "docs": ""
+        }
+      ]
+    },
+    {
+      "name": "UnitField",
+      "module": "form",
+      "in_isa": true,
+      "intent": "Enter a measure",
+      "emits": "`label` + affixed input",
+      "docs": "A labelled number with its unit fused into the box: `£ [ 1,200 ]`,\n`[ 7.4 ] kW`, `[ 3 ] hours`.\n\nThe ring is on the shell (`focus-within`), not the input, so the unit is\ninside the focused control rather than beside it. The affixes are\n`aria-hidden` because the label names the unit; give the label the unit\n(\"Charger power, kW\") for a screen reader to hear it.",
+      "props": [
+        {
+          "name": "label",
+          "ty": "String",
+          "required": true,
+          "default": null,
+          "docs": ""
+        },
+        {
+          "name": "value",
+          "ty": "String",
+          "required": true,
+          "default": null,
+          "docs": ""
+        },
+        {
+          "name": "prefix",
+          "ty": "Option<String>",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        },
+        {
+          "name": "suffix",
+          "ty": "Option<String>",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        },
+        {
+          "name": "inputmode",
+          "ty": "String",
+          "required": false,
+          "default": "\"decimal\".to_string()",
+          "docs": "The on-screen keyboard: `decimal` for money and measures, `numeric`\nfor whole counts."
+        },
+        {
+          "name": "id",
+          "ty": "Option<String>",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        },
+        {
+          "name": "name",
+          "ty": "Option<String>",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        },
+        {
+          "name": "help",
+          "ty": "Option<String>",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        },
+        {
+          "name": "error",
+          "ty": "Option<String>",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        },
+        {
+          "name": "placeholder",
+          "ty": "String",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        },
+        {
+          "name": "oninput",
+          "ty": "EventHandler<FormEvent>",
+          "required": true,
+          "default": null,
+          "docs": ""
+        }
+      ],
+      "example": {
+        "file": "apps/web/src/main.rs",
+        "line": 515,
+        "code": "UnitField { label: \"Price per kWh, pence\", value: price(), suffix: \"p/kWh\", oninput: move |e: FormEvent| price.set(e.value()) }"
+      },
+      "guarantees": [
+        {
+          "test": "a_unit_field_hides_its_affixes_and_asks_for_a_decimal_keyboard",
+          "file": "crates/rv2-ui/tests/readout.rs",
+          "docs": ""
+        }
+      ]
+    },
+    {
+      "name": "SegmentedControl",
+      "module": "form",
+      "in_isa": true,
+      "intent": "Narrow one view",
+      "emits": "`div[role=group]` + `button[aria-pressed]`",
+      "docs": "A joined row of mutually exclusive options that narrows what is shown: a\nlist/map view, monthly/yearly prices, a scope.\n\nNot [`crate::Tabs`]: tabs switch between panels, this filters one. Buttons\nwith `aria-pressed` inside a named group, the same contract as\n[`crate::Chip`].",
+      "props": [
+        {
+          "name": "label",
+          "ty": "String",
+          "required": true,
+          "default": null,
+          "docs": ""
+        },
+        {
+          "name": "options",
+          "ty": "Vec<(String, String)>",
+          "required": true,
+          "default": null,
+          "docs": "`(value, label)`."
+        },
+        {
+          "name": "value",
+          "ty": "String",
+          "required": true,
+          "default": null,
+          "docs": ""
+        },
+        {
+          "name": "onchange",
+          "ty": "EventHandler<String>",
+          "required": true,
+          "default": null,
+          "docs": ""
+        },
+        {
+          "name": "flow",
+          "ty": "SegmentFlow",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        },
+        {
+          "name": "class",
+          "ty": "String",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        }
+      ],
+      "example": {
+        "file": "apps/web/src/kit_catalogue.rs",
+        "line": 100,
+        "code": "SegmentedControl {\n    label: \"Tone\",\n    options: vec![(\"plain\".into(), \"Plain and direct\".into()), (\"warm\".into(), \"Warm and brief\".into()), (\"formal\".into(), \"Formal\".into())],\n    value: tone(),\n    onchange: move |next| tone.set(next),\n    flow: SegmentFlow::StackNarrow,\n}"
+      },
+      "guarantees": [
+        {
+          "test": "a_stacking_segmented_control_is_a_column_only_below_sm",
+          "file": "crates/rv2-ui/tests/catalogue.rs",
+          "docs": ""
+        },
+        {
+          "test": "a_segmented_control_presses_exactly_the_current_option",
+          "file": "crates/rv2-ui/tests/readout.rs",
+          "docs": ""
+        }
+      ]
+    },
+    {
+      "name": "ChoiceGroup",
+      "module": "form",
+      "in_isa": true,
+      "intent": "Choose one, with consequences",
+      "emits": "`fieldset` + `label` + `input[type=radio]`",
+      "docs": "Mutually exclusive options as cards, each a title and a line saying what\nchoosing it means.\n\nNative radios in a fieldset, so arrow keys move between options and a\nscreen reader announces the legend and the position. The selected card is\ndrawn from `:has(:checked)`, never a second copy of the state. Drawn from\nMove to Own's action options, Logo Handoff's context choice and Reefdose's\nparameter grid. [`SegmentedControl`] is the compact form for short labels.",
+      "props": [
+        {
+          "name": "legend",
+          "ty": "String",
+          "required": true,
+          "default": null,
+          "docs": ""
+        },
+        {
+          "name": "name",
+          "ty": "String",
+          "required": true,
+          "default": null,
+          "docs": "The radios' shared `name`; unique on the page."
+        },
+        {
+          "name": "choices",
+          "ty": "Vec<Choice>",
+          "required": true,
+          "default": null,
+          "docs": ""
+        },
+        {
+          "name": "value",
+          "ty": "String",
+          "required": true,
+          "default": null,
+          "docs": ""
+        },
+        {
+          "name": "onchange",
+          "ty": "EventHandler<String>",
+          "required": true,
+          "default": null,
+          "docs": ""
+        },
+        {
+          "name": "class",
+          "ty": "String",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        }
+      ],
+      "example": {
+        "file": "apps/web/src/kit_records.rs",
+        "line": 154,
+        "code": "ChoiceGroup {\n    legend: \"How the cost is split\",\n    name: \"kit-plan\",\n    choices: plan_cards,\n    value: plan(),\n    onchange: move |next| plan.set(next),\n}"
+      },
+      "guarantees": [
+        {
+          "test": "a_choice_group_is_native_radios_under_one_name_with_the_value_checked",
+          "file": "crates/rv2-ui/tests/records.rs",
+          "docs": ""
+        }
+      ]
+    },
+    {
+      "name": "Dialog",
+      "module": "overlay",
+      "in_isa": true,
+      "intent": "Ask before acting",
+      "emits": "`dialog` opened with `showModal()`",
+      "docs": "A modal dialog over the page.\n\nThe caller owns `open` and hears every request to change it through\n`on_open_change`: Escape, the close button and a click on the backdrop all\nask rather than close. Keep the component mounted while closed and its\nchildren keep their drafts.\n\n`alert` makes it an `alertdialog`, for a decision the reader must answer.\nA focusable child with `autofocus` takes first focus; otherwise the browser\nfocuses the first focusable element.",
+      "props": [
+        {
+          "name": "id",
+          "ty": "String",
+          "required": true,
+          "default": null,
+          "docs": ""
+        },
+        {
+          "name": "open",
+          "ty": "bool",
+          "required": true,
+          "default": null,
+          "docs": ""
+        },
+        {
+          "name": "title",
+          "ty": "String",
+          "required": true,
+          "default": null,
+          "docs": ""
+        },
+        {
+          "name": "on_open_change",
+          "ty": "EventHandler<bool>",
+          "required": true,
+          "default": null,
+          "docs": ""
+        },
+        {
+          "name": "description",
+          "ty": "Option<String>",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        },
+        {
+          "name": "kind",
+          "ty": "DialogKind",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        },
+        {
+          "name": "dismissible",
+          "ty": "bool",
+          "required": false,
+          "default": "true",
+          "docs": "`false` while a pending action must not be abandoned: Escape, the\nbackdrop and the close button stop asking to close."
+        },
+        {
+          "name": "alert",
+          "ty": "bool",
+          "required": false,
+          "default": "false",
+          "docs": ""
+        },
+        {
+          "name": "children",
+          "ty": "Element",
+          "required": false,
+          "default": null,
+          "docs": ""
+        }
+      ],
+      "example": {
+        "file": "apps/web/src/kit_records.rs",
+        "line": 74,
+        "code": "Dialog {\n    id: \"kit-dialog\",\n    open: dialog(),\n    title: \"Rename this scope\",\n    description: \"The client sees the new name on the next receipt.\",\n    on_open_change: move |next| dialog.set(next),\n    TextField { label: \"Name\", value: note(), oninput: move |e: FormEvent| note.set(e.value()) }\n    div { class: \"mt-4 flex justify-end\",\n        Button { onclick: move |_| dialog.set(false), \"Save\" }\n    }\n}"
+      },
+      "guarantees": [
+        {
+          "test": "a_dialog_is_named_by_its_title_and_described_by_its_description",
+          "file": "crates/rv2-ui/tests/records.rs",
+          "docs": ""
+        },
+        {
+          "test": "a_drawer_is_the_same_dialog_with_another_kind",
+          "file": "crates/rv2-ui/tests/records.rs",
+          "docs": ""
+        }
+      ]
+    },
+    {
+      "name": "ConfirmDialog",
+      "module": "overlay",
+      "in_isa": true,
+      "intent": "Ask before acting",
+      "emits": "`dialog` opened with `showModal()`",
+      "docs": "A destructive decision in an `alertdialog`.\n\nFirst focus is the least destructive action. While `pending` it cannot be\ndismissed and the confirm button is busy; on failure it stays open with\n`error` shown, so the reader is never left guessing whether it happened.",
+      "props": [
+        {
+          "name": "id",
+          "ty": "String",
+          "required": true,
+          "default": null,
+          "docs": ""
+        },
+        {
+          "name": "open",
+          "ty": "bool",
+          "required": true,
+          "default": null,
+          "docs": ""
+        },
+        {
+          "name": "title",
+          "ty": "String",
+          "required": true,
+          "default": null,
+          "docs": ""
+        },
+        {
+          "name": "description",
+          "ty": "String",
+          "required": true,
+          "default": null,
+          "docs": ""
+        },
+        {
+          "name": "confirm_label",
+          "ty": "String",
+          "required": true,
+          "default": null,
+          "docs": ""
+        },
+        {
+          "name": "on_open_change",
+          "ty": "EventHandler<bool>",
+          "required": true,
+          "default": null,
+          "docs": ""
+        },
+        {
+          "name": "on_confirm",
+          "ty": "EventHandler<()>",
+          "required": true,
+          "default": null,
+          "docs": ""
+        },
+        {
+          "name": "cancel_label",
+          "ty": "String",
+          "required": false,
+          "default": "\"Keep it\".to_string()",
+          "docs": ""
+        },
+        {
+          "name": "pending",
+          "ty": "bool",
+          "required": false,
+          "default": "false",
+          "docs": ""
+        },
+        {
+          "name": "error",
+          "ty": "Option<String>",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        },
+        {
+          "name": "children",
+          "ty": "Element",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        }
+      ],
+      "example": {
+        "file": "apps/web/src/kit_records.rs",
+        "line": 99,
+        "code": "ConfirmDialog {\n    id: \"kit-confirm\",\n    open: confirm(),\n    title: \"Delete this project?\",\n    description: \"Its 14 sessions and every receipt go with it. This cannot be undone.\",\n    confirm_label: \"Delete project\",\n    on_open_change: move |next| confirm.set(next),\n    on_confirm: move |_| {\n        confirm.set(false);\n        toast.raise(Verdict::Stop, \"Project deleted.\");\n    },\n}"
+      },
+      "guarantees": [
+        {
+          "test": "a_confirm_dialog_is_an_alertdialog_that_focuses_the_safe_action_first",
+          "file": "crates/rv2-ui/tests/records.rs",
+          "docs": ""
+        },
+        {
+          "test": "a_pending_confirm_cannot_be_dismissed_and_reports_busy",
+          "file": "crates/rv2-ui/tests/records.rs",
+          "docs": ""
+        }
+      ]
+    },
+    {
+      "name": "ArmedDeleteButton",
+      "module": "primitives",
+      "in_isa": true,
+      "intent": "Delete without a modal",
+      "emits": "`button[data-armed]`",
+      "docs": "Delete in two clicks without a dialog: the first arms it and changes its\nlabel, the second confirms.\n\nFor a row action where a modal would be heavier than the loss. The caller\nowns `armed`. Escape and leaving the button disarm it, and nothing confirms\nwhile `busy` or `disabled`. Screen readers do not reliably re-read a focused\nbutton whose label changes, so a status beside it speaks the armed label.",
+      "props": [
+        {
+          "name": "label",
+          "ty": "String",
+          "required": true,
+          "default": null,
+          "docs": ""
+        },
+        {
+          "name": "confirm_label",
+          "ty": "String",
+          "required": true,
+          "default": null,
+          "docs": ""
+        },
+        {
+          "name": "armed",
+          "ty": "bool",
+          "required": true,
+          "default": null,
+          "docs": ""
+        },
+        {
+          "name": "on_armed_change",
+          "ty": "EventHandler<bool>",
+          "required": true,
+          "default": null,
+          "docs": ""
+        },
+        {
+          "name": "on_confirm",
+          "ty": "EventHandler<()>",
+          "required": true,
+          "default": null,
+          "docs": ""
+        },
+        {
+          "name": "busy",
+          "ty": "bool",
+          "required": false,
+          "default": "false",
+          "docs": ""
+        },
+        {
+          "name": "disabled",
+          "ty": "bool",
+          "required": false,
+          "default": "false",
+          "docs": ""
+        },
+        {
+          "name": "size",
+          "ty": "Size",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        },
+        {
+          "name": "class",
+          "ty": "String",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        }
+      ],
+      "example": {
+        "file": "apps/web/src/kit_records.rs",
+        "line": 56,
+        "code": "ArmedDeleteButton {\n    label: format!(\"Remove row ({})\", rows()),\n    confirm_label: \"Click again to remove\",\n    armed: armed(),\n    disabled: rows() == 0,\n    on_armed_change: move |next| armed.set(next),\n    on_confirm: move |_| {\n        rows.with_mut(|n| *n = n.saturating_sub(1));\n        toast.raise(Verdict::Clear, \"Row removed.\");\n    },\n}"
+      },
+      "guarantees": [
+        {
+          "test": "an_armed_delete_says_what_the_next_click_does",
+          "file": "crates/rv2-ui/tests/records.rs",
+          "docs": ""
+        }
+      ]
+    },
+    {
+      "name": "ToastProvider",
+      "module": "overlay",
+      "in_isa": true,
+      "intent": "Tell after acting",
+      "emits": "`div[role=region]` of `role=status`/`alert`",
+      "docs": "Mount once above everything that raises a toast.",
+      "props": [
+        {
+          "name": "children",
+          "ty": "Element",
+          "required": false,
+          "default": null,
+          "docs": ""
+        }
+      ],
+      "example": {
+        "file": "apps/web/src/kit_records.rs",
+        "line": 19,
+        "code": "ToastProvider {\n    Section { id: \"decisions\",\n        Container {\n            Eyebrow { \"Default theme\" }\n            Heading { \"Asking and telling\" }\n            Text { class: \"mt-2\", tone: Tone::Muted,\n                \"A native modal dialog, a drawer, a destructive confirm, a two-click delete and toasts that wait while you read them.\"\n            }\n            Overlays {}\n        }\n    }\n    Section { id: \"records\",\n        Container {\n            Heading { \"Records and choices\" }\n            Records {}\n        }\n    }\n    Toaster {}\n}"
+      },
+      "guarantees": []
+    },
+    {
+      "name": "Toaster",
+      "module": "overlay",
+      "in_isa": true,
+      "intent": "Tell after acting",
+      "emits": "`div[role=region]` of `role=status`/`alert`",
+      "docs": "Where toasts render. Mount once, inside the [`ToastProvider`].\n\nA named `region` landmark rather than a live region: each toast carries its\nown `alert` or `status`, and a live container would announce it twice.",
+      "props": [],
+      "example": {
+        "file": "apps/web/src/kit_records.rs",
+        "line": 36,
+        "code": "Toaster {}"
+      },
+      "guarantees": []
+    },
+    {
+      "name": "Stamp",
+      "module": "feedback",
+      "in_isa": true,
+      "intent": "Mark a record's state",
+      "emits": "`span`",
+      "docs": "A square outline tag in capitals: `OPEN`, `READY`, `VOID`.\n\nReads as a rubber stamp on a record rather than a pill on a list, which is\nthe difference from [`crate::Badge`]. The word carries the verdict; the\ncolour repeats it.",
+      "props": [
+        {
+          "name": "verdict",
+          "ty": "Verdict",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        },
+        {
+          "name": "class",
+          "ty": "String",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        },
+        {
+          "name": "children",
+          "ty": "Element",
+          "required": false,
+          "default": null,
+          "docs": ""
+        }
+      ],
+      "example": {
+        "file": "apps/web/src/kit_records.rs",
+        "line": 127,
+        "code": "Stamp { verdict: Verdict::Caution, \"Open\" }"
+      },
+      "guarantees": [
+        {
+          "test": "a_stamp_and_a_slab_take_their_look_from_operands",
+          "file": "crates/rv2-ui/tests/records.rs",
+          "docs": ""
+        }
+      ]
+    },
+    {
+      "name": "GateList",
+      "module": "readout",
+      "in_isa": true,
+      "intent": "Check readiness",
+      "emits": "`ul` with spoken state",
+      "docs": "A readiness checklist: each row a glyph, a label and why.\n\nThe glyph is hidden from assistive technology and its meaning is spoken as\ntext instead, so the state never rests on a shape or a colour. Drawn from\nthe control room's gate rows, Logo Handoff's asset rows and Reefdose's\nverification grid.",
+      "props": [
+        {
+          "name": "label",
+          "ty": "String",
+          "required": true,
+          "default": null,
+          "docs": ""
+        },
+        {
+          "name": "gates",
+          "ty": "Vec<Gate>",
+          "required": true,
+          "default": null,
+          "docs": ""
+        },
+        {
+          "name": "class",
+          "ty": "String",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        }
+      ],
+      "example": {
+        "file": "apps/web/src/kit_records.rs",
+        "line": 91,
+        "code": "GateList {\n    label: \"Session evidence\",\n    gates: vec![\n        Gate::new(\"Meter photo\", Verdict::Clear),\n        Gate::new(\"Receipt\", Verdict::Caution).detail(\"Requested on 18 Nov\"),\n    ],\n}"
+      },
+      "guarantees": [
+        {
+          "test": "a_gate_speaks_its_state_and_hides_the_glyph",
+          "file": "crates/rv2-ui/tests/records.rs",
+          "docs": ""
+        }
+      ]
+    },
+    {
+      "name": "RedlineDiff",
+      "module": "readout",
+      "in_isa": true,
+      "intent": "Show an edit",
+      "emits": "`dl` of `del`/`ins`",
+      "docs": "What an edit changed, as struck and inserted text per field.\n\nMost screen readers do not announce `del` and `ins`, so each side starts\nwith a visually hidden \"Removed:\" or \"Added:\"; the elements still carry it\nin a printout and the colours repeat it. Drawn from Edit Scope's draft\nreceipt.",
+      "props": [
+        {
+          "name": "lines",
+          "ty": "Vec<Redline>",
+          "required": true,
+          "default": null,
+          "docs": ""
+        },
+        {
+          "name": "class",
+          "ty": "String",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        }
+      ],
+      "example": {
+        "file": "apps/web/src/kit_records.rs",
+        "line": 146,
+        "code": "RedlineDiff {\n    lines: vec![\n        Redline::new(\"Hours\", \"10\", \"12\"),\n        Redline::new(\"Scope\", \"Two logo concepts\", \"Three logo concepts and one revision round\"),\n    ],\n}"
+      },
+      "guarantees": [
+        {
+          "test": "a_redline_marks_removed_and_inserted_text_semantically",
+          "file": "crates/rv2-ui/tests/records.rs",
+          "docs": ""
+        }
+      ]
+    },
+    {
+      "name": "CompareTable",
+      "module": "readout",
+      "in_isa": true,
+      "intent": "Compare options",
+      "emits": "`table`, stacked cards below `sm`",
+      "docs": "Options side by side, a row per feature.\n\nA real `table` on wide screens. Below `sm` each option's cells stack as a\ncard and every cell prints its column's name from `data-label`, so nothing\nscrolls sideways and no cell loses its heading. Drawn from A Place Ahead's\ncomparison, All Source's pricing matrix and Move to Own's responsive table.",
+      "props": [
+        {
+          "name": "caption",
+          "ty": "String",
+          "required": true,
+          "default": null,
+          "docs": ""
+        },
+        {
+          "name": "columns",
+          "ty": "Vec<String>",
+          "required": true,
+          "default": null,
+          "docs": "The header of the row-label column, then one per option."
+        },
+        {
+          "name": "rows",
+          "ty": "Vec<CompareRow>",
+          "required": true,
+          "default": null,
+          "docs": ""
+        },
+        {
+          "name": "highlight",
+          "ty": "Option<usize>",
+          "required": false,
+          "default": "Default",
+          "docs": "Index into the options (not counting the label column) to set apart:\nthe recommended plan, the reader's current choice."
+        },
+        {
+          "name": "class",
+          "ty": "String",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        }
+      ],
+      "example": {
+        "file": "apps/web/src/kit_records.rs",
+        "line": 178,
+        "code": "CompareTable {\n    class: \"mt-10\",\n    caption: \"Plans compared\",\n    columns: vec![\"Feature\".to_string(), \"Free\".to_string(), \"Studio\".to_string(), \"Agency\".to_string()],\n    highlight: Some(1),\n    rows: vec![\n        CompareRow::new(\"Projects\", vec![\"1\".to_string(), \"Unlimited\".to_string(), \"Unlimited\".to_string()]),\n        CompareRow::new(\"Receipts\", vec![\"Watermarked\".to_string(), \"Branded\".to_string(), \"Branded\".to_string()]),\n        CompareRow::new(\"Seats\", vec![\"1\".to_string(), \"3\".to_string(), \"10\".to_string()]),\n        CompareRow::new(\"Price\", vec![\"£0\".to_string(), \"£12/mo\".to_string(), \"£39/mo\".to_string()]),\n    ],\n}"
+      },
+      "guarantees": [
+        {
+          "test": "every_compare_cell_carries_its_column_name_for_the_stacked_layout",
+          "file": "crates/rv2-ui/tests/records.rs",
+          "docs": ""
+        }
+      ]
+    },
+    {
+      "name": "Tally",
+      "module": "arrive",
+      "in_isa": true,
+      "intent": "Count a figure in",
+      "emits": "text number + `aria-hidden` CSS counter",
+      "docs": "A whole number that counts up to itself as it scrolls into view.\n\nIt takes the size and weight of whatever text it sits in. The number is\ntext, so nothing reads the figure out of a counter. `assets/arrive.css`\nhides that text visually and draws a CSS counter, hidden from assistive\ntechnology, in its place; a page without the stylesheet shows the text.\n\nA CSS counter holds a signed 32-bit integer, so the visible digits stop at\n`i32::MAX`; the text copy is always exact.",
+      "props": [
+        {
+          "name": "value",
+          "ty": "u32",
+          "required": true,
+          "default": null,
+          "docs": ""
+        }
+      ],
+      "example": {
+        "file": "apps/web/src/kit_catalogue.rs",
+        "line": 50,
+        "code": "Tally { value: 174 }"
+      },
+      "guarantees": [
+        {
+          "test": "a_tally_keeps_the_exact_number_as_text_and_hides_the_counter",
+          "file": "crates/rv2-ui/tests/catalogue.rs",
+          "docs": ""
+        },
+        {
+          "test": "a_tally_shows_its_text_until_the_stylesheet_swaps_in_the_counter",
+          "file": "crates/rv2-ui/tests/catalogue.rs",
+          "docs": ""
+        },
+        {
+          "test": "a_tally_past_the_counter_range_still_says_the_whole_number",
+          "file": "crates/rv2-ui/tests/catalogue.rs",
+          "docs": ""
+        }
+      ]
+    },
+    {
+      "name": "Sparkline",
+      "module": "sparkline",
+      "in_isa": true,
+      "intent": "Show a trend",
+      "emits": "`svg` polyline, decorative unless named",
+      "docs": "The trend of `values`, stretched to its container's width.\n\nDecorative unless `label` is given, in which case it is an image with that\nname — \"Resting heart rate, falling over 6 weeks\". A named series that\ncannot be drawn shows its name as text, so the trend is not lost with the\nline. The stroke colour is the `--rv2-spark-stroke` hook.",
+      "props": [
+        {
+          "name": "values",
+          "ty": "Vec<f64>",
+          "required": true,
+          "default": null,
+          "docs": ""
+        },
+        {
+          "name": "label",
+          "ty": "Option<String>",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        }
+      ],
+      "example": {
+        "file": "apps/web/src/kit_catalogue.rs",
+        "line": 67,
+        "code": "Sparkline { values: vec![61.0, 60.0, 62.0, 59.0, 58.0, 57.0], label: \"Resting heart rate, falling over 6 weeks\" }"
+      },
+      "guarantees": [
+        {
+          "test": "a_named_sparkline_that_cannot_draw_still_says_its_name",
+          "file": "crates/rv2-ui/tests/catalogue.rs",
+          "docs": ""
+        },
+        {
+          "test": "a_sparkline_is_decorative_unless_named",
+          "file": "crates/rv2-ui/tests/catalogue.rs",
+          "docs": ""
+        }
+      ]
+    },
+    {
+      "name": "LedgerTable",
+      "module": "ledger",
+      "in_isa": true,
+      "intent": "Keep a ledger",
+      "emits": "`table` in a focusable scroll region, total in `tfoot`",
+      "docs": "Records as rows: transactions, a quote's lines, a schedule.\n\nThe first cell of each row is its row header. A `total` goes in `tfoot`, so\nit is never read as one more record. Callers render an [`crate::EmptyState`]\nthemselves when there are no rows; the table owns no copy.",
+      "props": [
+        {
+          "name": "caption",
+          "ty": "String",
+          "required": true,
+          "default": null,
+          "docs": ""
+        },
+        {
+          "name": "caption_hidden",
+          "ty": "bool",
+          "required": false,
+          "default": "Default",
+          "docs": "Keeps the caption for assistive technology and hides it on screen,\nwhere a heading above already names the table."
+        },
+        {
+          "name": "columns",
+          "ty": "Vec<LedgerColumn>",
+          "required": true,
+          "default": null,
+          "docs": ""
+        },
+        {
+          "name": "rows",
+          "ty": "Vec<LedgerRow>",
+          "required": true,
+          "default": null,
+          "docs": ""
+        },
+        {
+          "name": "total",
+          "ty": "Option<LedgerRow>",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        },
+        {
+          "name": "action_label",
+          "ty": "String",
+          "required": false,
+          "default": "\"Actions\".to_string()",
+          "docs": "The header of the trailing action column, when any row has an action."
+        }
+      ],
+      "example": {
+        "file": "apps/web/src/kit_catalogue.rs",
+        "line": 142,
+        "code": "LedgerTable {\n    caption: \"Current account activity\",\n    columns: vec![LedgerColumn::text(\"Entry\"), LedgerColumn::figure(\"Amount\"), LedgerColumn::figure(\"Balance\")],\n    rows: vec![\n        LedgerRow::new(\"rent\", vec![LedgerCell::new(\"Rent\").note(\"1 Nov\").href(\"#ledgers\"), LedgerCell::new(\"-£900.00\").lean(Lean::Bad), \"£1,100.00\".into()]),\n        refund,\n        LedgerRow::new(\"q4\", vec![\"Quarter end\".into(), \"\".into(), \"£1,140.00\".into()]).milestone(),\n    ],\n    total: LedgerRow::new(\"net\", vec![\"Net this month\".into(), \"-£860.00\".into(), \"\".into()]),\n}"
+      },
+      "guarantees": [
+        {
+          "test": "a_ledger_names_its_rows_says_voided_in_words_and_foots_its_total",
+          "file": "crates/rv2-ui/tests/catalogue.rs",
+          "docs": ""
+        },
+        {
+          "test": "a_voided_cell_keeps_its_link_inside_the_strike",
+          "file": "crates/rv2-ui/tests/catalogue.rs",
+          "docs": ""
+        }
+      ]
+    },
+    {
+      "name": "Citation",
+      "module": "ledger",
+      "in_isa": true,
+      "intent": "Cite a source",
+      "emits": "`p` with `time[datetime]`",
+      "docs": "Where a figure came from and when: \"Checked 24 Sep 2026 · Open Ofsted ↗\".\n\nThe kit has no date library, so the caller passes the date twice: ISO for\n`datetime` and as the reader should see it.",
+      "props": [
+        {
+          "name": "source",
+          "ty": "String",
+          "required": true,
+          "default": null,
+          "docs": ""
+        },
+        {
+          "name": "date_iso",
+          "ty": "String",
+          "required": true,
+          "default": null,
+          "docs": ""
+        },
+        {
+          "name": "date_text",
+          "ty": "String",
+          "required": true,
+          "default": null,
+          "docs": ""
+        },
+        {
+          "name": "dated",
+          "ty": "Dated",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        },
+        {
+          "name": "href",
+          "ty": "Option<String>",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        }
+      ],
+      "example": {
+        "file": "apps/web/src/kit_catalogue.rs",
+        "line": 152,
+        "code": "Citation { source: \"the school's inspection report\", date_iso: \"2026-09-24\", date_text: \"24 Sep 2026\", dated: Dated::Checked, href: \"https://reports.ofsted.gov.uk/\" }"
+      },
+      "guarantees": [
+        {
+          "test": "a_citation_dates_its_source_and_warns_of_a_new_tab",
+          "file": "crates/rv2-ui/tests/catalogue.rs",
+          "docs": ""
+        }
+      ]
+    },
+    {
+      "name": "AttentionQueue",
+      "module": "queue",
+      "in_isa": true,
+      "intent": "Queue work for someone",
+      "emits": "`ol` of links or stated rows",
+      "docs": "The queue. The caller supplies the heading; the list is named by `label`.\n\nItem ids key the rows and must be unique; a repeated id makes Dioxus reuse\nthe wrong row's DOM, so debug builds panic on one.\n\nA `Go` row is one link with a real `href`. `on_open` lets an app route on\nthe client and still leaves the `href` for a new tab or no script.",
+      "props": [
+        {
+          "name": "label",
+          "ty": "String",
+          "required": true,
+          "default": null,
+          "docs": ""
+        },
+        {
+          "name": "items",
+          "ty": "Vec<QueueItem>",
+          "required": true,
+          "default": null,
+          "docs": ""
+        },
+        {
+          "name": "empty",
+          "ty": "String",
+          "required": true,
+          "default": null,
+          "docs": "Shown instead of the list when it is empty."
+        },
+        {
+          "name": "reason",
+          "ty": "ReasonStyle",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        },
+        {
+          "name": "numbered",
+          "ty": "bool",
+          "required": false,
+          "default": "Default",
+          "docs": "Prints 01, 02… beside each row for a queue read by position."
+        },
+        {
+          "name": "on_open",
+          "ty": "Option<EventHandler<(MouseEvent, String)>>",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        }
+      ],
+      "example": {
+        "file": "apps/web/src/kit_catalogue.rs",
+        "line": 153,
+        "code": "AttentionQueue {\n    label: \"Needs review today\",\n    empty: \"Nothing waiting.\",\n    numbered: true,\n    items: vec![\n        QueueItem::go(\"sam\", \"Sam Okafor\", \"3 sessions missed since Monday\", \"Review\", \"#ledgers\"),\n        QueueItem::go(\"ria\", \"Ria Patel\", \"New personal best on deadlift\", \"Open\", \"#ledgers\"),\n        QueueItem::state(\"billing\", \"Billing export\", \"Card on file expires Friday\", \"Blocked\", Verdict::Stop),\n    ],\n}"
+      },
+      "guarantees": [
+        {
+          "test": "an_attention_queue_links_go_rows_and_words_state_rows",
+          "file": "crates/rv2-ui/tests/catalogue.rs",
+          "docs": ""
+        },
+        {
+          "test": "an_attention_queue_refuses_repeated_ids",
+          "file": "crates/rv2-ui/tests/catalogue.rs",
+          "docs": ""
+        }
+      ]
+    },
+    {
+      "name": "Popover",
+      "module": "overlay",
+      "in_isa": true,
+      "intent": "Offer more",
+      "emits": "`button[popovertarget]` + `div[popover=auto]`",
+      "docs": "A panel opened by a button, on the native `popover` attribute.\n\nThe browser supplies light dismiss, Escape, one-open-at-a-time and the top\nlayer, and exposes the trigger's expanded state, so none of it is scripted.\nWhere CSS anchor positioning is supported the panel sits under its trigger;\nelsewhere the browser centres it, which is still usable.\n\n`id` names the panel and its anchor, so it must be a valid CSS identifier.",
+      "props": [
+        {
+          "name": "id",
+          "ty": "String",
+          "required": true,
+          "default": null,
+          "docs": ""
+        },
+        {
+          "name": "label",
+          "ty": "String",
+          "required": true,
+          "default": null,
+          "docs": "The trigger's accessible name. Required, because a trigger is often a\nglyph."
+        },
+        {
+          "name": "trigger",
+          "ty": "Element",
+          "required": true,
+          "default": null,
+          "docs": "What the trigger shows."
+        },
+        {
+          "name": "align",
+          "ty": "PopoverAlign",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        },
+        {
+          "name": "role",
+          "ty": "PopoverRole",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        },
+        {
+          "name": "labelledby",
+          "ty": "Option<String>",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        },
+        {
+          "name": "children",
+          "ty": "Element",
+          "required": false,
+          "default": null,
+          "docs": ""
+        }
+      ],
+      "example": null,
+      "guarantees": []
+    },
+    {
+      "name": "RowMenu",
+      "module": "overlay",
+      "in_isa": true,
+      "intent": "Offer more",
+      "emits": "`button[popovertarget]` + `div[popover=auto]`",
+      "docs": "A row's secondary actions behind a \"⋯\" button.\n\nChildren are the actions, usually Ghost [`Button`]s. The panel is a plain\nlist of buttons and not `role=\"menu\"`, which would promise arrow-key roving\nthat a script has to provide.\n\nChoosing an action closes the menu. A native popover stays open on a click\ninside it, so this one call goes through `document::eval`, as `Dialog`'s\n`showModal()` does.",
+      "props": [
+        {
+          "name": "id",
+          "ty": "String",
+          "required": true,
+          "default": null,
+          "docs": ""
+        },
+        {
+          "name": "label",
+          "ty": "String",
+          "required": false,
+          "default": "\"More actions\".to_string()",
+          "docs": ""
+        },
+        {
+          "name": "children",
+          "ty": "Element",
+          "required": false,
+          "default": null,
+          "docs": ""
+        }
+      ],
+      "example": {
+        "file": "apps/web/src/kit_catalogue.rs",
+        "line": 125,
+        "code": "RowMenu { id: \"kit-row-refund\",\n    Button { variant: Variant::Ghost, size: Size::Small, onclick: move |_| voided.toggle(), if voided() { \"Restore entry\" } else { \"Void entry\" } }\n    Button { variant: Variant::Ghost, size: Size::Small, \"Edit note\" }\n}"
+      },
+      "guarantees": [
+        {
+          "test": "a_row_menu_is_a_named_popover_button_and_not_an_aria_menu",
+          "file": "crates/rv2-ui/tests/catalogue.rs",
+          "docs": ""
+        }
+      ]
+    },
+    {
+      "name": "HelpTip",
+      "module": "overlay",
+      "in_isa": true,
+      "intent": "Offer more",
+      "emits": "`button[popovertarget]` + `div[popover=auto]`",
+      "docs": "A \"?\" that opens a short explanation beside the thing it explains.\n\nHelp a reader needs in order to fill a field belongs in the field's own help\ntext; this is for the definition someone may want once.",
+      "props": [
+        {
+          "name": "id",
+          "ty": "String",
+          "required": true,
+          "default": null,
+          "docs": ""
+        },
+        {
+          "name": "label",
+          "ty": "String",
+          "required": true,
+          "default": null,
+          "docs": "What the \"?\" explains, as its accessible name."
+        },
+        {
+          "name": "title",
+          "ty": "String",
+          "required": true,
+          "default": null,
+          "docs": ""
+        },
+        {
+          "name": "children",
+          "ty": "Element",
+          "required": false,
+          "default": null,
+          "docs": ""
+        }
+      ],
+      "example": {
+        "file": "apps/web/src/kit_catalogue.rs",
+        "line": 96,
+        "code": "HelpTip { id: \"kit-scope-help\", label: \"Explain what counts as a scope change\", title: \"What counts as a scope change?\",\n    \"A new format, version, cutdown or output beyond the written scope.\"\n}"
+      },
+      "guarantees": [
+        {
+          "test": "a_help_tip_is_a_note_named_by_its_title",
+          "file": "crates/rv2-ui/tests/catalogue.rs",
+          "docs": ""
+        }
+      ]
+    },
+    {
+      "name": "TimerReadout",
+      "module": "timer",
+      "in_isa": true,
+      "intent": "Run against a plan",
+      "emits": "`role=timer` + `role=status` pace word",
+      "docs": "A clock and, when there is a plan, the pace word beside it.\n\nChildren are the controls: start, pause, skip.",
+      "props": [
+        {
+          "name": "label",
+          "ty": "String",
+          "required": true,
+          "default": null,
+          "docs": ""
+        },
+        {
+          "name": "elapsed_secs",
+          "ty": "u32",
+          "required": true,
+          "default": null,
+          "docs": ""
+        },
+        {
+          "name": "planned_secs",
+          "ty": "Option<u32>",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        },
+        {
+          "name": "direction",
+          "ty": "ClockDirection",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        },
+        {
+          "name": "warn_pct",
+          "ty": "u8",
+          "required": false,
+          "default": "80",
+          "docs": ""
+        },
+        {
+          "name": "children",
+          "ty": "Element",
+          "required": false,
+          "default": null,
+          "docs": ""
+        }
+      ],
+      "example": {
+        "file": "crates/rv2-ui/tests/catalogue.rs",
+        "line": 158,
+        "code": "TimerReadout { label: \"Section\", elapsed_secs: 130, planned_secs: 120, direction: ClockDirection::Down }"
+      },
+      "guarantees": [
+        {
+          "test": "a_timer_keeps_its_digits_quiet_and_announces_only_the_pace",
+          "file": "crates/rv2-ui/tests/catalogue.rs",
+          "docs": ""
+        }
+      ]
+    },
+    {
+      "name": "SectionTimer",
+      "module": "timer",
+      "in_isa": true,
+      "intent": "Run against a plan",
+      "emits": "`role=timer` + `role=status` pace word",
+      "docs": "One section of a timed run: where it sits in the run, what to say, what\ncomes next, and its clock against its plan.\n\nChildren are the run controls.",
+      "props": [
+        {
+          "name": "section",
+          "ty": "usize",
+          "required": true,
+          "default": null,
+          "docs": "Zero-based."
+        },
+        {
+          "name": "sections",
+          "ty": "usize",
+          "required": true,
+          "default": null,
+          "docs": ""
+        },
+        {
+          "name": "title",
+          "ty": "String",
+          "required": true,
+          "default": null,
+          "docs": ""
+        },
+        {
+          "name": "cue",
+          "ty": "Option<String>",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        },
+        {
+          "name": "next",
+          "ty": "Option<String>",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        },
+        {
+          "name": "elapsed_secs",
+          "ty": "u32",
+          "required": true,
+          "default": null,
+          "docs": ""
+        },
+        {
+          "name": "planned_secs",
+          "ty": "u32",
+          "required": true,
+          "default": null,
+          "docs": ""
+        },
+        {
+          "name": "warn_pct",
+          "ty": "u8",
+          "required": false,
+          "default": "80",
+          "docs": ""
+        },
+        {
+          "name": "children",
+          "ty": "Element",
+          "required": false,
+          "default": null,
+          "docs": ""
+        }
+      ],
+      "example": {
+        "file": "apps/web/src/kit_catalogue.rs",
+        "line": 81,
+        "code": "SectionTimer {\n    section: 1,\n    sections: 5,\n    title: \"The demo\",\n    cue: \"Open the ledger before you say the number.\",\n    next: \"Questions\",\n    elapsed_secs: elapsed(),\n    planned_secs: 120,\n    Button { size: Size::Small, onclick: move |_| elapsed += 15, \"+15s\" }\n    Button { size: Size::Small, variant: Variant::Outline, onclick: move |_| elapsed.set(0), \"Restart\" }\n}"
+      },
+      "guarantees": [
+        {
+          "test": "a_section_timer_says_where_it_is_in_the_run",
+          "file": "crates/rv2-ui/tests/catalogue.rs",
+          "docs": ""
+        }
+      ]
+    },
+    {
+      "name": "BoundaryPill",
+      "module": "feedback",
+      "in_isa": true,
+      "intent": "Say where an assistant runs",
+      "emits": "`span`, `p`",
+      "docs": "A pill naming where an assistant runs. The boundary is in the words, not\nonly the colour.",
+      "props": [
+        {
+          "name": "boundary",
+          "ty": "Boundary",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        }
+      ],
+      "example": {
+        "file": "apps/web/src/kit_catalogue.rs",
+        "line": 95,
+        "code": "BoundaryPill {}"
+      },
+      "guarantees": [
+        {
+          "test": "the_assistant_boundary_is_said_in_words",
+          "file": "crates/rv2-ui/tests/catalogue.rs",
+          "docs": ""
+        }
+      ]
+    },
+    {
+      "name": "GroundingNote",
+      "module": "feedback",
+      "in_isa": true,
+      "intent": "Say where an assistant runs",
+      "emits": "`span`, `p`",
+      "docs": "The line under a drafted answer saying what it was grounded in and where it\nran: \"Grounded in 4 checklist facts · local only\".",
+      "props": [
+        {
+          "name": "cited",
+          "ty": "usize",
+          "required": true,
+          "default": null,
+          "docs": ""
+        },
+        {
+          "name": "boundary",
+          "ty": "Boundary",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        },
+        {
+          "name": "noun",
+          "ty": "String",
+          "required": false,
+          "default": "\"facts\".to_string()",
+          "docs": "What was cited, plural."
+        }
+      ],
+      "example": {
+        "file": "apps/web/src/kit_catalogue.rs",
+        "line": 107,
+        "code": "GroundingNote { cited: 4, noun: \"checklist facts\" }"
+      },
+      "guarantees": [
+        {
+          "test": "the_assistant_boundary_is_said_in_words",
+          "file": "crates/rv2-ui/tests/catalogue.rs",
+          "docs": ""
+        }
+      ]
+    },
+    {
+      "name": "Blob",
+      "module": "motion",
+      "in_isa": false,
+      "intent": null,
+      "emits": null,
+      "docs": "A jelly mascot, in SVG.\n\nPoke it. It squashes, rebounds, and after enough pokes it has had enough —\n`on_overpoke` fires, which is the hook for the joke.\n\nEvery colour is a CSS custom property (`--jelly-body`, `--jelly-cheek`,\n`--jelly-eye`), so one component reskins per context by setting them on any\nancestor. That is upstream's design and it is the right one: a `color` prop\nwould need a variant per palette.\n\n`gaze` nudges where it looks, in viewBox units. Pair it with a focused input\nand the blob reads along as you type.",
+      "props": [
+        {
+          "name": "mood",
+          "ty": "Mood",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        },
+        {
+          "name": "gaze",
+          "ty": "(f32, f32)",
+          "required": false,
+          "default": "(0.0, 0.0)",
+          "docs": "Where it looks, in viewBox units, clamped to a small range so the pupils\nstay inside the eyes."
+        },
+        {
+          "name": "size",
+          "ty": "u32",
+          "required": false,
+          "default": "128",
+          "docs": ""
+        },
+        {
+          "name": "patience",
+          "ty": "u32",
+          "required": false,
+          "default": "5",
+          "docs": "How many pokes it tolerates before `on_overpoke`."
+        },
+        {
+          "name": "on_overpoke",
+          "ty": "Option<EventHandler<()>>",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        },
+        {
+          "name": "label",
+          "ty": "Option<String>",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        }
+      ],
+      "example": {
+        "file": "apps/web/src/main.rs",
+        "line": 625,
+        "code": "Blob {\n    mood: mood(),\n    gaze: gaze(),\n    size: 160,\n    on_overpoke: move |()| fed_up.set(true),\n}"
+      },
+      "guarantees": []
+    },
+    {
+      "name": "Crumple",
+      "module": "motion",
+      "in_isa": false,
+      "intent": null,
+      "emits": null,
+      "docs": "Wraps content that crumples up and disappears when `crumpled` flips.\n\nThe caller owns the flag, so the element can be removed from the tree after\nthe animation rather than lingering invisible — `on_done` is the hook.",
+      "props": [
+        {
+          "name": "children",
+          "ty": "Element",
+          "required": false,
+          "default": null,
+          "docs": ""
+        },
+        {
+          "name": "crumpled",
+          "ty": "bool",
+          "required": true,
+          "default": null,
+          "docs": ""
+        },
+        {
+          "name": "on_done",
+          "ty": "Option<EventHandler<()>>",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        }
+      ],
+      "example": {
+        "file": "apps/web/src/main.rs",
+        "line": 747,
+        "code": "Crumple { crumpled: crumpled(),\n    Card {\n        Text { \"Screw this one up and throw it away.\" }\n    }\n}"
+      },
+      "guarantees": []
+    },
+    {
+      "name": "Fur",
+      "module": "motion",
+      "in_isa": false,
+      "intent": null,
+      "emits": null,
+      "docs": "A furry surface. Ruffles when hovered.\n\nLayered `repeating-linear-gradient`s rather than an image: it costs no\nrequest, scales to any size, and recolours from one custom property.",
+      "props": [
+        {
+          "name": "children",
+          "ty": "Element",
+          "required": false,
+          "default": null,
+          "docs": ""
+        },
+        {
+          "name": "tint",
+          "ty": "String",
+          "required": false,
+          "default": "\"#78716c\".to_string()",
+          "docs": "Base colour, any CSS colour."
+        },
+        {
+          "name": "rounding",
+          "ty": "String",
+          "required": false,
+          "default": "\"rounded-xl\".to_string()",
+          "docs": ""
+        }
+      ],
+      "example": {
+        "file": "apps/web/src/main.rs",
+        "line": 787,
+        "code": "Fur { tint: \"#a16207\".to_string(),\n    p {\n        class: \"inline-block rounded-md bg-ink px-3 py-1.5 \\\n                text-sm font-medium text-on-ink\",\n        \"Hover to ruffle the coat.\"\n    }\n}"
+      },
+      "guarantees": []
+    },
+    {
+      "name": "GradientBuilder",
+      "module": "motion",
+      "in_isa": false,
+      "intent": null,
+      "emits": null,
+      "docs": "An interactive gradient editor that emits the CSS.\n\nThis one is reproduced in full, because it is pure state — there is no\nsimulation to approximate, so nothing is lost in translation.",
+      "props": [
+        {
+          "name": "start",
+          "ty": "String",
+          "required": false,
+          "default": "\"#a78bfa\".to_string()",
+          "docs": ""
+        },
+        {
+          "name": "end",
+          "ty": "String",
+          "required": false,
+          "default": "\"#67e8f9\".to_string()",
+          "docs": ""
+        },
+        {
+          "name": "angle",
+          "ty": "i32",
+          "required": false,
+          "default": "135",
+          "docs": ""
+        },
+        {
+          "name": "on_change",
+          "ty": "Option<EventHandler<String>>",
+          "required": false,
+          "default": "Default",
+          "docs": "Fires whenever the CSS changes, with the full `linear-gradient(...)`."
+        }
+      ],
+      "example": {
+        "file": "apps/web/src/main.rs",
+        "line": 808,
+        "code": "GradientBuilder {}"
+      },
+      "guarantees": []
+    },
+    {
+      "name": "Hologram",
+      "module": "motion",
+      "in_isa": false,
+      "intent": null,
+      "emits": null,
+      "docs": "A foil card that catches the light.\n\nTilts toward the pointer, the sheen tracks it, and the border glows where the\nlight is. With no pointer it keeps sweeping on its own, because a foil card\nthat is inert until touched looks like a bug.\n\n**Honest about the gap:** upstream drives an SVG `feDiffuseLighting` bump map\noff the card art and re-lights it per frame, plus a canvas particle system.\nThis is gradients and transforms — convincing, and not the same thing. The\nrelief and the particles are absent, not approximated.",
+      "props": [
+        {
+          "name": "children",
+          "ty": "Element",
+          "required": false,
+          "default": null,
+          "docs": ""
+        },
+        {
+          "name": "foil",
+          "ty": "Foil",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        },
+        {
+          "name": "intensity",
+          "ty": "f32",
+          "required": false,
+          "default": "0.35",
+          "docs": "0.0–1.0. How strongly the foil reads."
+        },
+        {
+          "name": "tilt",
+          "ty": "f32",
+          "required": false,
+          "default": "10.0",
+          "docs": "Maximum tilt in degrees at the edges."
+        }
+      ],
+      "example": {
+        "file": "apps/web/src/main.rs",
+        "line": 710,
+        "code": "Hologram {\n    foil: if lights_on() { Foil::Sunburst } else { Foil::Cosmos },\n    intensity: 0.45,\n    p {\n        class: \"text-xs font-semibold uppercase tracking-widest text-on-ink-faint\",\n        \"AllSource\"\n    }\n    p { class: \"mt-1 text-xl font-semibold text-on-ink\", \"Event, holo rare\" }\n    Text { tone: Tone::OnInk, class: \"mt-2\",\n        \"Append-only. Folds on read. Never overwrites.\"\n    }\n}"
+      },
+      "guarantees": []
+    },
+    {
+      "name": "PullCord",
+      "module": "motion",
+      "in_isa": false,
+      "intent": null,
+      "emits": null,
+      "docs": "A ceiling pull-cord.\n\nDrag the knob down. It actuates **mid-pull**, the moment travel crosses\n`actuation`, the way a real pull-chain detents — not on release. Let go and\nit swings back and settles.\n\n**Honest about the gap:** upstream simulates the rope, with gravity, damping\nand stiffness you can tune, integrated per frame. This is a drag plus a\nkeyframed damped swing. It reads as a rope; it is not solving one. Doing it\nproperly needs a render loop, which this crate deliberately cannot have.",
+      "props": [
+        {
+          "name": "on_pull",
+          "ty": "EventHandler<()>",
+          "required": true,
+          "default": null,
+          "docs": ""
+        },
+        {
+          "name": "actuation",
+          "ty": "f32",
+          "required": false,
+          "default": "26.0",
+          "docs": "Travel in pixels at which it actuates."
+        },
+        {
+          "name": "travel",
+          "ty": "f32",
+          "required": false,
+          "default": "64.0",
+          "docs": "How far it can be dragged before it stops following."
+        },
+        {
+          "name": "label",
+          "ty": "Option<String>",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        }
+      ],
+      "example": {
+        "file": "apps/web/src/main.rs",
+        "line": 724,
+        "code": "PullCord {\n    label: \"Change the foil\",\n    on_pull: move |()| lights_on.toggle(),\n}"
+      },
+      "guarantees": []
+    },
+    {
+      "name": "Vacuum",
+      "module": "motion",
+      "in_isa": false,
+      "intent": null,
+      "emits": null,
+      "docs": "Wraps content that gets sucked toward a point and vanishes.\n\n`target` is the offset to travel, in CSS length units — aim it at wherever\nthe nozzle, bin or tab actually is.",
+      "props": [
+        {
+          "name": "children",
+          "ty": "Element",
+          "required": false,
+          "default": null,
+          "docs": ""
+        },
+        {
+          "name": "active",
+          "ty": "bool",
+          "required": true,
+          "default": null,
+          "docs": ""
+        },
+        {
+          "name": "target",
+          "ty": "(String, String)",
+          "required": false,
+          "default": "(\"0px\".to_string(), \"120px\".to_string())",
+          "docs": ""
+        },
+        {
+          "name": "on_done",
+          "ty": "Option<EventHandler<()>>",
+          "required": false,
+          "default": "Default",
+          "docs": ""
+        }
+      ],
+      "example": {
+        "file": "apps/web/src/main.rs",
+        "line": 760,
+        "code": "Vacuum {\n    active: vacuumed(),\n    target: (\"40px\".to_string(), \"180px\".to_string()),\n    Card {\n        Text { \"Sucked toward a point you choose.\" }\n    }\n}"
+      },
+      "guarantees": []
+    }
+  ],
+  "types": [
+    {
+      "name": "Arrive",
+      "module": "arrive",
+      "kind": "enum",
+      "docs": "How a magnitude mark appears.",
+      "variants": [
+        "Static — At its length from the first paint.",
+        "Grow — Grows from its baseline while it enters the viewport."
+      ],
+      "signatures": []
+    },
+    {
+      "name": "BadgeFill",
+      "module": "primitives",
+      "kind": "enum",
+      "docs": "How a [`Badge`] without a category colour is filled.\n\nAn enum rather than a `class`, because the badge already sets a fill and a\ntext colour of its own, and a second pair passed in through `class` won or\nlost against them by stylesheet order (UI5). A product page once relied on\nthat for every verdict chip it drew.",
+      "variants": [
+        "Default — A plain label.",
+        "Takeable — The thing labelled passes the reader's filter. Spent on nothing else.",
+        "Strong — The emphatic one of a pair, said with fill rather than a hue.",
+        "Quiet — The quiet one of the same pair: present, not asserted.",
+        "Tint — A count beside a heading or tab: the parent's text colour at low strength, so it re-tints with whatever it sits in."
+      ],
+      "signatures": []
+    },
+    {
+      "name": "Boundary",
+      "module": "feedback",
+      "kind": "enum",
+      "docs": "Where an assistant's work runs, as the reader is told it.\n\nA kit-local enum: apps map `rv2_ai::DataBoundary` onto it, so the kit does\nnot depend on `rv2-ai` and a product without it can still say \"on device\".",
+      "variants": [
+        "OnDevice",
+        "RemoteWithConsent — Sent to a remote model, with the reader's consent."
+      ],
+      "signatures": [
+        "fn word(self) -> &'static str"
+      ]
+    },
+    {
+      "name": "Choice",
+      "module": "form",
+      "kind": "struct",
+      "docs": "One option in a [`ChoiceGroup`].",
+      "variants": [],
+      "signatures": [
+        "fn new(value: impl Into<String>, label: impl Into<String>) -> Self",
+        "fn hint(self, hint: impl Into<String>) -> Self"
+      ]
+    },
+    {
+      "name": "ClockDirection",
+      "module": "timer",
+      "kind": "enum",
+      "docs": "Which way a [`TimerReadout`] counts.",
+      "variants": [
+        "Up — Time spent.",
+        "Down — Time left; past zero it shows the overrun with a plus sign."
+      ],
+      "signatures": []
+    },
+    {
+      "name": "ColumnKind",
+      "module": "ledger",
+      "kind": "enum",
+      "docs": "What a [`LedgerTable`] column holds.",
+      "variants": [
+        "Text",
+        "Figure — A number: end-aligned, tabular digits, never wrapped."
+      ],
+      "signatures": []
+    },
+    {
+      "name": "CompareRow",
+      "module": "readout",
+      "kind": "struct",
+      "docs": "One row of a [`CompareTable`]: what is compared, then one cell per option.",
+      "variants": [],
+      "signatures": [
+        "fn new(label: impl Into<String>, cells: Vec<String>) -> Self"
+      ]
+    },
+    {
+      "name": "Dated",
+      "module": "ledger",
+      "kind": "enum",
+      "docs": "What a [`Citation`]'s date records.",
+      "variants": [
+        "Captured — When the figure was copied from the source.",
+        "Checked — When the source was last read and still said this.",
+        "Published — When the source itself was published."
+      ],
+      "signatures": [
+        "fn word(self) -> &'static str"
+      ]
+    },
+    {
+      "name": "DeleteClick",
+      "module": "primitives",
+      "kind": "enum",
+      "docs": "What a click on an [`ArmedDeleteButton`] does next.",
+      "variants": [
+        "Arm",
+        "Confirm"
+      ],
+      "signatures": [
+        "fn next(armed: bool) -> Self"
+      ]
+    },
+    {
+      "name": "Density",
+      "module": "readout",
+      "kind": "enum",
+      "docs": "How loud a [`StatStrip`] is.",
+      "variants": [
+        "Compact — A summary row above a table or a form.",
+        "Hero — The band a page is about: figures at display size."
+      ],
+      "signatures": []
+    },
+    {
+      "name": "DialogKind",
+      "module": "overlay",
+      "kind": "enum",
+      "docs": "Where a [`Dialog`] sits.",
+      "variants": [
+        "Centered — Centred panel, for a decision.",
+        "Drawer — Full-height panel from the inline end, for a form or a detail view beside the list it came from."
+      ],
+      "signatures": []
+    },
+    {
+      "name": "Fact",
+      "module": "site",
+      "kind": "struct",
+      "docs": "A `label → value` row, for cost breakdowns and spec tables.",
+      "variants": [],
+      "signatures": [
+        "fn new(label: impl Into<String>, value: impl Into<String>) -> Self",
+        "fn total(label: impl Into<String>, value: impl Into<String>) -> Self",
+        "fn chosen(label: impl Into<String>, value: impl Into<String>) -> Self"
+      ]
+    },
+    {
+      "name": "FactWeight",
+      "module": "site",
+      "kind": "enum",
+      "docs": "What a [`Fact`] row is in its sum.",
+      "variants": [
+        "Item",
+        "Total — The computed result: bold, under a rule.",
+        "Chosen — A figure someone set that stands in for the computed one — a quote beside the arithmetic that suggested it. Inverted, so it is never read as the sum."
+      ],
+      "signatures": []
+    },
+    {
+      "name": "Foil",
+      "module": "motion",
+      "kind": "enum",
+      "docs": "The foil pattern under the light.",
+      "variants": [
+        "Sunburst — Rays from a point. The classic.",
+        "Cosmos — A swirl, for the cosmic ones.",
+        "Linear — Vintage vertical streaks.",
+        "Rainbow — Full spectrum."
+      ],
+      "signatures": []
+    },
+    {
+      "name": "FooterColumn",
+      "module": "site",
+      "kind": "struct",
+      "docs": "A titled column of links in the [`Footer`].",
+      "variants": [],
+      "signatures": [
+        "fn new(title: impl Into<String>, items: Vec<NavLink>) -> Self"
+      ]
+    },
+    {
+      "name": "Gate",
+      "module": "readout",
+      "kind": "struct",
+      "docs": "One check in a [`GateList`].",
+      "variants": [],
+      "signatures": [
+        "fn new(label: impl Into<String>, verdict: Verdict) -> Self",
+        "fn detail(self, detail: impl Into<String>) -> Self"
+      ]
+    },
+    {
+      "name": "HeadingSize",
+      "module": "typography",
+      "kind": "enum",
+      "docs": "Visual size of a [`Heading`], independent of its semantic level.\n\nThe three larger sizes set `font-display` and `font-heading`, which the\nkit's theme points at the body family at semibold. An app with a display\nface sets `--font-display` and `--font-weight-heading` and every heading\nfollows, instead of each call site spelling the family and weight.",
+      "variants": [
+        "Display — Hero headline.",
+        "Section — Section heading.",
+        "Title — The name of one entry in a list of them, or of a single item's page.",
+        "Card — Card or sub-section heading."
+      ],
+      "signatures": []
+    },
+    {
+      "name": "Lean",
+      "module": "readout",
+      "kind": "enum",
+      "docs": "Which way a figure leans, for a reader deciding whether it is good news.\n\nSaid in colour **and** in a leading sign the caller writes into the value\n(`+£120`, `−4 min`): colour alone is not a judgement anyone can act on.",
+      "variants": [
+        "Neutral",
+        "Good — Under budget, above the floor, ahead of time.",
+        "Close — Close to a limit, not over it.",
+        "Bad — Over budget, below the floor, behind."
+      ],
+      "signatures": []
+    },
+    {
+      "name": "LedgerCell",
+      "module": "ledger",
+      "kind": "struct",
+      "docs": "One cell: its value, an optional second line, and the ink of the value.",
+      "variants": [],
+      "signatures": [
+        "fn new(value: impl Into<String>) -> Self",
+        "fn note(mut self, note: impl Into<String>) -> Self",
+        "fn lean(mut self, lean: Lean) -> Self",
+        "fn href(mut self, href: impl Into<String>) -> Self",
+        "impl<T: Into<String>> From<T> for LedgerCell"
+      ]
+    },
+    {
+      "name": "LedgerColumn",
+      "module": "ledger",
+      "kind": "struct",
+      "docs": "One column of a [`LedgerTable`].",
+      "variants": [],
+      "signatures": [
+        "fn text(label: impl Into<String>) -> Self",
+        "fn figure(label: impl Into<String>) -> Self"
+      ]
+    },
+    {
+      "name": "LedgerRow",
+      "module": "ledger",
+      "kind": "struct",
+      "docs": "One record of a [`LedgerTable`].",
+      "variants": [],
+      "signatures": [
+        "fn new(key: impl Into<String>, cells: Vec<LedgerCell>) -> Self",
+        "fn voided(mut self) -> Self",
+        "fn milestone(mut self) -> Self",
+        "fn action(mut self, action: Element) -> Self"
+      ]
+    },
+    {
+      "name": "Mood",
+      "module": "motion",
+      "kind": "enum",
+      "docs": "What the blob is feeling. Drives the eyes and mouth.",
+      "variants": [
+        "Neutral",
+        "Happy",
+        "Sad",
+        "Angry",
+        "Hmm — Thinking. One eye narrowed.",
+        "SideEye — Looking away, unimpressed.",
+        "Password — Eyes shut. For a password field — the blob is not looking."
+      ],
+      "signatures": []
+    },
+    {
+      "name": "NavLink",
+      "module": "product_shell",
+      "kind": "struct",
+      "docs": "A link in the kit's navigation: a header route, a rail entry, a footer\nlink, a header call-to-action.\n\nOne record for all of them. There used to be three — `NavItem`,\n`ProductNavItem` and `ProductHeaderAction` — each carrying the same label,\nhref and external flag with its own constructors, so a footer link and a\nheader link could not be the same value.\n\n`key` is the stable route identity that `current` is matched against, so a\nlabel or URL can change without breaking current-page state. A link that is\nnever \"the current page\" — a footer link, a call-to-action — has no key.",
+      "variants": [],
+      "signatures": [
+        "fn new(label: impl Into<String>, href: impl Into<String>) -> Self",
+        "fn route(key: impl Into<String>, label: impl Into<String>, href: impl Into<String>,) -> Self",
+        "fn external(self) -> Self"
+      ]
+    },
+    {
+      "name": "Pace",
+      "module": "timer",
+      "kind": "enum",
+      "docs": "Where a timed run stands against its plan.",
+      "variants": [
+        "OnPace",
+        "Closing — At or past the warning share of the plan.",
+        "Over — Past the plan."
+      ],
+      "signatures": [
+        "fn word(self) -> &'static str"
+      ]
+    },
+    {
+      "name": "Pad",
+      "module": "feedback",
+      "kind": "enum",
+      "docs": "Inner spacing of a [`Card`].\n\nTwo values, because two is what the pages need: a list of cards that should\nread as a list, and a single card that is the whole of its section. Hand-made\nsurfaces had been using four (`p-3`, `p-4`, `p-6`, `p-8`), which is the\ndrift and not a design. `None` is a card whose content brings its own edge —\na table running to the border.",
+      "variants": [
+        "None",
+        "Default",
+        "Roomy"
+      ],
+      "signatures": []
+    },
+    {
+      "name": "Part",
+      "module": "readout",
+      "kind": "struct",
+      "docs": "One part of a [`SplitBar`].",
+      "variants": [],
+      "signatures": [
+        "fn new(label: impl Into<String>, amount: f64, readout: impl Into<String>, colour: impl Into<String>,) -> Self"
+      ]
+    },
+    {
+      "name": "PopoverAlign",
+      "module": "overlay",
+      "kind": "enum",
+      "docs": "Which edge of its trigger a [`Popover`] lines up with.",
+      "variants": [
+        "Start",
+        "End"
+      ],
+      "signatures": []
+    },
+    {
+      "name": "PopoverRole",
+      "module": "overlay",
+      "kind": "enum",
+      "docs": "What a [`Popover`]'s panel holds, which sets its role.",
+      "variants": [
+        "Content — Controls or links; no role.",
+        "Note — An explanation the reader asked for: `role=\"note\"`."
+      ],
+      "signatures": []
+    },
+    {
+      "name": "Press",
+      "module": "tactile",
+      "kind": "enum",
+      "docs": "Which of the two tactile treatments a control takes.",
+      "variants": [
+        "Primary — Ink fill on a deeper ledge. One per view: the action the page is for.",
+        "Soft — Soft fill with an edge. Everything else that still deserves a ledge.",
+        "Offset — Square, two-pixel ink border, hard diagonal shadow. The ledger look Logo Handoff, Talk Run Card, Sponsor Ledger and Solar Quote Check each drew by hand."
+      ],
+      "signatures": []
+    },
+    {
+      "name": "ProcessStep",
+      "module": "product_shell",
+      "kind": "struct",
+      "docs": "One stage in a [`ProcessRail`].",
+      "variants": [],
+      "signatures": [
+        "fn new(label: impl Into<String>, hint: impl Into<String>) -> Self",
+        "fn linked(label: impl Into<String>, hint: impl Into<String>, href: impl Into<String>,) -> Self"
+      ]
+    },
+    {
+      "name": "QandA",
+      "module": "site",
+      "kind": "struct",
+      "docs": "One question/answer pair.",
+      "variants": [],
+      "signatures": [
+        "fn new(question: impl Into<String>, answer: impl Into<String>) -> Self"
+      ]
+    },
+    {
+      "name": "QueueItem",
+      "module": "queue",
+      "kind": "struct",
+      "docs": "One row of an [`AttentionQueue`].",
+      "variants": [],
+      "signatures": [
+        "fn go(id: impl Into<String>, title: impl Into<String>, reason: impl Into<String>, label: impl Into<String>, href: impl Into<String>,) -> Self",
+        "fn state(id: impl Into<String>, title: impl Into<String>, reason: impl Into<String>, label: impl Into<String>, verdict: Verdict,) -> Self"
+      ]
+    },
+    {
+      "name": "QueueTrail",
+      "module": "queue",
+      "kind": "enum",
+      "docs": "The end of a queue row.",
+      "variants": [
+        "Go — The row is a link to where the work happens.",
+        "State — The row reports a state; nothing to follow."
+      ],
+      "signatures": []
+    },
+    {
+      "name": "RailLayout",
+      "module": "product_shell",
+      "kind": "enum",
+      "docs": "Which way a [`ProcessRail`] runs.",
+      "variants": [
+        "Row — Steps side by side, two per row on a phone.",
+        "Column — Steps stacked: a timeline beside the content it tracks, or a stepper in a narrow column. Edit Scope's timeline and Reefdose's stepper."
+      ],
+      "signatures": []
+    },
+    {
+      "name": "ReasonStyle",
+      "module": "queue",
+      "kind": "enum",
+      "docs": "How a row's reason reads.",
+      "variants": [
+        "Prose",
+        "Evidence — Measured evidence — \"3 sessions missed\" — in mono tabular digits."
+      ],
+      "signatures": []
+    },
+    {
+      "name": "Redline",
+      "module": "readout",
+      "kind": "struct",
+      "docs": "One changed field in a [`RedlineDiff`].",
+      "variants": [],
+      "signatures": [
+        "fn new(label: impl Into<String>, before: impl Into<String>, after: impl Into<String>,) -> Self"
+      ]
+    },
+    {
+      "name": "RowState",
+      "module": "ledger",
+      "kind": "enum",
+      "docs": "What a [`LedgerRow`] is, beyond its figures.",
+      "variants": [
+        "Normal",
+        "Voided — Kept for the record and no longer counted. Every cell says so in words to assistive technology, since a reader moving cell by cell may never hear the row header; on screen the cells after the header are struck through and the row drops to muted ink.",
+        "Milestone — A boundary in the run — a year end, a subtotal."
+      ],
+      "signatures": []
+    },
+    {
+      "name": "SegmentFlow",
+      "module": "form",
+      "kind": "enum",
+      "docs": "How a [`SegmentedControl`] lays out its segments.",
+      "variants": [
+        "Row — One joined row at every width.",
+        "StackNarrow — A joined column below `sm`, for labels too long to share a phone's row."
+      ],
+      "signatures": []
+    },
+    {
+      "name": "Size",
+      "module": "primitives",
+      "kind": "enum",
+      "docs": "Control height.",
+      "variants": [
+        "Small — Inline with dense content: a demo's controls, a toolbar of many.",
+        "Default",
+        "Large — Hero call-to-action."
+      ],
+      "signatures": []
+    },
+    {
+      "name": "Space",
+      "module": "layout",
+      "kind": "enum",
+      "docs": "Vertical rhythm between page sections.",
+      "variants": [
+        "Tight",
+        "Default",
+        "Loose"
+      ],
+      "signatures": []
+    },
+    {
+      "name": "Stat",
+      "module": "readout",
+      "kind": "struct",
+      "docs": "One cell of a [`StatStrip`].",
+      "variants": [],
+      "signatures": [
+        "fn new(label: impl Into<String>, value: impl Into<String>) -> Self",
+        "fn note(self, note: impl Into<String>) -> Self",
+        "fn lean(self, lean: Lean) -> Self"
+      ]
+    },
+    {
+      "name": "StatusTone",
+      "module": "primitives",
+      "kind": "enum",
+      "docs": "How a [`Status`] reads at a glance.\n\nNamed apart from [`crate::typography::Tone`], which grades text emphasis\nrather than health.",
+      "variants": [
+        "Ok",
+        "Warn",
+        "Bad",
+        "Muted"
+      ],
+      "signatures": [
+        "fn dot(self) -> &'static str",
+        "fn text(self) -> &'static str"
+      ]
+    },
+    {
+      "name": "Step",
+      "module": "site",
+      "kind": "struct",
+      "docs": "One step of a numbered process.",
+      "variants": [],
+      "signatures": [
+        "fn new(title: impl Into<String>, body: impl Into<String>) -> Self"
+      ]
+    },
+    {
+      "name": "Surface",
+      "module": "feedback",
+      "kind": "enum",
+      "docs": "The edge of a [`Card`].",
+      "variants": [
+        "Flat — Hairline border, rounded, no shadow.",
+        "Slab — Square, a 2px ink border and a hard offset shadow: the printed-slab look of Logo Handoff, Talk Run Card, Sponsor Ledger and Solar Quote. Pairs with [`crate::Press::Offset`]."
+      ],
+      "signatures": []
+    },
+    {
+      "name": "Tab",
+      "module": "tabs",
+      "kind": "struct",
+      "docs": "One selectable tab.",
+      "variants": [],
+      "signatures": [
+        "fn new(value: impl Into<String>, label: impl Into<String>) -> Self"
+      ]
+    },
+    {
+      "name": "Toast",
+      "module": "overlay",
+      "kind": "struct",
+      "docs": "One notification.",
+      "variants": [],
+      "signatures": [
+        "fn life_ms(&self) -> Option<u64>",
+        "fn assertive(&self) -> bool"
+      ]
+    },
+    {
+      "name": "ToastHandle",
+      "module": "overlay",
+      "kind": "struct",
+      "docs": "Raises and dismisses toasts. Copy it into any handler.",
+      "variants": [],
+      "signatures": [
+        "fn raise(self, verdict: Verdict, message: impl Into<String>) -> u64",
+        "fn raise_titled(self, verdict: Verdict, title: impl Into<String>, message: impl Into<String>,) -> u64",
+        "fn dismiss(self, id: u64)"
+      ]
+    },
+    {
+      "name": "ToastQueue",
+      "module": "overlay",
+      "kind": "struct",
+      "docs": "The toasts on screen, oldest first.",
+      "variants": [],
+      "signatures": [
+        "fn push(&mut self, verdict: Verdict, title: Option<String>, message: String) -> u64",
+        "fn dismiss(&mut self, id: u64)",
+        "fn toasts(&self) -> &[Toast]"
+      ]
+    },
+    {
+      "name": "Tone",
+      "module": "typography",
+      "kind": "enum",
+      "docs": "Body text tone.\n\nThe tone owns the paragraph's colour, and a `class` passed to [`Text`]\ncannot override it reliably: two colour utilities on one element resolve by\nstylesheet order, not by which was written last. So a paragraph that needs\na different colour needs a tone, not a class (UI5). `OnInk` is the one that\nwas missing — secondary text on an ink-filled plate, which `apps/web` had\nbeen writing by hand because `Text` kept painting it dark-on-dark.",
+      "variants": [
+        "Default",
+        "Muted",
+        "Small",
+        "Lead",
+        "OnInk"
+      ],
+      "signatures": []
+    },
+    {
+      "name": "Variant",
+      "module": "primitives",
+      "kind": "enum",
+      "docs": "Visual weight of a [`Button`] or [`LinkButton`].\n\n`Outline` is the quiet secondary action — \"Clear every filter\", \"Export CSV\"\n— that apps had been hand-writing as `rounded-md border border-rule …` seven\ntimes. `Link` is a button that reads as a text link, for an action sitting\nin running text where a filled control would shout; it is still a\n`<button>`, because it does something rather than going somewhere.",
+      "variants": [
+        "Primary",
+        "Secondary",
+        "Outline",
+        "Danger",
+        "Ghost",
+        "Link"
+      ],
+      "signatures": []
+    },
+    {
+      "name": "Verdict",
+      "module": "feedback",
+      "kind": "enum",
+      "docs": "What a [`Callout`] or [`Receipt`] is telling the reader.",
+      "variants": [
+        "Note — Context worth reading; no judgement.",
+        "Clear — The check passed: it applies, it is ready, it is above the floor.",
+        "Caution — Not wrong, not finished: missing evidence, stale, open.",
+        "Stop — It does not apply, it failed, it is below the floor."
+      ],
+      "signatures": []
+    },
+    {
+      "name": "Width",
+      "module": "layout",
+      "kind": "enum",
+      "docs": "Horizontal content width.\n\n`Prose` is deliberately narrower than `Default`: long-form reading breaks\ndown past roughly 75 characters per line, so guide pages want a tighter\nmeasure than a three-column card grid does.\n\n`Narrow` is a single form — sign-in and the like — where a wider column only\nstretches the inputs. `Dense` is a data screen that wants every column it can\nget: a filter rail beside a results table. It also takes the smaller gutter,\nbecause on such a screen the gutter is width the data does not get.",
+      "variants": [
+        "Narrow",
+        "Prose",
+        "Default",
+        "Wide",
+        "Dense"
+      ],
+      "signatures": []
+    },
+    {
+      "name": "clock",
+      "module": "timer",
+      "kind": "fn",
+      "docs": "Seconds as `m:ss`, or `h:mm:ss` from an hour.",
+      "variants": [],
+      "signatures": [
+        "fn clock(secs: u32) -> String"
+      ]
+    },
+    {
+      "name": "command_matches",
+      "module": "command_select",
+      "kind": "fn",
+      "docs": "Matches every search word against the visible label, retaining caller order.",
+      "variants": [],
+      "signatures": [
+        "fn command_matches(label: &str, query: &str) -> bool"
+      ]
+    },
+    {
+      "name": "command_step",
+      "module": "command_select",
+      "kind": "fn",
+      "docs": "Arrow navigation wraps; an empty list never produces an option index.",
+      "variants": [],
+      "signatures": [
+        "fn command_step(current: usize, count: usize, previous: bool) -> Option<usize>"
+      ]
+    },
+    {
+      "name": "field_description",
+      "module": "form",
+      "kind": "fn",
+      "docs": "IDs of the nonempty messages rendered by [`FieldShell`].",
+      "variants": [],
+      "signatures": [
+        "fn field_description(id: &str, help: Option<&str>, error: Option<&str>) -> Option<String>"
+      ]
+    },
+    {
+      "name": "pace",
+      "module": "timer",
+      "kind": "fn",
+      "docs": "The pace band for `elapsed` of `planned` seconds, closing from `warn_pct`\npercent of the plan. Over means strictly past the plan.",
+      "variants": [],
+      "signatures": [
+        "fn pace(elapsed: u32, planned: u32, warn_pct: u8) -> Pace"
+      ]
+    },
+    {
+      "name": "spark_points",
+      "module": "sparkline",
+      "kind": "fn",
+      "docs": "SVG polyline points for `values` across `width` × `height`.\n\nEmpty when any value is not finite or the box is empty, so a broken series\ndraws nothing rather than a line through invented data. One value, or a\nflat series, is a line across the middle.",
+      "variants": [],
+      "signatures": [
+        "fn spark_points(values: &[f64], width: f64, height: f64) -> String"
+      ]
+    },
+    {
+      "name": "use_toast",
+      "module": "overlay",
+      "kind": "fn",
+      "docs": "The handle from the nearest [`ToastProvider`]. Panics without one.",
+      "variants": [],
+      "signatures": [
+        "fn use_toast() -> ToastHandle"
+      ]
+    }
+  ]
+}
