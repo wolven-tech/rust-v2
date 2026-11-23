@@ -130,6 +130,11 @@ default.
 | Contain | `Card`, `Section`, `Container`, `Grid`, `Divider` | `div`/`section`/`hr` | 9 hand-rolled surfaces, raw `max-w-*` wrappers |
 | Reveal | `Disclosure`, `Faq` | `details` | — (the hiring filter rail keeps its own `details` inside a `Card`: its summary holds a heading, a count and an action, which `Disclosure`'s text summary cannot) |
 | Say | `Heading`, `Text`, `Eyebrow` | `h1`–`h4`, `p` | raw headings in `hiring`, `app` |
+| Title a page, with its actions | `PageHeader` | `header` with `h1`, subtitle and an action slot | — |
+| Label a custom control | `FieldShell` | `label` + help and error lines the caller binds by id | — |
+| Number a step | `StepMarker` | `span`, zero-padded | — (inside `FeatureCard` and `StepList`) |
+| Enter a page | `PageEntrance` | `div` with a finite CSS entrance, none under reduced motion | — |
+| Ask for consent | `ConsentFooter` | the shared consent stylesheet and script; a product adapter mounts it ([`../design-system/consent-footer.md`](../design-system/consent-footer.md)) | — |
 | Signal | `Badge`, `Status`, `Swatch`, `Bar` | `span`/`div` | — |
 | Report state | `EmptyState`, `Skeleton`, `ErrorBanner` | — | — |
 | Navigate | `ProductHeader`, `NavigationRail`, `ProcessRail`, `Tabs`, `Footer` | `header`/`nav` | — |
@@ -225,8 +230,10 @@ an element whose markup is the thing being demonstrated — and the
 directly above it. "The instruction did not support my case" is not an
 exception; it is an operand to add.
 
-The check (`apps speak the kit`, `tooling/xtask/src/isa.rs`) scans
-`apps/*/src`. It does not scan `examples/`, which preview the kit's own markup,
+The check (`apps speak the kit`, `tooling/kit/src/isa.rs`) scans
+`apps/*/src`. Repositories built on the kit run the same scan with
+`rv2-kit check`; each finding names the instructions that replace the raw
+element. It does not scan `examples/`, which preview the kit's own markup,
 or the kit itself, whose job is emitting markup. At the time of writing no
 exception exists; the first one was `apps/hiring`'s skip link.
 
