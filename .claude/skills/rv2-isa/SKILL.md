@@ -11,6 +11,9 @@ vocabulary: **instructions** (components), **operands** (enums such as
 job). `class` carries layout only, never colour, type or radius (UI5). The
 rules are UI1–UI9 in `docs/architecture/003-ui-semantic-isa.md`.
 
+For UI an agent places at runtime rather than RSX you write, see the
+`rv2-a2ui` skill; `rv2-isa catalog` lists what an agent may place.
+
 ## Install once
 
 ```sh

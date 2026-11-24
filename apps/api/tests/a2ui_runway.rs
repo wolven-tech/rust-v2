@@ -1,17 +1,20 @@
-//! The runway agent's output is applied through the same `Surfaces` the app
-//! renders from, so a message the catalog would refuse fails here rather than
-//! in a browser.
+//! The runway agent's output is applied as the client applies it, so a
+//! message the catalog would refuse fails here rather than in a browser.
 
 use api::presentation::agents::runway::{self, CALCULATE, SURFACE_ID};
 use rv2_a2ui::catalog::{Lean, Verdict};
-use rv2_a2ui::{ActionMessage, Node, Surfaces};
+use rv2_a2ui::testing::apply_as_client;
+use rv2_a2ui::{ActionMessage, Node, ServerMessage, Surfaces};
 use serde_json::{Map, Value, json};
+
+#[track_caller]
+fn apply(surfaces: &mut Surfaces, messages: &[ServerMessage]) {
+    apply_as_client(surfaces, messages).unwrap_or_else(|e| panic!("{e}"));
+}
 
 fn opened() -> Surfaces {
     let mut surfaces = Surfaces::new();
-    surfaces
-        .apply_all(&runway::open())
-        .expect("the opening stream applies");
+    apply(&mut surfaces, &runway::open());
     surfaces
 }
 
@@ -32,7 +35,7 @@ fn calculate(cash: Value, burn: Value) -> ActionMessage {
 fn answer(cash: Value, burn: Value) -> (Verdict, String, Option<(String, Lean)>) {
     let mut surfaces = opened();
     let messages = runway::act(&calculate(cash, burn)).expect("a calculate action is answered");
-    surfaces.apply_all(&messages).expect("the answer applies");
+    apply(&mut surfaces, &messages);
     let surface = surfaces.get(SURFACE_ID).unwrap();
 
     let Some(Node::Callout { verdict, text, .. }) = surface.node("verdict") else {
@@ -89,9 +92,10 @@ fn no_net_burn_has_no_limit() {
 #[test]
 fn figures_are_written_as_whole_pounds() {
     let mut surfaces = opened();
-    surfaces
-        .apply_all(&runway::act(&calculate(json!("1234567.6"), json!("1000"))).unwrap())
-        .unwrap();
+    apply(
+        &mut surfaces,
+        &runway::act(&calculate(json!("1234567.6"), json!("1000"))).unwrap(),
+    );
     assert_eq!(
         surfaces.get(SURFACE_ID).unwrap().data()["result"]["cash"],
         json!("£1,234,568")
@@ -101,12 +105,14 @@ fn figures_are_written_as_whole_pounds() {
 #[test]
 fn input_the_user_can_fix_is_answered_on_the_surface_and_hides_the_old_figure() {
     let mut surfaces = opened();
-    surfaces
-        .apply_all(&runway::act(&calculate(json!("120000"), json!("15000"))).unwrap())
-        .unwrap();
-    surfaces
-        .apply_all(&runway::act(&calculate(json!(""), json!("15000"))).unwrap())
-        .unwrap();
+    apply(
+        &mut surfaces,
+        &runway::act(&calculate(json!("120000"), json!("15000"))).unwrap(),
+    );
+    apply(
+        &mut surfaces,
+        &runway::act(&calculate(json!(""), json!("15000"))).unwrap(),
+    );
     let surface = surfaces.get(SURFACE_ID).unwrap();
     assert_eq!(surface.node("result").unwrap().children(), ["verdict"]);
     let Some(Node::Callout { verdict, text, .. }) = surface.node("verdict") else {

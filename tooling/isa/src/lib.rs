@@ -12,10 +12,13 @@
 //! - [`index`] — every instruction with its intent, props, an example and the
 //!   tests that pin it, generated from source into
 //!   `docs/design-system/kit-index.{md,json}`.
+//! - [`a2ui`] — which instructions an agent may place through the A2UI
+//!   catalog, read from `rv2_a2ui::catalog::COMPONENTS`.
 //!
-//! `cargo xtask ci` runs both against this repository.
+//! `cargo xtask ci` runs them against this repository.
 
 #![forbid(unsafe_code)]
 
+pub mod a2ui;
 pub mod index;
 pub mod isa;

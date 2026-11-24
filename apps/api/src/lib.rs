@@ -76,6 +76,7 @@ pub fn build_router(state: Arc<AppState>) -> Router {
             get(handlers::users::get_one).patch(handlers::users::update),
         )
         .route("/me", get(handlers::users::me))
+        .route("/a2ui/catalog", get(handlers::a2ui::catalog))
         .route("/a2ui/surfaces/{name}", get(handlers::a2ui::open))
         .route("/a2ui/actions", post(handlers::a2ui::act))
         .route("/a2ui/errors", post(handlers::a2ui::report))

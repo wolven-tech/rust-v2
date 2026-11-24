@@ -1,0 +1,709 @@
+{
+  "$defs": {
+    "Action": {
+      "additionalProperties": false,
+      "properties": {
+        "event": {
+          "additionalProperties": false,
+          "properties": {
+            "context": {
+              "description": "Literal values, or {\"path\"} bindings the client resolves before sending.",
+              "type": "object"
+            },
+            "name": {
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          "required": [
+            "name"
+          ],
+          "type": "object"
+        }
+      },
+      "required": [
+        "event"
+      ],
+      "type": "object"
+    },
+    "ComponentId": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "DataBinding": {
+      "additionalProperties": false,
+      "properties": {
+        "path": {
+          "pattern": "^/",
+          "type": "string"
+        }
+      },
+      "required": [
+        "path"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "rv2:a2ui/catalog/v1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "catalogId": "rv2:a2ui/catalog/v1",
+  "components": {
+    "Button": {
+      "additionalProperties": false,
+      "description": "Sends an action to the agent. With no action it is disabled.",
+      "properties": {
+        "action": {
+          "$ref": "#/$defs/Action",
+          "description": "The event sent when pressed."
+        },
+        "component": {
+          "const": "Button"
+        },
+        "id": {
+          "$ref": "#/$defs/ComponentId"
+        },
+        "label": {
+          "description": "The button's text.",
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "#/$defs/DataBinding"
+            }
+          ]
+        },
+        "variant": {
+          "description": "Emphasis.",
+          "enum": [
+            "primary",
+            "secondary",
+            "outline",
+            "danger",
+            "ghost"
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "component",
+        "label"
+      ],
+      "type": "object"
+    },
+    "Callout": {
+      "additionalProperties": false,
+      "description": "A verdict strip: the title says the verdict in words, the edge repeats it.",
+      "properties": {
+        "component": {
+          "const": "Callout"
+        },
+        "id": {
+          "$ref": "#/$defs/ComponentId"
+        },
+        "text": {
+          "description": "The body.",
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "#/$defs/DataBinding"
+            }
+          ]
+        },
+        "title": {
+          "description": "The verdict in words.",
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "#/$defs/DataBinding"
+            }
+          ]
+        },
+        "verdict": {
+          "description": "What the callout is telling the reader. stop is announced as an alert.",
+          "enum": [
+            "note",
+            "clear",
+            "caution",
+            "stop"
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "component",
+        "text"
+      ],
+      "type": "object"
+    },
+    "Card": {
+      "additionalProperties": false,
+      "description": "A bordered surface around its children.",
+      "properties": {
+        "children": {
+          "description": "Ids of the components inside, in order.",
+          "items": {
+            "$ref": "#/$defs/ComponentId"
+          },
+          "type": "array"
+        },
+        "component": {
+          "const": "Card"
+        },
+        "id": {
+          "$ref": "#/$defs/ComponentId"
+        },
+        "pad": {
+          "description": "Inner spacing.",
+          "enum": [
+            "default",
+            "none",
+            "roomy"
+          ]
+        },
+        "surface": {
+          "description": "flat: hairline border. slab: ink border and offset shadow.",
+          "enum": [
+            "flat",
+            "slab"
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "component",
+        "children"
+      ],
+      "type": "object"
+    },
+    "Column": {
+      "additionalProperties": false,
+      "description": "Stacks its children vertically. Layout only.",
+      "properties": {
+        "children": {
+          "description": "Ids of the components inside, in order.",
+          "items": {
+            "$ref": "#/$defs/ComponentId"
+          },
+          "type": "array"
+        },
+        "component": {
+          "const": "Column"
+        },
+        "id": {
+          "$ref": "#/$defs/ComponentId"
+        }
+      },
+      "required": [
+        "id",
+        "component",
+        "children"
+      ],
+      "type": "object"
+    },
+    "Grid": {
+      "additionalProperties": false,
+      "description": "Lays its children out in equal columns, one column on a narrow screen.",
+      "properties": {
+        "children": {
+          "description": "Ids of the components inside, in order.",
+          "items": {
+            "$ref": "#/$defs/ComponentId"
+          },
+          "type": "array"
+        },
+        "columns": {
+          "description": "Columns at full width. Default 3.",
+          "maximum": 4,
+          "minimum": 1,
+          "type": "integer"
+        },
+        "component": {
+          "const": "Grid"
+        },
+        "id": {
+          "$ref": "#/$defs/ComponentId"
+        }
+      },
+      "required": [
+        "id",
+        "component",
+        "children"
+      ],
+      "type": "object"
+    },
+    "Heading": {
+      "additionalProperties": false,
+      "description": "A heading. Level sets the outline, size sets the look.",
+      "properties": {
+        "component": {
+          "const": "Heading"
+        },
+        "id": {
+          "$ref": "#/$defs/ComponentId"
+        },
+        "level": {
+          "description": "h1 to h4. Default 2.",
+          "maximum": 4,
+          "minimum": 1,
+          "type": "integer"
+        },
+        "size": {
+          "description": "Visual size.",
+          "enum": [
+            "section",
+            "display",
+            "title",
+            "card"
+          ]
+        },
+        "text": {
+          "description": "The heading.",
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "#/$defs/DataBinding"
+            }
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "component",
+        "text"
+      ],
+      "type": "object"
+    },
+    "Meter": {
+      "additionalProperties": false,
+      "description": "How far a quantity is towards its limit; turns at the given shares.",
+      "properties": {
+        "component": {
+          "const": "Meter"
+        },
+        "criticalAt": {
+          "description": "Share of max from which the fill shows fault.",
+          "maximum": 1,
+          "minimum": 0,
+          "type": "number"
+        },
+        "id": {
+          "$ref": "#/$defs/ComponentId"
+        },
+        "label": {
+          "description": "What is measured.",
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "#/$defs/DataBinding"
+            }
+          ]
+        },
+        "max": {
+          "description": "The limit.",
+          "oneOf": [
+            {
+              "type": "number"
+            },
+            {
+              "$ref": "#/$defs/DataBinding"
+            }
+          ]
+        },
+        "readout": {
+          "description": "The amount in words, shown beside the fill.",
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "#/$defs/DataBinding"
+            }
+          ]
+        },
+        "value": {
+          "description": "The current amount.",
+          "oneOf": [
+            {
+              "type": "number"
+            },
+            {
+              "$ref": "#/$defs/DataBinding"
+            }
+          ]
+        },
+        "warnAt": {
+          "description": "Share of max from which the fill shows caution.",
+          "maximum": 1,
+          "minimum": 0,
+          "type": "number"
+        }
+      },
+      "required": [
+        "id",
+        "component",
+        "label",
+        "value",
+        "max",
+        "readout"
+      ],
+      "type": "object"
+    },
+    "ResultPanel": {
+      "additionalProperties": false,
+      "description": "A calculator's answer: a label, one large figure announced when it changes.",
+      "properties": {
+        "component": {
+          "const": "ResultPanel"
+        },
+        "context": {
+          "description": "The period or basis.",
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "#/$defs/DataBinding"
+            }
+          ]
+        },
+        "id": {
+          "$ref": "#/$defs/ComponentId"
+        },
+        "label": {
+          "description": "What the figure is.",
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "#/$defs/DataBinding"
+            }
+          ]
+        },
+        "lean": {
+          "description": "Whether the figure is good news.",
+          "enum": [
+            "neutral",
+            "good",
+            "close",
+            "bad"
+          ]
+        },
+        "value": {
+          "description": "The figure, as text, with its sign and unit.",
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "#/$defs/DataBinding"
+            }
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "component",
+        "label",
+        "value"
+      ],
+      "type": "object"
+    },
+    "Stamp": {
+      "additionalProperties": false,
+      "description": "A short outline status tag in capitals.",
+      "properties": {
+        "component": {
+          "const": "Stamp"
+        },
+        "id": {
+          "$ref": "#/$defs/ComponentId"
+        },
+        "text": {
+          "description": "One or two words.",
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "#/$defs/DataBinding"
+            }
+          ]
+        },
+        "verdict": {
+          "description": "The colour that repeats the word.",
+          "enum": [
+            "note",
+            "clear",
+            "caution",
+            "stop"
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "component",
+        "text"
+      ],
+      "type": "object"
+    },
+    "StatStrip": {
+      "additionalProperties": false,
+      "description": "A row of headline figures, each with its label.",
+      "properties": {
+        "component": {
+          "const": "StatStrip"
+        },
+        "density": {
+          "description": "compact: a summary row. hero: the band the page is about.",
+          "enum": [
+            "compact",
+            "hero"
+          ]
+        },
+        "id": {
+          "$ref": "#/$defs/ComponentId"
+        },
+        "stats": {
+          "description": "The figures, in order.",
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "label": {
+                "oneOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "$ref": "#/$defs/DataBinding"
+                  }
+                ]
+              },
+              "lean": {
+                "enum": [
+                  "neutral",
+                  "good",
+                  "close",
+                  "bad"
+                ]
+              },
+              "note": {
+                "oneOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "$ref": "#/$defs/DataBinding"
+                  }
+                ]
+              },
+              "value": {
+                "oneOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "$ref": "#/$defs/DataBinding"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "label",
+              "value"
+            ],
+            "type": "object"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "component",
+        "stats"
+      ],
+      "type": "object"
+    },
+    "Text": {
+      "additionalProperties": false,
+      "description": "A paragraph.",
+      "properties": {
+        "component": {
+          "const": "Text"
+        },
+        "id": {
+          "$ref": "#/$defs/ComponentId"
+        },
+        "text": {
+          "description": "The paragraph.",
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "#/$defs/DataBinding"
+            }
+          ]
+        },
+        "tone": {
+          "description": "Size and emphasis.",
+          "enum": [
+            "default",
+            "muted",
+            "small",
+            "lead"
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "component",
+        "text"
+      ],
+      "type": "object"
+    },
+    "TextField": {
+      "additionalProperties": false,
+      "description": "A labelled text input that writes to the data model as the user types.",
+      "properties": {
+        "component": {
+          "const": "TextField"
+        },
+        "help": {
+          "description": "A line under the field.",
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "#/$defs/DataBinding"
+            }
+          ]
+        },
+        "id": {
+          "$ref": "#/$defs/ComponentId"
+        },
+        "inputType": {
+          "description": "The input's type.",
+          "enum": [
+            "text",
+            "email",
+            "number"
+          ]
+        },
+        "label": {
+          "description": "The label.",
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "#/$defs/DataBinding"
+            }
+          ]
+        },
+        "placeholder": {
+          "description": "Example input.",
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "#/$defs/DataBinding"
+            }
+          ]
+        },
+        "value": {
+          "$ref": "#/$defs/DataBinding",
+          "description": "Where the input reads and writes."
+        }
+      },
+      "required": [
+        "id",
+        "component",
+        "label",
+        "value"
+      ],
+      "type": "object"
+    },
+    "UnitField": {
+      "additionalProperties": false,
+      "description": "A labelled number input with its unit inside the box.",
+      "properties": {
+        "component": {
+          "const": "UnitField"
+        },
+        "help": {
+          "description": "A line under the field.",
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "#/$defs/DataBinding"
+            }
+          ]
+        },
+        "id": {
+          "$ref": "#/$defs/ComponentId"
+        },
+        "label": {
+          "description": "The label; name the unit here for screen readers.",
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "#/$defs/DataBinding"
+            }
+          ]
+        },
+        "prefix": {
+          "description": "A unit before the number.",
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "#/$defs/DataBinding"
+            }
+          ]
+        },
+        "suffix": {
+          "description": "A unit after the number.",
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "#/$defs/DataBinding"
+            }
+          ]
+        },
+        "value": {
+          "$ref": "#/$defs/DataBinding",
+          "description": "Where the input reads and writes."
+        }
+      },
+      "required": [
+        "id",
+        "component",
+        "label",
+        "value"
+      ],
+      "type": "object"
+    }
+  },
+  "description": "Components an agent may place on an rv2 surface. Additive only: a v1 prop or component is never renamed or removed. Values bind with {\"path\": \"/…\"} only; function calls, relative paths and child-list templates are rejected.",
+  "functions": {},
+  "title": "rv2 A2UI catalog, v1"
+}
