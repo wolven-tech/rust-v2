@@ -184,6 +184,7 @@ pub fn ContinentHighlightMap(
                     },
                     span { class: "kit-map__switch-name", "Region" }
                     span { class: "kit-map__switch-value", "{selected_label}" }
+                    span { class: "kit-map__chevron", "aria-hidden": "true" }
                 }
                 if is_open {
                     div {

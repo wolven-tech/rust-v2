@@ -58,3 +58,23 @@ In reading order (back to front):
 5. With reduced motion preferred, the card stays flat and the glare is static.
 6. With `touch_behaviour` "none", a tap does not tilt the card.
 7. At phone width the card keeps its layout and nothing scrolls sideways.
+
+## Amendment 5: structure and demo
+
+Archetype: one membership-style card, flat at rest, with a caption beneath.
+
+Visible at rest:
+- Card with its own content: a name line with a contactless mark at its top right; a chip graphic at the left under the name; a masked card number ending in four digits; two labelled fields, "Member" with the holder's name and "Since" with a month and year.
+- Card background: the accent gradient token.
+- Caption beneath the card in small text.
+
+Gallery demo: name "Ledger Plus", holder "Jamie Rivera", since "03/24", number "•••• •••• •••• 2750", caption "Move the pointer over the card".
+
+Motion, settled frame: card flat; glare hidden at its edge.
+Moves: the card tilts toward the pointer; the glare follows the pointer and moves opposite the tilt; leaving springs the card back to rest.
+Reduced motion: card stays flat; glare static at the upper edge.
+
+Acceptance checks (continued):
+8. At rest the card shows its name, chip, masked number and both labelled fields, with no placeholder text.
+9. The caption is visible at rest.
+10. While tilted, all card content stays inside the card's edges, with no text cut at a corner.

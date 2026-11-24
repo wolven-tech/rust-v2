@@ -495,6 +495,7 @@ pub fn EmailDraft(
                                         span { class: "ui-edc__file-name", title: "{name}", "{name}" }
                                         button {
                                             r#type: "button",
+                                            class: "ui-edc__remove",
                                             aria_label: "Remove {name}",
                                             onclick: move |_| file.set(None),
                                             svg { view_box: "0 0 24 24", "aria-hidden": "true",

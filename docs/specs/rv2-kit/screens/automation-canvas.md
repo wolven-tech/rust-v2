@@ -111,3 +111,112 @@ Card content by kind: trigger (its source line, or "not configured"); agent (too
 8. A new flow with `is_empty` set shows one centred "Add a trigger" action.
 9. With `is_loading` set, steps appear as placeholder cards, the run control is disabled, and the palette stays usable.
 10. With reduced motion requested, the running step shows a steady ring and no traveling highlight.
+
+## Amendment 6: structure and demo
+
+Replaces: none (no earlier amendment). Overrides the at-rest state of Anatomy item 6: the configuration panel is closed at rest.
+
+**Archetype:** full-width board with a palette column at its left, a breadcrumb bar above it, a run area along its bottom, and no configuration panel open.
+
+**Parts visible at rest (gallery demo):**
+- Sidebar: nine destinations, Workflows active, Runs showing the count 3.
+- Breadcrumb bar: workspace, project, branch (Main reads Production), a status chip, and a primary Publish button.
+- Palette, left column, no search field. Four groups: Triggers (4 items), Tools (5), Logic (4), Actions (5). Each item has its kind marker and label.
+- Board: seven step cards. Top row: two trigger cards, the second set to the right of the first. Centre column, top to bottom: an agent card (tool count and a model mode tag), a tool card (method and address line), a branch card (two paths and its condition line). Below the branch card: two action cards side by side, the left one reached from the branch's yes output and the right one from its no output. Six cards read Ready. The trigger with no source line reads Not configured.
+- Five links, all curves: first trigger to agent; agent to tool; tool to branch; branch yes to the left action; branch no to the right action. The unconfigured trigger has no link. The branch's two outputs carry yes and no tags.
+- Control strip at the board's lower left: select, comment, zoom in, zoom out with the current zoom percent, fit to view, and run.
+- Run area along the bottom: tabs Payload, Triggers, Errors (count 1), Timeline (active) and Runs. Timeline reads "No runs yet", with a one-line hint and a Start test run button at its right.
+- Configuration panel closed. No step is focused, and the board uses the full width.
+
+**States at rest:** no step selected; one unconfigured trigger; run area on Timeline with no runs.
+
+**Arrangement:** sidebar, then the palette column, then the board, with the breadcrumb bar above the board and the run area along its bottom. No right column is open.
+
+**Motion, settled frame:** nothing moves. No traveling highlight and no pulse on any status.
+
+**Defects to fix in ours:**
+- Ours shows four cards at rest. The at-rest demo has seven.
+- Ours shows an empty configuration placeholder on the right. At rest the panel is closed.
+- Ours shows one item per palette group. The groups hold four, five, four and five items.
+
+**Checks (continued):**
+11. At rest the board holds seven step cards: two triggers, one agent, one tool, one branch and two actions. The trigger without a source reads Not configured. The other six read Ready.
+12. Five links join the cards as described. The branch's outputs carry yes and no tags, and each output can connect to a different step.
+13. The palette shows four groups with 4, 5, 4 and 5 items, and no search field.
+14. The run area shows tabs Payload, Triggers, Errors (with count 1), Timeline and Runs. Timeline is active and reads No runs yet, with the start-test button.
+15. The sidebar's Runs entry shows the count 3, and the configuration panel is closed.
+16. At 1280 x 720 without page scroll, the breadcrumb bar, the palette, all seven cards, the control strip and the run area tabs are visible.
+
+## Amendment 8: structure and demo
+
+Replaces, from Amendment 6:
+- "Arrangement": the breadcrumb bar spans the full content width, above the palette and the board, not above the board alone.
+- "Control strip at the board's lower left": the strip is centred on the board's bottom edge.
+- "Run area along the bottom" (the run area's tabs and "No runs yet" text) as a parts-at-rest item: the run area is closed at rest.
+- "Five links, all curves": the three stacked links are straight; the two branch outputs are curves.
+- "Six cards read Ready": status words are shown on triggers and actions only (check 20).
+- Checks 14 and 16 (run area tabs visible at rest). Checks 11, 12, 13 and 15 stand.
+Overrides Anatomy item 5 (strip position) and item 7 (run area visible at rest).
+
+**Archetype:** a full-height board with a palette column at its left, a breadcrumb bar across the top of the content area, a row of seven cards in a tree-like column filling most of the board, and nothing open on the right.
+
+**Layout** (fractions of the content area to the right of the sidebar, origin top left):
+- Breadcrumb bar: full content width, top 0 to about 0.06 of content height.
+- Palette: x 0 to about 0.19 of content width, from below the breadcrumb to the bottom edge.
+- Board: x about 0.19 to 1.00, from below the breadcrumb to the bottom edge. Dotted backdrop.
+
+**Graph on the board** (fractions of board width and height):
+- Bounding box of the seven cards: x 0.11 to 0.88, y 0.03 to 0.89. About 0.77 of board width and 0.86 of board height. Left margin about 0.11, right margin about 0.12.
+- Zoom readout at rest: 94%.
+
+**Cards** (x left, y top, width 0.275 of board width; height 0.15 for triggers, 0.12 for the others):
+- "New order", trigger: x 0.27, y 0.03.
+- "Every morning", trigger, unconfigured: x 0.605, y 0.03.
+- "Ask an assistant", agent: x 0.27, y 0.23.
+- "Look up the order", tool: x 0.27, y 0.40, height 0.125.
+- "Amount over 500", logic: x 0.27, y 0.57.
+- "Ask a manager", action: x 0.11, y 0.74.
+- "Send receipt", action: x 0.43, y 0.74.
+Stacked cards leave about 0.05 of board height between them.
+
+**Card anatomy, all seven:**
+- Kind tag: a small uppercase label (TRIGGER, AGENT, TOOL, LOGIC, ACTION) straddling the card's top-left edge.
+- Header: a small outlined icon tile with a line glyph, the title on one line, and a right-side chip.
+  - Triggers and actions: a status chip. "Ready" on the configured trigger and on both actions. "Not configured" in warning tone on the unconfigured trigger.
+  - Agent: "3 tools" chip. Tool: method chip "GET". Logic: "2 paths" chip.
+- Subtitle: one line, aligned to the title.
+- Bottom band: an inset strip near the card's bottom edge.
+  - "New order": one monospace source line, "shop webhook · order created", truncated.
+  - "Every morning": two chips, "Weekdays" and "09:00"; the subtitle position holds a warning-tone line "Set a schedule to start".
+  - "Ask an assistant": three chips: a mode chip with a small icon reading "Auto", then "Order API" and "Web search".
+  - "Look up the order": one monospace request line "GET orders/{id}".
+  - "Amount over 500": one monospace line "Yes → Ask a manager · No → Send receipt", truncated.
+  - Actions: one monospace payload line, truncated.
+- No text wraps inside a band; overflow ends in an ellipsis.
+
+**Connectors:** dots at each endpoint.
+- New order to Ask an assistant, Ask an assistant to Look up the order, Look up the order to Amount over 500: straight vertical lines from the bottom centre of the upper card to the top centre of the lower card.
+- Amount over 500 has two outputs at about 0.29 and 0.71 of its width. Two curves run from them down and outward to the top centres of "Ask a manager" (left) and "Send receipt" (right). A YES tag sits at the midpoint of the left curve; a NO tag at the midpoint of the right curve.
+- Unlinked outputs show a small add button under their output dot: "Every morning" and both action cards.
+
+**Palette:** a "Nodes" title with a close control at its right. Four groups, each with its count: Triggers 4, Tools 5, Logic 4, Actions 5. Items: a line glyph and a label. No letter tiles, no search field.
+
+**Control strip:** floating, centred on the board's horizontal centre, about 0.26 of board width wide, in the bottom 0.06 of board height (y about 0.94 to 0.98). Buttons left to right: add node, select, comment, fit to view, zoom out, zoom readout, zoom in, run. Run is the only filled button.
+
+**Run area at rest:** closed. No tabs and no text are visible; the board runs to the bottom edge. The run control in the strip opens the run area, rising from the bottom edge and keeping the current zoom.
+
+**Breadcrumb bar:** workspace with a small team tag, project, branch "Main" with a "Production" status chip, and a filled Publish button at the right end.
+
+**Motion, settled frame:** nothing moves (unchanged from Amendment 6).
+
+**Acceptance checks (continued):**
+17. At rest the board holds seven cards within 0.02 of the positions above: two triggers across the top, a column of three below them, and two actions at the bottom, one under each branch output.
+18. The seven cards' bounding box covers about 0.77 of board width and about 0.86 of board height. The zoom readout reads 94%.
+19. Each card has its kind tag, header with icon tile, title and right chip, subtitle, and bottom band as described above. Bands truncate with an ellipsis.
+20. Status words show on triggers and actions only. The configured trigger and both actions read Ready; the unconfigured trigger reads Not configured in warning tone. Agent, tool and logic cards show their chip instead; their status is still stated in their accessible name.
+21. The three stacked links are straight with dots at both ends. The two branch outputs are curves with YES and NO tags at their midpoints, leaving the branch card at about 0.29 and 0.71 of its width.
+22. Unlinked outputs (the unconfigured trigger and both actions) show an add button under their output dot.
+23. Palette item markers are line glyphs. Each group header shows its item count. No letter tiles, no search field.
+24. The breadcrumb bar spans the full content width above both palette and board. The palette has a "Nodes" title and a close control.
+25. The control strip is centred on the board's bottom edge. Run is its only filled control.
+26. At rest no run area is visible; the board reaches the bottom edge. At 1280 x 720 without page scroll, the breadcrumb bar, palette, all seven cards and the control strip are visible. (Replaces check 16's run-area tabs.)

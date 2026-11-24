@@ -433,6 +433,7 @@ fn invoice_credit_total_excludes_invalid_amounts() {
 fn work(id: &str, status: &str) -> WorkItem {
     WorkItem {
         id: id.into(),
+        identifier_line: String::new(),
         title: id.into(),
         status_id: status.into(),
         priority: 0,
@@ -507,7 +508,7 @@ fn overview_change_and_segments() {
 
 #[test]
 fn plan_price_and_saving() {
-    assert_eq!(yearly_saving_percent(10.0, 96.0), 20);
+    assert_eq!(yearly_saving_percent(20.0, 16.0), 20);
     assert_eq!(format_price(49.0), "$49");
     assert_eq!(format_price(9.5), "$9.50");
     assert_eq!(billing_for_key(&Key::ArrowRight), Some("yearly"));
@@ -527,7 +528,7 @@ fn plan_price_and_saving() {
         integrations: rv2_kit::blocks::plan_comparison_section::PlanIntegrations {
             names: vec![],
             sync_label: String::new(),
-            max_selectable: 0,
+            selection_label: String::new(),
         },
         features: vec![],
     };
@@ -569,6 +570,7 @@ fn run_tree_order_is_depth_first() {
         cost_usd: 0.0,
         elapsed_secs: 0.0,
         current_step: None,
+        faded: false,
     };
     let agents = vec![
         agent("root", None),
@@ -724,7 +726,7 @@ fn ssr_plan_details_closed_and_billing_radio() {
                     id: "p".into(), name: "Team".into(), price_monthly: 10.0, price_yearly: 100.0,
                     billing_note_monthly: "m".into(), billing_note_yearly: "y".into(), cta_label: "Go".into(), cta_href: "#".into(),
                     highlighted: true, badge: Some("Popular".into()), limits: vec![],
-                    integrations: PlanIntegrations { names: vec!["Slack".into()], sync_label: "s".into(), max_selectable: 2 },
+                    integrations: PlanIntegrations { names: vec!["Slack".into()], sync_label: "s".into(), selection_label: "Choose 2 of 8".into() },
                     features: vec![PlanFeature { label: "Audit".into(), included: false }],
                 }],
             }
@@ -733,9 +735,69 @@ fn ssr_plan_details_closed_and_billing_radio() {
     let html = render(app);
     assert!(html.contains("role=\"radiogroup\""));
     assert!(html.contains("aria-label=\"Billing period\""));
-    assert!(html.contains("aria-expanded=\"false\""));
-    assert!(!html.contains("not included"));
+    assert!(html.contains("aria-expanded=\"true\""));
+    assert!(html.contains("Hide details"));
+    assert!(html.contains("not included"));
     assert!(html.contains("per month"));
+}
+
+#[test]
+fn ssr_plan_cards_open_their_details_at_rest_with_a_saving_label() {
+    use rv2_kit::blocks::plan_comparison_section::{
+        Plan, PlanComparisonSection, PlanFeature, PlanIntegrations, PlanLimit,
+    };
+    fn app() -> Element {
+        let plan = |id: &str, name: &str, highlighted: bool| Plan {
+            id: id.into(),
+            name: name.into(),
+            price_monthly: 59.0,
+            price_yearly: 47.0,
+            billing_note_monthly: "m".into(),
+            billing_note_yearly: "y".into(),
+            cta_label: "Start free trial".into(),
+            cta_href: "#".into(),
+            highlighted,
+            badge: highlighted.then(|| "Most chosen".to_string()),
+            limits: vec![PlanLimit {
+                label: "Seats".into(),
+                value: "10".into(),
+            }],
+            integrations: PlanIntegrations {
+                names: vec!["Chatroom".into()],
+                sync_label: "Sync hourly".into(),
+                selection_label: "Choose 4 of 8".into(),
+            },
+            features: vec![PlanFeature {
+                label: "API access".into(),
+                included: false,
+            }],
+        };
+        rsx! {
+            PlanComparisonSection {
+                yearly_saving_label: "Save 15%".to_string(),
+                plans: vec![plan("solo", "Solo", false), plan("team", "Team", true), plan("studio", "Studio", false)],
+            }
+        }
+    }
+    let html = render(app);
+    assert_eq!(
+        html.matches("Hide details").count(),
+        3,
+        "every card opens its details"
+    );
+    assert_eq!(html.matches("aria-expanded=\"true\"").count(), 3);
+    assert_eq!(
+        html.matches("Most chosen").count(),
+        1,
+        "the badge marks the highlighted card only"
+    );
+    assert!(
+        html.contains("Save 15%"),
+        "the saving label shows at rest, beside Yearly"
+    );
+    assert!(html.contains("Choose 4 of 8"));
+    assert!(html.contains("Sync hourly"));
+    assert_eq!(html.matches("kit-pcs__features").count(), 3);
 }
 
 #[test]
@@ -744,8 +806,8 @@ fn ssr_run_tree_is_a_tree_with_error_count() {
     fn app() -> Element {
         rsx! {
             RunTreeInspector {
-                run: RunInfo { id: "r".into(), title: "Run".into(), status: RunStatus::Error, duration_secs: 1.0, cost_usd: 0.0, token_count: 0 },
-                agents: vec![RunAgent { id: "a".into(), name: "Root".into(), model_label: "m".into(), status: RunStatus::Error, parent_id: None, cost_usd: 0.0, elapsed_secs: 1.0, current_step: None }],
+                run: RunInfo { id: "r".into(), title: "Run".into(), status: RunStatus::Error, duration_secs: 1.0, cost_usd: 0.0, token_count: 0, model_call_count: 0, tool_call_count: 1 },
+                agents: vec![RunAgent { id: "a".into(), name: "Root".into(), model_label: "m".into(), status: RunStatus::Error, parent_id: None, cost_usd: 0.0, elapsed_secs: 1.0, current_step: None, faded: false }],
                 calls: vec![RunCall { id: "c".into(), agent_id: "a".into(), kind: CallKind::Tool, name: "t".into(), status: CallStatus::Error, duration_secs: 1.0, error_message: None }],
             }
         }
@@ -808,7 +870,11 @@ fn ssr_expandable_strip_one_tab_selected() {
         }
     }
     let html = render(app);
-    assert_eq!(html.matches("aria-selected=\"true\"").count(), 1);
+    assert_eq!(
+        html.matches("role=\"tab\"").count(),
+        1,
+        "the collapsed tile is the only tab"
+    );
     assert!(html.contains("role=\"tabpanel\""));
 }
 
@@ -818,7 +884,7 @@ fn ssr_sales_metric_cards_expose_pressed_state() {
     fn app() -> Element {
         rsx! {
             SalesMetricsPanel {
-                metric_cards: vec![SalesMetric { id: "rev".into(), label: "Revenue".into(), value: "1".into(), delta_percent: 1.0, series: vec![1.0, 2.0] }],
+                metric_cards: vec![SalesMetric { id: "rev".into(), label: "Revenue".into(), value: "1".into(), delta_percent: 1.0, delta_in_points: false, lower_is_better: false, series: vec![1.0, 2.0] }],
                 periods: vec![],
                 trend_series: vec![TrendPoint { date: "d".into(), value: 1.0 }],
             }
@@ -885,8 +951,11 @@ fn ssr_metric_overview_has_pickers_and_focus_card() {
         }
     }
     let html = render(app);
-    assert!(html.contains("aria-label=\"Focused day\""));
     assert!(html.contains("aria-haspopup=\"listbox\""));
+    assert!(
+        !html.contains("kit-mob__product"),
+        "no product card without one"
+    );
 }
 
 #[test]
@@ -1250,6 +1319,7 @@ fn run_tree_hover_finds_the_parent_of_the_hovered_card() {
         cost_usd: 0.0,
         elapsed_secs: 1.0,
         current_step: None,
+        faded: false,
     };
     let agents = vec![agent("lead", None), agent("ui", Some("lead"))];
     assert_eq!(parent_of_hovered(&agents, Some("ui")), Some("lead".into()));
@@ -1326,7 +1396,7 @@ fn ssr_plan_yearly_marks_the_pill_and_rolls_the_price() {
                     id: "p".into(), name: "Team".into(), price_monthly: 10.0, price_yearly: 100.0,
                     billing_note_monthly: "m".into(), billing_note_yearly: "y".into(), cta_label: "Go".into(), cta_href: "#".into(),
                     highlighted: false, badge: None, limits: vec![],
-                    integrations: PlanIntegrations { names: vec![], sync_label: "s".into(), max_selectable: 0 },
+                    integrations: PlanIntegrations { names: vec![], sync_label: "s".into(), selection_label: "".into() },
                     features: vec![PlanFeature { label: "Audit".into(), included: true }],
                 }],
             }

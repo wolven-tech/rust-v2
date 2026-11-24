@@ -1,15 +1,18 @@
-//! A chat with an orchestrating agent that ends in a concrete task. Beside the conversation, the
-//! agents at work are shown with their state, and a brief for the current goal is filled in alongside.
+//! A chat with an orchestrating agent that ends in a concrete task. The conversation sits beside a
+//! work area with three fixed tabs: the brief (product, fields, Generate and files), the assets, and
+//! the activity log.
 //!
+//! Design choice: the chat list and the app navigation belong to the workspace frame. This screen
+//! renders the conversation and the work area only.
 //! Design choice: the Generate line states what it writes. The duration is host data (`generate_eta`),
 //! since the component does not know how long a draft takes.
-//! Design choice: the Brief is a closable tab like any other. Closing the last tab folds the work area,
-//! and opening it again shows the Brief.
+//! Design choice: the work area's tabs are closable. Closing the last tab folds the work area, and the
+//! open control brings back the three fixed tabs.
 //! Design choice: a file opens in its own tab with the shared artifact viewer from the workspace frame.
-//! Design choice: chat list grouping reuses `group_chats` from the assistant chat screen.
-//! Design choice: below 960px the chat list is a drawer behind a Chats control, closed by default.
-//! Not implemented: the sidebar's navigation icons and the global search (Ctrl or Cmd+K), which belong
-//! to the app frame.
+//! Design choice: a multi-choice field has three looks. `MultiChoice` lists checkboxes, `Switches`
+//! shows each option as a switch, and `Chips` shows each option as a toggle chip.
+//! Design choice: below 960px the work area is a sheet over the conversation.
+//! Not implemented: the global search (Ctrl or Cmd+K), which belongs to the app frame.
 //! Browser checks: Left and Right move between tabs; closing the last tab folds the area and focuses
 //! its open control; each agent's state reads in words.
 
@@ -17,7 +20,7 @@ use dioxus::prelude::*;
 use rv2_affect::button::{Button, ButtonVariant};
 use rv2_affect::skeleton::Skeleton;
 
-use super::assistant_chat_sidebars::{ApprovalMode, ChatItem, Project, group_chats, policy_for};
+use super::assistant_chat_sidebars::{ApprovalMode, policy_for};
 use super::assistant_start_page::{active_after_close, tab_after_move};
 use super::workspace_frame_inset::{Artifact, ArtifactView};
 use crate::components::prompt_input_bar::{Model, PromptInputBar, Submission};
@@ -64,6 +67,10 @@ pub enum AgentMessage {
         id: String,
         author: String,
         text: String,
+        /// Work-time line shown under the reply, for example "Worked for 2 min".
+        work_time: Option<String>,
+        /// Steps the agent took, folded under a summary until opened.
+        step_list: Vec<String>,
     },
 }
 
@@ -71,16 +78,25 @@ pub enum AgentMessage {
 pub enum FieldType {
     Text,
     Choice,
+    /// A choice shown as named colour swatches; each option takes a series colour by position.
+    Swatches,
     MultiChoice,
+    /// A multi-choice shown as toggle chips.
+    Chips,
+    Switches,
     Number,
+    Date,
 }
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct BriefField {
     pub id: String,
     pub entry_label: String,
+    /// The chosen option for a choice; the chosen options joined with ", " for a multi-choice.
     pub entry_value: String,
     pub field_type: FieldType,
+    /// Options for a choice or multi-choice field, in display order. Empty for text, number and date.
+    pub option_list: Vec<String>,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -112,25 +128,50 @@ pub struct ActivityEntry {
     pub text: String,
 }
 
+/// The product the brief sells: its name, price, one line of sales figures and a top-seller mark.
+#[derive(Clone, Debug, PartialEq)]
+pub struct Product {
+    pub entry_name: String,
+    pub entry_price: String,
+    pub sales_line: String,
+    pub is_top_seller: bool,
+}
+
 #[derive(Clone, Debug, PartialEq)]
 pub struct Brief {
     pub entry_title: String,
+    pub product: Option<Product>,
     pub field_list: Vec<BriefField>,
     pub file_list: Vec<BriefFile>,
+    /// Newest first; rendered in the order given.
     pub activity_log: Vec<ActivityEntry>,
 }
 
-/// Tab keys: the Brief, or an open file by name.
+/// Tab keys: the Brief, the Assets, the Activity, or an open file by name.
 pub fn brief_key() -> String {
     "brief".to_string()
 }
 
-/// Tab titles for keys, so the list can name each tab.
-pub fn tab_title(key: &str, brief: &Brief) -> String {
-    if key == "brief" {
-        brief.entry_title.clone()
-    } else {
-        key.strip_prefix("file:").unwrap_or(key).to_string()
+pub fn assets_key() -> String {
+    "assets".to_string()
+}
+
+pub fn activity_key() -> String {
+    "activity".to_string()
+}
+
+/// The fixed tabs, in the order they open.
+pub fn fixed_keys() -> Vec<String> {
+    vec![brief_key(), assets_key(), activity_key()]
+}
+
+/// Tab titles for keys. The brief's tab is named Brief; its heading holds the goal's title.
+pub fn tab_title(key: &str) -> String {
+    match key {
+        "brief" => "Brief".to_string(),
+        "assets" => "Assets".to_string(),
+        "activity" => "Activity".to_string(),
+        _ => key.strip_prefix("file:").unwrap_or(key).to_string(),
     }
 }
 
@@ -143,17 +184,46 @@ pub fn empty_section_line(section: &str) -> &'static str {
     }
 }
 
+/// The fold summary for an agent's steps.
+pub fn steps_summary(count: usize) -> String {
+    match count {
+        1 => "1 step".to_string(),
+        n => format!("{n} steps"),
+    }
+}
+
+/// Whether `option` is one of the chosen options in a multi-choice `value`.
+pub fn is_selected(value: &str, option: &str) -> bool {
+    value.split(',').any(|chosen| chosen.trim() == option)
+}
+
+/// The value of a multi-choice field after `option` is switched on or off. The chosen options keep
+/// the order the field lists them in, so the stored value does not depend on the order of clicks.
+pub fn toggle_option(value: &str, option: &str, option_list: &[String]) -> String {
+    let mut chosen: Vec<&str> = value
+        .split(',')
+        .map(str::trim)
+        .filter(|part| !part.is_empty())
+        .collect();
+    if chosen.contains(&option) {
+        chosen.retain(|part| *part != option);
+    } else {
+        chosen.push(option);
+    }
+    option_list
+        .iter()
+        .filter(|listed| chosen.contains(&listed.as_str()))
+        .cloned()
+        .collect::<Vec<_>>()
+        .join(", ")
+}
+
 /// The chat with its agents and brief.
 #[component]
 pub fn WorkspaceChat(
-    #[props(into)] workspace_name: String,
-    #[props(default, into)] account_name: String,
-    #[props(default)] chat_list: Vec<ChatItem>,
-    #[props(default)] project_list: Vec<Project>,
-    #[props(default)] active_chat_id: Option<String>,
     #[props(default)] message_list: Vec<AgentMessage>,
     #[props(default)] agent_status_list: Vec<AgentStatus>,
-    #[props(default)] orchestrator_status: String,
+    #[props(default, into)] orchestrator_status: String,
     #[props(default)] brief_record: Option<Brief>,
     #[props(default)] artifact_list: Vec<Artifact>,
     #[props(default, into)] generate_eta: Option<String>,
@@ -161,7 +231,6 @@ pub fn WorkspaceChat(
     #[props(default)] is_loading: bool,
     #[props(default)] is_empty: bool,
     on_send: EventHandler<String>,
-    on_select_chat: EventHandler<String>,
     #[props(default)] on_field_change: Option<EventHandler<(String, String)>>,
     #[props(default)] on_generate: Option<EventHandler<()>>,
     #[props(default)] on_open_file: Option<EventHandler<String>>,
@@ -169,10 +238,8 @@ pub fn WorkspaceChat(
 ) -> Element {
     let id = use_hook(|| format!("kit-wc-{}", next_id()));
     let open_id = format!("{id}-open");
-    let side_id = format!("{id}-side");
-    let mut side_open = use_signal(|| false);
     let mut work_open = use_signal(|| true);
-    let mut tabs = use_signal(|| vec![brief_key()]);
+    let mut tabs = use_signal(fixed_keys);
     let mut active = use_signal(|| 0usize);
     let brief = brief_record.clone();
     let models = vec![Model {
@@ -181,9 +248,6 @@ pub fn WorkspaceChat(
         model_mark: None,
         model_note: None,
     }];
-    let groups = group_chats(&chat_list.iter().collect::<Vec<_>>(), &project_list);
-    let initial = workspace_name.chars().take(1).collect::<String>();
-    let account_initial = account_name.chars().take(1).collect::<String>();
     let tabs_now = tabs();
     let active_now = active().min(tabs_now.len().saturating_sub(1));
     let key_id = id.clone();
@@ -202,121 +266,14 @@ pub fn WorkspaceChat(
     let file_artifact = file_name
         .as_ref()
         .and_then(|name| artifact_list.iter().find(|a| &a.name == name).cloned());
-    let side_state = if side_open() { "open" } else { "closed" };
-    let menu_id = format!("{id}-menu");
-    let menu_target = menu_id.clone();
+    let work_state = if work_open() { "open" } else { "closed" };
 
     rsx! {
         document::Link { rel: "stylesheet", href: KIT_CSS }
         document::Link { rel: "stylesheet", href: CSS }
         document::Link { rel: "stylesheet", href: FRAME_CSS }
-        div { class: "kit-wc", "data-side": side_state,
-            onkeydown: move |event: KeyboardEvent| {
-                if event.key() == Key::Escape && side_open() {
-                    event.prevent_default();
-                    side_open.set(false);
-                    focus_after_frame(&menu_target);
-                }
-            },
-            aside { id: "{side_id}", class: "kit-wc__side", "aria-label": "Workspace navigation",
-                div { class: "kit-wc__head",
-                    span { class: "kit-wc__mark", "aria-hidden": "true", "{initial}" }
-                    span { class: "kit-wc__name", "{workspace_name}" }
-                }
-                nav { class: "kit-wc__nav", "aria-label": "Sections",
-                    for entry in ["New chat", "Folders", "Integrations"] {
-                        {
-                            let target = entry.to_string();
-                            rsx! {
-                                button {
-                                    key: "{entry}",
-                                    r#type: "button",
-                                    class: "kit-wc__nav-item",
-                                    onclick: move |_| {
-                                        if let Some(nav) = on_navigate {
-                                            nav.call(target.clone());
-                                        }
-                                    },
-                                    "{entry}"
-                                }
-                            }
-                        }
-                    }
-                }
-                if loading {
-                    Skeleton { width: "100%", height: "28px" }
-                    Skeleton { width: "80%", height: "28px" }
-                } else if chat_list.is_empty() {
-                    p { class: "kit-wc__note", "No chats yet." }
-                } else {
-                    for (heading, members) in groups.iter() {
-                        {
-                            let title = heading.clone();
-                            rsx! {
-                                h2 { class: "kit-wc__heading", "{title}" }
-                                ul { class: "kit-wc__chats",
-                                    for chat in members.iter() {
-                                        {
-                                            let key = chat.id.clone();
-                                            let pick = chat.id.clone();
-                                            let label = chat.entry_title.clone();
-                                            let current = active_chat_id.as_deref() == Some(chat.id.as_str());
-                                            rsx! {
-                                                li { key: "{key}",
-                                                    button {
-                                                        r#type: "button",
-                                                        class: "kit-wc__chat",
-                                                        "aria-current": current.then_some("true"),
-                                                        onclick: move |_| {
-                                                            side_open.set(false);
-                                                            on_select_chat.call(pick.clone());
-                                                        },
-                                                        "{label}"
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-                div { class: "kit-wc__account", "aria-hidden": "true", "{account_initial}" }
-            }
+        div { class: "kit-wc", "data-work": work_state,
             section { class: "kit-wc__conversation", "aria-label": "Conversation",
-                button {
-                    id: "{menu_id}",
-                    r#type: "button",
-                    class: "kit-wc__menu",
-                    "aria-expanded": if side_open() { "true" } else { "false" },
-                    "aria-controls": "{side_id}",
-                    onclick: move |_| side_open.toggle(),
-                    "Chats"
-                }
-                if !agent_status_list.is_empty() {
-                    ul { class: "kit-wc__agents", "aria-label": "Agents",
-                        for agent in agent_status_list.iter() {
-                            {
-                                let key = agent.id.clone();
-                                let name = agent.entry_name.clone();
-                                let role = agent.node_role.clone();
-                                let word = agent.entry_state.word();
-                                let step = agent.current_step.clone().unwrap_or_default();
-                                rsx! {
-                                    li { key: "{key}", class: "kit-wc__agent", "data-state": "{word}",
-                                        span { class: "kit-wc__agent-name", "{name}" }
-                                        span { class: "kit-wc__agent-role", "{role}" }
-                                        span { class: "kit-wc__agent-state", "{word}" }
-                                        if !step.is_empty() {
-                                            span { class: "kit-wc__agent-step", "{step}" }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
                 div { class: "kit-wc__thread", role: "log", "aria-live": "polite", "aria-busy": loading.then_some("true"),
                     if loading {
                         Skeleton { width: "60%", height: "40px" }
@@ -341,19 +298,56 @@ pub fn WorkspaceChat(
                                     AgentMessage::User { id: key, text } => rsx! {
                                         div { key: "{key}", class: "kit-wc__msg kit-wc__msg--user", p { "{text}" } }
                                     },
-                                    AgentMessage::Agent { id: key, author, text } => rsx! {
-                                        div { key: "{key}", class: "kit-wc__msg",
-                                            span { class: "kit-wc__author", "{author}" }
-                                            p { "{text}" }
+                                    AgentMessage::Agent { id: key, author, text, work_time, step_list } => {
+                                        let worked = work_time.clone();
+                                        let steps = step_list.clone();
+                                        let step_count = steps.len();
+                                        let summary = steps_summary(step_count);
+                                        rsx! {
+                                            div { key: "{key}", class: "kit-wc__msg",
+                                                span { class: "kit-wc__author", "{author}" }
+                                                p { "{text}" }
+                                                if let Some(line) = worked {
+                                                    p { class: "kit-wc__worked", "{line}" }
+                                                }
+                                                if step_count > 0 {
+                                                    details { class: "kit-wc__steps",
+                                                        summary { "{summary}" }
+                                                        ol { class: "kit-wc__step-list",
+                                                            for step in steps.iter() {
+                                                                li { key: "{step}", "{step}" }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
                                         }
-                                    },
+                                    }
                                 }
                             }
                         }
-                        if !orchestrator_status.is_empty() {
-                            p { class: "kit-wc__status", "{orchestrator_status}" }
+                        if !agent_status_list.is_empty() {
+                            ul { class: "kit-wc__agents", "aria-label": "Agents",
+                                for agent in agent_status_list.iter() {
+                                    {
+                                        let key = agent.id.clone();
+                                        let name = agent.entry_name.clone();
+                                        let word = agent.entry_state.word();
+                                        let title = agent.current_step.clone().unwrap_or_default();
+                                        rsx! {
+                                            li { key: "{key}", class: "kit-wc__agent", "data-state": "{word}", title: "{title}",
+                                                span { class: "kit-wc__agent-name", "{name}" }
+                                                span { class: "kit-wc__agent-state", "{word}" }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
+                }
+                if !orchestrator_status.is_empty() && !loading && !empty {
+                    p { class: "kit-wc__status", "{orchestrator_status}" }
                 }
                 div { class: "kit-wc__composer",
                     PromptInputBar {
@@ -391,10 +385,7 @@ pub fn WorkspaceChat(
                         },
                         for (index, key) in tabs_now.iter().enumerate() {
                             {
-                                let title = match &brief {
-                                    Some(record) => tab_title(key, record),
-                                    None => key.strip_prefix("file:").unwrap_or(key).to_string(),
-                                };
+                                let title = tab_title(key);
                                 let selected = index == active_now;
                                 let dom = format!("{id}-tab-{index}");
                                 let close_label = format!("Close {title}");
@@ -424,11 +415,13 @@ pub fn WorkspaceChat(
                         button {
                             r#type: "button",
                             class: "kit-wc__tab-new",
-                            "aria-label": "Open the brief",
+                            "aria-label": "Add a fixed tab",
                             onclick: move |_| {
                                 let mut list = tabs.peek().clone();
-                                if !list.contains(&brief_key()) {
-                                    list.insert(0, brief_key());
+                                for (position, key) in fixed_keys().into_iter().enumerate() {
+                                    if !list.contains(&key) {
+                                        list.insert(position.min(list.len()), key);
+                                    }
                                 }
                                 tabs.set(list);
                                 active.set(0);
@@ -444,79 +437,27 @@ pub fn WorkspaceChat(
                                 p { class: "kit-wc__note", "No preview for {name} yet." }
                             }
                         } else if let Some(record) = brief.clone() {
-                            if tabs_now.get(active_now).map(|k| k == "brief").unwrap_or(false) {
+                            if active_key == brief_key() {
                                 section { class: "kit-wc__brief", "aria-labelledby": "{id}-brief-title",
                                     h2 { id: "{id}-brief-title", class: "kit-wc__brief-title", "{brief_title}" }
+                                    if let Some(product) = record.product.clone() {
+                                        article { class: "kit-wc__product",
+                                            div { class: "kit-wc__product-head",
+                                                h3 { class: "kit-wc__product-name", "{product.entry_name}" }
+                                                span { class: "kit-wc__product-price", "{product.entry_price}" }
+                                                if product.is_top_seller {
+                                                    span { class: "kit-wc__badge", "Top seller" }
+                                                }
+                                            }
+                                            p { class: "kit-wc__product-sales", "{product.sales_line}" }
+                                        }
+                                    }
                                     if record.field_list.is_empty() {
                                         p { class: "kit-wc__note", "{line_fields}" }
                                     }
-                                    for field in record.field_list.iter() {
-                                        {
-                                            let key = field.id.clone();
-                                            let label = field.entry_label.clone();
-                                            let value = field.entry_value.clone();
-                                            let field_id = format!("{id}-field-{}", field.id);
-                                            let change_id = field.id.clone();
-                                            let kind = match field.field_type {
-                                                FieldType::Number => "number",
-                                                _ => "text",
-                                            };
-                                            rsx! {
-                                                div { key: "{key}", class: "kit-wc__field",
-                                                    label { r#for: "{field_id}", "{label}" }
-                                                    input {
-                                                        id: "{field_id}",
-                                                        r#type: "{kind}",
-                                                        value: "{value}",
-                                                        oninput: move |event: FormEvent| {
-                                                            if let Some(change) = on_field_change {
-                                                                change.call((change_id.clone(), event.value()));
-                                                            }
-                                                        },
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-                                    h3 { class: "kit-wc__heading", "Files" }
-                                    if record.file_list.is_empty() {
-                                        p { class: "kit-wc__note", "{line_files}" }
-                                    }
-                                    ul { class: "kit-wc__files",
-                                        for file in record.file_list.iter() {
-                                            {
-                                                let name = file.entry_name.clone();
-                                                let kind_label = file.file_kind.label();
-                                                let open_name = name.clone();
-                                                rsx! {
-                                                    li { key: "{name}",
-                                                        button {
-                                                            r#type: "button",
-                                                            class: "kit-wc__file",
-                                                            onclick: move |_| {
-                                                                open_file_tab(tabs, active, work_open, &open_name);
-                                                                if let Some(open) = on_open_file {
-                                                                    open.call(open_name.clone());
-                                                                }
-                                                            },
-                                                            span { "{name}" }
-                                                            span { class: "kit-wc__file-kind", "{kind_label}" }
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-                                    h3 { class: "kit-wc__heading", "Activity" }
-                                    if record.activity_log.is_empty() {
-                                        p { class: "kit-wc__note", "{line_activity}" }
-                                    }
-                                    ol { class: "kit-wc__log",
-                                        for entry in record.activity_log.iter() {
-                                            {
-                                                let line = format!("{} {}", entry.at, entry.text);
-                                                rsx! { li { "{line}" } }
-                                            }
+                                    div { class: "kit-wc__fields",
+                                        for field in record.field_list.iter() {
+                                            {brief_field(&id, field, on_field_change)}
                                         }
                                     }
                                     div { class: "kit-wc__generate",
@@ -537,8 +478,41 @@ pub fn WorkspaceChat(
                                             },
                                         }
                                     }
+                                    h3 { class: "kit-wc__heading", "Files" }
+                                    if record.file_list.is_empty() {
+                                        p { class: "kit-wc__note", "{line_files}" }
+                                    }
+                                    {file_rows(record.file_list.clone(), tabs, active, work_open, on_open_file)}
+                                }
+                            } else if active_key == assets_key() {
+                                section { class: "kit-wc__assets", "aria-label": "Assets",
+                                    h3 { class: "kit-wc__heading", "Files" }
+                                    if record.file_list.is_empty() {
+                                        p { class: "kit-wc__note", "{line_files}" }
+                                    }
+                                    {file_rows(record.file_list.clone(), tabs, active, work_open, on_open_file)}
+                                }
+                            } else {
+                                section { class: "kit-wc__activity", "aria-label": "Activity",
+                                    h3 { class: "kit-wc__heading", "Activity" }
+                                    if record.activity_log.is_empty() {
+                                        p { class: "kit-wc__note", "{line_activity}" }
+                                    }
+                                    ol { class: "kit-wc__log",
+                                        for entry in record.activity_log.iter() {
+                                            {
+                                                let at = entry.at.clone();
+                                                let text = entry.text.clone();
+                                                rsx! {
+                                                    li { span { class: "kit-wc__at", "{at}" } span { "{text}" } }
+                                                }
+                                            }
+                                        }
+                                    }
                                 }
                             }
+                        } else {
+                            p { class: "kit-wc__note", "The brief appears once the agents start this goal." }
                         }
                     }
                 }
@@ -549,11 +523,179 @@ pub fn WorkspaceChat(
                     class: "kit-wc__open",
                     "aria-expanded": "false",
                     onclick: move |_| {
-                        tabs.set(vec![brief_key()]);
+                        tabs.set(fixed_keys());
                         active.set(0);
                         work_open.set(true);
                     },
                     "Brief"
+                }
+            }
+        }
+    }
+}
+
+/// The files list: each row opens its file in a tab of the work area.
+fn file_rows(
+    files: Vec<BriefFile>,
+    tabs: Signal<Vec<String>>,
+    active: Signal<usize>,
+    work_open: Signal<bool>,
+    on_open_file: Option<EventHandler<String>>,
+) -> Element {
+    rsx! {
+        ul { class: "kit-wc__files",
+            for file in files.iter() {
+                {
+                    let name = file.entry_name.clone();
+                    let kind_label = file.file_kind.label();
+                    let open_name = name.clone();
+                    rsx! {
+                        li { key: "{name}",
+                            button {
+                                r#type: "button",
+                                class: "kit-wc__file",
+                                onclick: move |_| {
+                                    open_file_tab(tabs, active, work_open, &open_name);
+                                    if let Some(open) = on_open_file {
+                                        open.call(open_name.clone());
+                                    }
+                                },
+                                span { "{name}" }
+                                span { class: "kit-wc__file-kind", "{kind_label}" }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+/// One brief field: a text, number or date input, a choice as radio buttons or swatches, or a
+/// multi-choice as checkboxes, switches or chips. Every change reports the field's id and its new value.
+fn brief_field(
+    prefix: &str,
+    field: &BriefField,
+    on_change: Option<EventHandler<(String, String)>>,
+) -> Element {
+    let key = field.id.clone();
+    let label = field.entry_label.clone();
+    let value = field.entry_value.clone();
+    let field_id = format!("{prefix}-field-{}", field.id);
+    let options = field.option_list.clone();
+    match field.field_type {
+        FieldType::Choice | FieldType::Swatches => {
+            let swatches = field.field_type == FieldType::Swatches;
+            let class = if swatches {
+                "kit-wc__field kit-wc__choice kit-wc__swatches"
+            } else {
+                "kit-wc__field kit-wc__choice"
+            };
+            rsx! {
+                fieldset { key: "{key}", class: "{class}",
+                    legend { "{label}" }
+                    for (index, option) in options.iter().enumerate() {
+                        {
+                            let option_id = format!("{field_id}-{index}");
+                            let group = field_id.clone();
+                            let picked = option.clone();
+                            let change_id = key.clone();
+                            let checked = value == *option;
+                            let series = (index % 6 + 1).to_string();
+                            rsx! {
+                                label { key: "{option}", class: "kit-wc__option", r#for: "{option_id}",
+                                    input {
+                                        id: "{option_id}",
+                                        r#type: "radio",
+                                        name: "{group}",
+                                        value: "{picked}",
+                                        checked,
+                                        onchange: move |_| {
+                                            if let Some(change) = on_change {
+                                                change.call((change_id.clone(), picked.clone()));
+                                            }
+                                        },
+                                    }
+                                    if swatches {
+                                        span { class: "kit-wc__swatch", "data-series": "{series}", "aria-hidden": "true" }
+                                    }
+                                    span { "{option}" }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        FieldType::MultiChoice | FieldType::Switches | FieldType::Chips => {
+            let switches = field.field_type == FieldType::Switches;
+            let chips = field.field_type == FieldType::Chips;
+            let class = if switches {
+                "kit-wc__field kit-wc__multi kit-wc__switches"
+            } else if chips {
+                "kit-wc__field kit-wc__multi kit-wc__chips"
+            } else {
+                "kit-wc__field kit-wc__multi"
+            };
+            let option_class = if switches {
+                "kit-wc__option kit-wc__switch"
+            } else if chips {
+                "kit-wc__option kit-wc__chip"
+            } else {
+                "kit-wc__option"
+            };
+            rsx! {
+                fieldset { key: "{key}", class: "{class}",
+                    legend { "{label}" }
+                    for (index, option) in options.iter().enumerate() {
+                        {
+                            let option_id = format!("{field_id}-{index}");
+                            let picked = option.clone();
+                            let next_value = toggle_option(&value, option, &options);
+                            let change_id = key.clone();
+                            let checked = is_selected(&value, option);
+                            rsx! {
+                                label { key: "{option}", class: option_class, r#for: "{option_id}",
+                                    input {
+                                        id: "{option_id}",
+                                        r#type: "checkbox",
+                                        role: if switches { "switch" } else { "checkbox" },
+                                        value: "{picked}",
+                                        checked,
+                                        onchange: move |_| {
+                                            if let Some(change) = on_change {
+                                                change.call((change_id.clone(), next_value.clone()));
+                                            }
+                                        },
+                                    }
+                                    span { "{option}" }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        FieldType::Text | FieldType::Number | FieldType::Date => {
+            let kind = match field.field_type {
+                FieldType::Number => "number",
+                FieldType::Date => "date",
+                _ => "text",
+            };
+            let change_id = key.clone();
+            rsx! {
+                div { key: "{key}", class: "kit-wc__field",
+                    label { r#for: "{field_id}", "{label}" }
+                    input {
+                        id: "{field_id}",
+                        r#type: "{kind}",
+                        value: "{value}",
+                        oninput: move |event: FormEvent| {
+                            if let Some(change) = on_change {
+                                change.call((change_id.clone(), event.value()));
+                            }
+                        },
+                    }
                 }
             }
         }

@@ -327,8 +327,8 @@
 .kit-ro__panel {
   display: grid;
   align-content: start;
-  gap: 12px;
-  padding: 16px;
+  gap: 10px;
+  padding: 12px;
   border: 1px solid var(--kit-rule-soft);
   border-radius: var(--kit-radius-lg);
   background: var(--kit-surface);
@@ -361,7 +361,7 @@
 
 .kit-ro__block {
   display: grid;
-  gap: 6px;
+  gap: 4px;
   font-size: 13px;
 }
 
@@ -376,7 +376,7 @@
 }
 
 .kit-ro__bars {
-  height: 56px;
+  height: 40px;
   display: flex;
   align-items: flex-end;
   gap: 3px;

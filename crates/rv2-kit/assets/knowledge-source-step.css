@@ -112,7 +112,7 @@
   position: absolute;
   inset: 0;
   z-index: 0;
-  opacity: 0.22;
+  opacity: 0.12;
   pointer-events: none;
   overflow: hidden;
   min-width: 0;
@@ -138,11 +138,6 @@
   gap: 0;
   min-height: 100%;
   min-width: 0;
-  background: var(--kit-surface);
-  border: 1px solid var(--kit-rule-soft);
-  border-radius: var(--kit-radius-lg);
-  box-shadow: var(--kit-shadow);
-  overflow: hidden;
   font-size: 13px;
 }
 
@@ -152,7 +147,6 @@
   gap: 4px;
   padding: 14px 10px;
   background: var(--kit-raised);
-  border-right: 1px solid var(--kit-rule-soft);
 }
 
 .kit-onb__pv-link {
@@ -181,6 +175,43 @@
   border: 1px solid var(--kit-rule-soft);
   border-radius: var(--kit-radius);
   min-width: 0;
+}
+
+.kit-onb__pv-card[data-loading] {
+  gap: 10px;
+  min-height: 160px;
+  padding: 16px;
+  align-content: start;
+}
+
+.kit-onb__pv-loading {
+  display: grid;
+  gap: 8px;
+}
+
+.kit-onb__pv-skel {
+  display: block;
+  height: 10px;
+  width: 100%;
+  border-radius: var(--kit-radius-pill);
+  background: var(--kit-raised);
+  animation: kit-onb-skel 1.6s ease-in-out infinite;
+}
+
+.kit-onb__pv-skel--short {
+  width: 60%;
+}
+
+@keyframes kit-onb-skel {
+  50% {
+    opacity: 0.45;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kit-onb__pv-skel {
+    animation: none;
+  }
 }
 
 .kit-onb__pv-head {
@@ -273,9 +304,8 @@
   padding: 6px 4px;
   border-bottom: 1px solid var(--kit-rule-soft);
   text-align: left;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  overflow-wrap: anywhere;
+  vertical-align: top;
 }
 
 .kit-onb__pv-table th {
@@ -328,6 +358,72 @@
   color: var(--kit-ink-muted);
   font-size: 12px;
   overflow-wrap: anywhere;
+}
+
+.kit-onb__pv-side {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 18px 14px;
+  background: var(--kit-raised);
+}
+
+.kit-onb__pv-bar {
+  display: block;
+  width: 70%;
+  height: 8px;
+  border-radius: var(--kit-radius-pill);
+  background: var(--kit-surface);
+}
+
+.kit-onb__pv-bar:nth-child(2n) {
+  width: 45%;
+}
+
+.kit-onb__pv-band {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.kit-onb__pv-tile {
+  height: 52px;
+  border-radius: var(--kit-radius);
+}
+
+.kit-onb__pv-also {
+  display: block;
+  color: var(--kit-ink-muted);
+  font-size: 12px;
+}
+
+.kit-onb__pv-chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  height: 72px;
+}
+
+.kit-onb__pv-col {
+  flex: 1 1 0;
+  height: 40%;
+  border-radius: 4px 4px 0 0;
+  background: var(--kit-raised);
+}
+
+.kit-onb__pv-col:nth-child(3n) {
+  height: 75%;
+}
+
+.kit-onb__pv-col:nth-child(4n + 1) {
+  height: 60%;
+}
+
+.kit-onb__pv-heading {
+  display: block;
+  color: var(--kit-ink);
+  font-size: 12px;
+  font-weight: 650;
 }
 
 .kit-src {
@@ -418,6 +514,7 @@
 @media (min-width: 960px) {
   .kit-onb__body {
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    overflow: hidden;
   }
 
   .kit-onb__panel {
@@ -425,19 +522,96 @@
     padding: 48px 32px;
   }
 
+  /* The preview starts at the middle of the viewport and is clipped by the body's right edge. */
   .kit-onb__preview-wrap {
     position: relative;
     inset: auto;
     opacity: 1;
     pointer-events: auto;
-    padding: 32px 24px;
+    padding: 48px 0;
     box-sizing: border-box;
     z-index: 0;
+    overflow: visible;
+  }
+
+  .kit-onb__preview {
+    width: 720px;
+    max-width: none;
+  }
+
+  /* At 0.65 the preview text stays under the prompt's contrast and above 4.5:1. */
+  .kit-onb__preview[data-sketch] {
+    grid-template-columns: 16vw minmax(0, 1fr);
+    opacity: 0.65;
   }
 }
 
+/* Below the wide breakpoint the preview sits behind the step; the step's own ground hides it. */
+@media (max-width: 959px) {
+  .kit-onb__panel {
+    background: var(--kit-ground);
+  }
+}
+
+.kit-src__plus,
+.kit-src__submit {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--kit-radius-pill);
+  background: transparent;
+  color: var(--kit-ink);
+  cursor: pointer;
+}
+
+.kit-src__submit {
+  background: var(--kit-ink);
+  color: var(--kit-on-ink);
+}
+
+.kit-src__submit:disabled {
+  background: var(--kit-rule);
+  color: var(--kit-ink-faint);
+  cursor: default;
+}
+
+.kit-src__glyph {
+  width: 16px;
+  height: 16px;
+}
+
+@media (min-width: 960px) {
+  .kit-onb__panel {
+    align-self: center;
+    justify-self: center;
+    width: 100%;
+    max-width: none;
+    align-items: center;
+    text-align: center;
+  }
+
+  .kit-src {
+    width: 62%;
+  }
+
+  /* The panel centres its children, so the marker group needs a width or its dashes collapse to 0. */
+  .kit-onb__steps {
+    width: 96px;
+  }
+}
+
+/* The naming step marks its done steps in ink, per its spec; other steps keep the ok colour. */
+.kit-onb:has(.kit-nm) .kit-onb__step[data-state="done"] {
+  background: var(--kit-ink);
+}
+
 @media (max-width: 480px) {
-  .kit-onb__pv-nav {
+  .kit-onb__pv-nav,
+  .kit-onb__pv-side {
     display: none;
   }
 

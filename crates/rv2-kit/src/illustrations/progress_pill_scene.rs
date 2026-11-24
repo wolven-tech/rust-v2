@@ -1,8 +1,10 @@
-//! Progress pill scene: a compact status pill for a working agent. It shows the job's title,
-//! how far along it is, the current step and a thin progress bar with a shimmer.
+//! Progress pill scene: one compact status pill for a working agent, centred in its stage over a soft
+//! two-tinted glow band. It shows the job's title, how far along it is, the agent and its source
+//! count, the current step once one is set, and a thin progress bar with a shimmer on its fill.
 //!
-//! Design choice: the glow is the Phase 1 `GlowFloorBackdrop`; its `paused` flag holds the glow
-//! still outside the working state.
+//! Design choice: the glow is a blurred band drawn under the pill by this scene, not a
+//! `GlowFloorBackdrop`; a floor stage would wrap the pill in a second surface. `paused` and done hold
+//! the band steady and dimmer, as the working state's band breathes.
 //! Design choice: the fill moves by `transform: scaleX`, so a progress change eases without a
 //! layout pass.
 //! Design choice: only the step line is a live region, so the percentage ticks are silent and
@@ -15,7 +17,6 @@
 use dioxus::prelude::*;
 
 use crate::internal::{KIT_CSS, class_list};
-use crate::motion::glow_floor_backdrop::{GlowAnchor, GlowFloorBackdrop, GlowIntensity};
 
 const CSS: Asset = asset!("/assets/progress-pill-scene.css");
 
@@ -59,20 +60,13 @@ pub fn percent_text(progress: f64, state: PillState) -> String {
     }
 }
 
-fn glow_for(state: PillState) -> GlowIntensity {
-    match state {
-        PillState::Working => GlowIntensity::Standard,
-        PillState::Paused | PillState::Done => GlowIntensity::Subtle,
-    }
-}
-
 #[component]
 pub fn ProgressPillScene(
     #[props(into)] title: String,
     #[props(into)] agent_label: String,
     #[props(into)] source_line: String,
     #[props(default)] progress: f64,
-    #[props(into)] step_label: String,
+    #[props(into, default)] step_label: String,
     #[props(default)] state: PillState,
     #[props(default)] mark: Option<Element>,
     #[props(default)] interactive: bool,
@@ -90,15 +84,17 @@ pub fn ProgressPillScene(
                 if let Some(mark) = mark {
                     {mark}
                 } else {
-                    span { class: "kit-pill__cell" }
-                    span { class: "kit-pill__cell" }
-                    span { class: "kit-pill__cell" }
-                    span { class: "kit-pill__cell" }
-                    span { class: "kit-pill__cell" }
-                    span { class: "kit-pill__cell" }
-                    span { class: "kit-pill__cell" }
-                    span { class: "kit-pill__cell" }
-                    span { class: "kit-pill__cell" }
+                    div { class: "kit-pill__dots",
+                        span { class: "kit-pill__cell" }
+                        span { class: "kit-pill__cell" }
+                        span { class: "kit-pill__cell" }
+                        span { class: "kit-pill__cell" }
+                        span { class: "kit-pill__cell" }
+                        span { class: "kit-pill__cell" }
+                        span { class: "kit-pill__cell" }
+                        span { class: "kit-pill__cell" }
+                        span { class: "kit-pill__cell" }
+                    }
                 }
             }
             div { class: "kit-pill__body",
@@ -108,10 +104,13 @@ pub fn ProgressPillScene(
                 }
                 div { class: "kit-pill__agent",
                     span { class: "kit-pill__agent-name", "{agent_label}" }
+                    span { class: "kit-pill__dot", "aria-hidden": "true", "·" }
                     span { class: "kit-pill__source", "{source_line}" }
                 }
-                div { class: "kit-pill__step", role: "status", "aria-live": "polite",
-                    "{step_label}"
+                if !step_label.is_empty() {
+                    div { class: "kit-pill__step", role: "status", "aria-live": "polite",
+                        "{step_label}"
+                    }
                 }
                 div { class: "kit-pill__track", role: "progressbar",
                     "aria-label": "Progress",
@@ -126,11 +125,8 @@ pub fn ProgressPillScene(
     rsx! {
         document::Link { rel: "stylesheet", href: KIT_CSS }
         document::Link { rel: "stylesheet", href: CSS }
-        GlowFloorBackdrop {
-            intensity: glow_for(state),
-            anchor: GlowAnchor::Bottom,
-            paused: state != PillState::Working,
-            class,
+        div { class, "data-state": state.as_str(),
+            span { class: "kit-pill-scene__band", "aria-hidden": "true" }
             if interactive {
                 button { r#type: "button", class: "kit-pill-scene__button",
                     "aria-label": "{aria_name}",

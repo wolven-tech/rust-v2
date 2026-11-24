@@ -1,6 +1,6 @@
 use dioxus::prelude::*;
 
-use super::{Item, Section, gallery_now};
+use super::{Item, Section};
 
 #[component]
 pub fn Illustrations() -> Element {
@@ -36,56 +36,29 @@ fn FolderDemo() -> Element {
     use rv2_kit::illustrations::frosted_folder_mark::{FrostedFolderMark, SizeStep};
     rsx! {
         Item { slug: "frosted-folder-mark", name: "FrostedFolderMark",
-            div { class: "gl-row",
-                FrostedFolderMark { size_token: SizeStep::Sm }
+            div { style: "width: min(100%, 560px); margin: 0 auto;",
                 FrostedFolderMark { size_token: SizeStep::Md }
-                FrostedFolderMark { size_token: SizeStep::Lg, label: "Client documents" }
-                FrostedFolderMark { size_token: SizeStep::Md, disabled: true }
             }
-            div { class: "kit-folder-scope gl-canvas gl-row", tabindex: "0", "data-scope": "folder",
-                FrostedFolderMark { size_token: SizeStep::Md }
-                span { "Focus this card to open the folder" }
-            }
+            p { style: "margin: 8px 0 0; text-align: center;", "Hover the folder to open it" }
         }
     }
 }
 
 #[component]
 fn PillDemo() -> Element {
-    use rv2_kit::illustrations::progress_pill_scene::{PillState, ProgressPillScene};
-    let mut progress = use_signal(|| 0.42f64);
+    use rv2_kit::illustrations::progress_pill_scene::ProgressPillScene;
+    let mut progress = use_signal(|| 0.33f64);
     rsx! {
         Item { slug: "progress-pill-scene", name: "ProgressPillScene",
             div { class: "gl-row",
                 button { r#type: "button", "data-action": "advance", onclick: move |_| progress.set((progress() + 0.1).min(1.0)), "Advance 10%" }
                 button { r#type: "button", "data-action": "reset", onclick: move |_| progress.set(0.0), "Reset" }
             }
-            div { class: "gl-stack",
-                ProgressPillScene {
-                    title: "Q3 pricing memo",
-                    agent_label: "Research agent",
-                    source_line: "12 sources",
-                    progress: progress(),
-                    step_label: "Comparing competitor tiers",
-                }
-                ProgressPillScene {
-                    title: "Pipeline audit trail export for the Northwind account",
-                    agent_label: "Export agent",
-                    source_line: "3 sources",
-                    progress: 0.6,
-                    step_label: "Waiting for approval",
-                    state: PillState::Paused,
-                }
-                ProgressPillScene {
-                    title: "Launch checklist",
-                    agent_label: "Ops agent",
-                    source_line: "3 sources",
-                    progress: 1.0,
-                    step_label: "Delivered",
-                    state: PillState::Done,
-                    interactive: true,
-                    on_open: |_| {},
-                }
+            ProgressPillScene {
+                title: "Q3 revenue report",
+                agent_label: "Analyst",
+                source_line: "24 sources read",
+                progress: progress(),
             }
         }
     }
@@ -95,38 +68,24 @@ fn PillDemo() -> Element {
 fn DictationDemo() -> Element {
     use rv2_kit::illustrations::dictation_capture_panel::{DictationCapturePanel, DictationState};
     let mut state = use_signal(|| DictationState::Listening);
-    let mut listened_ms = use_signal(|| 0u64);
-    let mut last = use_signal(gallery_now);
     let mut out = use_signal(String::new);
-    use_effect(move || {
-        let now = gallery_now();
-        let previous = *last.peek();
-        if *state.peek() == DictationState::Listening && now > previous {
-            let total = *listened_ms.peek() + (now - previous);
-            listened_ms.set(total);
-        }
-        last.set(now);
-    });
-    let ticks = listened_ms() as f64 / 250.0;
+    // Fixed levels, all inside the standard glow band, so the light rests at mid strength.
     let samples: Vec<f64> = (0..40)
-        .map(|i| (0.5 + 0.4 * ((ticks - (39 - i) as f64) / 2.5).sin()).clamp(0.0, 1.0))
+        .map(|i| 0.2 + ((i * 37) % 41) as f64 / 41.0 * 0.4)
         .collect();
-    let elapsed = listened_ms() / 1000;
     rsx! {
         Item { slug: "dictation-capture-panel", name: "DictationCapturePanel",
             div { class: "gl-row",
                 button { r#type: "button", "data-action": "listen", onclick: move |_| state.set(DictationState::Listening), "Listening" }
                 button { r#type: "button", "data-action": "pause", onclick: move |_| state.set(DictationState::Paused), "Pause" }
-                button { r#type: "button", "data-action": "idle", onclick: move |_| {
-                    state.set(DictationState::Idle);
-                    listened_ms.set(0);
-                }, "Idle" }
+                button { r#type: "button", "data-action": "idle", onclick: move |_| state.set(DictationState::Idle), "Idle" }
             }
             div { class: "gl-stack",
                 DictationCapturePanel {
                     state: state(),
                     level_samples: samples,
-                    elapsed_secs: elapsed,
+                    elapsed_secs: 42,
+                    finish_label: "Done",
                     on_finish: move |_| out.set("finished".to_string()),
                     on_cancel: move |_| out.set("cancelled".to_string()),
                 }
@@ -138,75 +97,111 @@ fn DictationDemo() -> Element {
 
 #[component]
 fn OrbDemo() -> Element {
-    use rv2_kit::illustrations::voice_assistant_orb::{OrbState, VoiceAssistantOrb};
-    let mut state = use_signal(|| OrbState::Idle);
-    let mut level = use_signal(|| 0.2f64);
-    let mut presses = use_signal(|| 0u32);
-    let count = presses();
+    use rv2_kit::illustrations::voice_assistant_orb::{OrbState, VoiceAssistantOrb, state_label};
+    let mut state = use_signal(|| OrbState::Listening);
     rsx! {
         Item { slug: "voice-assistant-orb", name: "VoiceAssistantOrb",
-            div { class: "gl-row",
-                button { r#type: "button", "data-action": "idle", onclick: move |_| state.set(OrbState::Idle), "Idle" }
-                button { r#type: "button", "data-action": "listening", onclick: move |_| state.set(OrbState::Listening), "Listening" }
-                button { r#type: "button", "data-action": "thinking", onclick: move |_| state.set(OrbState::Thinking), "Thinking" }
-                button { r#type: "button", "data-action": "speaking", onclick: move |_| state.set(OrbState::Speaking), "Speaking" }
-                button { r#type: "button", "data-action": "loud", onclick: move |_| level.set(0.9), "Loud" }
-                button { r#type: "button", "data-action": "quiet", onclick: move |_| level.set(0.15), "Quiet" }
-            }
-            div { class: "gl-row",
-                VoiceAssistantOrb { state: state(), level: level(), label: "Assistant" }
+            div { style: "width: min(100%, 560px); margin: 0 auto;",
                 VoiceAssistantOrb {
                     state: state(),
-                    level: level(),
-                    interactive: true,
-                    on_press: move |_| {
-                        let next = if state() == OrbState::Listening { OrbState::Idle } else { OrbState::Listening };
-                        state.set(next);
-                        presses += 1;
-                    },
+                    level: 0.5,
+                    on_demo_state: move |next: OrbState| state.set(next),
                 }
             }
-            div { class: "gl-out", "data-out": "voice-assistant-orb", "presses {count}" }
+            div { class: "gl-out", "data-out": "voice-assistant-orb", {state_label(state())} }
         }
     }
 }
 
-fn endpoint(id: &str, label: &str) -> rv2_kit::illustrations::outreach_fanout_lines::Endpoint {
-    rv2_kit::illustrations::outreach_fanout_lines::Endpoint {
-        id: id.to_string(),
-        label: label.to_string(),
-        icon: Some(glyph()),
+/// Our own placeholder shapes for model rows, one per index: circle, diamond, triangle, square,
+/// star, hexagon, ring. They are not vendor marks.
+fn shape_mark(index: usize) -> Element {
+    let (d, rule) = match index % 7 {
+        0 => ("M8 3a5 5 0 1 0 0.01 0Z", "nonzero"),
+        1 => ("M8 2.5 13.5 8 8 13.5 2.5 8Z", "nonzero"),
+        2 => ("M8 2.5 13.5 13 2.5 13Z", "nonzero"),
+        3 => ("M3 3h10v10H3Z", "nonzero"),
+        4 => (
+            "M8 2 9.8 6.1 14.2 6.5 10.9 9.4 11.9 13.8 8 11.5 4.1 13.8 5.1 9.4 1.8 6.5 6.2 6.1Z",
+            "nonzero",
+        ),
+        5 => (
+            "M8 2.2 13.3 5.1 13.3 10.9 8 13.8 2.7 10.9 2.7 5.1Z",
+            "nonzero",
+        ),
+        _ => (
+            "M8 3a5 5 0 1 0 0.01 0Z M8 5.5a2.5 2.5 0 1 1 0.01 0Z",
+            "evenodd",
+        ),
+    };
+    rsx! {
+        svg { class: "gl-glyph", "viewBox": "0 0 16 16", width: "14", height: "14", "aria-hidden": "true",
+            path { d, fill: "currentColor", "fill-rule": rule }
+        }
+    }
+}
+
+/// Generic kit icons standing in for the caller's destination marks.
+fn icon_envelope() -> Element {
+    rsx! {
+        svg { class: "gl-glyph", "viewBox": "0 0 16 16", width: "18", height: "18", "aria-hidden": "true",
+            fill: "none", stroke: "currentColor", "stroke-width": "1.3",
+            rect { x: "2", y: "3.5", width: "12", height: "9", rx: "1.5" }
+            path { d: "M2.5 4.5 8 9l5.5-4.5" }
+        }
+    }
+}
+
+fn icon_bubble() -> Element {
+    rsx! {
+        svg { class: "gl-glyph", "viewBox": "0 0 16 16", width: "18", height: "18", "aria-hidden": "true",
+            fill: "none", stroke: "currentColor", "stroke-width": "1.3",
+            path { d: "M3 3.5h10a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1H7l-3 2.5V10.5H3a1 1 0 0 1-1-1v-5a1 1 0 0 1 1-1z" }
+        }
+    }
+}
+
+fn icon_document() -> Element {
+    rsx! {
+        svg { class: "gl-glyph", "viewBox": "0 0 16 16", width: "18", height: "18", "aria-hidden": "true",
+            fill: "none", stroke: "currentColor", "stroke-width": "1.3",
+            path { d: "M4 2.5h5l3 3v8H4z" }
+            path { d: "M6.5 8.5h3M6.5 11h3" }
+        }
     }
 }
 
 #[component]
 fn FanoutDemo() -> Element {
-    use rv2_kit::illustrations::outreach_fanout_lines::OutreachFanoutLines;
+    use rv2_kit::illustrations::outreach_fanout_lines::{Endpoint, OutreachFanoutLines};
     let mut active = use_signal(|| None::<String>);
     let mut picked = use_signal(String::new);
     let destinations = vec![
-        endpoint("mail", "Mail"),
-        endpoint("chat", "Chat"),
-        endpoint("crm", "CRM"),
-        endpoint("sms", "Text"),
+        Endpoint {
+            id: "mail".into(),
+            label: "Email".into(),
+            icon: Some(icon_envelope()),
+        },
+        Endpoint {
+            id: "chat".into(),
+            label: "Chat".into(),
+            icon: Some(icon_bubble()),
+        },
+        Endpoint {
+            id: "docs".into(),
+            label: "Documents".into(),
+            icon: Some(icon_document()),
+        },
     ];
     rsx! {
         Item { slug: "outreach-fanout-lines", name: "OutreachFanoutLines",
-            div { class: "gl-stack",
-                OutreachFanoutLines {
-                    source: endpoint("outbox", "Outbox"),
-                    destinations: destinations.clone(),
-                    active_destination_id: active(),
-                }
-                OutreachFanoutLines {
-                    source: endpoint("outbox", "Outbox"),
-                    destinations: destinations.clone(),
-                    active_destination_id: active(),
-                    on_select: move |id: String| {
-                        picked.set(id.clone());
-                        active.set(Some(id));
-                    },
-                }
+            OutreachFanoutLines {
+                destinations: destinations.clone(),
+                active_destination_id: active(),
+                on_select: move |id: String| {
+                    picked.set(id.clone());
+                    active.set(Some(id));
+                },
             }
             div { class: "gl-out", "data-out": "outreach-fanout-lines", {picked()} }
         }
@@ -216,34 +211,56 @@ fn FanoutDemo() -> Element {
 #[component]
 fn TaskBranchDemo() -> Element {
     use rv2_kit::illustrations::task_branch_scene::{
-        Assignee, ClientNode, Note, Person, Role, TaskBranchScene, TaskCard,
+        Assignee, ClientNode, NestedCard, Person, Role, SideNode, SubtaskCard, TaskBranchScene,
+        TaskCard,
     };
+    let owner = |id: &str, avatar: &str| Assignee {
+        id: id.to_string(),
+        avatar: avatar.to_string(),
+    };
+    let icons = |count: usize| (0..count).map(|_| glyph()).collect::<Vec<_>>();
     rsx! {
         Item { slug: "task-branch-scene", name: "TaskBranchScene",
-            div { class: "gl-stack",
+            div { style: "width: min(100%, 880px); margin: 0 auto;",
                 TaskBranchScene {
                     client: ClientNode {
-                        label: "Northwind Foods".to_string(),
+                        label: "Client: Northwind Foods".to_string(),
                         connection_status: "Connected".to_string(),
                     },
                     task: TaskCard {
-                        title: "Q4 onboarding deck".to_string(),
-                        assignees: vec![
-                            Assignee { id: "ada".to_string(), avatar: "AL".to_string() },
-                            Assignee { id: "sam".to_string(), avatar: "SR".to_string() },
-                        ],
-                        tool_icons: vec![glyph(), glyph()],
+                        title: "Task: Q4 onboarding deck".to_string(),
+                        assignees: vec![owner("al", "AL"), owner("sr", "SR")],
+                        tool_icons: icons(5),
                     },
-                    notes: vec![
-                        Note { id: "kickoff".to_string(), label: "Kickoff call".to_string() },
-                        Note { id: "brief".to_string(), label: "Brief v2".to_string() },
-                    ],
-                    roles: vec![Role {
+                    side: SideNode {
+                        label: "Client notes".to_string(),
+                        meta: "3 notes".to_string(),
+                    },
+                    subtasks: SubtaskCard {
+                        title: "Subtasks: draft the outline".to_string(),
+                        assignees: vec![owner("dm", "DM"), owner("ml", "ML"), owner("jk", "JK")],
+                        nested: Some(NestedCard {
+                            title: "Subtask 1: draft the outline".to_string(),
+                            assignees: vec![owner("al", "AL")],
+                            tool_icons: icons(4),
+                        }),
+                    },
+                    split_label: "Role split".to_string(),
+                    role: Role {
+                        id: "pm".to_string(),
+                        title: "Project manager".to_string(),
+                        subline: "Owns the timeline".to_string(),
+                        person: Person { name: "Dana Miller".to_string(), avatar: "DM".to_string() },
+                        tool_icons: icons(3),
+                    },
+                    ghost_role: Some(Role {
                         id: "design".to_string(),
                         title: "Design lead".to_string(),
-                        person: Person { name: "Ada Lovelace".to_string(), avatar: "AL".to_string() },
-                        tool_icons: vec![glyph()],
-                    }],
+                        subline: "Owns the look".to_string(),
+                        person: Person { name: "Mia Lee".to_string(), avatar: "ML".to_string() },
+                        tool_icons: icons(3),
+                    }),
+                    tool_tag: "Stack",
                 }
             }
         }
@@ -253,39 +270,39 @@ fn TaskBranchDemo() -> Element {
 #[component]
 fn ModelPickerDemo() -> Element {
     use rv2_kit::illustrations::model_picker_scene::{ModelGroup, ModelOption, ModelPickerScene};
-    let option = |id: &str, name: &str, available: bool| ModelOption {
-        id: id.to_string(),
-        name: name.to_string(),
-        vendor_mark: Some(glyph()),
-        available,
-    };
-    let groups = vec![
-        ModelGroup {
-            label: "Recommended".to_string(),
-            models: vec![
-                option("fast", "Flash 2", true),
-                option("deep", "Deep reason", true),
-            ],
-        },
-        ModelGroup {
-            label: "More".to_string(),
-            models: vec![
-                option("large", "Large context", true),
-                option("legacy", "Legacy v1", false),
-                option("mini", "Mini", true),
-                option("edge", "Edge", true),
-            ],
-        },
+    let names = [
+        ("flash", "Flash 2"),
+        ("deep", "Deep reason"),
+        ("large", "Large context"),
+        ("compact", "Compact 3"),
+        ("vision", "Vision pro"),
+        ("code", "Code mini"),
+        ("legacy", "Legacy v1"),
     ];
-    let mut chosen = use_signal(|| "fast".to_string());
+    let groups = vec![ModelGroup {
+        label: "Fast models".to_string(),
+        models: names
+            .iter()
+            .enumerate()
+            .map(|(index, (id, name))| ModelOption {
+                id: id.to_string(),
+                name: name.to_string(),
+                vendor_mark: Some(shape_mark(index)),
+                available: true,
+            })
+            .collect(),
+    }];
+    let mut chosen = use_signal(|| "deep".to_string());
     rsx! {
         Item { slug: "model-picker-scene", name: "ModelPickerScene",
-            div { class: "gl-row",
+            div { style: "width: min(100%, 560px); margin: 0 auto;",
                 ModelPickerScene {
                     groups: groups.clone(),
                     default_id: "deep",
                     on_select: move |id: String| chosen.set(id),
                 }
+            }
+            div { class: "gl-row",
                 ModelPickerScene {
                     groups: groups.clone(),
                     popover: true,
@@ -303,11 +320,6 @@ fn MapDemo() -> Element {
     let mut chosen = use_signal(|| "europe".to_string());
     let regions = vec![
         MapRegion {
-            id: "north-america".into(),
-            label: "North America".into(),
-            geometry_ref: "north-america".into(),
-        },
-        MapRegion {
             id: "europe".into(),
             label: "Europe".into(),
             geometry_ref: "europe".into(),
@@ -323,14 +335,19 @@ fn MapDemo() -> Element {
             geometry_ref: "asia".into(),
         },
         MapRegion {
-            id: "americas".into(),
-            label: "Americas".into(),
-            geometry_ref: "americas".into(),
+            id: "north-america".into(),
+            label: "North America".into(),
+            geometry_ref: "north-america".into(),
         },
         MapRegion {
-            id: "europe-africa".into(),
-            label: "Europe and Africa".into(),
-            geometry_ref: "europe-africa".into(),
+            id: "south-america".into(),
+            label: "South America".into(),
+            geometry_ref: "south-america".into(),
+        },
+        MapRegion {
+            id: "oceania".into(),
+            label: "Oceania".into(),
+            geometry_ref: "oceania".into(),
         },
     ];
     let land = sample_land();
@@ -480,7 +497,7 @@ fn sample_land() -> Vec<rv2_kit::illustrations::continent_highlight_map::LandPie
         (60.0, 70.0),
         (100.0, 78.0),
         (140.0, 72.0),
-        (180.0, 68.0),
+        (176.0, 66.0),
         (170.0, 60.0),
         (155.0, 56.0),
         (140.0, 48.0),
@@ -515,18 +532,6 @@ fn sample_land() -> Vec<rv2_kit::illustrations::continent_highlight_map::LandPie
         (115.0, -34.0),
     ]);
     vec![
-        LandPiece {
-            geometry_ref: "americas".into(),
-            polygons: vec![
-                north_america.clone(),
-                greenland.clone(),
-                south_america.clone(),
-            ],
-        },
-        LandPiece {
-            geometry_ref: "europe-africa".into(),
-            polygons: vec![europe.clone(), africa.clone()],
-        },
         LandPiece {
             geometry_ref: "south-america".into(),
             polygons: vec![south_america],
@@ -567,22 +572,22 @@ fn ArcDemo() -> Element {
             IntegrationStatus::Live
         }
     };
-    let item = |id: &str, label: &str, sub: &str| Integration {
+    let item = |id: &str, label: &str| Integration {
         id: id.to_string(),
         label: label.to_string(),
-        sub_label: sub.to_string(),
         status: status(id),
         logo: Some(glyph()),
     };
     let integrations = vec![
-        item("crm", "CRM", "Synced 2 min ago"),
-        item("billing", "Billing", "Synced 1 h ago"),
-        item("support", "Support", "Synced 5 min ago"),
-        item("warehouse", "Warehouse", "Synced 9 min ago"),
+        item("helpdesk", "Helpdesk"),
+        item("warehouse", "Warehouse"),
+        item("chat", "Chat"),
+        item("tracker", "Tracker"),
+        item("payments", "Payments"),
     ];
     let hub = || Hub {
-        title: "Revenue analysis".to_string(),
-        subtitle: "One view across tools".to_string(),
+        title: "Analysis hub".to_string(),
+        subtitle: "Every source in one view".to_string(),
     };
     rsx! {
         Item { slug: "integration-arc-flow", name: "IntegrationArcFlow",
@@ -599,7 +604,6 @@ fn ArcDemo() -> Element {
                     });
                 },
             }
-            IntegrationArcFlow { hub: hub(), integrations: integrations.clone() }
         }
     }
 }
@@ -608,19 +612,26 @@ fn ArcDemo() -> Element {
 fn PromptDemo() -> Element {
     use rv2_kit::illustrations::keyboard_prompt_input::KeyboardPromptInput;
     let mut out = use_signal(String::new);
+    // Starts paused so the gallery's first paint is the resting frame; Play runs the rotation.
+    let mut paused = use_signal(|| true);
     rsx! {
         Item { slug: "keyboard-prompt-input", name: "KeyboardPromptInput",
-            div { class: "gl-stack",
-                KeyboardPromptInput {
-                    sample_prompts: vec![
-                        "Summarise the Q3 churn drivers".to_string(),
-                        "Draft a reply to the Northwind renewal".to_string(),
-                    ],
-                }
-                KeyboardPromptInput {
-                    value: "Compare the two pricing tiers",
-                    on_submit: move |text: String| out.set(text),
-                }
+            div { class: "gl-row",
+                button { r#type: "button", onclick: move |_| paused.toggle(), if paused() { "Play" } else { "Pause" } }
+            }
+            KeyboardPromptInput {
+                sample_prompts: vec![
+                    "Summarize last week's support tickets".to_string(),
+                    "Draft a reply to the open invoice".to_string(),
+                    "Compare two plans for a team of ten".to_string(),
+                ],
+                paused: paused(),
+            }
+        }
+        Item { slug: "keyboard-prompt-input-interactive", name: "KeyboardPromptInput (interactive)",
+            KeyboardPromptInput {
+                value: "Compare the two pricing tiers",
+                on_submit: move |text: String| out.set(text),
             }
             div { class: "gl-out", "data-out": "keyboard-prompt-input", {out()} }
         }
@@ -628,37 +639,15 @@ fn PromptDemo() -> Element {
 }
 
 fn sample_card() -> rv2_kit::illustrations::inspected_agent_card_scene::AgentCard {
-    use rv2_kit::illustrations::inspected_agent_card_scene::{AgentCard, CardFooter, CardRow};
+    use rv2_kit::illustrations::inspected_agent_card_scene::{AgentCard, CardFooter};
     AgentCard {
-        title: "Invoice triage agent".to_string(),
-        model_label: "Model: Sonnet".to_string(),
+        title: "Patch writer".to_string(),
+        model_label: "Large model".to_string(),
         status_label: "Running".to_string(),
-        task_line: "Sorting 42 invoices".to_string(),
-        rows: vec![
-            CardRow {
-                label: "Tokens".to_string(),
-                value: "12.4k".to_string(),
-                bar_fraction: Some(0.4),
-            },
-            CardRow {
-                label: "Tools".to_string(),
-                value: "3".to_string(),
-                bar_fraction: None,
-            },
-            CardRow {
-                label: "Latency".to_string(),
-                value: "0.8 s".to_string(),
-                bar_fraction: Some(0.2),
-            },
-            CardRow {
-                label: "Cost".to_string(),
-                value: "$0.08".to_string(),
-                bar_fraction: None,
-            },
-        ],
+        task_line: "Fix the broken link in the setup guide".to_string(),
         footer: CardFooter {
-            cost_label: "$0.08 spent".to_string(),
-            time_label: "1m 12s".to_string(),
+            cost_label: "$0.42".to_string(),
+            time_label: "9 min".to_string(),
         },
     }
 }
@@ -666,40 +655,48 @@ fn sample_card() -> rv2_kit::illustrations::inspected_agent_card_scene::AgentCar
 #[component]
 fn CardDemo() -> Element {
     use rv2_kit::illustrations::inspected_agent_card_scene::{
-        InspectSpeed, InspectStep, InspectedAgentCardScene,
+        CardFooter, GhostCard, InspectStep, InspectedAgentCardScene,
     };
     let steps = vec![
         InspectStep {
             row_index: 0,
-            note: "Token use grows with the batch".to_string(),
+            note: "Header: name, model and status".to_string(),
         },
         InspectStep {
             row_index: 1,
-            note: "Three tools are open".to_string(),
+            note: "Task: one sentence".to_string(),
         },
         InspectStep {
             row_index: 2,
-            note: "Latency stays under a second".to_string(),
-        },
-        InspectStep {
-            row_index: 3,
-            note: "Spend is shown last".to_string(),
+            note: "Footer: cost and elapsed time".to_string(),
         },
     ];
+    let ghost = GhostCard {
+        title: "Link checker".to_string(),
+        model_label: "Small model".to_string(),
+        status_label: "Done".to_string(),
+        task_line: "Check every link on the docs site".to_string(),
+        footer: CardFooter {
+            cost_label: "$0.18".to_string(),
+            time_label: "3 min".to_string(),
+        },
+    };
     rsx! {
         Item { slug: "inspected-agent-card-scene", name: "InspectedAgentCardScene",
-            InspectedAgentCardScene { card: sample_card(), inspect_steps: steps.clone(), speed: InspectSpeed::Normal }
-            InspectedAgentCardScene { card: sample_card(), inspect_steps: steps, interactive: true }
+            InspectedAgentCardScene {
+                card: sample_card(),
+                ghost: Some(ghost),
+                inspect_steps: steps,
+                interactive: true,
+            }
         }
     }
 }
 
 fn composer() -> rv2_kit::illustrations::inspected_composer_scene::Composer {
     rv2_kit::illustrations::inspected_composer_scene::Composer {
-        placeholder_text: "Ask about your pipeline".to_string(),
-        mode_label: "Chat".to_string(),
-        tools: vec!["Search".to_string(), "Files".to_string()],
-        send_label: "Send".to_string(),
+        message: "Draft the release notes for version 3".to_string(),
+        mode_label: "Auto".to_string(),
     }
 }
 
@@ -710,11 +707,7 @@ fn ComposerDemo() -> Element {
         Item { slug: "inspected-composer-scene", name: "InspectedComposerScene",
             InspectedComposerScene {
                 composer: composer(),
-                connected_apps: vec![glyph(), glyph()],
-            }
-            InspectedComposerScene {
-                composer: composer(),
-                connected_apps: vec![glyph(), glyph()],
+                connected_apps: vec![glyph(), glyph(), glyph()],
                 interactive: true,
             }
         }

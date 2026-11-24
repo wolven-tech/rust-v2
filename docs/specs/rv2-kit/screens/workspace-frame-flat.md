@@ -90,3 +90,29 @@ Hairlines, not cards or gaps, separate the sidebar from the page. The page area 
 8. The page area never produces a horizontal scroll of the whole frame.
 9. The work area edge resizes with the arrow keys and jumps to min and max with Home and End.
 10. A folded work area leaves no focusable element inside it.
+
+## Amendment 5: structure and demo
+
+Replaces: none (no earlier amendment in this spec).
+
+**Archetype:** three-part frame: sidebar, page area, and a tabbed work area that is open at rest on the right.
+
+**At rest (gallery demo):**
+- Sidebar as in Data: three top menu items, three project entries, and chats split across two folders and a pinned group (four chats in total).
+- Header row over the page area: page name, share control, more menu.
+- Page area: one heading and two lines of placeholder text.
+- Work area open on the right. Tab strip with one active tab named Start and a new-tab control.
+- Start tab body: a Tools group with three rows, then a Suggested group with four rows. Each row has a title and a short source line.
+
+**States at rest:** sidebar expanded, no folder collapsed, no menu open, work area open with Start active.
+
+**Arrangement:** sidebar, page area and work area in one row, separated by hairlines. The page area takes the width left between the sidebar and the work area.
+
+**Motion, settled frame:** nothing moves at rest. Row actions appear on hover or focus only.
+
+**Checks (continued):**
+11. With `work_area` set, the work area is visible beside the page area with its tab strip and the Start tab active, without any interaction.
+12. The Start tab shows a Tools group with three rows and a Suggested group with four rows; neither group is empty.
+13. Activating a suggested row opens its content as a new tab after Start and makes it current. Activating the same row again does not add a second tab.
+14. At 1280 wide the sidebar, page area and work area are all visible at once. No label is clipped; a long title truncates and its full text is in a tooltip.
+15. At phone width the work area is off-canvas and the page area keeps the full width.

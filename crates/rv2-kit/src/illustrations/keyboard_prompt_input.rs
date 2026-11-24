@@ -1,16 +1,17 @@
-//! Keyboard prompt input: a decorative scene for an AI chat input. A prompt field types itself above a
-//! stylised keyboard; each key press lifts its key and sends a wave through a glowing floor, so the
-//! scene reads as a live chat. In interactive mode the field is a real prompt. The keyboard is `aria-hidden`
-//! in both modes: its key labels carry nothing a reader needs, and the field is the accessible input.
+//! Keyboard prompt input: one prompt pill above one stylised keyboard, with a glow floor under the keys.
+//! Each typed character lifts its key and sends a wave out of it; the floor's light follows the newest
+//! key, so the scene reads as a live chat. In interactive mode the pill is a real prompt. The keyboard is
+//! `aria-hidden` in both modes: the pill is the accessible input.
 //!
-//! Design choice: the typing, key lift and wave state live in three signals driven by one timer loop
+//! Design choice: typing, key lift and wave state live in three signals driven by one timer loop
 //! (`lit`, `strike`, `typed`); the wave is re-keyed by `strike`, so each press replays it.
-//! Design choice: the floor is the Phase 1 `GlowFloorBackdrop`; its light spot is a child that moves by
-//! transform toward the most recent key.
-//! Design choice: the function and modifier rows are drawn but never light; only character keys do.
-//! The function row is hidden by a container query when the keyboard is narrow.
-//! Design choice: the typing demo stops in interactive mode; the field becomes a textarea that
-//! submits on Enter and keeps Shift + Enter for a line break.
+//! Design choice: the floor is the `GlowFloorBackdrop`; its light spot is a sibling of the keyboard, moved
+//! by `left` toward the lit key, so it reads as light on the floor under that key.
+//! Design choice: a scene paused at mount rests on the first prompt about half typed, with its last key
+//! lifted. A still capture of the gallery therefore shows the same frame every time.
+//! Design choice: every drawn row is `ROW_UNITS` wide, so keys are placed by flex grow and a key's centre
+//! is a plain sum of the widths before it.
+//!
 //! Browser checks: decorative mode ignores pointer and focus; Enter submits once and Shift + Enter adds
 //! a line; each typed letter lifts its key in order; the spot follows the latest key; reduced motion
 //! shows the full text at once with no lift and no waves; the keyboard hides at 390 and 320.
@@ -22,20 +23,8 @@ use crate::motion::glow_floor_backdrop::{GlowAnchor, GlowFloorBackdrop, GlowInte
 
 const CSS: Asset = asset!("/assets/keyboard-prompt-input.css");
 
-/// Function row, drawn only; it is hidden by a container query at narrow widths.
-pub const FUNCTION_ROW: [&str; 13] = [
-    "esc", "F1", "F2", "F3", "F4", "F5", "F6", "F7", "F8", "F9", "F10", "F11", "F12",
-];
-/// Character rows, top to bottom below the function row; each key lights when its character is typed.
-pub const ROWS: [&str; 4] = ["1234567890", "qwertyuiop", "asdfghjkl", "zxcvbnm"];
-/// Modifier row, drawn only, below the letter rows.
-pub const MODIFIER_ROW: [&str; 4] = ["shift", "ctrl", "alt", "cmd"];
-/// Horizontal offset of each character row in key widths, so the rows stagger like a real keyboard.
-const ROW_OFFSETS: [f64; 4] = [0.0, 0.0, 0.5, 1.0];
-/// Drawn rows: function, number, three letter rows, modifiers, space bar.
-const DRAWN_ROWS: f64 = 7.0;
-/// Index of the space bar among the drawn rows.
-const SPACE_ROW: usize = 6;
+/// Width of every drawn row, in key units.
+pub const ROW_UNITS: f64 = 15.0;
 /// Pause after the last character before the field clears, ms.
 pub const HOLD_MS: u32 = 1600;
 /// Fade before the field clears, ms.
@@ -45,6 +34,161 @@ pub const GAP_MS: u32 = 500;
 /// How long the sending state shows after a submit, ms.
 pub const SEND_MS: u32 = 900;
 
+/// One drawn key. A key with `typed` set lights when that character is typed; `label` empty means the
+/// label is the typed character in capitals.
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct Key {
+    pub label: &'static str,
+    pub units: f64,
+    pub typed: Option<char>,
+    pub modifier: bool,
+}
+
+const fn ch(typed: char, units: f64) -> Key {
+    Key {
+        label: "",
+        units,
+        typed: Some(typed),
+        modifier: false,
+    }
+}
+
+const fn named(label: &'static str, units: f64) -> Key {
+    Key {
+        label,
+        units,
+        typed: None,
+        modifier: false,
+    }
+}
+
+const fn modifier(label: &'static str, units: f64) -> Key {
+    Key {
+        label,
+        units,
+        typed: None,
+        modifier: true,
+    }
+}
+
+const fn space() -> Key {
+    Key {
+        label: "space",
+        units: 5.0,
+        typed: Some(' '),
+        modifier: false,
+    }
+}
+
+/// Function row: escape and twelve function keys. Drawn only.
+pub const FUNCTION_ROW: &[Key] = &[
+    named("esc", 1.5),
+    named("F1", 1.125),
+    named("F2", 1.125),
+    named("F3", 1.125),
+    named("F4", 1.125),
+    named("F5", 1.125),
+    named("F6", 1.125),
+    named("F7", 1.125),
+    named("F8", 1.125),
+    named("F9", 1.125),
+    named("F10", 1.125),
+    named("F11", 1.125),
+    named("F12", 1.125),
+];
+
+/// Number row: digits, symbols and backspace.
+pub const NUMBER_ROW: &[Key] = &[
+    ch('`', 1.0),
+    ch('1', 1.0),
+    ch('2', 1.0),
+    ch('3', 1.0),
+    ch('4', 1.0),
+    ch('5', 1.0),
+    ch('6', 1.0),
+    ch('7', 1.0),
+    ch('8', 1.0),
+    ch('9', 1.0),
+    ch('0', 1.0),
+    ch('-', 1.0),
+    ch('=', 1.0),
+    modifier("back", 2.0),
+];
+
+/// First letter row: tab, the top letters, and the brackets.
+pub const TAB_ROW: &[Key] = &[
+    modifier("tab", 1.5),
+    ch('q', 1.0),
+    ch('w', 1.0),
+    ch('e', 1.0),
+    ch('r', 1.0),
+    ch('t', 1.0),
+    ch('y', 1.0),
+    ch('u', 1.0),
+    ch('i', 1.0),
+    ch('o', 1.0),
+    ch('p', 1.0),
+    ch('[', 1.0),
+    ch(']', 1.0),
+    ch('\\', 1.5),
+];
+
+/// Second letter row: caps lock, the home letters, and return.
+pub const CAPS_ROW: &[Key] = &[
+    modifier("caps", 1.75),
+    ch('a', 1.0),
+    ch('s', 1.0),
+    ch('d', 1.0),
+    ch('f', 1.0),
+    ch('g', 1.0),
+    ch('h', 1.0),
+    ch('j', 1.0),
+    ch('k', 1.0),
+    ch('l', 1.0),
+    ch(';', 1.0),
+    ch('\'', 1.0),
+    modifier("return", 2.25),
+];
+
+/// Third letter row: shift, the bottom letters, punctuation, and shift.
+pub const SHIFT_ROW: &[Key] = &[
+    modifier("shift", 2.25),
+    ch('z', 1.0),
+    ch('x', 1.0),
+    ch('c', 1.0),
+    ch('v', 1.0),
+    ch('b', 1.0),
+    ch('n', 1.0),
+    ch('m', 1.0),
+    ch(',', 1.0),
+    ch('.', 1.0),
+    ch('/', 1.0),
+    modifier("shift", 2.75),
+];
+
+/// Bottom row: modifiers, the long space key, and four arrows.
+pub const BOTTOM_ROW: &[Key] = &[
+    modifier("ctrl", 1.5),
+    modifier("alt", 1.5),
+    modifier("cmd", 1.5),
+    space(),
+    modifier("cmd", 1.5),
+    named("←", 1.0),
+    named("↑", 1.0),
+    named("↓", 1.0),
+    named("→", 1.0),
+];
+
+/// The drawn rows, top to bottom.
+pub const KEY_ROWS: [&[Key]; 6] = [
+    FUNCTION_ROW,
+    NUMBER_ROW,
+    TAB_ROW,
+    CAPS_ROW,
+    SHIFT_ROW,
+    BOTTOM_ROW,
+];
+
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub enum TypingMode {
     #[default]
@@ -53,23 +197,32 @@ pub enum TypingMode {
 }
 
 /// Vertical centre of a drawn row, in percent of the keyboard.
-fn row_centre_y(drawn_row: usize) -> f64 {
-    (drawn_row as f64 + 0.5) / DRAWN_ROWS * 100.0
+fn row_centre_y(row: usize) -> f64 {
+    (row as f64 + 0.5) / KEY_ROWS.len() as f64 * 100.0
 }
 
-/// Centre of a key in percent of the keyboard, `None` for a character the keyboard does not draw.
+/// Centre of the key that types `c`, in percent of the keyboard. `None` for a character the keyboard
+/// does not draw. Capitals light the key of their lower-case letter.
 pub fn key_center(c: char) -> Option<(f64, f64)> {
     let c = c.to_ascii_lowercase();
-    if c == ' ' {
-        return Some((50.0, row_centre_y(SPACE_ROW)));
-    }
-    for (row, keys) in ROWS.iter().enumerate() {
-        if let Some(col) = keys.chars().position(|k| k == c) {
-            let x = (col as f64 + 0.5 + ROW_OFFSETS[row]) / 10.0 * 100.0;
-            return Some((x, row_centre_y(row + 1)));
+    for (row, keys) in KEY_ROWS.iter().enumerate() {
+        let mut start = 0.0;
+        for key in keys.iter() {
+            if key.typed == Some(c) {
+                return Some((
+                    (start + key.units / 2.0) / ROW_UNITS * 100.0,
+                    row_centre_y(row),
+                ));
+            }
+            start += key.units;
         }
     }
     None
+}
+
+/// Horizontal position of the floor's light: the lit key's centre, or the middle with no key lit.
+pub fn spot_x(lit: Option<char>) -> f64 {
+    lit.and_then(key_center).map_or(50.0, |(x, _)| x)
 }
 
 /// Milliseconds before the character at `index` is typed.
@@ -96,6 +249,31 @@ pub fn should_submit(enter: bool, shift: bool, text: &str) -> bool {
     enter && !shift && !text.trim().is_empty()
 }
 
+/// The resting frame of a paused scene: the first prompt about half typed, and its last typed key lit.
+fn resting_state(prompt: Option<&str>, paused: bool) -> (usize, Option<char>) {
+    match prompt.filter(|_| paused) {
+        Some(prompt) => {
+            let shown = prompt.chars().count() / 2;
+            (
+                shown,
+                shown.checked_sub(1).and_then(|i| prompt.chars().nth(i)),
+            )
+        }
+        None => (0, None),
+    }
+}
+
+/// The drawn label of one key.
+fn key_label(key: Key) -> String {
+    if key.label.is_empty() {
+        key.typed
+            .map(|c| c.to_ascii_uppercase().to_string())
+            .unwrap_or_default()
+    } else {
+        key.label.to_string()
+    }
+}
+
 #[component]
 pub fn KeyboardPromptInput(
     #[props(default)] sample_prompts: Vec<String>,
@@ -108,9 +286,13 @@ pub fn KeyboardPromptInput(
 ) -> Element {
     let interactive = on_submit.is_some();
     let uid = use_hook(|| format!("kit-kbp-{}", next_id()));
-    let mut typed = use_signal(|| 0usize);
+    let (rest_shown, rest_lit) = resting_state(
+        sample_prompts.first().map(String::as_str),
+        paused && !interactive,
+    );
+    let mut typed = use_signal(|| rest_shown);
     let mut prompt_index = use_signal(|| 0usize);
-    let mut lit = use_signal(|| None::<char>);
+    let mut lit = use_signal(|| rest_lit);
     let mut strike = use_signal(|| 0u64);
     let mut fading = use_signal(|| false);
     let mut sending = use_signal(|| false);
@@ -174,9 +356,9 @@ pub fn KeyboardPromptInput(
             None => String::new(),
         }
     };
-    let (spot_x, spot_y) = lit().and_then(key_center).unwrap_or((50.0, 50.0));
-    let wave_style = format!("--wx: {spot_x:.1}%; --wy: {spot_y:.1}%;");
-    let spot_style = format!("--gx: {spot_x:.1};");
+    let (wave_x, wave_y) = lit().and_then(key_center).unwrap_or((50.0, 50.0));
+    let wave_style = format!("--wx: {wave_x:.1}%; --wy: {wave_y:.1}%;");
+    let stage_style = format!("--gx: {:.1};", spot_x(lit()));
     let strike_key = strike();
     let lit_key = lit().map(|c| c.to_ascii_lowercase());
     let class = class_list("kit-kbp", &class);
@@ -196,6 +378,7 @@ pub fn KeyboardPromptInput(
             "data-paused": paused.then_some("true"),
             "aria-hidden": (!interactive).then_some("true"),
             div { class: "kit-kbp__field",
+                span { class: "kit-kbp__mark", "aria-hidden": "true" }
                 if interactive {
                     textarea {
                         id: "{text_id}",
@@ -206,13 +389,13 @@ pub fn KeyboardPromptInput(
                         value: "{submit_text}",
                         oninput: move |event: FormEvent| text.set(event.value()),
                         onkeydown: move |event: KeyboardEvent| {
-                            if let Key::Character(key) = event.key() {
+                            if let dioxus::prelude::Key::Character(key) = event.key() {
                                 if let Some(c) = key.chars().next().filter(|_| key.chars().count() == 1) {
                                     lit.set(Some(c));
                                     strike += 1;
                                 }
                             }
-                            let enter = event.key() == Key::Enter;
+                            let enter = event.key() == dioxus::prelude::Key::Enter;
                             if should_submit(enter, event.modifiers().shift(), &text.peek()) {
                                 event.prevent_default();
                                 let submitted = text.peek().clone();
@@ -249,47 +432,44 @@ pub fn KeyboardPromptInput(
                 anchor: GlowAnchor::Bottom,
                 paused,
                 class: "kit-kbp__floor-wrap",
-                div { class: "kit-kbp__keyboard", style: "{spot_style}", "aria-hidden": "true",
-                    span { class: "kit-kbp__spot", "aria-hidden": "true" }
-                    if !interactive && lit().is_some() {
-                        span { class: "kit-kbp__wave", key: "{strike_key}", style: "{wave_style}", "aria-hidden": "true" }
-                    }
-                    div { class: "kit-kbp__row", "data-row": "0",
-                        for label in FUNCTION_ROW {
-                            span { class: "kit-kbp__key kit-kbp__key--fn", "{label}" }
+                div { class: "kit-kbp__stage", style: "{stage_style}", "aria-hidden": "true",
+                    div { class: "kit-kbp__keyboard", style: "{wave_style}",
+                        if !interactive && lit().is_some() {
+                            span { class: "kit-kbp__wave", key: "{strike_key}", "aria-hidden": "true" }
                         }
-                    }
-                    for (row, keys) in ROWS.iter().enumerate() {
-                        div { class: "kit-kbp__row", "data-row": (row + 1).to_string(),
-                            for c in keys.chars() {
-                                {
-                                    let is_lit = !interactive && lit_key == Some(c);
-                                    let label = c.to_ascii_uppercase().to_string();
-                                    rsx! {
-                                        span {
-                                            class: "kit-kbp__key",
-                                            "data-key": "{c}",
-                                            "data-lit": is_lit.then_some("true"),
-                                            "{label}"
+                        for (row, keys) in KEY_ROWS.iter().enumerate() {
+                            div { class: "kit-kbp__row", "data-row": "{row}",
+                                for key in keys.iter().copied() {
+                                    {
+                                        let is_lit = !interactive && key.typed.is_some() && key.typed == lit_key;
+                                        let mut class = String::from("kit-kbp__key");
+                                        if row == 0 {
+                                            class.push_str(" kit-kbp__key--fn");
+                                        }
+                                        if key.modifier {
+                                            class.push_str(" kit-kbp__key--mod");
+                                        }
+                                        if key.typed == Some(' ') {
+                                            class.push_str(" kit-kbp__key--space");
+                                        }
+                                        let flex = format!("flex: {} 1 0;", key.units);
+                                        let data_key = key.typed.map(|c| c.to_string());
+                                        let label = key_label(key);
+                                        rsx! {
+                                            span {
+                                                class: "{class}",
+                                                style: "{flex}",
+                                                "data-key": data_key,
+                                                "data-lit": is_lit.then_some("true"),
+                                                "{label}"
+                                            }
                                         }
                                     }
                                 }
                             }
                         }
                     }
-                    div { class: "kit-kbp__row", "data-row": "5",
-                        for label in MODIFIER_ROW {
-                            span { class: "kit-kbp__key kit-kbp__key--mod", "{label}" }
-                        }
-                    }
-                    div { class: "kit-kbp__row", "data-row": "6",
-                        span {
-                            class: "kit-kbp__key kit-kbp__key--space",
-                            "data-key": " ",
-                            "data-lit": (!interactive && lit_key == Some(' ')).then_some("true"),
-                            "space"
-                        }
-                    }
+                    span { class: "kit-kbp__spot", "aria-hidden": "true" }
                 }
             }
         }

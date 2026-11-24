@@ -75,6 +75,15 @@ impl PriorityTone {
             Self::Done => "Done",
         }
     }
+
+    fn mark(self) -> &'static str {
+        match self {
+            Self::Low => "↓",
+            Self::Medium => "–",
+            Self::High => "↑",
+            Self::Done => "■",
+        }
+    }
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -289,7 +298,9 @@ struct CardView {
     status_word: &'static str,
     status_key: &'static str,
     status_mark: &'static str,
-    counts: String,
+    priority_word: &'static str,
+    priority_mark: &'static str,
+    counts: Option<String>,
     aria: String,
     dragging: bool,
     picked: bool,
@@ -311,9 +322,23 @@ fn status_word(issue: &Issue) -> &'static str {
     issue.issue_status.map(|s| s.word()).unwrap_or("No status")
 }
 
+/// Comment and file counts that are not zero, joined; None when a card has neither.
+fn counts_text(comments: u32, files: u32) -> Option<String> {
+    let plural = |n: u32, one: &str, many: &str| format!("{n} {}", if n == 1 { one } else { many });
+    let mut parts = Vec::new();
+    if comments > 0 {
+        parts.push(plural(comments, "comment", "comments"));
+    }
+    if files > 0 {
+        parts.push(plural(files, "file", "files"));
+    }
+    (!parts.is_empty()).then(|| parts.join(" · "))
+}
+
 fn card_view(
     issue: &Issue,
     col_label: &str,
+    tone: PriorityTone,
     index: usize,
     dragging: Option<&str>,
     picked: Option<&str>,
@@ -326,10 +351,9 @@ fn card_view(
         status_word: status,
         status_key: issue.issue_status.map(|s| s.key()).unwrap_or("none"),
         status_mark: issue.issue_status.map(|s| s.mark()).unwrap_or("·"),
-        counts: format!(
-            "{} comments · {} files",
-            issue.comment_count, issue.attachment_count
-        ),
+        priority_word: tone.word(),
+        priority_mark: tone.mark(),
+        counts: counts_text(issue.comment_count, issue.attachment_count),
         aria: format!("{}, {}, {}", issue.title, status, col_label),
         dragging: dragging == Some(issue.id.as_str()),
         picked: picked == Some(issue.id.as_str()),
@@ -520,6 +544,7 @@ pub fn IssueBoardScreen(
                     card_view(
                         c,
                         &col.column_label,
+                        col.priority_tone,
                         i,
                         drag_now.as_deref(),
                         picked_id.as_deref(),
@@ -697,7 +722,7 @@ pub fn IssueBoardScreen(
                                     }
                                 }
                             },
-                            "Sort: {sort_label}"
+                            "Sort by: {sort_label}"
                         }
                         if sort_open_now {
                             ul { id: "{base}-sort-menu", class: "kit-ib__menu", role: "menu", "aria-label": "Sort issues",
@@ -892,9 +917,15 @@ pub fn IssueBoardScreen(
                                                             span { class: "kit-ib__desc", "{desc}" }
                                                         }
                                                         span { class: "kit-ib__meta",
+                                                            span { class: "kit-ib__prio",
+                                                                span { class: "kit-ib__prio-mark", "aria-hidden": "true", "{card.priority_mark}" }
+                                                                "{card.priority_word}"
+                                                            }
                                                             span { class: "kit-ib__status", "data-status": "{card.status_key}", "aria-hidden": "true", "{card.status_mark}" }
                                                             span { "{card.status_word}" }
-                                                            span { class: "kit-ib__counts", "{card.counts}" }
+                                                            if let Some(counts) = card.counts.clone() {
+                                                                span { class: "kit-ib__counts", "{counts}" }
+                                                            }
                                                         }
                                                     }
                                                 }

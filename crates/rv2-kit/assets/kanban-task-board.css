@@ -113,6 +113,9 @@
 .kit-kb__foot { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; font-size: 12px; color: var(--kit-ink-muted); font-variant-numeric: tabular-nums; }
 .kit-kb__due[data-late] { color: var(--kit-fault-ink); font-weight: 600; }
 .kit-kb__avatar { margin-left: auto; display: grid; place-items: center; width: 22px; height: 22px; border-radius: var(--kit-radius-pill); background: var(--kit-raised); font-size: 11px; color: var(--kit-ink); }
+.kit-kb__avatar--none { border: 1px dashed var(--kit-rule); background: none; }
+.kit-kb__id { font-size: 11px; color: var(--kit-ink-muted); font-variant-numeric: tabular-nums; }
+.kit-kb__pr { font-variant-numeric: tabular-nums; color: var(--kit-ink); }
 .kit-kb__more { font: inherit; font-size: 12px; min-height: 32px; border: 1px dashed var(--kit-rule); border-radius: var(--kit-radius-sm); background: none; color: var(--kit-ink-muted); cursor: pointer; }
 .kit-kb[data-compact] .kit-kb__card { padding: 6px 10px; gap: 2px; }
 .kit-kb[data-compact] .kit-kb__foot, .kit-kb[data-compact] .kit-kb__labels-line { display: none; }

@@ -68,3 +68,29 @@ In reading order:
 6. Activity points outside the selected filter are not counted in the summary.
 7. Left and Right on the filter move between options and change the selection.
 8. At phone width the inbox sits below the fleet and nothing scrolls sideways.
+
+## Amendment 5: structure and demo
+
+Archetype: control room: a status filter and activity summary across the top, a fleet tree at the left, an inbox at the right.
+
+Replaces the wide-width placement in Anatomy item 3: sub-agents sit to the right of their lead. Narrow widths keep them under the lead.
+
+Visible at rest:
+- Heading "Mission control" and a segmented status filter: All 7, Running 3, Needs you 2, Failed 1.
+- Summary card "Since you looked": a time range label ("Since 9:10 AM · 2h"), tallies (4 done, 2 need you, 1 failed), an activity curve across that period with seven event markers, each marked by outcome, and two time labels at its ends.
+- Fleet card: heading "Agents" and a summary line "3 leads · 4 sub-agents · 3 running · 2 waiting on you · $3.22". Lead cards in a column; each lead's sub-agents stacked to its right and joined by an elbow line from the lead's right edge. Each card: name, model line, status badge, current task, footer with cost and elapsed time. Leads show a sub-agent count.
+- Inbox: heading "Inbox 3" and three item cards, each with a kind word, title, detail line, waiting time and action buttons.
+
+Gallery demo:
+- Leads: Planner (large model, running, "Splitting the launch into three checks", $1.42 · 21 min, 3 sub-agents); Support lead (mid model, running, "Answering open tickets in the queue", $1.02 · 29 min, 1 sub-agent); Data clerk (small model, needs you, "Rotating the webhook secret", $0.05 · 11 min).
+- Sub-agents under Planner: Researcher (done, "Comparing four rival listings"), Drafter (running, "Writing three plan descriptions"), Publisher (needs you, "Waiting for approval to send"). Under Support lead: Reply writer (failed, "Reply draft blocked by policy check").
+- Inbox: Decision "Send the launch email to 240 accounts?" (Publisher, waiting 14 min, buttons Reject and Approve); Decision "Rotate the webhook secret now?" (Data clerk, waiting 11 min, Reject and Approve); Failure "Reply draft blocked by policy check" (Reply writer, waiting 6 min, Retry and Dismiss).
+
+Motion, settled frame: all cards shown; nothing focused.
+Moves: an answer in the inbox updates the agent's card, the curve and the counts at once. Focusing an agent dims the others. A filter keeps the row height constant and removes hidden items without reflow.
+Reduced motion: all changes apply in one step.
+
+Acceptance checks (continued):
+9. At wide widths sub-agents sit to the right of their lead, and each lead's sub-agent count matches the sub-agents shown.
+10. The activity curve shows seven markers, each marked by outcome, and rises and falls across the period.
+11. The filter counts match the agent cards: All 7, Running 3, Needs you 2, Failed 1.

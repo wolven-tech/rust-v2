@@ -48,6 +48,27 @@ fn thumbs_rating_read_only_names_the_rated_answer() {
 }
 
 #[test]
+fn number_input_draws_its_prefix_unit_and_hint_around_the_value() {
+    let html = render(|| {
+        rsx! {
+            rv2_affect::number_input::NumberInput {
+                name: "budget",
+                default_value: 25.5,
+                prefix: rsx! { "$" },
+                unit: rsx! { "tokens" },
+                hint: rsx! { "Up to 100" },
+            }
+        }
+    });
+    assert!(html.contains("data-side=\"start\""));
+    assert!(html.contains("data-side=\"end\""));
+    assert!(html.contains("$</span>"));
+    assert!(html.contains("tokens</span>"));
+    assert!(html.contains("Up to 100"));
+    assert!(html.contains("value=\"25.5\""));
+}
+
+#[test]
 fn rating_value_label_drops_a_trailing_point_zero() {
     assert_eq!(value_label(3.0, 5), "3 out of 5");
     assert_eq!(value_label(4.5, 5), "4.5 out of 5");

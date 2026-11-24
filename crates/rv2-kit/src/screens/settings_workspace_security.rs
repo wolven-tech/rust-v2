@@ -283,9 +283,20 @@ pub fn SettingsWorkspaceSecurity(
                                             span { class: "kit-set__tag", "data-status": if domain.verified { "verified" } else { "pending" },
                                                 if domain.verified { "Verified" } else { "Pending" }
                                             }
+                                            button {
+                                                r#type: "button",
+                                                class: "kit-sec__remove",
+                                                "aria-label": "{remove_label}",
+                                                onclick: move |_| {
+                                                    let target = remove_name.clone();
+                                                    apply(&|v| v.email_domains.retain(|d| d.name != target));
+                                                    status.set("Domain removed.".to_string());
+                                                },
+                                                "Remove"
+                                            }
                                         }
-                                        div { class: "kit-set__inline",
-                                            if !domain.verified {
+                                        if !domain.verified {
+                                            div { class: "kit-set__inline",
                                                 button {
                                                     r#type: "button",
                                                     class: "kit-set__btn",
@@ -320,19 +331,6 @@ pub fn SettingsWorkspaceSecurity(
                                                     if is_busy { "Checking…" } else { "Verify" }
                                                 }
                                             }
-                                            button {
-                                                r#type: "button",
-                                                class: "kit-sec__remove",
-                                                "aria-label": "{remove_label}",
-                                                onclick: move |_| {
-                                                    let target = remove_name.clone();
-                                                    apply(&|v| v.email_domains.retain(|d| d.name != target));
-                                                    status.set("Domain removed.".to_string());
-                                                },
-                                                "Remove"
-                                            }
-                                        }
-                                        if !domain.verified {
                                             p { class: "kit-sec__txt",
                                                 span { class: "kit-set__info", "Add this TXT record: " }
                                                 code { "{record_line}" }
@@ -373,7 +371,7 @@ pub fn SettingsWorkspaceSecurity(
                 }
                 SettingsRow { label: "Two-step verification".to_string(), note: "Members who do not use single sign-on enter a code from an authenticator app.".to_string(),
                     Switch {
-                        label: rsx! { "Require two-step verification" },
+                        label: rsx! { span { class: "kit-sr", "Require two-step verification" } },
                         placement: rv2_affect::switch::SwitchPlacement::End,
                         checked: snapshot.two_step_required,
                         onchange: move |e: FormEvent| {

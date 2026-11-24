@@ -29,11 +29,11 @@ pub fn EnrichmentOrbit(
                     filter { id: "{id}-tile", x: "-30%", y: "-30%", width: "160%", height: "160%",
                         feGaussianBlur { "in": "SourceAlpha", "stdDeviation": "4", result: "dropBlur" }
                         feOffset { "in": "dropBlur", dx: "0", dy: "3", result: "dropOffset" }
-                        feFlood { class: "ui-eo-drop", "floodColor": "#000000", "floodOpacity": "0.06", result: "dropColor" }
+                        feFlood { class: "ui-eo-drop", "flood-color": "#000000", "flood-opacity": "0.06", result: "dropColor" }
                         feComposite { "in": "dropColor", "in2": "dropOffset", operator: "in", result: "dropShadow" }
                         feOffset { "in": "SourceAlpha", dx: "0", dy: "-4", result: "alphaUp" }
                         feComposite { "in": "SourceAlpha", "in2": "alphaUp", operator: "out", result: "sliver" }
-                        feFlood { class: "ui-eo-sliver", "floodColor": "#EAECEF", "floodOpacity": "1", result: "innerColor" }
+                        feFlood { class: "ui-eo-sliver", "flood-color": "#EAECEF", "flood-opacity": "1", result: "innerColor" }
                         feComposite { "in": "innerColor", "in2": "sliver", operator: "in", result: "innerShadow" }
                         feMerge {
                             feMergeNode { "in": "dropShadow" }
@@ -44,11 +44,11 @@ pub fn EnrichmentOrbit(
                     filter { id: "{id}-node", x: "-60%", y: "-60%", width: "220%", height: "220%",
                         feGaussianBlur { "in": "SourceAlpha", "stdDeviation": "2.5", result: "dropBlur" }
                         feOffset { "in": "dropBlur", dx: "0", dy: "2", result: "dropOffset" }
-                        feFlood { class: "ui-eo-drop", "floodColor": "#000000", "floodOpacity": "0.07", result: "dropColor" }
+                        feFlood { class: "ui-eo-drop", "flood-color": "#000000", "flood-opacity": "0.07", result: "dropColor" }
                         feComposite { "in": "dropColor", "in2": "dropOffset", operator: "in", result: "dropShadow" }
                         feOffset { "in": "SourceAlpha", dx: "0", dy: "-3", result: "alphaUp" }
                         feComposite { "in": "SourceAlpha", "in2": "alphaUp", operator: "out", result: "sliver" }
-                        feFlood { class: "ui-eo-sliver", "floodColor": "#EAECEF", "floodOpacity": "1", result: "innerColor" }
+                        feFlood { class: "ui-eo-sliver", "flood-color": "#EAECEF", "flood-opacity": "1", result: "innerColor" }
                         feComposite { "in": "innerColor", "in2": "sliver", operator: "in", result: "innerShadow" }
                         feMerge {
                             feMergeNode { "in": "dropShadow" }
@@ -57,27 +57,27 @@ pub fn EnrichmentOrbit(
                         }
                     }
                     linearGradient { id: "{id}-comet",
-                        stop { offset: "0%", "stopColor": "#FF6B5C", "stopOpacity": "0" }
-                        stop { offset: "22%", "stopColor": "#FFB89E", "stopOpacity": "0.9" }
-                        stop { offset: "50%", "stopColor": "#C8A8E5", "stopOpacity": "0.9" }
-                        stop { offset: "78%", "stopColor": "#A8B5FF", "stopOpacity": "0.9" }
-                        stop { offset: "100%", "stopColor": "#A8B5FF", "stopOpacity": "0" }
+                        stop { offset: "0%", "stop-color": "#FF6B5C", "stop-opacity": "0" }
+                        stop { offset: "22%", "stop-color": "#FFB89E", "stop-opacity": "0.9" }
+                        stop { offset: "50%", "stop-color": "#C8A8E5", "stop-opacity": "0.9" }
+                        stop { offset: "78%", "stop-color": "#A8B5FF", "stop-opacity": "0.9" }
+                        stop { offset: "100%", "stop-color": "#A8B5FF", "stop-opacity": "0" }
                     }
                 }
 
-                g { class: "ui-eo-rings", fill: "none", stroke: "#E4E7EC", "strokeWidth": "1.2",
+                g { class: "ui-eo-rings", fill: "none", stroke: "#E4E7EC", "stroke-width": "1.2",
                     circle { cx: "160", cy: "120", r: "56", stroke_opacity: "0.45" }
                     circle { cx: "160", cy: "120", r: "80" }
                 }
 
                 g { class: "ui-eo-spin",
-                    path { fill: "none", stroke: "url(#{id}-comet)", "strokeWidth": "1.6", "strokeLinecap": "round", d: "M114.1 54.5 A80 80 0 0 1 205.9 54.5" }
+                    path { fill: "none", stroke: "url(#{id}-comet)", "stroke-width": "1.6", "stroke-linecap": "round", d: "M114.1 54.5 A80 80 0 0 1 205.9 54.5" }
                 }
                 g { class: "ui-eo-spin ui-eo-reverse",
-                    path { fill: "none", stroke: "url(#{id}-comet)", "strokeWidth": "1.6", "strokeLinecap": "round", d: "M120.4 80.4 A56 56 0 0 1 199.6 80.4" }
+                    path { fill: "none", stroke: "url(#{id}-comet)", "stroke-width": "1.6", "stroke-linecap": "round", d: "M120.4 80.4 A56 56 0 0 1 199.6 80.4" }
                 }
 
-                rect { class: "ui-eo-tile", x: "134", y: "94", width: "52", height: "52", rx: "12", fill: "#FFFFFF", stroke: "#E4E7EC", "strokeWidth": "0.5", filter: "url(#{id}-tile)" }
+                rect { class: "ui-eo-tile", x: "134", y: "94", width: "52", height: "52", rx: "12", fill: "#FFFFFF", stroke: "#E4E7EC", "stroke-width": "0.5", filter: "url(#{id}-tile)" }
                 svg { x: "147", y: "107", width: "26", height: "26", "viewBox": "0 0 33.4 32", overflow: "visible",
                     path { class: "ui-eo-mark", fill: "#171717", d: GROK_TOP }
                     path { class: "ui-eo-mark", fill: "#171717", d: GROK_BOTTOM }
@@ -86,7 +86,7 @@ pub fn EnrichmentOrbit(
                 for delay in NODE_DELAYS {
                     g { class: "ui-eo-orbit", style: "animation-delay: {delay}",
                         g { class: "ui-eo-upright", style: "animation-delay: {delay}",
-                            circle { class: "ui-eo-tile", cx: "160", cy: "40", r: "17", fill: "#FFFFFF", stroke: "#E4E7EC", "strokeWidth": "0.5", filter: "url(#{id}-node)" }
+                            circle { class: "ui-eo-tile", cx: "160", cy: "40", r: "17", fill: "#FFFFFF", stroke: "#E4E7EC", "stroke-width": "0.5", filter: "url(#{id}-node)" }
                             g { transform: "translate(154 34) scale(0.0288)", class: "ui-eo-icon", fill: "#6B6F76", fill_opacity: "0.55",
                                 path { d: ORBIT_ICON }
                             }

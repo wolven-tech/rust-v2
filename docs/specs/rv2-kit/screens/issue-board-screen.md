@@ -105,3 +105,28 @@ Reading order:
 8. With `is_empty` set, the board is replaced by one empty state whose button opens the New issue window.
 9. With `is_loading` set, every column shows secondary card placeholders under its real heading.
 10. At phone width the top bar wraps and list rows show only title and status.
+
+## Amendment 5: structure and demo
+
+Replaces: none (no earlier amendment in this spec).
+
+**Archetype:** four-column priority board with cards, a top bar carrying the view switch, filter, sort and New issue.
+
+**At rest (gallery demo):**
+- Top bar: page title, board and list switch with Board selected, Filter, Sort by, New issue.
+- Four columns, left to right: Low, Medium, High, Done. Each has a heading with its count.
+- 11 cards in all: Low 3, Medium 3, High 3, Done 2. Each card shows its title, a description line, its status word, and comment and attachment counts when they are not zero.
+- Each column is a full-height surface that runs to the bottom edge of the board region.
+
+**States at rest:** board view; no card being dragged; no panel open; no menu open.
+
+**Arrangement:** four equal columns side by side under the top bar. Cards stack from the top of each column.
+
+**Motion, settled frame:** nothing moves at rest.
+
+**Checks (continued):**
+11. At rest the board shows four columns and 11 cards. Each column holds at least two cards, and each heading's count matches its cards.
+12. Each column surface runs to the bottom edge of the board region at every width where the four columns fit, so the lower part of the board is column surface and not an empty panel.
+13. Each card shows its title, its description line when present, its status word, and its comment and attachment counts when non-zero.
+14. At 1280 wide all four columns are fully visible. The board scrolls sideways inside itself only when the columns do not fit.
+15. Every card shows its priority mark and status word at rest.

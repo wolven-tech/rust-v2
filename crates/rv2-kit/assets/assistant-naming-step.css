@@ -1,22 +1,151 @@
+/* Panel, centring and preview come from knowledge-source-step.css. */
+
 .kit-nm {
   display: grid;
-  gap: 8px;
+  gap: 10px;
+  justify-items: center;
+  width: 100%;
   min-width: 0;
 }
 
-.kit-nm .kit-wiz__chip:first-of-type {
-  font-weight: 650;
+@media (min-width: 960px) {
+  .kit-nm__field {
+    width: 62%;
+  }
 }
 
-.kit-nm__line {
+.kit-nm__field {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  min-height: 44px;
+  padding: 6px 8px;
+  border: 1px solid var(--kit-rule);
+  border-radius: var(--kit-radius);
+  background: var(--kit-surface);
+  box-sizing: border-box;
+  min-width: 0;
+}
+
+.kit-nm__input {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 30px;
+  border: 0;
+  background: transparent;
+  color: var(--kit-ink);
+  font: inherit;
+}
+
+.kit-nm__input:focus-visible {
+  outline: 2px solid var(--kit-ink);
+  outline-offset: 2px;
+}
+
+.kit-nm__plus,
+.kit-nm__submit {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--kit-radius-pill);
+  background: transparent;
+  color: var(--kit-ink);
+  cursor: pointer;
+}
+
+.kit-nm__submit {
+  background: var(--kit-ink);
+  color: var(--kit-on-ink);
+}
+
+.kit-nm__submit:disabled {
+  background: var(--kit-rule);
+  color: var(--kit-ink-faint);
+  cursor: default;
+}
+
+.kit-nm__glyph {
+  width: 16px;
+  height: 16px;
+}
+
+.kit-nm__chips {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
   margin: 0;
-  color: var(--kit-ink-muted);
-  font-size: 12px;
+  padding: 0;
+  list-style: none;
+  max-width: 100%;
+}
+
+.kit-nm__chips:empty {
+  display: none;
+}
+
+.kit-nm__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  max-width: 100%;
+  padding: 3px 4px 3px 9px;
+  border-radius: var(--kit-radius-sm);
+  background: var(--kit-raised);
+  font-size: 13px;
   overflow-wrap: anywhere;
 }
 
-.kit-nm__actions {
-  display: flex;
-  justify-content: flex-end;
-  padding-top: 8px;
+.kit-nm__chip[data-primary] {
+  font-weight: 650;
+}
+
+.kit-nm__dot {
+  flex: none;
+  width: 6px;
+  height: 6px;
+  margin-right: 2px;
+  border-radius: 50%;
+  background: var(--kit-accent);
+}
+
+.kit-nm__make {
+  padding: 0 4px;
+  border: 0;
+  background: transparent;
+  color: var(--kit-ink-muted);
+  font: inherit;
+  font-size: 12px;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.kit-nm__remove {
+  flex: none;
+  width: 22px;
+  height: 22px;
+  border: 0;
+  border-radius: var(--kit-radius-pill);
+  background: transparent;
+  color: var(--kit-ink-muted);
+  cursor: pointer;
+  font: inherit;
+}
+
+.kit-nm__remove:hover,
+.kit-nm__make:hover {
+  color: var(--kit-ink);
+}
+
+.kit-nm__hint {
+  margin: 0;
+  color: var(--kit-ink-muted);
+  font-size: 12px;
+  text-align: center;
+  overflow-wrap: anywhere;
 }

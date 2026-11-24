@@ -164,6 +164,17 @@ pub fn clock_text(ms: u64) -> String {
     format!("{:02}:{:02}", minutes / 60, minutes % 60)
 }
 
+/// `N minutes ago` or `N hours ago` for a moment before `now_ms`.
+pub fn ago_text(now_ms: u64, then_ms: u64) -> String {
+    match now_ms.saturating_sub(then_ms) / 60_000 {
+        0 => "just now".to_string(),
+        1 => "1 minute ago".to_string(),
+        m if m < 60 => format!("{m} minutes ago"),
+        m if m < 120 => "1 hour ago".to_string(),
+        m => format!("{} hours ago", m / 60),
+    }
+}
+
 /// `Today`, `Yesterday`, or `N days ago`, relative to `now_ms`.
 pub fn day_heading(now_ms: u64, then_ms: u64) -> String {
     let days = (now_ms / DAY_MS).saturating_sub(then_ms / DAY_MS);
@@ -262,6 +273,8 @@ fn tile_letter(name: &str) -> String {
 struct RowView {
     key: String,
     day: Option<String>,
+    /// Rows under this day heading; zero on rows that are not headed.
+    day_count: usize,
     time: String,
     sentence: String,
     task: String,
@@ -392,9 +405,21 @@ pub fn AgentActionLog(
                 state,
                 is_open: open_now.as_deref() == Some(step.id.as_str()),
                 step: step.clone(),
+                day_count: 0,
             }
         })
         .collect();
+    let mut rows = rows;
+    let starts: Vec<usize> = rows
+        .iter()
+        .enumerate()
+        .filter(|(_, row)| row.day.is_some())
+        .map(|(index, _)| index)
+        .collect();
+    for (group, &start) in starts.iter().enumerate() {
+        let end = starts.get(group + 1).copied().unwrap_or(rows.len());
+        rows[start].day_count = end - start;
+    }
 
     let key_order = order.clone();
     let search_focus = search_id.clone();
@@ -545,6 +570,7 @@ pub fn AgentActionLog(
                                 let RowView {
                                     key,
                                     day,
+                                    day_count,
                                     time,
                                     sentence,
                                     task,
@@ -567,7 +593,10 @@ pub fn AgentActionLog(
                                 rsx! {
                                     li { key: "{key}", class: "kit-al__item",
                                         if show_day {
-                                            div { class: "kit-al__day", role: "presentation", "{day_text}" }
+                                            div { class: "kit-al__day", role: "presentation",
+                                                span { "{day_text}" }
+                                                span { class: "kit-al__daycount", "{day_count}" }
+                                            }
                                         }
                                         div {
                                             class: "kit-al__row",
@@ -591,8 +620,10 @@ pub fn AgentActionLog(
                                                     span { class: "kit-al__tile", "{tile}" }
                                                 }
                                                 span { class: "kit-al__sentence", title: "{sentence}", "{sentence}" }
-                                                span { class: "kit-al__task", "{task}" }
-                                                span { class: "kit-al__actor", "{actor}" }
+                                                span { class: "kit-al__meta2",
+                                                    span { class: "kit-al__actor", "{actor}" }
+                                                    span { class: "kit-al__task", "{task}" }
+                                                }
                                                 span { class: "kit-sr", "{app}" }
                                             }
                                             div { class: "kit-al__trail",
@@ -607,7 +638,10 @@ pub fn AgentActionLog(
                                                         "Undo"
                                                     }
                                                 } else if state == UndoState::Final {
-                                                    span { class: "kit-al__lock", "Final" }
+                                                    span { class: "kit-al__lock",
+                                                        span { class: "kit-al__lockglyph", "aria-hidden": "true" }
+                                                        "Final"
+                                                    }
                                                 }
                                             }
                                         }
@@ -624,7 +658,6 @@ pub fn AgentActionLog(
                             let state_key = state.as_str();
                             let app = app_name(&app_list, &step.app_id);
                             let tile = tile_letter(&app);
-                            let when = clock_text(step.occurred_at);
                             let task = step.task_name.clone().unwrap_or_else(|| "No task".to_string());
                             let actor = step.actor.word();
                             let shown: Vec<String> = if show_all() {
@@ -634,19 +667,30 @@ pub fn AgentActionLog(
                             };
                             let has_more = step.preview_lines.len() > 6;
                             let more_label = if show_all() { "Show less" } else { "Show all" };
-                            let why = match (&step.rule_label, step.approved_at) {
-                                (Some(rule), _) => format!("Ran under the rule “{rule}”."),
-                                (None, Some(at)) => format!("Approved at {}.", clock_text(at)),
-                                (None, None) => "Ran automatically.".to_string(),
+                            let actor_line = match step.approved_at {
+                                Some(at) => format!("{actor} · approved {}", ago_text(now, at)),
+                                None => actor.to_string(),
                             };
-                            let window_text = match &step.undo_window {
-                                Some(window) => format!(
-                                    "You can undo this until {}. Undo will {}.",
-                                    clock_text(window.available_until),
-                                    window.entry_description
+                            let when_text = format!(
+                                "{} {}",
+                                day_heading(now, step.occurred_at),
+                                clock_text(step.occurred_at)
+                            );
+                            let when_ago = ago_text(now, step.occurred_at);
+                            let time_left = match &step.undo_window {
+                                Some(window) if now < window.available_until => format!(
+                                    "Possible for {} more minutes",
+                                    (window.available_until - now) / 60_000
                                 ),
-                                None => String::new(),
+                                _ => String::new(),
                             };
+                            let reversal_state = step
+                                .undo_window
+                                .as_ref()
+                                .map(|window| window.entry_description.clone())
+                                .unwrap_or_default();
+                            let rule_text = step.rule_label.clone();
+                            let tab_title = step.sentence.clone();
                             let undone_text = format!(
                                 "Undone at {}.",
                                 clock_text(step.undone_at.unwrap_or(step.occurred_at))
@@ -655,7 +699,14 @@ pub fn AgentActionLog(
                             let refused = failed_now.contains(&step.id);
                             let error_text = undo_failed_text(&step.sentence);
                             let panel_sentence = step.sentence.clone();
-                            let panel_when = format!("{when} · {app}");
+                            let account = app_list
+                                .iter()
+                                .find(|a| a.id == step.app_id)
+                                .and_then(|a| a.account.clone());
+                            let panel_when = match account {
+                                Some(account) => format!("{app} · {account}"),
+                                None => app.clone(),
+                            };
                             let task_target = step.task_name.clone();
                             let open_task_label = format!("Open task {task}");
                             let task_text = format!("{task} →");
@@ -679,6 +730,25 @@ pub fn AgentActionLog(
                                         },
                                         "Back to activity"
                                     }
+                                    div { class: "kit-al__tabstrip",
+                                        div { class: "kit-al__tab", "aria-current": "true",
+                                            span { class: "kit-al__tab-title", "{tab_title}" }
+                                            button {
+                                                r#type: "button",
+                                                class: "kit-al__tab-close",
+                                                "aria-label": "Close step",
+                                                onclick: move |_| detail_open.set(false),
+                                                "×"
+                                            }
+                                        }
+                                        button {
+                                            r#type: "button",
+                                            class: "kit-al__pane-toggle",
+                                            "aria-label": "Hide step panel",
+                                            onclick: move |_| detail_open.set(false),
+                                            "Hide"
+                                        }
+                                    }
                                     div { class: "kit-al__panel-head",
                                         span { class: "kit-al__tile kit-al__tile--lg", "aria-hidden": "true", "{tile}" }
                                         div { class: "kit-al__panel-meta",
@@ -687,6 +757,11 @@ pub fn AgentActionLog(
                                         }
                                     }
                                     dl { class: "kit-al__facts",
+                                        dt { "When" }
+                                        dd {
+                                            span { "{when_text}" }
+                                            span { class: "kit-al__muted", "{when_ago}" }
+                                        }
                                         dt { "Task" }
                                         dd {
                                             if let Some(target) = task_target.clone() {
@@ -705,36 +780,20 @@ pub fn AgentActionLog(
                                                 "{task}"
                                             }
                                         }
-                                        dt { "Actor" }
-                                        dd { "{actor}" }
                                         if let Some(cost_text) = cost {
                                             dt { "Cost" }
                                             dd { "{cost_text}" }
                                         }
-                                        for (label, value) in facts.iter().cloned() {
-                                            dt { "{label}" }
-                                            dd { "{value}" }
-                                        }
                                     }
-                                    section { class: "kit-al__block", "aria-label": "Why it could run",
-                                        h3 { class: "kit-al__section-title", "Why it could" }
-                                        p { "{why}" }
-                                        if on_navigate.is_some() {
-                                            button {
-                                                r#type: "button",
-                                                class: "kit-al__link",
-                                                onclick: move |_| {
-                                                    if let Some(handler) = on_navigate {
-                                                        handler.call("Permissions".to_string());
-                                                    }
-                                                },
-                                                "See permissions"
+                                    section { class: "kit-al__block", "aria-label": "Content",
+                                        h3 { class: "kit-al__section-title", "Content" }
+                                        dl { class: "kit-al__facts",
+                                            for (label, value) in facts.iter().cloned() {
+                                                dt { "{label}" }
+                                                dd { "{value}" }
                                             }
                                         }
-                                    }
-                                    if !step.preview_lines.is_empty() {
-                                        section { class: "kit-al__block",
-                                            h3 { class: "kit-al__section-title", "Preview" }
+                                        if !step.preview_lines.is_empty() {
                                             pre { class: "kit-al__preview",
                                                 for (index, line) in shown.iter().enumerate() {
                                                     span { key: "{index}", class: "kit-al__line", "{line}" }
@@ -750,9 +809,35 @@ pub fn AgentActionLog(
                                             }
                                         }
                                     }
-                                    section { class: "kit-al__block kit-al__undo-block",
+                                    section { class: "kit-al__block", "aria-label": "Authority",
+                                        h3 { class: "kit-al__section-title", "Authority" }
+                                        p { class: "kit-al__approval",
+                                            span { class: "kit-al__dot", "aria-hidden": "true" }
+                                            "{actor_line}"
+                                        }
+                                        if let Some(rule) = rule_text {
+                                            div { class: "kit-al__rule",
+                                                span { "{rule}" }
+                                                if on_navigate.is_some() {
+                                                    button {
+                                                        r#type: "button",
+                                                        class: "kit-al__link",
+                                                        onclick: move |_| {
+                                                            if let Some(handler) = on_navigate {
+                                                                handler.call("Permissions".to_string());
+                                                            }
+                                                        },
+                                                        "Permissions →"
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                    section { class: "kit-al__block kit-al__undo-block", "aria-label": "Reversal",
+                                        h3 { class: "kit-al__section-title", "Reversal" }
                                         if state == UndoState::Available {
-                                            p { "{window_text}" }
+                                            p { class: "kit-al__state", "{reversal_state}" }
+                                            p { class: "kit-al__timeleft", "{time_left}" }
                                             button {
                                                 r#type: "button",
                                                 class: "kit-al__undo",

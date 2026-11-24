@@ -86,7 +86,7 @@ impl StatusFilter {
         match self {
             Self::All => "All",
             Self::Running => "Running",
-            Self::Waiting => "Waiting",
+            Self::Waiting => "Needs you",
             Self::Failed => "Failed",
         }
     }
@@ -237,6 +237,30 @@ pub fn activity_curve(
         .collect()
 }
 
+/// Event markers of the activity curve, as `(x in 0..=1, total, outcome)` in time order: the
+/// same events and positions as `activity_curve`, each with its outcome.
+pub fn activity_markers(
+    points: &[ActivityPoint],
+    agents: &[FleetAgent],
+    filter: StatusFilter,
+    from: u64,
+    to: u64,
+) -> Vec<(f64, usize, Outcome)> {
+    let mut kept: Vec<&ActivityPoint> = points
+        .iter()
+        .filter(|p| agent_of(agents, &p.agent_id).is_some_and(|a| filter.matches(a.status)))
+        .collect();
+    kept.sort_by_key(|p| p.at);
+    let span = to.saturating_sub(from).max(1) as f64;
+    kept.iter()
+        .enumerate()
+        .map(|(i, p)| {
+            let x = (p.at.saturating_sub(from) as f64 / span).clamp(0.0, 1.0);
+            (x, i + 1, p.outcome)
+        })
+        .collect()
+}
+
 /// `45 s`, `12 min`, `3 h`: how long something has been waiting.
 pub fn wait_label(secs: u64) -> String {
     match secs {
@@ -276,6 +300,12 @@ pub fn AgentFleetOverview(
     #[props(default)] on_spotlight_change: Option<EventHandler<Option<String>>>,
     #[props(default)] on_inbox_answer: Option<EventHandler<(String, String)>>,
     #[props(default)] on_clear_failed: Option<EventHandler<String>>,
+    /// Such as `Since 9:10 AM · 2h`.
+    #[props(default, into)]
+    since_label: String,
+    /// Text at the start and the end of the activity curve.
+    #[props(default)]
+    range_labels: (String, String),
     #[props(default, into)] extra_classes: String,
 ) -> Element {
     let mut expanded_item = use_signal(|| None::<String>);
@@ -304,6 +334,31 @@ pub fn AgentFleetOverview(
         })
         .collect::<Vec<_>>()
         .join(" ");
+    let markers: Vec<(f64, f64, &'static str)> =
+        activity_markers(&activity, &agents, status_filter, last_seen_at, now_at)
+            .into_iter()
+            .map(|(x, total, outcome)| {
+                (
+                    (10.0 + x * 580.0) / 600.0 * 100.0,
+                    (70.0 - total.min(10) as f64 * 6.0) / 80.0 * 100.0,
+                    outcome.word(),
+                )
+            })
+            .collect();
+    let leads = agents.iter().filter(|a| a.parent_id.is_none()).count();
+    let subs = agents.len() - leads;
+    let running = agents
+        .iter()
+        .filter(|a| a.status == AgentStatus::Running)
+        .count();
+    let waiting = agents
+        .iter()
+        .filter(|a| a.status == AgentStatus::Waiting)
+        .count();
+    let spend: f64 = agents.iter().map(|a| a.cost_usd).sum();
+    let fleet_summary = format!(
+        "{leads} leads · {subs} sub-agents · {running} running · {waiting} waiting on you · ${spend:.2}"
+    );
     let spotlight = spotlight_agent_id.clone();
     let has_spotlight = spotlight.is_some();
     let roots = branch(&visible, None);
@@ -342,8 +397,23 @@ pub fn AgentFleetOverview(
                 }
             }
             section { class: "kit-fleet__summary", "aria-label": "Since you last looked",
-                svg { class: "kit-fleet__curve", "viewBox": "0 0 600 80", "preserveAspectRatio": "none", "aria-hidden": "true",
-                    polyline { class: "kit-fleet__curve-line", points: "{polyline}" }
+                header { class: "kit-fleet__summary-head",
+                    h3 { class: "kit-fleet__summary-title", "Since you looked" }
+                    if !since_label.is_empty() {
+                        span { class: "kit-fleet__since", "{since_label}" }
+                    }
+                }
+                div { class: "kit-fleet__curve-wrap",
+                    svg { class: "kit-fleet__curve", "viewBox": "0 0 600 80", "preserveAspectRatio": "none", "aria-hidden": "true",
+                        polyline { class: "kit-fleet__curve-line", points: "{polyline}" }
+                    }
+                    for (i, (left, top, outcome)) in markers.iter().enumerate() {
+                        span { key: "{i}", class: "kit-fleet__marker", "data-outcome": "{outcome}", "aria-hidden": "true", style: "left: {left:.2}%; top: {top:.2}%" }
+                    }
+                    div { class: "kit-fleet__curve-ends", "aria-hidden": "true",
+                        span { "{range_labels.0}" }
+                        span { "{range_labels.1}" }
+                    }
                 }
                 p { class: "kit-fleet__tallies", "aria-live": "polite",
                     span { "{done} done" }
@@ -353,6 +423,10 @@ pub fn AgentFleetOverview(
             }
             div { class: "kit-fleet__body",
                 div { class: "kit-fleet__cards",
+                    header { class: "kit-fleet__cards-head",
+                        h3 { class: "kit-fleet__cards-title", "Agents" }
+                        p { class: "kit-fleet__cards-summary", "{fleet_summary}" }
+                    }
                     if visible.is_empty() {
                         p { class: "kit-fleet__empty", "No agents match this filter." }
                     } else {

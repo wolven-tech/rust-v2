@@ -52,3 +52,29 @@ In reading order:
 4. With reduced motion preferred, the content changes with no blur and no size glide.
 5. If focus was inside the outgoing content, focus lands inside the incoming content after the swap.
 6. At phone width the frame stays within the container and nothing scrolls sideways.
+
+## Amendment 5: structure and demo
+
+Archetype: a step card with a header, a body that swaps between steps, and a footer.
+
+Visible at rest:
+- Header row: card title, a status line, and a primary button at the right.
+- Body panel: a status tag and one sentence. This is the region that swaps.
+- Footer row: one dot per step at the left, the current step filled; a "Next" button at the right.
+- Frame sized to the card. No second layer visible.
+
+Gallery demo (three steps of different lengths):
+- Header: title "Version 3.1", status line "2 changes · draft", primary button "Publish" (inert in the demo).
+- Step 1: tag "Live", sentence "Offline mode now works on phones."
+- Step 2: tag "Up next", sentence "Bulk export is ready for review. Check the file format before you publish."
+- Step 3: tag "Done", sentence "Every change in this version has a named owner."
+- Rest state: step 1 current. Next from step 3 returns to step 1.
+
+Motion, settled frame: step 1 shown; frame height fits step 1.
+Moves: Next blurs and fades the outgoing body. The incoming body sharpens in from a slight blur. The frame glides to the incoming height in the same movement.
+Reduced motion: content changes with no blur and no glide.
+
+Acceptance checks (continued):
+7. At rest the card shows header, body and footer, with three step dots and step 1 current.
+8. Next swaps the body to step 2 and the frame height changes to fit step 2's content.
+9. Next pressed during a swap restarts it; when the swap ends, only one body layer exists.

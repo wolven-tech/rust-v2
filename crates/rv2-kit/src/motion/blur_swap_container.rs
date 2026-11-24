@@ -35,6 +35,11 @@ pub fn swap_needed(shown_key: &str, next_key: &str) -> bool {
     shown_key != next_key
 }
 
+/// The step after `current`, wrapping to the first step after the last.
+pub fn next_step(current: usize, len: usize) -> usize {
+    if len == 0 { 0 } else { (current + 1) % len }
+}
+
 /// Motion runs unless the viewer prefers reduced motion. `reduced_override`
 /// wins over the preference when set (testing only).
 pub fn motion_allowed(reduced_override: Option<bool>, prefers_reduced: bool) -> bool {
@@ -166,6 +171,76 @@ pub fn BlurSwapContainer(
                         "inert": "true",
                         {content}
                     }
+                }
+            }
+        }
+    }
+}
+
+/// One step of a `BlurSwapStepCard`: the tag above its sentence.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct StepBody {
+    pub tag: String,
+    pub sentence: String,
+}
+
+/// Header, a body that swaps between `steps`, and a footer with one dot per step and a Next button.
+/// The caller owns `current`, so Next is a caller decision.
+#[component]
+pub fn BlurSwapStepCard(
+    #[props(into)] title: String,
+    #[props(into)] status: String,
+    #[props(into)] primary_label: String,
+    #[props(default)] on_primary: Option<EventHandler<()>>,
+    steps: Vec<StepBody>,
+    current: usize,
+    on_next: EventHandler<()>,
+) -> Element {
+    let current = current.min(steps.len().saturating_sub(1));
+    let body = steps.get(current).cloned();
+    rsx! {
+        document::Link { rel: "stylesheet", href: KIT_CSS }
+        document::Link { rel: "stylesheet", href: CSS }
+        div { class: "kit-blur-step",
+            header { class: "kit-blur-step__header",
+                div { class: "kit-blur-step__heading",
+                    h3 { class: "kit-blur-step__title", "{title}" }
+                    p { class: "kit-blur-step__status", "{status}" }
+                }
+                button {
+                    r#type: "button",
+                    class: "kit-blur-step__primary",
+                    onclick: move |_| {
+                        if let Some(handler) = &on_primary {
+                            handler.call(());
+                        }
+                    },
+                    "{primary_label}"
+                }
+            }
+            BlurSwapContainer { content_key: current.to_string(), class: "kit-blur-step__body",
+                if let Some(step) = body {
+                    div { class: "kit-blur-step__panel",
+                        span { class: "kit-blur-step__tag", "{step.tag}" }
+                        p { class: "kit-blur-step__sentence", "{step.sentence}" }
+                    }
+                }
+            }
+            footer { class: "kit-blur-step__footer",
+                ol { class: "kit-blur-step__dots", "aria-label": "Steps",
+                    for i in 0..steps.len() {
+                        li {
+                            class: "kit-blur-step__dot",
+                            "data-current": (i == current).then_some("true"),
+                            "aria-current": (i == current).then_some("step"),
+                        }
+                    }
+                }
+                button {
+                    r#type: "button",
+                    class: "kit-blur-step__next",
+                    onclick: move |_| on_next.call(()),
+                    "Next"
                 }
             }
         }

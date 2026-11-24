@@ -402,6 +402,78 @@
   font: 13px/1.5 var(--kit-mono);
 }
 
+.kit-sb__doc {
+  margin: 0 0 10px;
+  font-size: 14px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.kit-sb__items {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+
+.kit-sb__formula {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 8px;
+  align-items: center;
+  margin: 0 0 10px;
+  padding: 4px 8px;
+  border: 1px solid var(--kit-rule-soft);
+  border-radius: var(--kit-radius-sm);
+  background: var(--kit-surface);
+  font-size: 13px;
+}
+
+.kit-sb__ref {
+  min-width: 36px;
+  padding-right: 8px;
+  border-right: 1px solid var(--kit-rule-soft);
+  color: var(--kit-ink-muted);
+  font-family: var(--kit-mono);
+}
+
+.kit-sb__value {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.kit-sb__sheet {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.kit-sb__sheet th,
+.kit-sb__sheet td {
+  padding: 6px 8px;
+  border: 1px solid var(--kit-rule-soft);
+  text-align: left;
+  overflow-wrap: break-word;
+}
+
+.kit-sb__sheet th {
+  background: var(--kit-raised);
+  color: var(--kit-ink-muted);
+  font-weight: 600;
+}
+
+.kit-sb__sheet td {
+  cursor: pointer;
+}
+
+.kit-sb__sheet td[data-active] {
+  outline: 2px solid var(--kit-primary);
+  outline-offset: -2px;
+}
+
 @media (max-width: 959px) {
   .kit-sb {
     grid-template-columns: minmax(0, 1fr);

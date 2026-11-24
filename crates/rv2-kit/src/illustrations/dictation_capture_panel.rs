@@ -2,8 +2,8 @@
 //! listening, how loud the speech is and how long they have been speaking, and offers finish and
 //! cancel.
 //!
-//! Design choice: the glow is the Phase 1 `GlowFloorBackdrop`; its intensity steps with loudness
-//! and it holds still unless listening.
+//! Design choice: the light is two blurred layers under the card's lower edge, one under each half;
+//! their opacity steps with loudness.
 //! Design choice: the actions are native buttons, so a Space press on a focused button fires its
 //! click and not the panel's Space handler (which would finish twice).
 //! Design choice: `elapsed_secs` comes from the host clock; the panel never counts itself.
@@ -18,7 +18,7 @@
 use dioxus::prelude::*;
 
 use crate::internal::{KIT_CSS, class_list, next_id, prefers_motion_script};
-use crate::motion::glow_floor_backdrop::{GlowAnchor, GlowFloorBackdrop, GlowIntensity};
+use crate::motion::glow_floor_backdrop::{GlowIntensity, intensity_opacity};
 
 const CSS: Asset = asset!("/assets/dictation-capture-panel.css");
 
@@ -26,6 +26,8 @@ const CSS: Asset = asset!("/assets/dictation-capture-panel.css");
 pub const BAR_COUNT: usize = 40;
 /// Samples averaged for the glow.
 pub const GLOW_WINDOW: usize = 8;
+/// Height scale of the oldest bar; the newest bar is full height.
+pub const TAPER_FLOOR: f64 = 0.35;
 
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub enum DictationState {
@@ -54,9 +56,17 @@ pub fn status_text(state: DictationState) -> &'static str {
     }
 }
 
-/// Elapsed seconds as mm:ss.
+/// Elapsed seconds as m:ss.
 pub fn format_elapsed(secs: u64) -> String {
-    format!("{:02}:{:02}", secs / 60, secs % 60)
+    format!("{}:{:02}", secs / 60, secs % 60)
+}
+
+/// Height scale of the bar at `index` among `count`: `TAPER_FLOOR` at the left edge, 1.0 at the newest bar.
+pub fn taper(index: usize, count: usize) -> f64 {
+    if count <= 1 {
+        return 1.0;
+    }
+    TAPER_FLOOR + (1.0 - TAPER_FLOOR) * index as f64 / (count - 1) as f64
 }
 
 /// The newest `bars` samples, clamped to 0..=1, right-aligned; missing older bars are 0.
@@ -160,15 +170,17 @@ pub fn DictationCapturePanel(
     let class = class_list("kit-dict-scene", &class);
     let finish_disabled = idle || finishing;
     let finish_hint = finish_hint.unwrap_or_else(|| rsx! { kbd { "Space" } });
-    let cancel_hint = cancel_hint.unwrap_or_else(|| rsx! { kbd { "Esc" } });
+    let cancel_hint = cancel_hint.unwrap_or_else(|| rsx! { kbd { "Escape" } });
+    let light_style = format!(
+        "--kit-dict-light: {:.2};",
+        intensity_opacity(glow_for(loudness(&samples)))
+    );
     rsx! {
         document::Link { rel: "stylesheet", href: KIT_CSS }
         document::Link { rel: "stylesheet", href: CSS }
-        GlowFloorBackdrop {
-            intensity: glow_for(loudness(&samples)),
-            anchor: GlowAnchor::Bottom,
-            paused: state != DictationState::Listening,
-            class,
+        div { class, style: "{light_style}",
+            span { class: "kit-dict__light", "data-half": "a", "aria-hidden": "true" }
+            span { class: "kit-dict__light", "data-half": "b", "aria-hidden": "true" }
             section {
                 class: "kit-dict",
                 role: "region",
@@ -190,18 +202,18 @@ pub fn DictationCapturePanel(
                 },
                 div { class: "kit-dict__well", "aria-hidden": "true",
                     div { class: "kit-dict__track", key: "{track_key}",
-                        for height in heights {
-                            span { class: "kit-dict__bar", style: bar_style(height) }
+                        for (index, height) in heights.iter().copied().enumerate() {
+                            span { class: "kit-dict__bar", style: bar_style(height * taper(index, BAR_COUNT)) }
                         }
                     }
                 }
                 div { class: "kit-dict__row",
                     div { class: "kit-dict__status",
                         span { class: "kit-dict__dot", "aria-hidden": "true" }
-                        span { class: "kit-dict__state", role: "status", "aria-live": "polite",
+                        span { class: "kit-dict__time", "{time}" }
+                        span { class: "kit-dict__sr", role: "status", "aria-live": "polite",
                             {status_text(state)}
                         }
-                        span { class: "kit-dict__time", "{time}" }
                     }
                     span { class: "kit-dict__divider", "aria-hidden": "true" }
                     div { class: "kit-dict__actions",

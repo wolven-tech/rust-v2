@@ -6,7 +6,9 @@
 //! kit has no such form; each column's parts add to its total.
 //! Design choice: range picking lives here, over the chart's controlled `active` point. On a line chart Enter starts a
 //! pick, the arrows widen it, and a second Enter opens the pick field. On a split chart Enter on a column picks it.
-//! Design choice: the sidebar is drawn inline, folded to icons by default, so the screen stands alone.
+//! Design choice: the chat list is a rail folded to icons by default, so the thread keeps its width.
+//! Design choice: at rest the thread shows from its first turn. Once a turn is added it follows the newest turn, so the
+//! last answer and its suggestion chips sit above the composer.
 
 use dioxus::prelude::*;
 
@@ -21,6 +23,10 @@ const CSS: Asset = asset!("/assets/revenue-chat-analyst.css");
 /// Plot span of a line chart with its y axis drawn, in the chart's viewBox units.
 const PLOT_LEFT: f64 = 44.0;
 const PLOT_RIGHT: f64 = PLOT_WIDTH - 8.0;
+
+/// Height of the bar track in a split chart, in CSS pixels. The tallest column reaches its top here, and the
+/// headroom above holds its total label.
+const SPLIT_TRACK_PX: f64 = 150.0;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct FocusRange {
@@ -52,11 +58,12 @@ pub struct SplitGroup {
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum ChartBlock {
+    /// Values are in thousands of currency units. `marked_point` is a week drawn as an extra date label.
     Trend {
         category_labels: Vec<String>,
         current_values: Vec<f64>,
         previous_values: Vec<f64>,
-        marker: Option<String>,
+        marked_point: Option<usize>,
     },
     Forecast {
         category_labels: Vec<String>,
@@ -64,6 +71,7 @@ pub enum ChartBlock {
         forecast_values: Vec<f64>,
         target_value: Option<f64>,
     },
+    /// Values are whole units.
     Split {
         title_text: String,
         previous_total: Option<f64>,
@@ -147,6 +155,30 @@ pub fn clamp_range(from: usize, to: usize, count: usize) -> (usize, usize) {
     (from.min(last), to.min(last))
 }
 
+/// Share of the tallest column a column reaches, from 0 to 1.
+pub fn split_share(total: f64, max_total: f64) -> f64 {
+    if max_total > 0.0 {
+        (total / max_total).clamp(0.0, 1.0)
+    } else {
+        0.0
+    }
+}
+
+/// Value of the bar track above its base, in pixels, for a column at `share`.
+pub fn split_bar_px(share: f64) -> f64 {
+    share * SPLIT_TRACK_PX
+}
+
+/// Trend values are thousands: the tooltip reads `4.8k`.
+fn thousands_text(value: f64) -> String {
+    format!("{value:.1}k")
+}
+
+/// Axis ticks are thousands with no decimals: `4k`.
+fn thousands_axis(value: f64) -> String {
+    format!("{value:.0}k")
+}
+
 fn initial_of(text: &str) -> String {
     text.chars()
         .next()
@@ -154,8 +186,9 @@ fn initial_of(text: &str) -> String {
         .unwrap_or_default()
 }
 
+/// Categorical part colours. Orange and red are reserved for status, so the fourth part takes a series token.
 fn part_tone(index: usize) -> &'static str {
-    ["ink", "ok", "warn", "muted"][index % 4]
+    ["ink", "ok", "muted", "series-3"][index % 4]
 }
 
 /// CSS left and width of a band over points `from..=to` of a line chart with `count` points.
@@ -204,7 +237,8 @@ fn metric_views(cards: &[MetricCard]) -> Vec<MetricView> {
         .collect()
 }
 
-/// Revenue analyst page: chat list, the thread of questions and answers, and a composer with a picked-range field.
+/// Revenue analyst page: chat rail, the thread of questions and answers, suggestion chips and a composer, with a
+/// picked-range field over a chart.
 #[component]
 pub fn RevenueChatAnalyst(
     #[props(default)] chat_list: Vec<String>,
@@ -250,6 +284,15 @@ pub fn RevenueChatAnalyst(
         .unwrap_or_default();
     let thread_id = format!("{base}-thread");
     let pick_input_id = format!("{base}-pickinput");
+    let follow_id = thread_id.clone();
+    let show_chips = !is_loading && !is_empty && !turns_now.is_empty();
+
+    let mount_turns = use_hook(|| turn_list.len());
+    use_effect(move || {
+        if turns.read().len() != mount_turns {
+            follow_thread_end(&follow_id);
+        }
+    });
 
     let mut send = move |text: String, focus: Option<FocusRange>| {
         let question = text.trim().to_string();
@@ -296,15 +339,12 @@ pub fn RevenueChatAnalyst(
                         }
                     }
                 }
-                button { class: "kit-rca__chat", r#type: "button", title: "Revenue", onclick: move |_| on_navigate.call("Revenue".to_string()),
-                    span { class: "kit-rca__chat-mark", "aria-hidden": "true", "R" }
-                    span { class: "kit-rca__chat-name", "Revenue" }
-                }
             }
 
             div { class: "kit-rca__main",
                 h1 { id: "{base}-title", class: "kit-sr", "Revenue analyst" }
                 div { id: "{thread_id}", class: "kit-rca__thread", role: "log", "aria-busy": "{working()}",
+                    div { class: "kit-rca__stream",
                     if is_loading {
                         span { class: "kit-rca__ph kit-rca__ph--line" }
                         span { class: "kit-rca__ph kit-rca__ph--block" }
@@ -340,7 +380,6 @@ pub fn RevenueChatAnalyst(
                                     },
                                     Turn::Answer { id, body } => {
                                         let metrics = metric_views(&body.metric_cards);
-                                        let sources = body.source_list.join(", ");
                                         let chart_id_here = format!("{id}-chart");
                                         let field_here = pick_open() && chart_focus() == chart_id_here;
                                         let picked_here = if field_here { pick_now.clone() } else { None };
@@ -420,8 +459,15 @@ pub fn RevenueChatAnalyst(
                                                 if let Some(caption) = body.caption_text.clone() {
                                                     p { class: "kit-rca__caption", "{caption}" }
                                                 }
-                                                if !sources.is_empty() {
-                                                    p { class: "kit-rca__sources", "Sources: {sources}" }
+                                                if !body.source_list.is_empty() {
+                                                    div { class: "kit-rca__sourcerow",
+                                                        span { class: "kit-rca__sourcelabel", "Sources" }
+                                                        ul { class: "kit-rca__sources",
+                                                            for (s, source) in body.source_list.iter().enumerate() {
+                                                                li { key: "{s}", class: "kit-rca__source", "{source}" }
+                                                            }
+                                                        }
+                                                    }
                                                 }
                                                 if !body.follow_up_list.is_empty() {
                                                     ul { class: "kit-rca__followups",
@@ -451,23 +497,41 @@ pub fn RevenueChatAnalyst(
                             }
                         }
                     }
+                    }
                 }
 
-                form { class: "kit-rca__composer",
-                    onsubmit: move |event: FormEvent| {
-                        event.prevent_default();
-                        send(draft(), None);
-                    },
-                    textarea { class: "kit-rca__input kit-rca__input--area", "aria-label": "Ask a revenue question", rows: "2", value: "{draft()}",
-                        oninput: move |e| draft.set(e.value()),
-                        onkeydown: move |event: KeyboardEvent| {
-                            if matches!(event.key(), Key::Enter) && !event.modifiers().shift() {
-                                event.prevent_default();
-                                send(draft(), None);
+                div { class: "kit-rca__foot",
+                    if show_chips {
+                        ul { class: "kit-rca__suggest", "aria-label": "Suggested questions",
+                            for (i, s) in starters.iter().enumerate() {
+                                li { key: "{i}",
+                                    button { class: "kit-rca__chip", r#type: "button",
+                                        onclick: {
+                                            let s = s.clone();
+                                            move |_| send(s.clone(), None)
+                                        },
+                                        "{s}"
+                                    }
+                                }
                             }
-                        },
+                        }
                     }
-                    button { class: "kit-rca__btn kit-rca__btn--primary", r#type: "submit", disabled: draft().trim().is_empty(), "Send" }
+                    form { class: "kit-rca__composer",
+                        onsubmit: move |event: FormEvent| {
+                            event.prevent_default();
+                            send(draft(), None);
+                        },
+                        textarea { class: "kit-rca__input kit-rca__input--area", "aria-label": "Ask a revenue question", rows: "2", value: "{draft()}",
+                            oninput: move |e| draft.set(e.value()),
+                            onkeydown: move |event: KeyboardEvent| {
+                                if matches!(event.key(), Key::Enter) && !event.modifiers().shift() {
+                                    event.prevent_default();
+                                    send(draft(), None);
+                                }
+                            },
+                        }
+                        button { class: "kit-rca__btn kit-rca__btn--primary", r#type: "submit", disabled: draft().trim().is_empty(), "Send" }
+                    }
                 }
             }
             p { class: "kit-sr", role: "status", "aria-live": "polite", "{announce}" }
@@ -492,11 +556,11 @@ fn ChartPanel(
             category_labels,
             current_values,
             previous_values,
-            marker,
+            marked_point,
         } => {
             let series = vec![
                 TrendSeries {
-                    name: "This period".into(),
+                    name: "This year".into(),
                     values: current_values.iter().map(|v| Some(*v)).collect(),
                     tone: SeriesTone::Ink,
                     emphasis: true,
@@ -512,17 +576,17 @@ fn ChartPanel(
             ];
             rsx! {
                 div { class: "kit-rca__chart", id: "{chart_id}",
-                    if let Some(m) = marker.clone() {
-                        p { class: "kit-rca__marker", "{m}" }
-                    }
                     SeriesTrendChart {
                         x_labels: category_labels,
                         series,
                         variant: ChartVariant::Area,
                         height: 180.0,
-                        label: "Revenue trend against last year",
-                        fmt_value: group_digits,
+                        label: "Weekly revenue, this year against last year",
+                        fmt_value: thousands_text,
+                        fmt_axis: Some(thousands_axis as fn(f64) -> String),
                         axis: AxisMode::On,
+                        axis_marks: marked_point.into_iter().collect::<Vec<usize>>(),
+                        value_intervals: 2,
                         active: Some(*active.read()),
                         on_active_change: move |next: Option<usize>| active.set(next),
                     }
@@ -557,7 +621,7 @@ fn ChartPanel(
                 series.push(TrendSeries {
                     name: "Target".into(),
                     values: vec![Some(t); category_labels.len()],
-                    tone: SeriesTone::Warn,
+                    tone: SeriesTone::Series3,
                     emphasis: false,
                     is_earlier: true,
                 });
@@ -620,13 +684,6 @@ fn ChartPanel(
                         active: Some(*active.read()),
                         on_active_change: move |next: Option<usize>| active.set(next),
                     }
-                    ul { class: "kit-rca__legend", "aria-hidden": "true",
-                        li { span { class: "kit-rca__swatch", "data-tone": "ink" } "Actual" }
-                        li { span { class: "kit-rca__swatch", "data-tone": "ok", "data-dashed": "true" } "Forecast" }
-                        if target.is_some() {
-                            li { span { class: "kit-rca__swatch", "data-tone": "warn", "data-dashed": "true" } "Target" }
-                        }
-                    }
                 }
             }
         }
@@ -635,11 +692,8 @@ fn ChartPanel(
             previous_total,
             groups,
         } => {
-            let max_total = groups
-                .iter()
-                .map(split_total)
-                .fold(0.0_f64, f64::max)
-                .max(1.0);
+            let totals: Vec<f64> = groups.iter().map(split_total).collect();
+            let max_total = totals.iter().copied().fold(0.0_f64, f64::max);
             let previous = previous_total.map(|t| format!("Previous {}", group_digits(t)));
             let mut part_names: Vec<String> = Vec::new();
             for group in &groups {
@@ -649,22 +703,21 @@ fn ChartPanel(
                     }
                 }
             }
+            let column_count = groups.len().max(1);
             rsx! {
                 figure { class: "kit-rca__split", id: "{chart_id}", "aria-label": "{title_text}",
                     figcaption { class: "kit-rca__split-title", "{title_text}" }
-                    ul { class: "kit-rca__legend", "aria-hidden": "true",
+                    ul { class: "kit-rca__legend",
                         for (pi, name) in part_names.iter().enumerate() {
                             li { key: "{pi}", span { class: "kit-rca__swatch", "data-tone": part_tone(pi) } "{name}" }
                         }
                     }
-                    if let Some(p) = previous.clone() {
-                        p { class: "kit-rca__marker", "{p}" }
-                    }
-                    div { class: "kit-rca__columns",
+                    div { class: "kit-rca__columns", style: "grid-template-columns: repeat({column_count}, minmax(0, 1fr));",
                         for (gi, group) in groups.iter().enumerate() {
                             {
-                                let total = split_total(group);
-                                let height = total / max_total * 100.0;
+                                let total = totals[gi];
+                                let share = split_share(total, max_total);
+                                let bar_px = split_bar_px(share);
                                 let name = group.entry_name.clone();
                                 let total_text = group_digits(total);
                                 let parts_text = group
@@ -677,7 +730,7 @@ fn ChartPanel(
                                 let chart_id_for_pick = chart_id.clone();
                                 rsx! {
                                     div { key: "{gi}", class: if picked.as_ref().is_some_and(|r| r.from_point == gi) { "kit-rca__col is-picked" } else { "kit-rca__col" },
-                                        tabindex: "0", role: "button", "aria-label": "{aria}",
+                                        tabindex: "0", role: "button", "aria-label": "{aria}", title: "{aria}",
                                         onkeydown: {
                                             let name = name.clone();
                                             let total_text = total_text.clone();
@@ -695,12 +748,13 @@ fn ChartPanel(
                                                 }
                                             }
                                         },
-                                        span { class: "kit-rca__col-total", "{total_text}" }
-                                        div { class: "kit-rca__stack", style: "height: {height:.1}%;",
-                                            for (pi, part) in group.parts.iter().enumerate() {
-                                                span { key: "{pi}", class: "kit-rca__seg", "data-tone": part_tone(pi),
-                                                    style: "flex: {part.entry_value.max(0.0)} 1 0;",
-                                                    title: "{part.entry_name}: {group_digits(part.entry_value)}",
+                                        div { class: "kit-rca__track",
+                                            span { class: "kit-rca__col-total", style: "bottom: {bar_px + 4.0:.1}px;", "{total_text}" }
+                                            div { class: "kit-rca__stack", style: "height: {bar_px:.1}px;",
+                                                for (pi, part) in group.parts.iter().enumerate() {
+                                                    span { key: "{pi}", class: "kit-rca__seg", "data-tone": part_tone(pi),
+                                                        style: "flex: {part.entry_value.max(0.0)} 1 0;",
+                                                    }
                                                 }
                                             }
                                         }
@@ -709,6 +763,9 @@ fn ChartPanel(
                                 }
                             }
                         }
+                    }
+                    if let Some(p) = previous.clone() {
+                        p { class: "kit-rca__marker", "{p}" }
                     }
                 }
             }

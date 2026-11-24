@@ -90,3 +90,41 @@ Chat message bubble; streaming text block; tool activity group; task card; decis
 6. When scrolled up, the Jump pill appears and shows the number of new lines.
 7. A failed message shows Retry, and Retry calls `on_retry` with its id.
 8. With reduced motion requested, the answer appears without the word-by-word effect, and no card rises in.
+
+## Amendment 7: structure and demo
+
+Replaces: none; no earlier amendment exists. Base checks 1 to 8 stand; checks 9 to 13 are new.
+
+Archetype: one agent thread column in the content area, scrolled to its end: an agent message with a running parallel tool group, a Stop control and a composer.
+
+Stage: the content area beside the host sidebar, which the workspace frame item supplies. Its full height is the stage height. The column sits at 20% to 79% of content width (58% wide, centred).
+
+Top row, 3% to 7% of stage height: right-aligned to the column's right edge, two count labels, each with a dot marker: "9 running" with the success token dot, "5 waiting on you" with the warning token dot. A panel toggle icon sits at the content area's far right. No page title.
+
+Message list, scrolled to its end. Its first row is cut by the top edge. Positions are fractions of stage height:
+- 28%: one user bubble, right-aligned to the column.
+- 33%: agent header row (agent mark, name, time).
+- 37.5%: a finished fold line, one line: check, "Ran 2 tools", total time.
+- 42% to 46%: agent text, two lines, left-aligned.
+- 48%: two artifact chips, left-aligned.
+- 54%: one user bubble, right-aligned.
+- 61%: agent header row.
+- 65%: group header "Running 3 tools in parallel", with a spinner.
+- 68%, 71%, 74%: three tool rows, one per line. Each: a spinner, a tool glyph, a label, and a duration right-aligned in muted text ("0.3s" on each). All three show the running state.
+- 82%: Stop control, right-aligned to the column edge. A pill with a filled square and the word "Stop", shown whenever any tool row runs.
+
+Composer, 85% to 96% of stage height, full column width, rounded box:
+- Placeholder line at 88%, left-aligned, muted. Gallery text: "Message the orchestrator".
+- Bottom row at 94%: left, a "+" icon button and an approval chip with a hand glyph (gallery text: "Needs approval"); right, a mic icon and a send icon. The send icon is muted while the composer is empty.
+- No text buttons for attach or voice.
+
+Not drawn at rest: a decision dock, an attachment row, a jump pill, and a title. A decision dock appears only when a decision waits; it is outside the gallery demo.
+
+Settled frame: the group of three rows, the Stop control and the composer. Nothing animates at rest except the spinners.
+
+Acceptance checks (continued):
+9. At rest one parallel group shows three rows, each in the running state with its spinner and a duration. The rows are not folded.
+10. The Stop control sits above the composer at the column's right edge while any tool row runs. It is absent when no row runs.
+11. The composer has a placeholder line, a "+" control and an approval chip at left, and a mic control and a send control at right. No text buttons for attach or voice.
+12. The top row holds two counts with dot markers, right-aligned to the column edge. There is no page title, no decision dock and no attachment row at rest.
+13. The column is 58% of content width (within 2 points) and centred. No bubble is wider than the column.

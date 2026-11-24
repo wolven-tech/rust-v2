@@ -91,6 +91,15 @@ color: oklch(var(--kit-tint-ink-l) var(--kit-tint-ink-c) var(--kit-x-hue));
 | `--kit-tint-ink-l`, `--kit-tint-ink-c` | 38%, 0.1 | 88%, 0.08 | Text or glyph on the fill |
 | `--kit-tint-strong-l`, `--kit-tint-strong-c` | 62%, 0.14 | 72%, 0.14 | Bars, rings and edges in the entity's hue |
 
+## Gradients
+
+| Token | Default | Job |
+|---|---|---|
+| `--kit-gradient-accent` | 135deg, `--kit-accent` to 45% `--kit-accent` over `--kit-id-1` | The accent gradient: a card face or the fill of gradient text. Reads the accent and identity registers, so light, dark and any app theme each get their own. Pair it with `--kit-on-ink` text only |
+
+Gradient text takes a gradient name and reads `--kit-gradient-<name>`; an
+undefined name falls back to a plain accent-to-identity gradient, never a status colour.
+
 ## Depth, overlay, special
 
 | Token | Job |
@@ -114,5 +123,6 @@ color: oklch(var(--kit-tint-ink-l) var(--kit-tint-ink-c) var(--kit-x-hue));
 | `--kit-space-1` … `--kit-space-6` | 4, 8, 12, 16, 20, 24px | Padding and gaps. A compact or roomy theme overrides the scale |
 | `--kit-gap` | 12px | Default gap between siblings |
 | `--kit-text-xs` … `--kit-text-xl` | 11, 12, 13, 14, 16px | Type scale. Nothing in the kit is smaller than `xs` |
+| `--kit-text-display` | `clamp(2rem, 4.2vw, 3.25rem)` | Display heading size, fluid from 32px to 52px. Headlines use it instead of their own clamp |
 | `--kit-font`, `--kit-mono` | system stacks | Families |
 | `--kit-ease`, `--kit-fast`, `--kit-slow` | 140ms, 320ms | Motion. Reduced motion sets both durations to 1ms |

@@ -409,7 +409,20 @@ fn agent_team_builds_a_team_of_three_with_tool_logos() {
     });
     assert_eq!(html.matches("ui-atm-agent").count(), 3);
     assert_eq!(html.matches("ui-atm-tool\"").count(), 6);
-    assert!(html.contains("data-phase=\"typing\""));
+}
+
+#[test]
+fn agent_team_first_frame_is_the_settled_team_with_the_full_prompt() {
+    let html = render(|| {
+        let member = |role: &str| AgentTeamMember {
+            role: role.into(),
+            avatar: "a.png".into(),
+            tools: Vec::new(),
+        };
+        rsx! { AgentTeam { prompt: "Build a team", members: [member("SDR"), member("AE"), member("CSM")] } }
+    });
+    assert!(html.contains("data-phase=\"team\""));
+    assert!(html.contains("Build a team"));
 }
 
 #[test]
@@ -461,4 +474,48 @@ fn region_map_hides_the_switcher_when_asked() {
     let html = render(|| rsx! { RegionDach { region: Region::Jp, show_switcher: false } });
     assert!(html.contains("Map of Japan"));
     assert!(!html.contains("ui-rd-trigger"));
+}
+
+fn illustration_art() -> Element {
+    rsx! {
+        SideFolder {}
+        EmptyCalendar {}
+        TabOverload {}
+        LeadSourcing {}
+        RegionDach {}
+        EnrichmentOrbit {}
+        FrostCloud {}
+        GlowCloud {}
+        TestimonialWall {
+            items: vec![{
+                let mut quote = Testimonial::new("Shipped in a week.", "Ada Lovelace");
+                quote.rating = Some(5);
+                quote.verified = true;
+                quote
+            }],
+            columns: 1,
+        }
+    }
+}
+
+#[test]
+fn svg_paint_and_text_attributes_are_written_with_their_hyphenated_names() {
+    let html = render(illustration_art);
+    for camel in [
+        "stopColor=",
+        "stopOpacity=",
+        "floodColor=",
+        "floodOpacity=",
+        "strokeWidth=",
+        "strokeLinecap=",
+        "strokeLinejoin=",
+        "strokeDasharray=",
+        "textAnchor=",
+        "fontSize=",
+        "clipPath=",
+    ] {
+        assert!(!html.contains(camel), "{camel} is ignored by browsers");
+    }
+    assert!(html.contains("stop-color=\"#FFFFFF\""));
+    assert!(html.contains("text-anchor=\"middle\""));
 }

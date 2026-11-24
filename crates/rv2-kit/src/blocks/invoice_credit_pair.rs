@@ -215,6 +215,16 @@ pub fn InvoiceCreditPair(
     let currency = invoice.currency.clone();
     let root_class = class_list("kit-inv", &extra_classes);
     let invoice_total: f64 = invoice.lines.iter().map(|l| l.total).sum();
+    let tax_total: f64 = invoice
+        .lines
+        .iter()
+        .map(|l| l.total * l.tax_percent / 100.0)
+        .sum();
+    let grand_total = invoice_total + tax_total;
+    let first_metered = invoice
+        .lines
+        .iter()
+        .position(|l| l.kind == LineKind::Metered);
     let status_word = match invoice.status {
         InvoiceStatus::Open => "Open",
         InvoiceStatus::Paid => "Paid",
@@ -254,15 +264,15 @@ pub fn InvoiceCreditPair(
                     Button {
                         variant: ButtonVariant::Secondary,
                         size: ButtonSize::Sm,
-                        label: "Download",
+                        label: "PDF",
                         onclick: move |_| {
                             if let Some(handler) = on_download { handler.call(()); }
                         },
                     }
                     Button {
-                        variant: ButtonVariant::Primary,
+                        variant: ButtonVariant::Secondary,
                         size: ButtonSize::Sm,
-                        label: "Credit this invoice",
+                        label: "↺ Credit invoice",
                         disabled: invoice.status == InvoiceStatus::Credited || issued,
                         onclick: {
                             let lines = invoice.lines.clone();
@@ -279,11 +289,22 @@ pub fn InvoiceCreditPair(
                     "aria-hidden": on_credit_front.then_some("true"),
                     "inert": on_credit_front.then_some("true"),
                     header { class: "kit-inv__sheet-head",
-                        h3 { class: "kit-inv__heading", "Invoice {invoice.number}" }
-                        span { class: "kit-inv__status", "data-status": status_word.to_lowercase(), "{status_word}" }
-                        p { class: "kit-inv__total",
-                            span { class: "kit-inv__total-figure", "{format_amount(invoice_total, &currency)}" }
-                            span { class: "kit-inv__due", "Due {invoice.due_on}" }
+                        h3 { class: "kit-sr", "Invoice {invoice.number}" }
+                        div { class: "kit-inv__head-main",
+                            p { class: "kit-inv__total",
+                                span { class: "kit-inv__total-figure", "{format_amount(grand_total, &currency)}" }
+                            }
+                            p { class: "kit-inv__due",
+                                span { "Due {invoice.due_on} · " }
+                                a { class: "kit-inv__pay", href: "#", onclick: move |e: MouseEvent| e.prevent_default(), "Pay online" }
+                            }
+                        }
+                        div { class: "kit-inv__issuer",
+                            span { class: "kit-inv__dot", "aria-hidden": "true" }
+                            span { "{invoice.issuer.name}" }
+                        }
+                        if invoice.status != InvoiceStatus::Open {
+                            span { class: "kit-inv__status", "data-status": status_word.to_lowercase(), "{status_word}" }
                         }
                     }
                     div { class: "kit-inv__parties",
@@ -291,22 +312,28 @@ pub fn InvoiceCreditPair(
                         {party_block("To", &invoice.recipient)}
                     }
                     dl { class: "kit-inv__terms",
-                        dt { "Issued" } dd { "{invoice.issued_on}" }
-                        dt { "Due" } dd { "{invoice.due_on}" }
-                        dt { "Period" } dd { "{invoice.period_from} to {invoice.period_to}" }
+                        dt { "Invoice number" } dd { a { class: "kit-inv__number", href: "#", onclick: move |e: MouseEvent| e.prevent_default(), "{invoice.number}" } }
+                        dt { "Invoice date" } dd { "{invoice.issued_on}" }
+                        dt { "Due date" } dd { "{invoice.due_on}" }
+                        dt { "Billing period" } dd { "{invoice.period_from} to {invoice.period_to}" }
                     }
                     table { class: "kit-inv__table",
                         caption { class: "kit-sr", "Lines" }
                         thead { tr {
-                            th { scope: "col", "Item" }
-                            th { scope: "col", class: "kit-inv__col-rate", "Qty" }
+                            th { scope: "col", "Name" }
+                            th { scope: "col", class: "kit-inv__col-rate", "Quantity" }
                             th { scope: "col", class: "kit-inv__col-rate", "Rate" }
                             th { scope: "col", class: "kit-inv__col-rate", "Tax" }
                             th { scope: "col", "Price" }
                         } }
                         tbody {
-                            for line in invoice.lines.iter() {
-                                tr { key: "{line.id}",
+                            for (index, line) in invoice.lines.iter().enumerate() {
+                                if first_metered == Some(index) {
+                                    tr { class: "kit-inv__group",
+                                        th { scope: "rowgroup", colspan: "5", "Metered usage" }
+                                    }
+                                }
+                                tr { class: if line.kind == LineKind::Metered { "kit-inv__line kit-inv__line--metered" } else { "kit-inv__line" },
                                     td { "{line.name}" }
                                     td { class: "kit-inv__col-rate", "{line.quantity}" }
                                     td { class: "kit-inv__col-rate", "{format_amount(line.unit_amount, &currency)}" }
@@ -316,7 +343,11 @@ pub fn InvoiceCreditPair(
                             }
                         }
                     }
-                    p { class: "kit-inv__grand", "Total {format_amount(invoice_total, &currency)}" }
+                    dl { class: "kit-inv__totals",
+                        div { dt { "Subtotal" } dd { "{format_amount(invoice_total, &currency)}" } }
+                        div { dt { "Tax" } dd { "{format_amount(tax_total, &currency)}" } }
+                        div { class: "kit-inv__grand", dt { "Total" } dd { "{format_amount(grand_total, &currency)}" } }
+                    }
                 }
                 article { class: "kit-inv__sheet", "data-front": on_credit_front.then_some("true"), "aria-label": "Credit note {credit_number}",
                     "aria-hidden": (!on_credit_front).then_some("true"),

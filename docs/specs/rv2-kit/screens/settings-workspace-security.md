@@ -84,3 +84,30 @@ Reading order:
 8. Confirming sign-out calls `on_sign_out_all` once.
 9. Changing session length to 7 days calls `on_save` with that value.
 10. Remove controls are reachable by keyboard focus, not only by hover.
+
+## Amendment 5: structure and demo
+
+Replaces: none (no earlier amendment in this spec).
+
+**Archetype:** settings frame with five stacked cards: email domains, sign-in rules, identity provider, IP allowlist, danger zone.
+
+**At rest (gallery demo):**
+- Header: title and one line.
+- Email domains card: two domains. One is Verified; the other is Pending, with a Verify control and its TXT record line beneath. Add domain control.
+- Sign-in card: join by domain on, require single sign-on on, two-step verification on, and the session length row showing its current value. A verified domain exists, so the SSO switch is enabled.
+- Identity provider card: four rows. Three are copy rows (audience URI, SP entity ID, ACS URL), each with a copy control. The fourth is the metadata URL, an empty input.
+- IP allowlist card: two ranges. Their remove controls show on hover or focus only.
+- Danger zone card: sign-out-everyone row and its button.
+
+**States at rest:** loaded; one domain pending; SSO enabled; no dialog open.
+
+**Arrangement:** the five cards stack in one column in the order above, each card's rows visible without expanding anything.
+
+**Motion, settled frame:** nothing moves at rest.
+
+**Checks (continued):**
+11. At rest the page shows five cards in this order: Email domains, Sign-in, Identity provider, IP allowlist, Danger zone. Each card's rows are visible without expanding anything.
+12. The Sign-in card shows three switches and the session length row with its value. The SSO switch is enabled while a verified domain exists.
+13. The Identity provider card shows four rows: three copy rows, each with a copy control, and an empty metadata input.
+14. The IP allowlist shows its ranges. Remove controls for ranges appear on hover and on keyboard focus.
+15. The Email domains card shows one Verified and one Pending domain. The pending row shows a Verify control and its TXT record line.

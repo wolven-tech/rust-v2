@@ -75,3 +75,28 @@ In reading order:
 6. The detail panel's status control changes the card's column when a new status is chosen.
 7. Due-date text reads "today" or "late" with a day count, not a visual cue alone.
 8. At phone width the board scrolls inside its own region and nothing else scrolls sideways.
+
+## Amendment 5: structure and demo
+
+Archetype: board with four status columns under a toolbar.
+
+Visible at rest:
+- Breadcrumb "Meridian / Storefront / Sprint 9" and the board name "Storefront".
+- Toolbar: task count "11 tasks", search field, filter control, compact-view toggle.
+- Four columns side by side, in order: Todo (3), In review (3), In progress (3), Done (2). Each heading shows the status name and count, with a quick-add control.
+- Each card: identifier line ("ST-214 · Size M · Created 3 Oct"), title, one or two label chips, and a footer with age or due text, a subtask count where present, a pull-request number where present, a priority mark, and an assignee avatar.
+
+Gallery demo, 11 cards:
+- Todo: "Add the spring banner to the home page" (ST-214, Size M, label Web, 2 days); "Fix rounding on annual invoices" (ST-209, Payments, Bug); "Ask beta shops about the new tier" (ST-197, no label, subtasks 2/4, 2 days).
+- In review: "Tighten the onboarding copy" (ST-221, Web, 1 day); "Cap stock alerts at one per day" (ST-205, Size L, Web, Feature); "Push opt-in on iOS" (ST-188, App, #412).
+- In progress: "Write the help-centre export guide" (ST-230, Web); "Prorate seat changes mid-month" (ST-201, Payments, 4 days); "Offline mode for the task list" (ST-176, Size XL, App, #398).
+- Done: "Dark mode for the dashboard" (ST-160, Web, Feature); "Crash on large avatar upload" (ST-171, App, Bug).
+
+Motion, settled frame: all cards shown; none selected; no drag.
+Moves: on first view the columns fade in one after another, then their cards. A drag shows a landing line, and a card moving to a new column animates into place.
+Reduced motion: instant.
+
+Acceptance checks (continued):
+9. Columns read Todo, In review, In progress, Done, with counts 3, 3, 3, 2 that match the cards in each.
+10. Every card shows an identifier line and an avatar; a card with no assignee shows a neutral avatar without initials.
+11. A pull-request reference appears on its card as text, with its number.

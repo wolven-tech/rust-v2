@@ -123,6 +123,7 @@ fn live_run(started_at_ms: u64, run_state: RunState, elapsed_seconds: u64) -> Ru
         elapsed_seconds,
         use_count: 3,
         cost_label: "$0.18".to_string(),
+        activity_list: Vec::new(),
     }
 }
 
@@ -220,7 +221,7 @@ fn zoom_moves_in_tenths_within_bounds() {
 fn fit_steps_down_in_tenths_until_the_stage_fits() {
     assert!((fit_zoom(None) - 1.0).abs() < 1e-9);
     assert!((fit_zoom(Some(900.0)) - 1.0).abs() < 1e-9);
-    assert!((fit_zoom(Some(420.0)) - 0.7).abs() < 1e-9);
+    assert!((fit_zoom(Some(504.0)) - 0.7).abs() < 1e-9);
     assert!((fit_zoom(Some(100.0)) - 0.5).abs() < 1e-9);
 }
 
@@ -287,6 +288,8 @@ fn thread_messages() -> Vec<ThreadMessage> {
         },
         ThreadMessage::Agent {
             id: "a1".to_string(),
+            name: "Orchestrator".to_string(),
+            time_label: "09:41".to_string(),
             parts: vec![Part::Text("one two three".to_string())],
             is_streaming: true,
             is_stopped: false,

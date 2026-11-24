@@ -2,24 +2,25 @@
 //! per plan with its integrations and the features it includes.
 //!
 //! Design choice: a details area opens for its own card only; the others keep their state.
-//! Design choice: the price words "per month" and "per year" are in the text, not only in the
-//! layout, so the period reaches assistive technology.
+//! Design choice: the price words "per month" are in the text, not only in the layout, so the
+//! period reaches assistive technology. Yearly prices are the monthly equivalent, billed yearly.
 //! Design choice: a not-included feature keeps its row and says "not included" beside its
 //! marker.
-//! Design choice: the billing indicator is one pill that glides behind the two options, and each
-//! price digit rolls from its old value to the new one; the screen-reader text is the whole price.
-//! Design choice: the price is a NumberTicker, so on first view it counts up from zero.
+//! Design choice: the billing indicator is one pill that glides behind the two options; a price
+//! rolls from its old figure to the new one as text, so no digit is ever drawn over another.
 //! Browser checks: yearly switch changes every price, one card's details does not open the
 //! others, Left/Right on the billing switch, Escape closes details and returns focus, the
 //! highlighted badge and emphasised call to action, phone stacking.
 
 use dioxus::prelude::*;
 
-use rv2_affect::motion::number_ticker::NumberTicker;
+use crate::blocks::metric_overview_board::{ROLL_STEPS, motion_allowed};
+use crate::blocks::sales_metrics_panel::roll_text;
 
-use crate::internal::{KIT_CSS, class_list, focus_after_frame};
+use crate::internal::{KIT_CSS, class_list, focus_after_frame, sleep};
 
 const CSS: Asset = asset!("/assets/plan-comparison-section.css");
+const ROLL_FRAME_MS: u32 = 30;
 
 pub const MONTHLY: &str = "monthly";
 pub const YEARLY: &str = "yearly";
@@ -38,16 +39,20 @@ pub struct PlanFeature {
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct PlanIntegrations {
+    /// Marks shown in a row, one per connected tool, as text.
     pub names: Vec<String>,
     pub sync_label: String,
-    pub max_selectable: usize,
+    /// Such as `Choose 2 of 8`.
+    pub selection_label: String,
 }
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Plan {
     pub id: String,
     pub name: String,
+    /// Monthly figure when billed monthly.
     pub price_monthly: f64,
+    /// Monthly equivalent when billed yearly.
     pub price_yearly: f64,
     pub billing_note_monthly: String,
     pub billing_note_yearly: String,
@@ -69,25 +74,12 @@ pub fn price_for(plan: &Plan, billing: &str) -> f64 {
     }
 }
 
-/// `per month` or `per year`.
-pub fn period_words(billing: &str) -> &'static str {
-    if billing == YEARLY {
-        "per year"
-    } else {
-        "per month"
-    }
-}
-
-/// Saving of yearly against twelve monthly payments, in percent, rounded down.
+/// Saving of the yearly monthly equivalent against the monthly price, in percent, rounded down.
 pub fn yearly_saving_percent(monthly: f64, yearly: f64) -> u32 {
-    if monthly <= 0.0 {
+    if monthly <= 0.0 || yearly >= monthly {
         return 0;
     }
-    let full = monthly * 12.0;
-    if yearly >= full {
-        return 0;
-    }
-    ((full - yearly) / full * 100.0).floor() as u32
+    ((monthly - yearly) / monthly * 100.0).floor() as u32
 }
 
 /// Two decimals only when the price has cents.
@@ -112,11 +104,10 @@ pub fn billing_for_key(key: &Key) -> Option<&'static str> {
 fn PlanCard(
     plan: Plan,
     billing: String,
+    price_text: String,
     details_open: bool,
     on_toggle: EventHandler<bool>,
 ) -> Element {
-    let price = price_for(&plan, &billing);
-    let period = period_words(&billing);
     let note = if billing == YEARLY {
         plan.billing_note_yearly.clone()
     } else {
@@ -125,15 +116,6 @@ fn PlanCard(
     let toggle_id = format!("kit-pcs-{}-toggle", plan.id);
     let details_id = format!("kit-pcs-{}-details", plan.id);
     let toggle_for_escape = toggle_id.clone();
-    let names = plan.integrations.names.join(", ");
-    let selectable = format!(
-        "{} of {} selectable",
-        plan.integrations
-            .names
-            .len()
-            .min(plan.integrations.max_selectable),
-        plan.integrations.max_selectable
-    );
     let toggle_label = if details_open {
         "Hide details"
     } else {
@@ -154,14 +136,8 @@ fn PlanCard(
                 }
             }
             p { class: "kit-pcs__price",
-                NumberTicker {
-                    value: price,
-                    decimals: if price.fract() == 0.0 { 0 } else { 2 },
-                    grouping: false,
-                    prefix: "$",
-                    class: "kit-pcs__figure".to_string(),
-                }
-                span { class: "kit-pcs__period", " {period}" }
+                span { class: "kit-pcs__figure", "{price_text}" }
+                span { class: "kit-pcs__period", " per month" }
             }
             p { class: "kit-pcs__note", "{note}" }
             a {
@@ -188,8 +164,13 @@ fn PlanCard(
                 div { id: "{details_id}", class: "kit-pcs__details", role: "region", "aria-labelledby": "{toggle_id}",
                     section { class: "kit-pcs__integrations",
                         h4 { "Integrations" }
-                        p { class: "kit-pcs__sync", "{plan.integrations.sync_label} · {selectable}" }
-                        p { class: "kit-pcs__names", "{names}" }
+                        p { class: "kit-pcs__sync", "{plan.integrations.sync_label}" }
+                        p { class: "kit-pcs__selection", "{plan.integrations.selection_label}" }
+                        ul { class: "kit-pcs__marks",
+                            for name in plan.integrations.names.iter() {
+                                li { key: "{name}", class: "kit-pcs__mark-chip", "{name}" }
+                            }
+                        }
                     }
                     ul { class: "kit-pcs__features",
                         for feature in plan.features.iter() {
@@ -216,7 +197,7 @@ pub fn PlanComparisonSection(
     #[props(default = MONTHLY.to_string(), into)] selected_billing: String,
     #[props(default)] on_billing_change: Option<EventHandler<String>>,
     #[props(default)] yearly_saving_label: Option<String>,
-    #[props(default)] initial_details_open: bool,
+    #[props(default = true)] initial_details_open: bool,
     #[props(default, into)] extra_classes: String,
 ) -> Element {
     let mut billing = use_signal(|| selected_billing.clone());
@@ -237,6 +218,43 @@ pub fn PlanComparisonSection(
             )
         })
     });
+
+    let targets: Vec<String> = plans
+        .iter()
+        .map(|p| format_price(price_for(p, &current)))
+        .collect();
+    let mut shown = use_signal(|| targets.clone());
+    let mut roll_run = use_signal(|| 0_u32);
+    use_effect(use_reactive((&targets,), move |(to,): (Vec<String>,)| {
+        let from = shown.peek().clone();
+        if from == to || from.len() != to.len() {
+            shown.set(to);
+            return;
+        }
+        let run = *roll_run.peek() + 1;
+        roll_run.set(run);
+        spawn(async move {
+            let mut shown = shown;
+            if !motion_allowed().await {
+                shown.set(to);
+                return;
+            }
+            for step in 1..=ROLL_STEPS {
+                if *roll_run.peek() != run {
+                    return;
+                }
+                shown.set(
+                    from.iter()
+                        .zip(&to)
+                        .map(|(a, b)| roll_text(a, b, step, ROLL_STEPS))
+                        .collect(),
+                );
+                sleep(ROLL_FRAME_MS).await;
+            }
+            shown.set(to);
+        });
+    }));
+    let shown_now = shown();
 
     rsx! {
         document::Link { rel: "stylesheet", href: KIT_CSS }
@@ -281,21 +299,21 @@ pub fn PlanComparisonSection(
                 }
                 }
                 if let Some(text) = saving.clone() {
-                    if current == YEARLY {
-                        span { class: "kit-pcs__saving", "{text}" }
-                    }
+                    span { class: "kit-pcs__saving", "{text}" }
                 }
             }
             div { class: "kit-pcs__grid",
-                for plan in plans.iter().cloned() {
+                for (idx, plan) in plans.iter().cloned().enumerate() {
                     {
                         let id = plan.id.clone();
                         let is_open = open().contains(&id);
+                        let price_text = shown_now.get(idx).cloned().unwrap_or_default();
                         rsx! {
                             PlanCard {
                                 key: "{plan.id}",
                                 plan: plan,
                                 billing: current.clone(),
+                                price_text,
                                 details_open: is_open,
                                 on_toggle: move |next: bool| {
                                     let mut list = open();

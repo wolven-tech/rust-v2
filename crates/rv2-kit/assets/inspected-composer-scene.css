@@ -1,270 +1,292 @@
-/* Inspected composer scene. Rows are 56px, matching COMPOSER_ROW_PX in Rust. */
+/* Inspected composer scene. Row heights, gaps and padding match COMPOSER_ROW_HEIGHTS_PX and COMPOSER_ROW_GAP_PX;
+   the two repeated rows below the message row use the same heights as the toolbar and attach rows. */
 .kit-composer {
   position: relative;
-  isolation: isolate;
-  overflow: hidden;
-  box-sizing: border-box;
   width: 100%;
-  max-width: 420px;
-  margin: 0 auto;
-  padding: 20px 36px 8px;
+  min-width: 0;
+  padding: 8px 0 0;
   color: var(--kit-ink);
   font-family: var(--kit-font);
 }
 
-.kit-composer__stage {
-  position: relative;
-  transform: perspective(900px) rotateX(14deg) rotateY(-10deg);
-  animation: kit-composer-settle var(--kit-slow) var(--kit-ease) both;
-}
-
-.kit-composer__ghost {
-  position: absolute;
-  left: 8%;
-  right: 8%;
-  height: 52px;
-  border: 1px solid var(--kit-rule-soft);
-  border-radius: var(--kit-radius-lg);
-  background: var(--kit-surface);
-  opacity: 0.35;
-  animation: kit-composer-drift 6s ease-in-out infinite alternate;
-}
-
-.kit-composer__ghost[data-pos="above"] {
-  top: -36px;
-}
-
-.kit-composer__ghost[data-pos="below"] {
-  top: calc(100% - 12px);
-  animation-delay: -3s;
-}
-
-.kit-composer__surface {
-  position: relative;
-  z-index: 1;
-  box-sizing: border-box;
-  border: 1px solid var(--kit-rule);
-  border-radius: var(--kit-radius-lg);
-  background: var(--kit-surface);
-  box-shadow: var(--kit-shadow-pop);
-}
-
-.kit-composer__row {
-  position: relative;
-  box-sizing: border-box;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  height: 56px;
-  padding: 0 14px;
-  border-top: 1px solid var(--kit-rule-soft);
-  font-size: 13px;
-}
-
-.kit-composer__row:first-child {
-  border-top: 0;
-}
-
-.kit-composer__mode {
-  flex: none;
-  padding: 3px 9px;
-  border: 1px solid var(--kit-rule);
-  border-radius: var(--kit-radius-pill);
-  font-size: 12px;
-}
-
-.kit-composer__apps {
-  display: flex;
-  gap: 4px;
-  margin-left: auto;
-}
-
-.kit-composer__app {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 22px;
-  height: 22px;
-}
-
-.kit-composer__placeholder {
-  color: var(--kit-ink-faint);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.kit-composer__attach {
-  flex: none;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 24px;
-  height: 24px;
-  border: 1px solid var(--kit-rule);
-  border-radius: 50%;
-  color: var(--kit-ink-muted);
-}
-
-.kit-composer__tools {
-  display: flex;
-  gap: 4px;
-  min-width: 0;
-  overflow: hidden;
-}
-
-.kit-composer__tool {
-  flex: none;
-  padding: 2px 7px;
-  border-radius: var(--kit-radius-sm);
-  background: var(--kit-raised);
-  font-size: 11px;
-}
-
-.kit-composer__send {
-  flex: none;
-  margin-left: auto;
-  padding: 4px 12px;
-  border-radius: var(--kit-radius);
-  background: var(--kit-accent);
-  color: var(--kit-on-ink);
-  font-size: 12px;
-  font-weight: 600;
-}
-
-.kit-composer__marker {
-  position: absolute;
-  right: -30px;
-  margin-top: 16px;
-  font-size: 11px;
-  font-variant-numeric: tabular-nums;
-  color: var(--kit-ink-muted);
-  opacity: 0;
-  transition: opacity var(--kit-fast) var(--kit-ease);
-}
-
-.kit-composer__marker[data-active] {
-  opacity: 1;
-  color: var(--kit-accent);
-}
-
-.kit-composer__frame {
-  position: absolute;
-  left: -6px;
-  right: -6px;
-  top: 0;
-  height: 64px;
-  border: 1.5px solid var(--kit-accent);
-  border-radius: var(--kit-radius);
-  opacity: 0.6;
-  pointer-events: none;
-  transition: transform var(--kit-slow) var(--kit-ease);
-}
-
-.kit-composer__guide {
-  position: absolute;
-  left: -12px;
-  right: -12px;
-  top: 0;
-  z-index: 2;
-  height: 1.5px;
-  background: var(--kit-accent);
-  pointer-events: none;
-  transition: transform var(--kit-slow) var(--kit-ease);
-}
-
-.kit-composer__pointer {
-  position: absolute;
-  left: -20px;
-  top: -5px;
-  z-index: 2;
-  width: 0;
-  height: 0;
-  border-left: 7px solid var(--kit-accent);
-  border-top: 5px solid transparent;
-  border-bottom: 5px solid transparent;
-  pointer-events: none;
-  transition: transform var(--kit-slow) var(--kit-ease);
-}
-
-.kit-composer__tag {
-  position: absolute;
-  right: 8px;
-  top: -10px;
-  z-index: 3;
-  padding: 2px 8px;
-  border-radius: var(--kit-radius-pill);
-  background: var(--kit-accent);
-  color: var(--kit-on-ink);
-  font-size: 11px;
-  white-space: nowrap;
-  pointer-events: none;
-  transition: transform var(--kit-slow) var(--kit-ease);
-}
-
-.kit-composer__note {
-  min-height: 1.4em;
-  margin: 12px 0 0;
-  font-size: 12px;
-  text-align: center;
-  color: var(--kit-ink-muted);
-}
-
-.kit-composer[data-motion="off"] .kit-composer__stage,
-.kit-composer[data-motion="off"] .kit-composer__ghost {
-  animation: none;
-}
-
-.kit-composer[data-motion="off"] .kit-composer__marker {
-  opacity: 1;
-}
-
-.kit-composer[tabindex]:focus-visible {
+.kit-composer:focus-visible {
   outline: 2px solid var(--kit-accent);
   outline-offset: 2px;
 }
 
-@keyframes kit-composer-settle {
-  from {
-    transform: perspective(900px) rotateX(0deg) rotateY(0deg);
-  }
-  to {
-    transform: perspective(900px) rotateX(14deg) rotateY(-10deg);
-  }
+/* 384px: the column's centre row lands on the stage's middle and the last row ends one row above the bottom. */
+.kit-composer__stage {
+  position: relative;
+  width: 100%;
+  height: 384px;
 }
 
-@keyframes kit-composer-drift {
-  from { transform: translateY(-2px); }
-  to { transform: translateY(3px); }
+.kit-composer__column {
+  position: absolute;
+  top: 32px;
+  left: 20%;
+  width: 60%;
 }
 
-@media (max-width: 560px) {
-  .kit-composer {
-    padding: 18px 16px 8px;
+.kit-composer__surface {
+  position: relative;
+  display: grid;
+  gap: 12px;
+  box-sizing: border-box;
+  width: 100%;
+  padding: 12px;
+  border: 1px solid var(--kit-rule-soft);
+  border-radius: var(--kit-radius-card);
+  background: var(--kit-surface);
+  box-shadow: var(--kit-shadow-pop);
+  transform: perspective(900px) rotateX(10deg) rotateY(-6deg);
+  transform-origin: 50% 50%;
+}
+
+.kit-composer__row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-sizing: border-box;
+  min-width: 0;
+  height: 48px;
+}
+
+.kit-composer__row--faded {
+  opacity: 0.45;
+}
+
+.kit-composer__row--attach {
+  height: 44px;
+}
+
+.kit-composer__row--message {
+  height: 64px;
+  align-items: flex-start;
+  padding-top: 8px;
+}
+
+.kit-composer__round {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border: 1px solid var(--kit-rule-soft);
+  border-radius: 50%;
+  background: var(--kit-raised);
+  color: var(--kit-ink-muted);
+  font-size: 13px;
+}
+
+.kit-composer__round--send {
+  background: var(--kit-primary);
+  border-color: var(--kit-primary);
+  color: var(--kit-on-primary);
+}
+
+.kit-composer__round--quiet {
+  color: var(--kit-ink-faint);
+}
+
+.kit-composer__mode {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 30px;
+  padding: 0 10px;
+  border: 1px solid var(--kit-rule-soft);
+  border-radius: var(--kit-radius);
+  font-size: 13px;
+}
+
+.kit-composer__chevron {
+  width: 5px;
+  height: 5px;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  transform: translateY(-2px) rotate(45deg);
+}
+
+.kit-composer__spacer {
+  flex: 1 1 auto;
+}
+
+.kit-composer__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  height: 28px;
+  padding: 0 10px;
+  border: 1px solid var(--kit-rule-soft);
+  border-radius: var(--kit-radius-pill);
+  background: var(--kit-raised);
+  font-size: 12px;
+  color: var(--kit-ink-muted);
+  white-space: nowrap;
+}
+
+.kit-composer__folder {
+  width: 14px;
+  height: 11px;
+  border-radius: 2px;
+  background: var(--kit-accent);
+}
+
+.kit-composer__apps {
+  display: inline-flex;
+  gap: 2px;
+}
+
+.kit-composer__app {
+  display: inline-grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--kit-surface);
+}
+
+.kit-composer__message {
+  font-size: 13px;
+  color: var(--kit-ink);
+}
+
+.kit-composer__caret {
+  display: inline-block;
+  width: 1px;
+  height: 14px;
+  margin-left: 2px;
+  vertical-align: text-bottom;
+  background: var(--kit-ink);
+}
+
+.kit-composer__frame {
+  position: absolute;
+  left: -4px;
+  right: -4px;
+  top: 0;
+  z-index: 2;
+  border: 1px solid var(--kit-accent);
+  border-radius: var(--kit-radius);
+  pointer-events: none;
+  transition: transform var(--kit-fast) var(--kit-ease), height var(--kit-fast) var(--kit-ease);
+  animation: kit-composer-in var(--kit-fast) var(--kit-ease);
+}
+
+.kit-composer__width {
+  position: absolute;
+  right: 0;
+  top: -18px;
+  font-family: var(--kit-mono);
+  font-size: 11px;
+  color: var(--kit-accent);
+}
+
+.kit-composer__marker,
+.kit-composer__inset,
+.kit-composer__gap {
+  position: absolute;
+  top: 0;
+  z-index: 3;
+  opacity: 0;
+  transition: opacity var(--kit-fast) var(--kit-ease), transform var(--kit-fast) var(--kit-ease);
+}
+
+.kit-composer__marker,
+.kit-composer__gap {
+  left: 50%;
+  translate: -50% 0;
+  font-family: var(--kit-mono);
+  font-size: 11px;
+  line-height: 12px;
+  color: var(--kit-accent);
+}
+
+.kit-composer__inset {
+  left: 1px;
+  font-family: var(--kit-mono);
+  font-size: 11px;
+  line-height: 12px;
+  color: var(--kit-accent);
+}
+
+.kit-composer__marker[data-active],
+.kit-composer__inset[data-active],
+.kit-composer__gap[data-active],
+.kit-composer[data-motion="off"] .kit-composer__marker,
+.kit-composer[data-motion="off"] .kit-composer__inset,
+.kit-composer[data-motion="off"] .kit-composer__gap {
+  opacity: 1;
+}
+
+.kit-composer__tag {
+  position: absolute;
+  top: 0;
+  z-index: 3;
+  transition: transform var(--kit-fast) var(--kit-ease);
+  right: calc(100% + 18px);
+  padding: 1px 6px;
+  border-radius: var(--kit-radius-sm);
+  background: var(--kit-accent);
+  color: var(--kit-on-ink);
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.kit-composer__rail {
+  position: absolute;
+  left: -12px;
+  top: 0;
+  bottom: 0;
+  border-left: 1px dashed var(--kit-accent);
+}
+
+.kit-composer__guide {
+  position: absolute;
+  left: -14px;
+  top: 0;
+  z-index: 2;
+  width: 3px;
+  border-radius: 2px;
+  background: var(--kit-accent);
+  transition: transform var(--kit-fast) var(--kit-ease), height var(--kit-fast) var(--kit-ease);
+}
+
+.kit-composer__note {
+  margin: 12px 0 0;
+  font-size: 12px;
+  color: var(--kit-ink-muted);
+  text-align: center;
+}
+
+@keyframes kit-composer-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@media (max-width: 480px) {
+  .kit-composer__column {
+    left: 5%;
+    width: 90%;
   }
-  .kit-composer__stage {
-    transform: perspective(900px) rotateX(6deg) rotateY(-3deg);
-  }
-  .kit-composer__marker {
-    display: none;
-  }
+  .kit-composer__marker,
+  .kit-composer__inset,
+  .kit-composer__gap,
   .kit-composer__tag {
-    right: 4px;
-  }
-  .kit-composer__tools {
     display: none;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .kit-composer__stage,
-  .kit-composer__ghost {
-    animation: none;
-  }
+  .kit-composer__frame,
   .kit-composer__guide,
-  .kit-composer__pointer,
   .kit-composer__tag,
-  .kit-composer__frame {
+  .kit-composer__marker,
+  .kit-composer__inset,
+  .kit-composer__gap {
     transition: none;
+    animation: none;
   }
 }

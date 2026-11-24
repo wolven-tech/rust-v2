@@ -72,6 +72,16 @@
   background: var(--kit-warn);
 }
 
+.kit-asb__tick {
+  position: absolute;
+  bottom: 2px;
+  transform: translateX(-50%);
+  font-size: 11px;
+  color: var(--kit-ink-faint);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
 .kit-asb__marker {
   position: absolute;
   top: 50%;

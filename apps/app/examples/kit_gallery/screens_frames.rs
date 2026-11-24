@@ -23,7 +23,7 @@ use rv2_kit::screens::settings_workspace_general::{SettingsWorkspaceGeneral, Wor
 use rv2_kit::screens::settings_workspace_security::{
     EmailDomain, IdpValues, IpRange, SessionLength, SettingsWorkspaceSecurity,
 };
-use rv2_kit::screens::workspace_frame_flat::WorkspaceFrameFlat;
+use rv2_kit::screens::workspace_frame_flat::{FlatStartPanel, StartRow, WorkspaceFrameFlat};
 use rv2_kit::screens::workspace_frame_inset::{
     Artifact, ArtifactKind, ChatRow, FrameAccount, MenuIcon, MenuItem, WorkspaceFrame,
 };
@@ -144,6 +144,24 @@ fn WorkspaceFrameInsetDemo() -> Element {
     }
 }
 
+/// Four chats at rest: one pinned, two in Growth, one in Operations.
+fn flat_rest_chats() -> Vec<ChatRow> {
+    let chat = |id: &str, title: &str, pinned: bool, project: Option<&str>| ChatRow {
+        id: id.into(),
+        title: title.into(),
+        pinned,
+        unread: false,
+        project_id: project.map(str::to_string),
+        section: None,
+    };
+    vec![
+        chat("f1", "Pricing review", true, None),
+        chat("f2", "Hiring plan Q1", false, Some("Growth")),
+        chat("f3", "Churn analysis", false, Some("Growth")),
+        chat("f4", "Vendor renewals", false, Some("Operations")),
+    ]
+}
+
 #[component]
 fn WorkspaceFrameFlatDemo() -> Element {
     let mut last = use_signal(|| "no navigation yet".to_string());
@@ -155,18 +173,32 @@ fn WorkspaceFrameFlatDemo() -> Element {
                     workspace_name: "Northwind".to_string(),
                     account: account(),
                     menu_items: menu(),
-                    menu_groups: vec![rv2_kit::screens::workspace_frame_inset::MenuGroup {
-                        title: "Pipelines".to_string(),
-                        items: vec![MenuItem { item_label: "Sales".into(), item_icon: MenuIcon::Folder }],
-                    }],
-                    project_list: vec!["Growth".to_string()],
-                    chat_list: chats(),
+                    project_list: vec!["Growth".to_string(), "Operations".to_string(), "Finance".to_string()],
+                    chat_list: flat_rest_chats(),
                     top_bar_title: rsx! { "Folders" },
                     on_navigate: move |label: String| last.set(format!("navigate: {label}")),
+                    work_area: true,
+                    panel_heading: "Start".to_string(),
+                    side_panel: rsx! {
+                        FlatStartPanel {
+                            tools: vec![
+                                StartRow { title: "Web search".into(), source: "Searches the open web".into() },
+                                StartRow { title: "Spreadsheet".into(), source: "Formulas and charts".into() },
+                                StartRow { title: "Document".into(), source: "Drafts and edits".into() },
+                            ],
+                            suggested: vec![
+                                StartRow { title: "Weekly revenue summary".into(), source: "From Revenue overview".into() },
+                                StartRow { title: "Pipeline risks".into(), source: "From Company register".into() },
+                                StartRow { title: "Onboarding checklist".into(), source: "From Workspace setup".into() },
+                                StartRow { title: "Brand guidelines".into(), source: "From File library".into() },
+                            ],
+                        }
+                    },
                     content: rsx! {
                         div { style: "padding: 24px;",
                             h2 { style: "margin: 0 0 8px; font-size: 18px;", "Folders" }
-                            p { class: "gl-tag", "The page area fills the space beside the sidebar." }
+                            p { class: "gl-tag", "Two lines of placeholder text sit under the heading." }
+                            p { class: "gl-tag", "The page area fills the space between the sidebar and the work area." }
                         }
                     },
                 }
@@ -431,6 +463,98 @@ fn providers() -> Vec<ProviderEntry> {
     ]
 }
 
+/// The at-rest model list: two EU-hosted providers, one global, one custom endpoint. Eurocloud is the only
+/// provider with an image model, so the image selector has one choice.
+fn rest_providers() -> Vec<ProviderEntry> {
+    let model = |id: &str,
+                 name: &str,
+                 model_kind: ModelKind,
+                 is_enabled: bool,
+                 access_level: AccessLevel| ModelEntry {
+        id: id.into(),
+        display_name: name.into(),
+        model_kind,
+        is_enabled,
+        access_level,
+    };
+    let provider = |id: &str,
+                    name: &str,
+                    hosting_region: HostingRegion,
+                    model_list: Vec<ModelEntry>| ProviderEntry {
+        id: id.into(),
+        display_name: name.into(),
+        hosting_region,
+        logo_url: None,
+        model_list,
+    };
+    vec![
+        provider(
+            "eurocloud",
+            "Eurocloud",
+            HostingRegion::Eu,
+            vec![
+                model(
+                    "eu-chat",
+                    "Euro Chat",
+                    ModelKind::Chat,
+                    true,
+                    AccessLevel::Everyone,
+                ),
+                model(
+                    "eu-write",
+                    "Euro Writer",
+                    ModelKind::Chat,
+                    true,
+                    AccessLevel::Engineering,
+                ),
+                model(
+                    "eu-img",
+                    "Euro Picture",
+                    ModelKind::Image,
+                    true,
+                    AccessLevel::Admins,
+                ),
+            ],
+        ),
+        provider(
+            "nordhost",
+            "Nordhost",
+            HostingRegion::Eu,
+            vec![model(
+                "nord-chat",
+                "Nord Chat",
+                ModelKind::Chat,
+                false,
+                AccessLevel::Everyone,
+            )],
+        ),
+        provider(
+            "global-host",
+            "Global Host",
+            HostingRegion::Global,
+            vec![model(
+                "gl-chat",
+                "Global Chat",
+                ModelKind::Chat,
+                true,
+                AccessLevel::Everyone,
+            )],
+        ),
+        provider(
+            "lab-endpoint",
+            "Lab endpoint",
+            HostingRegion::Custom,
+            vec![model(
+                "lab-1",
+                "Lab One",
+                ModelKind::Chat,
+                true,
+                AccessLevel::Everyone,
+            )],
+        ),
+    ]
+}
+
 #[component]
 fn SettingsModelAccessDemo() -> Element {
     let mut last = use_signal(|| "no save yet".to_string());
@@ -438,10 +562,14 @@ fn SettingsModelAccessDemo() -> Element {
         Item { slug: "settings-model-access", name: "SettingsModelAccess",
             div { class: "gl-canvas", style: FRAME_HEIGHT,
                 SettingsModelAccess {
-                    provider_list: providers(),
-                    default_chat: "eu-chat".to_string(),
+                    provider_list: rest_providers(),
+                    default_chat: "auto".to_string(),
                     default_image: "eu-img".to_string(),
-                    api_keys: vec![ApiKey { provider_id: "eu".into(), masked_value: "sk-…4c2a".into(), added_at: "3 Nov 2026".into() }],
+                    open_provider: Some("eurocloud".to_string()),
+                    api_keys: vec![
+                        ApiKey { provider_id: "eurocloud".into(), masked_value: "sk-…4c2a".into(), added_at: "3 Nov 2026".into() },
+                        ApiKey { provider_id: "global-host".into(), masked_value: "sk-…9f1e".into(), added_at: "18 Oct 2026".into() },
+                    ],
                     on_save: move |state: rv2_kit::screens::settings_model_access::ModelAccessState| last.set(format!("on_save chat={} image={}", state.default_chat, state.default_image)),
                     on_add_key: move |(provider, _value): (String, String)| last.set(format!("on_add_key {provider}")),
                 }
@@ -576,10 +704,9 @@ fn SettingsWorkspaceSecurityDemo() -> Element {
                     email_domains: vec![
                         EmailDomain { name: "northwind.example".into(), verified: true, txt_record: "rv2-verification=northwind.example".into() },
                         EmailDomain { name: "agency.example".into(), verified: false, txt_record: "rv2-verification=agency.example".into() },
-                        EmailDomain { name: "partners.example".into(), verified: false, txt_record: "rv2-verification=partners.example".into() },
                     ],
                     join_by_domain: true,
-                    require_sso: false,
+                    require_sso: true,
                     two_step_required: true,
                     session_length: SessionLength::SevenDays,
                     idp: IdpValues {
@@ -588,9 +715,12 @@ fn SettingsWorkspaceSecurityDemo() -> Element {
                         entity_id: "urn:rv2:northwind:sp".into(),
                         metadata_url: String::new(),
                     },
-                    ip_ranges: vec![IpRange { id: "r1".into(), range: "10.0.0.0/24".into(), label: None }],
+                    ip_ranges: vec![
+                        IpRange { id: "r1".into(), range: "10.0.0.0/24".into(), label: None },
+                        IpRange { id: "r2".into(), range: "192.168.10.0/24".into(), label: None },
+                    ],
                     on_verify_domain: Callback::new(|domain: String| -> Pin<Box<dyn Future<Output = bool>>> {
-                        Box::pin(async move { domain == "partners.example" })
+                        Box::pin(async move { domain == "agency.example" })
                     }),
                     on_save: move |values: rv2_kit::screens::settings_workspace_security::SecurityValues| last.set(format!("on_save session={}", values.session_length.as_str())),
                     on_sign_out_all: move |_| last.set("on_sign_out_all".to_string()),

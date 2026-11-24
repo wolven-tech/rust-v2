@@ -282,6 +282,17 @@ mod web {
     }
 }
 
+/// Keeps the scroll container `thread_id` pinned to its end while the user has not scrolled up. Its first child is
+/// the stream whose size changes as charts draw, so the pin follows size changes rather than running once at mount.
+pub(crate) fn follow_thread_end(thread_id: &str) {
+    document::eval(&format!(
+        "const el = document.getElementById({thread_id:?}); const stream = el && el.firstElementChild; \
+         if (stream && !el.dataset.follow) {{ el.dataset.follow = '1'; let stick = true; \
+         el.addEventListener('scroll', () => {{ stick = el.scrollTop + el.clientHeight >= el.scrollHeight - 24; }}); \
+         new ResizeObserver(() => {{ if (stick) el.scrollTop = el.scrollHeight; }}).observe(stream); }}"
+    ));
+}
+
 /// Joins a component's base class with the caller's layout class.
 pub(crate) fn class_list(base: &str, extra: &str) -> String {
     if extra.is_empty() {

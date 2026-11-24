@@ -37,7 +37,7 @@ In reading order:
 - Pointer over a stat card: a tooltip shows the same numbers, expanded.
 - Click on a period option: applies it; the picker closes.
 - Keyboard, pickers: Enter, Space or Down opens the menu; Up and Down move through options; Home and End jump to the first or last; Enter picks the highlighted option; Escape closes without changing the value.
-- Keyboard, chart: focus enters the chart as one group; Left and Right step through the days; Home and End jump to the first and last day; Escape leaves the group and the focus card returns to the latest day.
+- Keyboard, chart: focus enters the chart as one group; Left and Right step through the days; Home and End move to the earliest and latest day; Escape leaves the group and the focus card returns to the latest day.
 - Tab order: period picker, each stat card, segment filter, overview chart, focus card button, footer action.
 - Outside click closes any open menu.
 
@@ -74,3 +74,55 @@ In reading order:
 7. With reduced motion preferred, a period change shows final values with no intermediate frames.
 8. At narrow width, the focus card appears below the overview and nothing scrolls sideways.
 9. An empty series renders zeros and a flat baseline without an error.
+
+## Amendment 5: structure and demo
+
+Archetype: dashboard overview: a stat row, then a wide overview chart beside a narrow product card.
+
+Replaces Anatomy item 4 (focus card) with a product card. Day-level values stay in the chart tooltip and in the announced value. Replaces check 8 with: at narrow width the product card sits below the overview, and nothing scrolls sideways.
+
+Visible at rest:
+- Header: heading "Dashboard", and a period picker at the right with a calendar mark, showing "Last 30 days".
+- Stat row, three cards. Each: label, headline total, delta badge with a direction word, sparkline of the current period across the card's lower part, and two date labels beneath it ("1 Nov" and "Today").
+- Overview card, wide: title "Sales overview", total and delta, a segment filter at the top right ("All items"), an area chart with a solid current-period line and a dashed previous-period line, and three date labels.
+- Product card, narrow, beside the overview: product name "Desk license", a "One-time" tag, a "Set up" button, a "Seats sold" figure with delta and its own sparkline, two comparison figures ("Last period 412", "This period 438"), and a footer button "See full analytics".
+- No tooltip open at rest.
+
+Gallery demo:
+- Stat cards: Revenue $42.1k, up 8.4%. Sign-ups 1,914, up 9.9%. Refunds 107, down 25.7%, shown as good.
+- Overview total $18.6k, up 6.2%.
+
+Motion, settled frame: stat cards shown, sparklines drawn, nothing focused.
+Moves: stat cards appear in order, each sparkline drawing after its card. A period change rolls each number to its new value. A segment change redraws only the overview lines.
+Reduced motion: final values, no intermediate frames.
+
+Acceptance checks (continued):
+10. At rest no tooltip is visible, and no tooltip or label covers a sparkline.
+11. The overview's three date labels do not overlap at any supported width.
+12. At wide widths the overview and product card sit side by side; the product card shows its name, tag, seat figure with delta, sparkline, both comparison figures and footer button.
+
+## Amendment 6: structure and demo
+
+Supersedes Amendment 5 where they differ. Replaces:
+- "Visible at rest", "No tooltip open at rest": no tooltip element is visible at rest. The start and end date labels under each sparkline are plain text.
+- Product card placement: about a third of the bottom row's width, as tall as the overview card (see below). Amendment 5 did not set this.
+
+Visible at rest, added:
+- Each delta badge is followed by the words "vs last period".
+- Stat sparkline in the card's lower part. Its date labels sit beneath it with a clear gap; no line touches them.
+- Overview card: about two thirds of the bottom row's width.
+- Product card: "Set up" button at top right, beside the product name. Below the name, the "Seats sold" figure with its delta badge. Its sparkline fills about a third of the card's height. The two comparison figures sit beneath it. The footer button spans the card's width.
+
+Scale: three equal stat cards across the top. The bottom row splits about two thirds overview, one third product card.
+
+Gallery demo: as Amendment 5.
+
+Motion, settled frame: stat cards shown, sparklines drawn, nothing focused.
+Moves and reduced motion: as Amendment 5.
+
+Defects, stated as checks: static "Today" tooltips overlap the sparklines at rest (check 13); product card rendered as a compact strip (check 14).
+
+Acceptance checks (continued):
+13. At rest no tooltip is visible. Each sparkline's date labels sit below it with a clear gap, and no label overlaps a line.
+14. The product card is about a third of the bottom row's width and as tall as the overview card. Its sparkline fills about a third of its height.
+15. Each delta badge is followed by the words "vs last period".

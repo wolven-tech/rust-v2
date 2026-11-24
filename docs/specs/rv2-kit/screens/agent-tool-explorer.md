@@ -77,3 +77,31 @@ Org-chart nodes with connector lines; identity card; tool card with mark and acc
 6. The failed-calls tile equals the number of calls with state failed in the selected range.
 7. An agent with no tools (`is_empty`) shows the dashed slot and the Connect tool action.
 8. With focus on the agent card, the right arrow key moves focus to the nearest tool card.
+
+## Amendment 5: structure and demo
+
+Replaces: none (no earlier amendment in this spec).
+
+**Archetype:** org chart of one agent card above rows of tool cards joined by connectors, with summary tiles and a call table below. The side panel is closed.
+
+**At rest (gallery demo):**
+- Header: agent name and state badge reading Needs you, Connect tool and Pause agent buttons, range menu.
+- Five summary tiles: failed calls, total calls, success share, average duration, tokens.
+- Chart: one agent card at the top; seven tool cards in two rows (four, then three). Each tool card shows its mark, name, source tag and access word. Connectors join each card to the card above it.
+- One tool card shows the live indicator for a call in progress.
+- Access words in the chart: Allowed on four cards, Ask first on two, Paused on one.
+- Call table: nine rows, newest first, with one running row, one waiting row (Approve and Reject), one failed row, one rejected row and five done rows.
+
+**States at rest:** agent active, not paused; one call running; one call waiting; side panel closed.
+
+**Arrangement:** chart fills the upper part and is centred in the space above the table. The table sits below it, capped at half the screen height.
+
+**Motion, settled frame:** the connector highlight for the running call sits at its position; nothing else moves.
+
+**Checks (continued):**
+9. At rest the chart shows one agent card and seven tool cards in two rows, each joined to the card above it by a connector.
+10. The five summary tiles match the call table for the selected range. The total calls tile equals the number of call rows.
+11. The call table shows nine rows, newest first, including one waiting row with Approve and Reject and one running row.
+12. Only the tool card whose call is running shows the live indicator.
+13. Each tool card states its access in words: Allowed, Ask first or Paused. The word matches the segmented control in the panel when it opens.
+14. At 1280 wide the chart and the call table are both visible on one screen.

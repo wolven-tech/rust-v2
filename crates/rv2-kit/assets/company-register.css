@@ -1,8 +1,10 @@
 .kit-cr {
   display: grid;
-  grid-template-columns: 200px minmax(0, 1fr);
+  grid-template-columns: 184px minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr);
   width: 100%;
-  min-height: 100%;
+  height: 100%;
+  min-height: 0;
   color: var(--kit-ink);
   font-family: var(--kit-font);
   background: var(--kit-ground);
@@ -108,7 +110,9 @@
   flex-direction: column;
   gap: 12px;
   min-width: 0;
-  padding: 20px 24px 32px;
+  min-height: 0;
+  box-sizing: border-box;
+  padding: 20px 20px 16px;
 }
 
 .kit-cr__crumbs ol {
@@ -224,14 +228,83 @@
 }
 
 .kit-cr__table-wrap {
+  display: flex;
+  flex-direction: column;
   min-width: 0;
   max-width: 100%;
   min-height: 0;
   flex: 1 1 auto;
-  overflow-x: auto;
-  border: 1px solid var(--kit-rule-soft);
+}
+
+/* SheetGrid's own card, heading, count and hint repeat the breadcrumb, the toolbar and the footer. */
+.kit-cr .kit-sg {
+  flex: 1 1 auto;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  background: transparent;
+}
+
+.kit-cr .kit-sg__head,
+.kit-cr .kit-sg__hint,
+.kit-cr .kit-sg__count {
+  display: none;
+}
+
+.kit-cr .kit-sg__scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: 100%;
   border-radius: var(--kit-radius);
   background: var(--kit-surface);
+}
+
+.kit-cr .kit-sg__table {
+  table-layout: fixed;
+  width: 100%;
+}
+
+.kit-cr .kit-sg__table th:nth-child(1) {
+  width: 36px;
+}
+
+.kit-cr .kit-sg__table th:nth-child(2) {
+  width: 150px;
+}
+
+.kit-cr .kit-sg__table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
+.kit-cr .kit-sg__table thead th:nth-child(-n+2) {
+  z-index: 3;
+}
+
+.kit-cr .kit-sg__table td,
+.kit-cr .kit-sg__table th {
+  min-width: 0;
+  overflow: hidden;
+}
+
+.kit-cr .kit-sg__cell {
+  min-width: 0;
+  padding: 0 var(--kit-space-2);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+.kit-cr .kit-sg__label {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.kit-cr .kit-sg__link {
+  font-weight: 400;
 }
 
 .kit-cr__ph-table {
@@ -287,10 +360,31 @@
 @media (max-width: 760px) {
   .kit-cr {
     grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr);
+  }
+
+  .kit-cr .kit-sg__table {
+    table-layout: auto;
+    width: max-content;
+    min-width: 100%;
+  }
+
+  .kit-cr .kit-sg__table th:nth-child(1),
+  .kit-cr .kit-sg__table th:nth-child(2) {
+    width: auto;
+  }
+
+  .kit-cr .kit-sg__cell {
+    min-width: 120px;
+  }
+
+  .kit-cr .kit-sg__table th.kit-sg__head-cell {
+    min-width: 120px;
   }
 
   .kit-cr__menu-btn {
     display: inline-flex;
+    align-self: start;
     margin: 12px 16px 0;
     min-height: 44px;
     padding: 0 14px;

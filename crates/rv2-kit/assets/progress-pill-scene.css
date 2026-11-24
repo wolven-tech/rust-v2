@@ -1,12 +1,46 @@
 /* Progress pill scene. The fill and shimmer move by transform; the mark moves by opacity. */
 .kit-pill-scene {
+  position: relative;
+  display: grid;
+  place-items: center;
   width: 100%;
   min-width: 0;
+  min-height: 220px;
+  padding: 24px 0;
+  box-sizing: border-box;
+}
+
+.kit-pill-scene__band {
+  position: absolute;
+  left: 25%;
+  right: 25%;
+  top: calc(50% + 30px);
+  height: 22px;
+  border-radius: 50%;
+  background: linear-gradient(90deg, var(--kit-id-1), var(--kit-id-2));
+  filter: blur(14px);
+  opacity: 0.45;
+  pointer-events: none;
+  transition: opacity var(--kit-slow) var(--kit-ease);
+}
+
+.kit-pill-scene[data-state="working"] .kit-pill-scene__band {
+  animation: kit-pill-band 3.2s ease-in-out infinite;
+}
+
+.kit-pill-scene[data-state="paused"] .kit-pill-scene__band {
+  opacity: 0.2;
+}
+
+.kit-pill-scene[data-state="done"] .kit-pill-scene__band {
+  opacity: 0.5;
 }
 
 .kit-pill-scene__button {
   all: unset;
-  display: block;
+  position: relative;
+  display: flex;
+  justify-content: center;
   width: 100%;
   box-sizing: border-box;
   cursor: pointer;
@@ -23,12 +57,13 @@
 }
 
 .kit-pill {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 12px;
   box-sizing: border-box;
-  width: 100%;
-  min-width: 0;
+  width: 50%;
+  min-width: 280px;
   padding: 12px 14px;
   border: 1px solid var(--kit-rule-soft);
   border-radius: var(--kit-radius-lg);
@@ -40,15 +75,24 @@
 }
 
 .kit-pill__mark {
-  display: grid;
-  grid-template-columns: repeat(3, 6px);
-  gap: 3px;
   flex: none;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--kit-raised);
+}
+
+.kit-pill__dots {
+  display: grid;
+  grid-template-columns: repeat(3, 5px);
+  gap: 3px;
 }
 
 .kit-pill__cell {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
   border-radius: 1.5px;
   background: var(--kit-accent);
   opacity: 0.25;
@@ -83,6 +127,10 @@
   justify-content: space-between;
   gap: 8px;
   min-width: 0;
+}
+
+.kit-pill__agent {
+  justify-content: flex-start;
 }
 
 .kit-pill__title {
@@ -136,13 +184,14 @@
 .kit-pill__fill {
   position: absolute;
   inset: 0;
+  overflow: hidden;
   border-radius: inherit;
   background: var(--kit-accent);
   transform-origin: 0 50%;
   transition: transform var(--kit-slow) var(--kit-ease);
 }
 
-.kit-pill__track::after {
+.kit-pill__fill::after {
   content: "";
   position: absolute;
   inset: 0;
@@ -151,8 +200,8 @@
   animation: kit-pill-shimmer 2.4s var(--kit-ease) infinite;
 }
 
-.kit-pill[data-state="paused"] .kit-pill__track::after,
-.kit-pill[data-state="done"] .kit-pill__track::after {
+.kit-pill[data-state="paused"] .kit-pill__fill::after,
+.kit-pill[data-state="done"] .kit-pill__fill::after {
   animation: none;
   transform: translateX(-100%);
 }
@@ -167,15 +216,23 @@
   100% { transform: translateX(100%); }
 }
 
+@keyframes kit-pill-band {
+  0%, 100% { opacity: 0.35; }
+  50% { opacity: 0.55; }
+}
+
 @media (max-width: 480px) {
   .kit-pill {
+    width: 100%;
+    min-width: 0;
     padding: 10px 12px;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .kit-pill__cell,
-  .kit-pill__track::after {
+  .kit-pill__fill::after,
+  .kit-pill-scene__band {
     animation: none;
   }
   .kit-pill__fill {

@@ -74,3 +74,28 @@ Tree list with group headings; progress ring; badge; text field; tabs; side pane
 6. The Done tab lists done tasks with their completion day.
 7. With `is_empty` set on Active, the note and the New task button appear.
 8. At phone width each row takes two lines and the page does not scroll horizontally.
+
+## Amendment 5: structure and demo
+
+Replaces: none (no earlier amendment in this spec).
+
+**Archetype:** grouped tree list of tasks with a right task panel open on one selected task.
+
+**At rest (gallery demo):**
+- Header: title with the active count (9), Active and Done tabs, New task button. New task line closed.
+- Three project groups holding 4, 3 and 2 tasks. Each heading shows its project name and count.
+- Each row: progress ring, title, status phrase, Needs you badge with its count where asks are pending, artifact count, time since update. One planning task (dashed ring), one running task, and the rest in progress or paused.
+- Task panel open on one task with, in order: title, project, state, goal, step checklist of four steps, Needs you block with the first question and a Decide button, two artifact tabs (one document, one sheet), What happened so far with three entries, and Decisions made with one entry.
+
+**States at rest:** Active tab; one task selected with a pending ask; New task line closed.
+
+**Arrangement:** list on the left, panel on the right. Row columns for counts and time stay aligned across groups.
+
+**Motion, settled frame:** nothing moves at rest. Running rings show their fill at the current step count.
+
+**Checks (continued):**
+9. At rest the list shows three project groups with 4, 3 and 2 tasks. Each heading's count matches its rows.
+10. The task panel shows, in this order: title, project, state, goal, step checklist, Needs you block, artifact tabs, What happened so far, and Decisions made.
+11. What happened so far lists the task's events newest first, each with its time.
+12. Only a planning task's ring is dashed. A running ring fills in proportion to steps done.
+13. At 1280 wide the list and the panel are visible together, and row columns stay aligned across groups.

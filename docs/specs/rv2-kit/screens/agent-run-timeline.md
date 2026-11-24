@@ -66,3 +66,31 @@ Header with state badge and button group; summary tiles; timeline (gantt-style b
 6. Axis tick labels are round values suited to the run length.
 7. With reduced motion requested, no bar animation or highlight runs.
 8. At phone width the page does not scroll horizontally.
+
+## Amendment 5: structure and demo
+
+Replaces: none (no earlier amendment in this spec).
+
+**Archetype:** header and summary tiles over a full-width timeline (label column and time axis), with a right detail panel showing one finished step.
+
+**At rest (gallery demo):**
+- Header: run title, agent and model, start time, state badge reading Running, Stop button.
+- Four summary tiles: elapsed, cost, tokens, steps with failure count (16 steps, 1 failed).
+- Timeline: 16 step rows. One sub-agent parent row with two indented child rows beneath it. One failed row, with its retry as the row directly beneath. The last row is the running step.
+- Each step row has a type mark; tool rows also have their app mark.
+- Axis with round tick intervals and no tick label overlapping a bar.
+- Detail panel on the right showing one finished write step: name, type, start, duration, tokens, cost, copyable input and output blocks.
+
+**States at rest:** live; running step last; one failed step with its retry; detail panel shows a finished step.
+
+**Arrangement:** label column on the left, time axis across the middle, detail panel on the right. Sub-agent rows indent under their parent.
+
+**Motion, settled frame:** the running bar stops at its current length. The now line sits at the current moment. Nothing animates at rest under reduced motion.
+
+**Checks (continued):**
+9. At rest the timeline shows 16 step rows, including a sub-agent parent with two indented child rows.
+10. The failed step's retry is the row directly beneath it. Each row keeps its own time bar.
+11. The detail panel at rest shows a finished step's input and output blocks, each with a copy control, and its tokens and cost.
+12. The steps tile shows the step count and the failure count together.
+13. Axis tick labels are round values, and no tick label overlaps a step's bar or label.
+14. At 1280 wide the label column, the time axis and the detail panel are all visible together, and no step label is cut off.

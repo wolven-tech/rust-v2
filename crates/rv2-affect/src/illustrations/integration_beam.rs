@@ -231,6 +231,8 @@ const fitChip = () => {
   if (chip && chipInner) chip.style.width = `${chipInner.offsetWidth}px`;
 };
 new MutationObserver(fitChip).observe(statusEl, { childList: true, characterData: true, subtree: true });
+new ResizeObserver(fitChip).observe(chipInner);
+document.fonts?.ready.then(fitChip);
 fitChip();
 measure();
 "#;

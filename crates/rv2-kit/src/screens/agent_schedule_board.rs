@@ -26,7 +26,9 @@ use crate::internal::{KIT_CSS, focus_after_frame, next_id};
 
 const CSS: Asset = asset!("/assets/agent-schedule-board.css");
 
-const WINDOW_MS: u64 = 12 * 3_600_000;
+/// Half the axis: the axis spans ten hours, five either side of now.
+const WINDOW_MS: u64 = 5 * 3_600_000;
+const TICK_MS: u64 = 2 * 3_600_000;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum MarkState {
@@ -117,6 +119,20 @@ pub struct ScheduleRecord {
 pub fn marker_position(at_ms: u64, now_ms: u64) -> f64 {
     let offset = at_ms as f64 - now_ms as f64;
     (50.0 + offset / WINDOW_MS as f64 * 50.0).clamp(0.0, 100.0)
+}
+
+/// Round two-hour ticks on the axis as `(percent, "HH:00 UTC")`.
+pub fn axis_ticks(now_ms: u64) -> Vec<(f64, String)> {
+    let first = now_ms.saturating_sub(WINDOW_MS).div_ceil(TICK_MS) * TICK_MS;
+    let last = now_ms + WINDOW_MS;
+    (first..=last)
+        .step_by(TICK_MS as usize)
+        .filter(|at| at.abs_diff(now_ms) < WINDOW_MS)
+        .map(|at| {
+            let hour = (at / 3_600_000) % 24;
+            (marker_position(at, now_ms), format!("{hour:02}:00 UTC"))
+        })
+        .collect()
 }
 
 /// Upcoming runs in time order, skipping any the person has skipped.
@@ -337,11 +353,20 @@ pub fn AgentScheduleBoard(
                     }
                     div { class: "kit-asb__axis",
                         span { class: "kit-asb__now", style: "left: {now_line:.2}%;", "aria-hidden": "true" }
+                        for (tick_pos, tick_label) in axis_ticks(now_ms) {
+                            span { class: "kit-asb__tick", style: "left: {tick_pos:.2}%;", "{tick_label}" }
+                        }
                         for schedule in effective.iter().cloned() {
                             {
                                 let is_paused_now = paused_now.iter().find(|(id, _)| *id == schedule.id).map_or(schedule.is_paused, |(_, p)| *p);
                                 let skip_list: Vec<u64> = skipped_now.iter().filter(|(id, _)| *id == schedule.id).map(|(_, at)| *at).collect();
-                                let runs: Vec<RunTime> = schedule.run_times.iter().filter(|r| !(is_paused_now && r.run_state == MarkState::Upcoming)).cloned().collect();
+                                let runs: Vec<RunTime> = schedule
+                                    .run_times
+                                    .iter()
+                                    .filter(|r| !(is_paused_now && r.run_state == MarkState::Upcoming))
+                                    .filter(|r| r.at_ms.abs_diff(now_ms) < WINDOW_MS)
+                                    .cloned()
+                                    .collect();
                                 rsx! {
                                     for (index, run) in runs.into_iter().enumerate() {
                                         {

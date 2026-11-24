@@ -32,7 +32,7 @@ use rv2_kit::screens::assistant_start_page::{
 use rv2_kit::screens::knowledge_source_step::{
     PreviewSource, SourceStatus, clean_domain, count_line, split_entries, step_state,
 };
-use rv2_kit::screens::workspace_chat::{Brief, empty_section_line, tab_title};
+use rv2_kit::screens::workspace_chat::{empty_section_line, tab_title};
 use rv2_kit::screens::workspace_setup_checklist::{
     progress_line, slugify, step_valid, valid_invites,
 };
@@ -309,14 +309,8 @@ fn work_area_width_and_approval_mapping() {
 
 #[test]
 fn workspace_chat_tab_titles_and_empty_lines() {
-    let brief = Brief {
-        entry_title: "Q4 pricing".into(),
-        field_list: vec![],
-        file_list: vec![],
-        activity_log: vec![],
-    };
-    assert_eq!(tab_title("brief", &brief), "Q4 pricing");
-    assert_eq!(tab_title("file:plan.md", &brief), "plan.md");
+    assert_eq!(tab_title("brief"), "Brief");
+    assert_eq!(tab_title("file:plan.md"), "plan.md");
     assert!(empty_section_line("files").contains("appear"));
 }
 
@@ -473,6 +467,99 @@ fn start_page_greets_and_offers_connect_apps_when_none_are_connected() {
     assert!(html.contains("Connect apps"), "{html}");
 }
 
+fn start_rest_app() -> Element {
+    use rv2_kit::screens::assistant_start_page::{
+        AssistantStartPage, ConnectedApp, Suggestion, ToolChip,
+    };
+    let chip = |id: &str, label: &str| ToolChip {
+        id: id.into(),
+        entry_label: label.into(),
+        prompt_template: format!("{label} "),
+    };
+    let app = |name: &str| ConnectedApp {
+        id: name.into(),
+        entry_name: name.into(),
+        app_mark: None,
+    };
+    rsx! {
+        AssistantStartPage {
+            greeting_text: "Good afternoon, Ana",
+            invitation_text: "What should we work on today?",
+            working_folder: "Harbor lane",
+            approval_mode: "Automatic",
+            tool_chip_list: vec![
+                chip("company", "Company knowledge"),
+                chip("doc", "Document"),
+                chip("slides", "Presentation"),
+                chip("table", "Table"),
+                chip("image", "Image"),
+                chip("research", "Deep research"),
+                chip("chart", "Data visualisation"),
+            ],
+            connected_app_list: vec![app("Mail"), app("Drive"), app("Calendar")],
+            suggestion_list: vec![Suggestion {
+                id: "s1".into(),
+                entry_label: "Summarise last week's orders".into(),
+                prompt_text: "Summarise last week's orders".into(),
+                artifact: None,
+            }],
+            on_send: move |_| {},
+        }
+    }
+}
+
+#[test]
+fn start_page_at_rest_shows_seven_chips_and_no_suggestion_cards() {
+    let html = render(start_rest_app);
+    assert_eq!(
+        html.matches("class=\"kit-start__tool\"").count(),
+        7,
+        "{html}"
+    );
+    assert!(!html.contains("Summarise last week"), "{html}");
+}
+
+#[test]
+fn start_page_composer_footer_shows_folder_mode_and_app_marks_without_names() {
+    let html = render(start_rest_app);
+    assert!(html.contains("Harbor lane"), "{html}");
+    assert!(html.contains("Automatic"), "{html}");
+    assert!(html.contains("What should we work on today?"), "{html}");
+    let connect = html.find("Connect apps").expect("connect action present");
+    let mark = html.find("aria-label=\"Mail\"").expect("app mark present");
+    assert!(connect < mark, "{html}");
+    assert_eq!(
+        html.matches("class=\"kit-start__app-mark\"").count(),
+        3,
+        "{html}"
+    );
+}
+
+fn start_open_app() -> Element {
+    use rv2_kit::screens::assistant_start_page::{AssistantStartPage, Suggestion};
+    rsx! {
+        AssistantStartPage {
+            greeting_text: "Good afternoon",
+            open_work_area: true,
+            suggestion_list: vec![Suggestion {
+                id: "s1".into(),
+                entry_label: "Summarise last week's orders".into(),
+                prompt_text: "Summarise last week's orders".into(),
+                artifact: None,
+            }],
+            on_send: move |_| {},
+        }
+    }
+}
+
+#[test]
+fn start_page_new_tab_shows_tools_and_suggested_sections() {
+    let html = render(start_open_app);
+    assert!(html.contains("Tools"), "{html}");
+    assert!(html.contains("Suggested"), "{html}");
+    assert!(html.contains("Summarise last week"), "{html}");
+}
+
 fn home_empty_app() -> Element {
     rsx! {
         rv2_kit::screens::ai_workspace_home::AiWorkspaceHome {
@@ -613,6 +700,7 @@ fn plan_answer_app() -> Element {
         AiSpendChatPlanner {
             turn_list: vec![Turn::Answer(Answer {
                 id: "a".into(),
+                text: "Savings come from two levers.".into(),
                 metric_cards: vec![],
                 chart_block: Some(Chart::Plan {
                     current_monthly: 1000.0,
@@ -650,7 +738,11 @@ fn plan_switch_is_a_styled_switch_and_totals_state_their_units() {
     assert!(html.contains("kit-spend__switch"), "{html}");
     assert!(html.contains("role=\"switch\""), "{html}");
     assert!(html.contains("800 dollars a month"), "{html}");
-    assert!(html.contains(">1 source<"), "{html}");
+    assert_eq!(
+        html.matches("class=\"kit-spend__source\"").count(),
+        1,
+        "{html}"
+    );
     assert!(!html.contains("1 sources"), "{html}");
 }
 

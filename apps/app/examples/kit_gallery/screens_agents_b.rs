@@ -4,8 +4,9 @@ use dioxus::prelude::*;
 use super::{Item, NOW_MS, gallery_now};
 
 use rv2_kit::screens::autonomous_run_workspace::{
-    Approval, AutonomousRunWorkspace, CallState as RunCallState, DraftRecord, FactRow, FileEntry,
-    FileKind, Risk, RunRecord as AutoRun, RunState as AutoState, RunStep, StepPhase, ToolCall,
+    ActivityEntry, Approval, AutonomousRunWorkspace, CallState as RunCallState, DraftRecord,
+    FactRow, FileEntry, FileKind, Risk, RunRecord as AutoRun, RunState as AutoState, RunStep,
+    StepPhase, ToolCall,
 };
 use rv2_kit::screens::multi_agent_run_canvas::{
     AgentNode, CanvasRun, CanvasRunState, MultiAgentRunCanvas, NodeState, TraceRow, TraceState,
@@ -17,11 +18,11 @@ use rv2_kit::screens::orchestrator_thread::{
 
 const MINUTE: u64 = 60_000;
 
-fn canvas_node(id: &str, name: &str, parent: Option<&str>, state: NodeState) -> AgentNode {
+fn run_node(id: &str, name: &str, role: &str, parent: Option<&str>, state: NodeState) -> AgentNode {
     AgentNode {
         id: id.into(),
         entry_name: name.into(),
-        node_role: "research".into(),
+        node_role: role.into(),
         model_name: "Claude Sonnet".into(),
         node_state: state,
         parent_id: parent.map(|p| p.to_string()),
@@ -31,43 +32,260 @@ fn canvas_node(id: &str, name: &str, parent: Option<&str>, state: NodeState) -> 
     }
 }
 
+fn trace(
+    id: &str,
+    agent: &str,
+    label: &str,
+    start: f64,
+    duration: Option<f64>,
+    state: TraceState,
+) -> TraceRow {
+    TraceRow {
+        id: id.into(),
+        agent_id: agent.into(),
+        entry_label: label.into(),
+        start_seconds: start,
+        duration_seconds: duration,
+        row_state: state,
+        error_text: None,
+    }
+}
+
 #[component]
 pub fn MultiAgentRunCanvasDemo() -> Element {
     let nodes = vec![
-        canvas_node("lead", "Orchestrator", None, NodeState::Running),
-        canvas_node("research", "Research", Some("lead"), NodeState::Done),
-        canvas_node("write", "Writing", Some("lead"), NodeState::NeedsYou),
-        canvas_node("review", "Review", Some("write"), NodeState::Queued),
+        run_node(
+            "orch",
+            "Orchestrator",
+            "orchestrator",
+            None,
+            NodeState::Running,
+        ),
+        run_node(
+            "res",
+            "Research lead",
+            "research",
+            Some("orch"),
+            NodeState::Done,
+        ),
+        run_node(
+            "r1",
+            "Filings reader",
+            "research",
+            Some("res"),
+            NodeState::Done,
+        ),
+        run_node(
+            "r2",
+            "Results summary",
+            "research",
+            Some("res"),
+            NodeState::Done,
+        ),
+        run_node(
+            "r3",
+            "Claims checker",
+            "research",
+            Some("res"),
+            NodeState::Running,
+        ),
+        run_node(
+            "r4",
+            "Quote finder",
+            "research",
+            Some("res"),
+            NodeState::Done,
+        ),
+        run_node(
+            "ana",
+            "Analysis lead",
+            "analysis",
+            Some("orch"),
+            NodeState::Done,
+        ),
+        run_node("a1", "Cost model", "analysis", Some("ana"), NodeState::Done),
+        run_node(
+            "a2",
+            "Budget check",
+            "analysis",
+            Some("ana"),
+            NodeState::NeedsYou,
+        ),
+        run_node(
+            "a3",
+            "Option compare",
+            "analysis",
+            Some("ana"),
+            NodeState::Done,
+        ),
+        run_node(
+            "wri",
+            "Writing lead",
+            "writing",
+            Some("orch"),
+            NodeState::Done,
+        ),
+        run_node(
+            "w1",
+            "Brief drafter",
+            "writing",
+            Some("wri"),
+            NodeState::Failed,
+        ),
+        run_node(
+            "w2",
+            "Style pass",
+            "writing",
+            Some("wri"),
+            NodeState::Queued,
+        ),
+        run_node(
+            "rev",
+            "Review lead",
+            "review",
+            Some("orch"),
+            NodeState::Done,
+        ),
+        run_node(
+            "v1",
+            "Draft reviewer",
+            "review",
+            Some("rev"),
+            NodeState::Done,
+        ),
+        run_node(
+            "v2",
+            "Fact reviewer",
+            "review",
+            Some("rev"),
+            NodeState::Done,
+        ),
     ];
-    let trace = vec![
-        TraceRow {
-            id: "t1".into(),
-            agent_id: "research".into(),
-            entry_label: "Search the web".into(),
-            start_seconds: 0.0,
-            duration_seconds: Some(40.0),
-            row_state: TraceState::Done,
-            error_text: None,
-        },
-        TraceRow {
-            id: "t2".into(),
-            agent_id: "write".into(),
-            entry_label: "Draft the brief".into(),
-            start_seconds: 30.0,
-            duration_seconds: Some(35.0),
-            row_state: TraceState::Retry,
-            error_text: Some("Draft refused, retried".into()),
-        },
+    let mut failed = trace(
+        "t12",
+        "w1",
+        "Draft the brief",
+        80.0,
+        Some(12.0),
+        TraceState::Failed,
+    );
+    failed.error_text = Some("Draft refused: broke the style guide".into());
+    let trace_rows = vec![
+        trace(
+            "t1",
+            "orch",
+            "Plan the run",
+            0.0,
+            Some(12.0),
+            TraceState::Done,
+        ),
+        trace(
+            "t2",
+            "res",
+            "Search sources",
+            12.0,
+            Some(28.0),
+            TraceState::Done,
+        ),
+        trace(
+            "t3",
+            "ana",
+            "Plan the analysis",
+            14.0,
+            Some(10.0),
+            TraceState::Done,
+        ),
+        trace(
+            "t4",
+            "a1",
+            "Model the costs",
+            24.0,
+            Some(26.0),
+            TraceState::Done,
+        ),
+        trace(
+            "t5",
+            "r1",
+            "Read the filings",
+            40.0,
+            Some(18.0),
+            TraceState::Done,
+        ),
+        trace(
+            "t6",
+            "r2",
+            "Summarise results",
+            40.0,
+            Some(26.0),
+            TraceState::Done,
+        ),
+        trace(
+            "t7",
+            "a2",
+            "Ask about the budget",
+            50.0,
+            None,
+            TraceState::Running,
+        ),
+        trace(
+            "t8",
+            "a3",
+            "Compare the options",
+            52.0,
+            Some(18.0),
+            TraceState::Done,
+        ),
+        trace(
+            "t9",
+            "r3",
+            "Check the claims",
+            58.0,
+            None,
+            TraceState::Running,
+        ),
+        trace(
+            "t10",
+            "r4",
+            "Gather quotes",
+            66.0,
+            Some(18.0),
+            TraceState::Done,
+        ),
+        trace(
+            "t11",
+            "wri",
+            "Outline the brief",
+            70.0,
+            Some(10.0),
+            TraceState::Done,
+        ),
+        failed,
+        trace(
+            "t13",
+            "w1",
+            "Draft the brief, retry",
+            92.0,
+            Some(18.0),
+            TraceState::Retry,
+        ),
+        trace(
+            "t14",
+            "v1",
+            "Review the draft",
+            100.0,
+            Some(20.0),
+            TraceState::Done,
+        ),
     ];
     let mut last = use_signal(|| "no callback yet".to_string());
     rsx! {
         Item { slug: "multi-agent-run-canvas", name: "MultiAgentRunCanvas",
             MultiAgentRunCanvas {
-                run_record: Some(CanvasRun { id: "run-01".into(), entry_title: "Market brief".into(), run_state: CanvasRunState::Running, elapsed_seconds: 70.0, cost_label: "$1.26".into(), token_count: 27_000, agents_done: 1, agents_total: 4 }),
+                run_record: Some(CanvasRun { id: "run-01".into(), entry_title: "Market brief".into(), run_state: CanvasRunState::Running, elapsed_seconds: 120.0, cost_label: "$4.82".into(), token_count: 184_000, agents_done: 11, agents_total: 16 }),
                 agent_nodes: nodes,
-                trace_rows: trace,
+                trace_rows,
                 is_live: true,
-                initial_open_agent_id: Some("write".to_string()),
+                initial_open_agent_id: None,
                 on_pause: move |paused: bool| last.set(format!("pause {paused}")),
                 on_stop: move |_: ()| last.set("stop".to_string()),
                 on_open_agent: move |id: String| last.set(format!("open {id}")),
@@ -89,17 +307,21 @@ fn run_step(id: &str, title: &str, phase: StepPhase, approval: bool) -> RunStep 
     RunStep {
         id: id.into(),
         entry_title: title.into(),
-        detail_text: Some("Reads the source and records what it found.".into()),
+        detail_text: None,
         tool_name: "Docs".into(),
         step_phase: phase,
-        tool_call_list: vec![ToolCall {
-            entry_name: "docs.search".into(),
-            summary: "query: renewals".into(),
-            args_data: "{\"q\":\"renewals\"}".into(),
-            result_data: Some("3 results".into()),
-            duration_ms: 480,
-            call_state: RunCallState::Done,
-        }],
+        tool_call_list: if phase == StepPhase::Done {
+            vec![ToolCall {
+                entry_name: "docs.search".into(),
+                summary: "query: renewals".into(),
+                args_data: "{\"q\":\"renewals\"}".into(),
+                result_data: Some("3 results".into()),
+                duration_ms: 480,
+                call_state: RunCallState::Done,
+            }]
+        } else {
+            Vec::new()
+        },
         approval_request: approval.then(|| Approval {
             entry_title: "Send the renewal email".into(),
             entry_description: "Sends one email to a customer.".into(),
@@ -110,6 +332,35 @@ fn run_step(id: &str, title: &str, phase: StepPhase, approval: bool) -> RunStep 
             }],
         }),
     }
+}
+
+fn workspace_steps() -> Vec<RunStep> {
+    let mut collect = run_step("p1", "Collect renewals", StepPhase::Running, false);
+    collect.tool_call_list = vec![
+        ToolCall {
+            entry_name: "crm.list".into(),
+            summary: "status: due".into(),
+            args_data: "{\"due\":\"march\"}".into(),
+            result_data: Some("14 accounts".into()),
+            duration_ms: 910,
+            call_state: RunCallState::Done,
+        },
+        ToolCall {
+            entry_name: "docs.search".into(),
+            summary: "query: renewals".into(),
+            args_data: "{\"q\":\"renewals\"}".into(),
+            result_data: None,
+            duration_ms: 0,
+            call_state: RunCallState::Running,
+        },
+    ];
+    vec![
+        collect,
+        run_step("p2", "Draft the reminder", StepPhase::Pending, false),
+        run_step("p3", "Check the terms", StepPhase::Pending, false),
+        run_step("p4", "Send the email", StepPhase::Pending, false),
+        run_step("p5", "Log the send", StepPhase::Pending, false),
+    ]
 }
 
 fn renewal_steps(waiting: bool) -> Vec<RunStep> {
@@ -132,18 +383,30 @@ fn renewal_steps(waiting: bool) -> Vec<RunStep> {
 
 fn renewal_draft() -> DraftRecord {
     DraftRecord {
-        original_text: "Your renewal is due soon.".into(),
-        suggested_text: "Your renewal is due on 30 March.".into(),
-        entry_label: Some("Reminder email".into()),
+        original_text: "Hi Harbor, your renewal is due soon. Reply to confirm the plan. Tell us about seats. Thanks for staying. Team Ops.".into(),
+        suggested_text: "Hi Harbor, your renewal is due on 30 March. Reply by Friday to confirm the plan. Tell us about new seats. Thanks for staying with us. Team Harbor Ops.".into(),
+        entry_label: Some("Reminder email · 9 changes".into()),
     }
 }
 
 fn renewal_files() -> Vec<FileEntry> {
-    vec![FileEntry {
-        name: "renewals.csv".into(),
-        kind: FileKind::Sheet,
-        body: "name,due\nHarbor,30 Mar".into(),
-    }]
+    vec![
+        FileEntry {
+            name: "renewals.csv".into(),
+            kind: FileKind::Sheet,
+            body: "name,due\nHarbor,30 Mar".into(),
+        },
+        FileEntry {
+            name: "reminder.md".into(),
+            kind: FileKind::Document,
+            body: "Hi Harbor, your renewal is due on 30 March.".into(),
+        },
+        FileEntry {
+            name: "terms.md".into(),
+            kind: FileKind::Document,
+            body: "Renewal terms: 12 months, same seats.".into(),
+        },
+    ]
 }
 
 #[component]
@@ -155,23 +418,29 @@ pub fn AutonomousRunWorkspaceDemo() -> Element {
         entry_title: "Renewal reminders".into(),
         agent_name: "Ada".into(),
         started_at_ms: NOW_MS - 192_000,
-        run_state: AutoState::Waiting,
+        run_state: AutoState::Running,
         elapsed_seconds: 192,
         use_count: 3,
         cost_label: "$0.18".into(),
+        activity_list: vec![ActivityEntry {
+            at_ms: NOW_MS - 15_000,
+            entry_text: "Step 1, collect renewals: 2 tool calls, 0.9 s".into(),
+        }],
     };
     rsx! {
         Item { slug: "autonomous-run-workspace", name: "AutonomousRunWorkspace",
-            div { style: "height: 880px; overflow: auto;",
+            div { class: "gl-canvas", style: "height: 720px; overflow: auto; padding: 0;",
                 AutonomousRunWorkspace {
                     run_record: Some(run.clone()),
-                    step_list: renewal_steps(true),
-                    initial_step_id: Some("p3".to_string()),
+                    step_list: workspace_steps(),
                     draft_record: Some(renewal_draft()),
                     file_map: renewal_files(),
+                    app_mark_list: vec!["M".to_string(), "D".to_string(), "C".to_string()],
                     clock_ms: Some(now),
                     on_approve: move |id: String| last.set(format!("approve {id}")),
                     on_deny: move |id: String| last.set(format!("deny {id}")),
+                    on_accept_draft: move |_: ()| last.set("accept draft".to_string()),
+                    on_reject_draft: move |_: ()| last.set("reject draft".to_string()),
                     on_stop: move |_: ()| last.set("stop".to_string()),
                     on_done: move |_: ()| last.set("done".to_string()),
                 }
@@ -179,7 +448,7 @@ pub fn AutonomousRunWorkspaceDemo() -> Element {
             div { class: "gl-out", "data-out": "autonomous-run-workspace", "{last()}" }
         }
         Item { slug: "autonomous-run-workspace-simulated", name: "AutonomousRunWorkspace (simulated)",
-            div { style: "height: 880px; overflow: auto;",
+            div {
                 AutonomousRunWorkspace {
                     run_record: Some(AutoRun { run_state: AutoState::Running, ..run.clone() }),
                     step_list: renewal_steps(false),
@@ -189,6 +458,8 @@ pub fn AutonomousRunWorkspaceDemo() -> Element {
                     auto_play: true,
                     on_approve: move |id: String| last.set(format!("approve {id}")),
                     on_deny: move |id: String| last.set(format!("deny {id}")),
+                    on_accept_draft: move |_: ()| last.set("accept draft".to_string()),
+                    on_reject_draft: move |_: ()| last.set("reject draft".to_string()),
                     on_stop: move |_: ()| last.set("stop".to_string()),
                     on_done: move |_: ()| last.set("done".to_string()),
                 }
@@ -196,7 +467,7 @@ pub fn AutonomousRunWorkspaceDemo() -> Element {
             div { class: "gl-out", "data-out": "autonomous-run-workspace-simulated", "{last()}" }
         }
         Item { slug: "autonomous-run-workspace-plan", name: "AutonomousRunWorkspace (plan)",
-            div { style: "height: 880px; overflow: auto;",
+            div {
                 AutonomousRunWorkspace {
                     run_record: Some(AutoRun { run_state: AutoState::Running, ..run.clone() }),
                     step_list: vec![
@@ -228,6 +499,8 @@ fn main_thread() -> Vec<ThreadMessage> {
         },
         ThreadMessage::Agent {
             id: "a1".into(),
+            name: "Orchestrator".into(),
+            time_label: "09:12".into(),
             parts: vec![
                 Part::Text("I will start with the support tickets.".into()),
                 Part::Tools(vec![
@@ -364,6 +637,70 @@ fn run_upload(mut attachments: Signal<Vec<Attachment>>, id: String) {
     });
 }
 
+fn tool(id: &str, label: &str, state: RowState, ms: Option<u64>) -> ToolRow {
+    ToolRow {
+        id: id.into(),
+        entry_label: label.into(),
+        row_state: state,
+        duration_ms: ms,
+        error_text: None,
+    }
+}
+
+fn rest_thread() -> Vec<ThreadMessage> {
+    vec![
+        ThreadMessage::Agent {
+            id: "r0".into(),
+            name: "Orchestrator".into(),
+            time_label: "08:57".into(),
+            parts: vec![Part::Text(
+                "Pulled the Harbor and Dune contracts. Both end dates are in the calendar, so I can check the rest against them.".into(),
+            )],
+            is_streaming: false,
+            is_stopped: false,
+        },
+        ThreadMessage::User {
+            id: "r1".into(),
+            text: "Check which renewals are due this month.".into(),
+            delivery: Delivery::Sent,
+        },
+        ThreadMessage::Agent {
+            id: "r2".into(),
+            name: "Orchestrator".into(),
+            time_label: "09:02".into(),
+            parts: vec![
+                Part::Tools(vec![
+                    tool("r2a", "Read renewal calendar", RowState::Done, Some(1_200)),
+                    tool("r2b", "Match contacts", RowState::Done, Some(800)),
+                ]),
+                Part::Text(
+                    "Two renewals close this month: Harbor Legal on 18 Nov and Dune Freight on 27 Nov. I have a draft reminder for each and will not send either until you approve it.".into(),
+                ),
+                Part::Artifacts(vec!["renewals.csv".into(), "Harbor draft".into()]),
+            ],
+            is_streaming: false,
+            is_stopped: false,
+        },
+        ThreadMessage::User {
+            id: "r3".into(),
+            text: "Draft both reminders and wait for my approval before sending.".into(),
+            delivery: Delivery::Sent,
+        },
+        ThreadMessage::Agent {
+            id: "r4".into(),
+            name: "Orchestrator".into(),
+            time_label: "09:05".into(),
+            parts: vec![Part::Tools(vec![
+                tool("r4a", "Open Harbor contract", RowState::Running, Some(300)),
+                tool("r4b", "Open Dune contract", RowState::Running, Some(300)),
+                tool("r4c", "Draft reminder email", RowState::Running, Some(300)),
+            ])],
+            is_streaming: false,
+            is_stopped: false,
+        },
+    ]
+}
+
 fn streaming_thread(streaming: bool) -> Vec<ThreadMessage> {
     vec![
         ThreadMessage::User {
@@ -373,6 +710,8 @@ fn streaming_thread(streaming: bool) -> Vec<ThreadMessage> {
         },
         ThreadMessage::Agent {
             id: "a2".into(),
+            name: "Orchestrator".into(),
+            time_label: "09:14".into(),
             parts: vec![Part::Text(STREAM_TEXT.into())],
             is_streaming: streaming,
             is_stopped: !streaming,
@@ -391,8 +730,36 @@ pub fn OrchestratorThreadDemo() -> Element {
     let mut stream = use_signal(|| streaming_thread(true));
     let mut stream_last = use_signal(|| "no callback yet".to_string());
     let mut away_last = use_signal(|| "no callback yet".to_string());
+    let mut rest = use_signal(rest_thread);
+    let mut rest_last = use_signal(|| "no callback yet".to_string());
     rsx! {
         Item { slug: "orchestrator-thread", name: "OrchestratorThread",
+            div { style: "height: 720px;",
+                OrchestratorThread {
+                    message_list: rest(),
+                    running_count: 9,
+                    needs_count: 5,
+                    clock_ms: Some(now),
+                    approval_chip: Some("Needs approval".to_string()),
+                    on_send: move |(text, _ids): (String, Vec<String>)| {
+                        let count = rest.read().len();
+                        rest.with_mut(|list| {
+                            list.push(ThreadMessage::User {
+                                id: format!("s{count}"),
+                                text: text.clone(),
+                                delivery: Delivery::Sent,
+                            })
+                        });
+                        rest_last.set(format!("send {text}"));
+                    },
+                    on_stop: move |_: ()| rest_last.set("stop".to_string()),
+                    on_open_inbox: move |_: ()| rest_last.set("open inbox".to_string()),
+                    on_toggle_panel: move |_: ()| rest_last.set("toggle panel".to_string()),
+                }
+            }
+            div { class: "gl-out", "data-out": "orchestrator-thread", "{rest_last()}" }
+        }
+        Item { slug: "orchestrator-thread-docked", name: "OrchestratorThread (docked)",
             div { style: "height: 720px;",
                 OrchestratorThread {
                     message_list: messages(),
@@ -475,7 +842,7 @@ pub fn OrchestratorThreadDemo() -> Element {
                     on_voice_clip: move |seconds: u64| last.set(format!("voice {seconds} s")),
                 }
             }
-            div { class: "gl-out", "data-out": "orchestrator-thread", "{last()}" }
+            div { class: "gl-out", "data-out": "orchestrator-thread-docked", "{last()}" }
         }
         Item { slug: "orchestrator-thread-streaming", name: "OrchestratorThread (streaming)",
             div { style: "height: 520px;",

@@ -247,11 +247,11 @@ pub fn AgentRunTimeline(
             .unwrap_or(0.0),
     );
     let token_text = format!("{tokens_in} in · {tokens_out} out");
-    let steps_text = format!("{} · {failed} failed", steps.len());
+    let steps_text = format!("{} steps · {failed} failed", steps.len());
     let open = selected().and_then(|id| steps.iter().find(|s| s.id == id).cloned());
     let sheet_now = sheet_open();
     let state_key = if live { "live" } else { "finished" };
-    let state_label = if live { "Live" } else { "Finished" };
+    let state_label = if live { "Running" } else { "Finished" };
     let key_order = order.clone();
     let announce = if live { "Run live" } else { "Run finished" };
 
@@ -286,7 +286,13 @@ pub fn AgentRunTimeline(
             } else if let Some(run) = run_record.clone() {
                 {
                     let title = run.entry_title.clone();
-                    let agent = format!("{} · {}", run.agent_name, run.model_name);
+                    let agent = format!(
+                        "{} · {} · started {:02}:{:02} UTC",
+                        run.agent_name,
+                        run.model_name,
+                        (run.started_at_ms / 3_600_000) % 24,
+                        (run.started_at_ms / 60_000) % 60
+                    );
                     let cost = run.cost_label.clone().unwrap_or_else(|| "—".to_string());
                     let total_text = match run.total_seconds {
                         Some(total) => format!("{:.1} s", total),
@@ -375,6 +381,7 @@ pub fn AgentRunTimeline(
                                                 duration_word(&step, running)
                                             );
                                             let type_key = step.step_type.key();
+                                            let app_mark = step.app_name.as_deref().and_then(|a| a.chars().next()).map(String::from).unwrap_or_default();
                                             let is_selected = selected().as_deref() == Some(step.id.as_str());
                                             let indent = if step.nesting_depth > 0 { "kit-art__row kit-art__row--nested" } else { "kit-art__row" };
                                             let bar_state = if step.has_failed { "failed" } else if running { "running" } else { "done" };
@@ -397,6 +404,9 @@ pub fn AgentRunTimeline(
                                                         },
                                                         span { class: "kit-art__label-col",
                                                             span { class: "kit-art__type", "data-type": "{type_key}", "{type_key}" }
+                                                            if !app_mark.is_empty() {
+                                                                span { class: "kit-art__app-mark", "aria-hidden": "true", "{app_mark}" }
+                                                            }
                                                             span { class: "kit-art__step-name", "{label_text}" }
                                                             if !sub_text.is_empty() {
                                                                 span { class: "kit-art__meta", "{sub_text}" }
@@ -426,6 +436,7 @@ pub fn AgentRunTimeline(
                                     let (_, _, running) = bar_geometry(&step, span, elapsed_now);
                                     let panel_title = step_name(&step);
                                     let kind = step.step_type.word();
+                                    let start_text = format!("{:.0} s", step.start_seconds);
                                     let duration = match (step.duration_seconds, running) {
                                         (Some(seconds), _) => format!("{seconds:.1} s"),
                                         (None, true) => "running".to_string(),
@@ -446,6 +457,7 @@ pub fn AgentRunTimeline(
                                     let input = step.input_text.clone().unwrap_or_else(|| "Waiting for input.".to_string());
                                     let output = step.output_text.clone().unwrap_or_else(|| "Pending.".to_string());
                                     let input_copy = step.input_text.clone().unwrap_or_default();
+                                    let output_copy = step.output_text.clone().unwrap_or_default();
                                     let error = step.error_text.clone().unwrap_or_default();
                                     let has_error = step.has_failed && !error.is_empty();
                                     let input_line = format!("Input\n{input}");
@@ -466,6 +478,8 @@ pub fn AgentRunTimeline(
                                             dl { class: "kit-art__facts",
                                                 dt { "Type" }
                                                 dd { "{kind}" }
+                                                dt { "Start" }
+                                                dd { "{start_text}" }
                                                 dt { "Duration" }
                                                 dd { "{duration}" }
                                                 if let Some(text) = result {
@@ -493,7 +507,15 @@ pub fn AgentRunTimeline(
                                                 pre { class: "kit-art__pre", "{input_line}" }
                                             }
                                             section { class: "kit-art__block",
-                                                span { class: "kit-art__label", "Output" }
+                                                div { class: "kit-art__block-head",
+                                                    span { class: "kit-art__label", "Output" }
+                                                    button {
+                                                        r#type: "button",
+                                                        class: "kit-art__ghost",
+                                                        onclick: move |_| copy_to_clipboard(&output_copy),
+                                                        "Copy output"
+                                                    }
+                                                }
                                                 pre { class: "kit-art__pre", "{output_line}" }
                                             }
                                             if !task_target.is_empty() {

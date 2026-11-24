@@ -21,6 +21,14 @@
   flex-wrap: wrap;
 }
 
+.kit-asl__head-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-inline-start: auto;
+}
+
 .kit-asl__title {
   margin: 0;
   font-size: 18px;
@@ -123,6 +131,7 @@
 }
 
 .kit-asl__link {
+  min-height: 24px;
   border: 0;
   background: transparent;
   color: var(--kit-ink-muted);
@@ -142,8 +151,8 @@
 .kit-asl__dialog,
 .kit-asl__panel {
   display: grid;
-  gap: 10px;
-  padding: 14px;
+  gap: 8px;
+  padding: 12px;
   border: 1px solid var(--kit-rule-soft);
   border-radius: var(--kit-radius-lg);
   background: var(--kit-surface);
@@ -221,7 +230,7 @@
 
 .kit-asl__sections {
   display: grid;
-  gap: 16px;
+  gap: 12px;
   min-width: 0;
 }
 
@@ -237,8 +246,8 @@
   padding: 0;
   list-style: none;
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
 }
 
 .kit-asl__item {
@@ -250,8 +259,8 @@
 .kit-asl__card {
   width: 100%;
   display: grid;
-  gap: 4px;
-  padding: 12px 56px 12px 12px;
+  gap: 2px;
+  padding: 8px 56px 8px 12px;
   border: 1px solid var(--kit-rule-soft);
   border-radius: var(--kit-radius);
   background: var(--kit-surface);
@@ -262,10 +271,16 @@
   box-shadow: var(--kit-shadow);
 }
 
+.kit-asl__card > span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .kit-asl__card--discover {
   cursor: default;
   padding-right: 12px;
-  margin-bottom: 6px;
 }
 
 .kit-asl__card[aria-current="true"] {
@@ -303,6 +318,7 @@
 
 .kit-asl__item > .kit-asl__primary {
   width: 100%;
+  min-height: 28px;
   margin-top: -1px;
   border-radius: 0 0 var(--kit-radius) var(--kit-radius);
 }
@@ -358,11 +374,11 @@
   margin: 0;
   padding: 0 0 0 18px;
   display: grid;
-  gap: 4px;
+  gap: 2px;
 }
 
 .kit-asl__bars {
-  height: 64px;
+  height: 56px;
   display: flex;
   align-items: flex-end;
   gap: 3px;
@@ -418,6 +434,12 @@
 @media (max-width: 900px) {
   .kit-asl__body {
     grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 760px) {
+  .kit-asl__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 

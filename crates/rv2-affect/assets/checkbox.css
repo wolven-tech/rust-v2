@@ -58,6 +58,8 @@
 .ui-chkc__input:checked:not(:indeterminate) + .ui-chkc__box .ui-chkc__tick { stroke-dashoffset: 0; transition: stroke-dashoffset 260ms 40ms var(--ui-chkc-ease); }
 .ui-chkc__input:indeterminate + .ui-chkc__box .ui-chkc__dash { stroke-dashoffset: 0; transition: stroke-dashoffset 200ms var(--ui-chkc-ease); }
 
+.ui-chkc__children { display: flex; flex-direction: column; gap: 10px; padding-left: 26px; }
+
 .ui-chkc__text { display: grid; min-width: 0; }
 .ui-chkc__label { color: var(--ui-chkc-ink); overflow-wrap: anywhere; }
 .ui-chkc__desc { font-size: 12px; line-height: 16px; color: var(--ui-chkc-subtle); overflow-wrap: anywhere; }

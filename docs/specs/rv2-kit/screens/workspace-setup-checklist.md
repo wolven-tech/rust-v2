@@ -84,3 +84,31 @@ Steps:
 8. The step list reflects "N of 4 done" after each change.
 9. At phone width the greeting column sits above the form.
 10. With reduced motion requested, step changes render without a slide.
+
+## Amendment 6: structure and demo
+
+Replaces: none (no earlier amendment). Overrides the tool count in the default demo: six tools, not two.
+
+**Archetype:** a setup group centred in the content area. A left column holds the greeting, progress and step list; a right column holds the current step's form and its action row.
+
+**Parts visible at rest (gallery demo, default step 2):**
+- Breadcrumb in the content area naming the workspace home and the current flow.
+- Left column: greeting with the first name; one line on the setup time; progress line reading "1 of 4 done"; four step buttons. Step 1 is done and its status line shows the value entered there. Step 2 is current with the status In progress. Steps 3 and 4 are upcoming, each with a short status line. Below them, a help box with a link to book a setup call.
+- Right column: step 2's title and subtitle; six tool rows, each with a mark, name, one-line summary and switch. The first is on and carries a Connected badge. The other five are off. The action row sits below: Skip for now at the left; Back and Continue at the right.
+- The two columns form one group, centred in the content area and narrower than the area. The group is not stretched to the edges.
+
+**States at rest:** step 2 current; no validation message; the first tool connected.
+
+**Arrangement:** the group is centred horizontally. The left column is about a third of the group's width. The lower part of the content area stays open. Do not add filler content to it.
+
+**Motion, settled frame:** nothing moves at rest.
+
+**Defects to fix in ours:**
+- Ours shows two tool rows where the at-rest demo has six.
+- Ours spreads the two columns to the edges of the content area, which leaves the page sparse. The group is centred and width-limited.
+
+**Checks (continued):**
+11. At rest the right column lists six tools in order. The first is on with a Connected badge, and the other five are off.
+12. The step list shows step 1 done with its entered value, step 2 current, and steps 3 and 4 upcoming. The progress line reads "1 of 4 done".
+13. The left column (greeting, progress, four steps, help box) and the right column (form and action row) are visible together, centred horizontally in the content area. At 1280 x 720 without page scroll, all of them are visible.
+14. The help box holds a working link to book a setup call.

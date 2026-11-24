@@ -344,8 +344,11 @@ pub fn AgentToolExplorer(
     } else {
         "Pause agent"
     };
+    let waiting = calls.iter().any(|c| c.call_state == CallState::Waiting);
     let state_word = if paused {
         "Paused"
+    } else if waiting {
+        "Needs you"
     } else if is_live {
         "Working"
     } else {
@@ -353,6 +356,8 @@ pub fn AgentToolExplorer(
     };
     let state_key = if paused {
         "paused"
+    } else if waiting {
+        "needs-you"
     } else if is_live {
         "working"
     } else {
@@ -447,19 +452,19 @@ pub fn AgentToolExplorer(
 
             section { class: "kit-ate__tiles", "aria-label": "Figures",
                 div { class: "kit-ate__tile",
-                    span { class: "kit-ate__label", "Failed" }
+                    span { class: "kit-ate__label", "Failed calls" }
                     span { class: "kit-ate__value", "{failed_text}" }
                 }
                 div { class: "kit-ate__tile",
-                    span { class: "kit-ate__label", "Calls" }
+                    span { class: "kit-ate__label", "Total calls" }
                     span { class: "kit-ate__value", "{total_text}" }
                 }
                 div { class: "kit-ate__tile",
-                    span { class: "kit-ate__label", "Success" }
+                    span { class: "kit-ate__label", "Success share" }
                     span { class: "kit-ate__value", "{share_text}" }
                 }
                 div { class: "kit-ate__tile",
-                    span { class: "kit-ate__label", "Average" }
+                    span { class: "kit-ate__label", "Average duration" }
                     span { class: "kit-ate__value", "{average_text}" }
                 }
                 div { class: "kit-ate__tile",

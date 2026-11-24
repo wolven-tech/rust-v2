@@ -39,21 +39,35 @@
 
 .kit-start__centre {
   display: grid;
-  gap: 20px;
+  gap: 16px;
+  justify-items: center;
   width: 100%;
-  max-width: 760px;
-  margin: 0 auto;
-  padding: 40px 16px;
+  padding: 48px 16px 24px;
   box-sizing: border-box;
   min-width: 0;
 }
 
+.kit-start__centre > * {
+  width: 100%;
+  max-width: 720px;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
 .kit-start__greeting {
   margin: 0;
+  text-align: center;
   font-size: 28px;
   font-weight: 650;
   line-height: 1.2;
   overflow-wrap: anywhere;
+}
+
+.kit-start__invitation {
+  margin: -8px 0 0;
+  text-align: center;
+  color: var(--kit-ink-muted);
+  font-size: 15px;
 }
 
 .kit-start__composer {
@@ -80,47 +94,39 @@
 
 .kit-start__field:focus-visible { outline: 2px solid var(--kit-ink); outline-offset: -2px; }
 
-.kit-start__tray {
+.kit-start__footer {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  justify-content: space-between;
   gap: 8px;
   padding: 8px 10px;
   border-top: 1px solid var(--kit-rule-soft);
   min-width: 0;
 }
 
-.kit-start__tools {
-  display: flex;
-  flex-wrap: nowrap;
-  gap: 6px;
-  min-width: 0;
-  overflow-x: auto;
-  scrollbar-width: none;
-}
-
-.kit-start__tool {
-  flex: none;
-  min-height: 32px;
+.kit-start__control {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
   padding: 0 10px;
-  border: 1px solid var(--kit-rule-soft);
   border-radius: var(--kit-radius-pill);
   background: var(--kit-raised);
-  color: var(--kit-ink);
-  font: inherit;
-  font-size: 13px;
-  cursor: pointer;
+  color: var(--kit-ink-muted);
+  font-size: 12px;
+  white-space: nowrap;
 }
 
-.kit-start__send-row {
+.kit-start__apps {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 8px;
   margin-left: auto;
+  min-width: 0;
 }
 
 .kit-start__attach {
+  flex: none;
   width: 32px;
   height: 32px;
   border: 1px solid var(--kit-rule);
@@ -130,7 +136,13 @@
   cursor: pointer;
 }
 
+.kit-start__attach:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
 .kit-start__send {
+  flex: none;
   min-height: 32px;
   padding: 0 14px;
   border: 0;
@@ -150,56 +162,54 @@
 .kit-start__app-list {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 6px;
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-.kit-start__app {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 4px 10px 4px 4px;
-  border: 1px solid var(--kit-rule-soft);
-  border-radius: var(--kit-radius-pill);
-  background: var(--kit-surface);
-  font-size: 13px;
-}
-
 .kit-start__app-mark {
   display: inline-grid;
   place-items: center;
-  width: 24px;
-  height: 24px;
+  width: 26px;
+  height: 26px;
+  border: 1px solid var(--kit-rule-soft);
   border-radius: var(--kit-radius-pill);
-  background: var(--kit-raised);
+  background: var(--kit-surface);
   font-size: 12px;
   font-weight: 600;
 }
 
-.kit-start__grid {
+.kit-start__tools {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 10px;
+  grid-template-columns: repeat(4, max-content);
+  justify-content: center;
+  gap: 8px;
   min-width: 0;
 }
 
-.kit-start__suggestion {
-  display: grid;
-  min-height: 64px;
-  padding: 12px;
+.kit-start__tool {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 32px;
+  padding: 0 12px;
   border: 1px solid var(--kit-rule-soft);
-  border-radius: var(--kit-radius);
-  background: var(--kit-surface);
+  border-radius: var(--kit-radius-pill);
+  background: var(--kit-raised);
   color: var(--kit-ink);
   font: inherit;
-  text-align: left;
+  font-size: 13px;
+  white-space: nowrap;
   cursor: pointer;
 }
 
-.kit-start__suggestion:hover {
-  background: var(--kit-raised);
+.kit-start__tool-icon {
+  flex: none;
+  width: 10px;
+  height: 10px;
+  border: 1.5px solid var(--kit-ink-muted);
+  border-radius: 2px;
 }
 
 .kit-start__area {
@@ -340,5 +350,15 @@
     width: min(92%, 380px);
     box-shadow: var(--kit-shadow-pop);
     z-index: 2;
+  }
+}
+
+@media (max-width: 559px) {
+  .kit-start__tools {
+    grid-template-columns: repeat(2, max-content);
+  }
+
+  .kit-start__centre {
+    padding-top: 32px;
   }
 }

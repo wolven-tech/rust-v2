@@ -86,6 +86,13 @@ pub struct DecisionEntry {
     pub at_ms: u64,
 }
 
+/// One line of "What happened so far".
+#[derive(Clone, Debug, PartialEq)]
+pub struct TaskEvent {
+    pub at_ms: u64,
+    pub entry_text: String,
+}
+
 #[derive(Clone, Debug, PartialEq)]
 pub struct TaskRecord {
     pub id: String,
@@ -101,6 +108,7 @@ pub struct TaskRecord {
     pub goal_text: Option<String>,
     pub started_at_ms: Option<u64>,
     pub decision_log: Vec<DecisionEntry>,
+    pub event_log: Vec<TaskEvent>,
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -277,6 +285,7 @@ pub fn AgentTaskList(
     let mut tab = use_signal(move || initial_tab);
     let mut selected = use_signal(move || initial_task_id.clone());
     let mut sheet_picked = use_signal(|| false);
+    let mut artifact_tab = use_signal(|| 0_usize);
     let mut collapsed = use_signal(Vec::<String>::new);
     let mut line_open = use_signal(|| false);
     let mut line_text = use_signal(String::new);
@@ -428,6 +437,7 @@ pub fn AgentTaskList(
             header { class: "kit-atl__head",
                 div { class: "kit-atl__heading",
                     h2 { class: "kit-atl__title", "Tasks" }
+                    span { class: "kit-atl__count", "{active_count}" }
                     p { class: "kit-atl__meta", "{needs_text}" }
                 }
                 div { class: "kit-atl__tabs", role: "tablist", "aria-label": "Show",
@@ -778,7 +788,9 @@ pub fn AgentTaskList(
                             });
                             let extra = asks.len().saturating_sub(1);
                             let decide_task = task_id.clone();
-                            let started = task.started_at_ms.map_or_else(String::new, |_| "Started".to_string());
+                            let mut events = task.event_log.clone();
+                            events.sort_by_key(|e| std::cmp::Reverse(e.at_ms));
+                            let artifact_now = artifact_tab().min(artifacts.len().saturating_sub(1));
                             let panel_label = format!("Task: {title}");
                             let kind_text = ask_kind.unwrap_or("Question");
                             rsx! {
@@ -794,7 +806,8 @@ pub fn AgentTaskList(
                                         "Back"
                                     }
                                     h3 { class: "kit-atl__panel-title", "{title}" }
-                                    p { class: "kit-atl__meta", "{project} · {state} · {started}" }
+                                    p { class: "kit-atl__meta", "{project}" }
+                                    p { class: "kit-atl__meta", "State: {state}" }
                                     p { class: "kit-atl__goal", "data-progress": "{state_key}", "{goal}" }
                                     section { class: "kit-atl__block", "aria-label": "Checklist",
                                         h4 { class: "kit-atl__section", "Steps" }
@@ -835,14 +848,52 @@ pub fn AgentTaskList(
                                         if artifacts.is_empty() {
                                             p { class: "kit-atl__meta", "None yet." }
                                         }
+                                        if !artifacts.is_empty() {
+                                            div { class: "kit-atl__artifact-tabs", role: "tablist", "aria-label": "Artifacts",
+                                                for (index, name) in artifacts.iter().cloned().enumerate() {
+                                                    {
+                                                        let tab_key = format!("{index}");
+                                                        let tab_selected = (index == artifact_now).to_string();
+                                                        rsx! {
+                                                            button {
+                                                                key: "{tab_key}",
+                                                                r#type: "button",
+                                                                role: "tab",
+                                                                class: "kit-atl__artifact-tab",
+                                                                "aria-selected": "{tab_selected}",
+                                                                onclick: move |_| artifact_tab.set(index),
+                                                                "{name}"
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                            if let Some(name) = artifacts.get(artifact_now).cloned() {
+                                                {
+                                                    let kind = if name.ends_with(".csv") || name.ends_with(".xlsx") { "Sheet" } else { "Document" };
+                                                    let kind_line = format!("{kind} · {name}");
+                                                    rsx! { p { class: "kit-atl__meta", role: "tabpanel", "{kind_line}" } }
+                                                }
+                                            }
+                                        }
+                                    }
+                                    section { class: "kit-atl__block", "aria-label": "What happened so far",
+                                        h4 { class: "kit-atl__section", "What happened so far" }
+                                        if events.is_empty() {
+                                            p { class: "kit-atl__meta", "Nothing yet." }
+                                        }
                                         ul { class: "kit-atl__artifacts",
-                                            for name in artifacts.iter().cloned() {
-                                                li { key: "{name}", "{name}" }
+                                            for (index, event) in events.iter().enumerate() {
+                                                {
+                                                    let event_key = format!("{index}");
+                                                    let event_line = format!("{} · {}", ago_text(now_ms, event.at_ms), event.entry_text);
+                                                    rsx! { li { key: "{event_key}", "{event_line}" } }
+                                                }
                                             }
                                         }
                                     }
                                     section { class: "kit-atl__block", "aria-label": "Decisions made",
-                                        h4 { class: "kit-atl__section", "Decided" }
+                                        h4 { class: "kit-atl__section", "Decisions made" }
                                         if decisions.is_empty() {
                                             p { class: "kit-atl__meta", "Nothing decided yet." }
                                         }

@@ -1,17 +1,19 @@
-//! Inspected agent card scene: an agent card shown as if a designer were inspecting it in a layout
-//! tool. The card is tilted back, its rows are framed, spacing values sit beside them, and a guide
-//! walks down the rows, pausing on each.
+//! Inspected agent card scene: one focused agent card tilted back in a layout tool, with a faded card
+//! above it. The selected row is framed, its tag and spacing values sit beside it, and a guide walks
+//! down the rows, pausing on each. The faded card never takes the guide.
 //!
-//! Design choice: the rows are a fixed pitch (`ROW_PX`) under a fixed header (`HEADER_PX`), so the
-//! guide, frame and row tag move by `transform: translateY` with no measurement.
+//! Design choice: the rows have fixed heights and a fixed gap (`ROW_HEIGHTS_PX`, `ROW_GAP_PX`), so the
+//! guide, frame, tags and spacing markers are placed from pure geometry (`row_top`, `row_centre`).
+//! Design choice: the width label is the frame's layout width, read after each step, so it matches the
+//! row it sits on. `offsetWidth` is used because the tilt transform changes the bounding box.
 //! Design choice: the guide's play state is one function of hover, focus, pin, visibility and motion
 //! preference (`is_playing`); the timer only advances the step while that holds.
 //! Design choice: the reduced-motion view is the static card with every spacing marker shown and the
 //! guide on the first row.
 //! Design choice: the keyboard pauses the scene on focus; Escape resumes play until focus leaves.
 //! Browser checks: the guide visits each row in order and pauses on each; hovering a row pins the guide
-//! there and leaving resumes; the current row's spacing marker is visible; reduced motion shows all
-//! rows with no movement; Right moves forward a row and Escape resumes; no sideways scroll at 390 or
+//! there and leaving resumes; the frame's width label equals the row's width; reduced motion shows all
+//! markers with no movement; Right moves forward a row and Escape resumes; no sideways scroll at 390 or
 //! 320 with the markers hidden.
 
 use dioxus::prelude::*;
@@ -20,12 +22,19 @@ use crate::internal::{KIT_CSS, class_list, next_id, prefers_motion_script, sleep
 
 const CSS: Asset = asset!("/assets/inspected-agent-card-scene.css");
 
-/// Height of one row, px; the guide and frame move by this pitch.
-pub const ROW_PX: u32 = 40;
-/// Height of the header above the first row, px.
-pub const HEADER_PX: u32 = 96;
-/// The spacing value shown between rows, in design units.
-pub const GAP_UNITS: u32 = 8;
+/// Height of each row (header, task line, footer), px.
+pub const ROW_HEIGHTS_PX: [u32; 3] = [84, 56, 48];
+/// Space between two rows, px; the gap marker sits in it.
+pub const ROW_GAP_PX: u32 = 16;
+/// Padding inside the card above the first row and below the last, px.
+pub const CARD_PAD_PX: u32 = 12;
+/// The value shown in the gap between the header and the task line, in design units. The rows sit
+/// flush on the frame, so this reads 0 at rest.
+pub const GAP_UNITS: u32 = 0;
+/// The value shown on the frame's top edge and left inset, in design units.
+pub const INSET_UNITS: u32 = 8;
+/// Tag shown beside each row.
+pub const ROW_TAGS: [&str; 3] = ["Header", "Task", "Footer"];
 
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub enum InspectSpeed {
@@ -44,12 +53,21 @@ pub fn tick_ms(speed: InspectSpeed) -> u32 {
 
 /// Top of a row's box, px from the top of the card.
 pub fn row_top(row: usize) -> u32 {
-    HEADER_PX + row as u32 * ROW_PX
+    CARD_PAD_PX
+        + ROW_HEIGHTS_PX[..row.min(ROW_HEIGHTS_PX.len())]
+            .iter()
+            .map(|h| h + ROW_GAP_PX)
+            .sum::<u32>()
+}
+
+/// Height of a row's box, px.
+pub fn row_height(row: usize) -> u32 {
+    ROW_HEIGHTS_PX[row.min(ROW_HEIGHTS_PX.len() - 1)]
 }
 
 /// Centre of a row, px from the top of the card; the guide sits here.
 pub fn row_centre(row: usize) -> u32 {
-    row_top(row) + ROW_PX / 2
+    row_top(row) + row_height(row) / 2
 }
 
 /// The step after `current`, wrapping at `len`.
@@ -87,10 +105,12 @@ pub(crate) struct GuideClock {
     pub motion_on: Signal<bool>,
     pub steps_len: usize,
     pub speed: InspectSpeed,
+    /// The step the guide rests on at mount and under reduced motion.
+    pub rest_step: usize,
 }
 
 /// Starts the guide's timer and its on-screen observer. With reduced motion the timer never starts
-/// and the guide stays on its first step.
+/// and the guide stays on its rest step.
 pub(crate) fn use_guide_clock(root_id: String, clock: GuideClock) {
     let GuideClock {
         mut active,
@@ -99,6 +119,7 @@ pub(crate) fn use_guide_clock(root_id: String, clock: GuideClock) {
         mut motion_on,
         steps_len,
         speed,
+        rest_step,
     } = clock;
     use_hook(move || {
         spawn(async move {
@@ -126,7 +147,7 @@ pub(crate) fn use_guide_clock(root_id: String, clock: GuideClock) {
                 .unwrap_or(false);
             if !allowed {
                 motion_on.set(false);
-                active.set(0);
+                active.set(rest_step);
                 return;
             }
             loop {
@@ -141,13 +162,6 @@ pub(crate) fn use_guide_clock(root_id: String, clock: GuideClock) {
 }
 
 #[derive(Clone, PartialEq)]
-pub struct CardRow {
-    pub label: String,
-    pub value: String,
-    pub bar_fraction: Option<f64>,
-}
-
-#[derive(Clone, PartialEq)]
 pub struct CardFooter {
     pub cost_label: String,
     pub time_label: String,
@@ -159,7 +173,16 @@ pub struct AgentCard {
     pub model_label: String,
     pub status_label: String,
     pub task_line: String,
-    pub rows: Vec<CardRow>,
+    pub footer: CardFooter,
+}
+
+/// The faded card above the focused one: header, task line and footer, a different agent.
+#[derive(Clone, PartialEq)]
+pub struct GhostCard {
+    pub title: String,
+    pub model_label: String,
+    pub status_label: String,
+    pub task_line: String,
     pub footer: CardFooter,
 }
 
@@ -169,9 +192,19 @@ pub struct InspectStep {
     pub note: String,
 }
 
+/// Capital letters of up to the first two words of a name, for the avatar.
+pub fn avatar_letters(name: &str) -> String {
+    name.split_whitespace()
+        .take(2)
+        .filter_map(|word| word.chars().next())
+        .flat_map(char::to_uppercase)
+        .collect()
+}
+
 #[component]
 pub fn InspectedAgentCardScene(
     card: AgentCard,
+    #[props(default)] ghost: Option<GhostCard>,
     #[props(default)] inspect_steps: Vec<InspectStep>,
     #[props(default = true)] auto_play: bool,
     #[props(default)] speed: InspectSpeed,
@@ -180,7 +213,7 @@ pub fn InspectedAgentCardScene(
 ) -> Element {
     let uid = use_hook(|| format!("kit-inspect-{}", next_id()));
     let steps: Vec<InspectStep> = if inspect_steps.is_empty() {
-        (0..card.rows.len())
+        (0..ROW_TAGS.len())
             .map(|row_index| InspectStep {
                 row_index,
                 note: String::new(),
@@ -198,6 +231,7 @@ pub fn InspectedAgentCardScene(
     let visible = use_signal(|| true);
     let motion_on = use_signal(|| true);
     let mut playing = use_signal(|| false);
+    let mut frame_width = use_signal(|| None::<u32>);
 
     let focus_held = focused() && !resumed();
     let want = is_playing(
@@ -221,41 +255,62 @@ pub fn InspectedAgentCardScene(
             motion_on,
             steps_len,
             speed,
+            rest_step: 0,
         },
     );
 
     let step_index = pinned()
         .unwrap_or_else(|| active())
         .min(steps_len.saturating_sub(1));
-    let current_row = steps.get(step_index).map(|s| s.row_index).unwrap_or(0);
+    let current_row = steps
+        .get(step_index)
+        .map(|s| s.row_index)
+        .unwrap_or(0)
+        .min(ROW_TAGS.len() - 1);
     let note = steps
         .get(step_index)
         .map(|s| s.note.clone())
         .unwrap_or_default();
-    let guide_y = row_centre(current_row) as i32 - 1;
+
+    let measure_id = uid.clone();
+    use_effect(use_reactive((&current_row,), move |(row,)| {
+        let script = format!(
+            "const el = document.querySelector('#{measure_id} .kit-inspect__row[data-row=\"{row}\"]');
+             dioxus.send(el ? el.offsetWidth : 0);"
+        );
+        let mut channel = document::eval(&script);
+        spawn(async move {
+            if let Ok(width) = channel.recv::<u32>().await {
+                frame_width.set((width > 0).then_some(width));
+            }
+        });
+    }));
+
+    let guide_y = row_top(current_row) as i32;
+    let guide_h = row_height(current_row);
     let frame_y = row_top(current_row) as i32 - 4;
-    let row_label = card
-        .rows
-        .get(current_row)
-        .map(|r| r.label.clone())
-        .unwrap_or_default();
+    let frame_h = row_height(current_row) + 8;
+    let frame_style = format!("transform: translateY({frame_y}px); height: {frame_h}px;");
+    let guide_style = format!("transform: translateY({guide_y}px); height: {guide_h}px;");
+    let pointer_y = row_centre(current_row) as i32 - 5;
+    let pointer_style = format!("transform: translateY({pointer_y}px);");
+    let width_label = frame_width().map(|w| format!("{w}px")).unwrap_or_default();
     let class = class_list("kit-inspect", &class);
     let motion_attr = if motion_on() { "on" } else { "off" };
     let root_id = uid.clone();
-    let row_pins: Vec<Option<usize>> = (0..card.rows.len())
+    let row_pins: Vec<Option<usize>> = (0..ROW_TAGS.len())
         .map(|row| steps.iter().position(|s| s.row_index == row))
         .collect();
+    let [pin0, pin1, pin2] = [row_pins[0], row_pins[1], row_pins[2]];
     let title = card.title.clone();
     let status_label = card.status_label.clone();
     let model_label = card.model_label.clone();
     let task_line = card.task_line.clone();
     let cost_label = card.footer.cost_label.clone();
     let time_label = card.footer.time_label.clone();
-    let frame_style = format!("transform: translateY({frame_y}px);");
-    let guide_style = format!("transform: translateY({guide_y}px);");
-    let tag_style = guide_style.clone();
-    let pointer_style = guide_style.clone();
+    let avatar = avatar_letters(&card.title);
     let scene_aria_hidden = (!interactive).then_some("true");
+    let frame_key = format!("frame-{current_row}");
     rsx! {
         document::Link { rel: "stylesheet", href: KIT_CSS }
         document::Link { rel: "stylesheet", href: CSS }
@@ -290,58 +345,108 @@ pub fn InspectedAgentCardScene(
                 }
             },
             div { class: "kit-inspect__stage",
-                div { class: "kit-inspect__ghost", "data-pos": "above" }
-                div { class: "kit-inspect__ghost", "data-pos": "below" }
-                div { class: "kit-inspect__card",
-                    header { class: "kit-inspect__head",
-                        div { class: "kit-inspect__title-row",
-                            span { class: "kit-inspect__title", {title} }
-                            span { class: "kit-inspect__status", {status_label} }
+                if let Some(ghost) = ghost {
+                    div { class: "kit-inspect__ghost", "aria-hidden": "true",
+                        span { class: "kit-inspect__ghost-head",
+                            span { class: "kit-inspect__ghost-title", "{ghost.title}" }
+                            span { class: "kit-inspect__ghost-status", "{ghost.status_label}" }
                         }
-                        span { class: "kit-inspect__model", {model_label} }
-                        span { class: "kit-inspect__task", {task_line} }
+                        span { class: "kit-inspect__ghost-model", "{ghost.model_label}" }
+                        span { class: "kit-inspect__ghost-task", "{ghost.task_line}" }
+                        span { class: "kit-inspect__ghost-foot",
+                            span { "{ghost.footer.cost_label}" }
+                            span { "{ghost.footer.time_label}" }
+                        }
                     }
-                    for (index, row) in card.rows.iter().enumerate() {
+                }
+                div { class: "kit-inspect__card",
+                    div { class: "kit-inspect__row", "data-row": "0",
+                        onmouseenter: move |_| {
+                            if let Some(position) = pin0 {
+                                active.set(position);
+                                pinned.set(Some(position));
+                            }
+                        },
+                        onmouseleave: move |_| pinned.set(None),
+                        span { class: "kit-inspect__avatar", "aria-hidden": "true", "{avatar}" }
+                        span { class: "kit-inspect__who",
+                            span { class: "kit-inspect__title", "{title}" }
+                            span { class: "kit-inspect__model", "{model_label}" }
+                        }
+                        span { class: "kit-inspect__status",
+                            span { class: "kit-inspect__spin", "aria-hidden": "true" }
+                            "{status_label}"
+                        }
+                    }
+                    div { class: "kit-inspect__row kit-inspect__row--task", "data-row": "1",
+                        onmouseenter: move |_| {
+                            if let Some(position) = pin1 {
+                                active.set(position);
+                                pinned.set(Some(position));
+                            }
+                        },
+                        onmouseleave: move |_| pinned.set(None),
+                        span { class: "kit-inspect__task", "{task_line}" }
+                    }
+                    div { class: "kit-inspect__row kit-inspect__row--foot", "data-row": "2",
+                        onmouseenter: move |_| {
+                            if let Some(position) = pin2 {
+                                active.set(position);
+                                pinned.set(Some(position));
+                            }
+                        },
+                        onmouseleave: move |_| pinned.set(None),
+                        span { class: "kit-inspect__cost", "{cost_label}" }
+                        span { class: "kit-inspect__time", "{time_label}" }
+                    }
+                    for row in 0..ROW_TAGS.len() {
                         {
-                            let pin = row_pins[index];
-                            let top = row_top(index);
-                            let label = row.label.clone();
-                            let value = row.value.clone();
-                            let bar_style = row.bar_fraction.map(|f| format!("transform: scaleX({:.3});", f.clamp(0.0, 1.0)));
-                            let is_current = index == current_row;
+                            let is_current = row == current_row;
+                            let top_y = row_top(row) as i32 - 4;
+                            let row_mid = row_centre(row) as i32 - 6;
+                            let gap_y = (row_top(row) + row_height(row) + ROW_GAP_PX / 2) as i32 - 6;
+                            let top_style = format!("transform: translateY({}px);", top_y - 18);
+                            let inset_style = format!("transform: translateY({row_mid}px);");
+                            let gap_style = format!("transform: translateY({gap_y}px);");
+                            let tag_style = format!("transform: translateY({}px);", row_mid);
+                            let tag = ROW_TAGS[row];
+                            let has_gap = row + 1 < ROW_TAGS.len();
                             rsx! {
-                                div { class: "kit-inspect__row", "data-row": "{index}",
-                                    onmouseenter: move |_| {
-                                        if let Some(position) = pin {
-                                            active.set(position);
-                                            pinned.set(Some(position));
-                                        }
-                                    },
-                                    onmouseleave: move |_| pinned.set(None),
-                                    span { class: "kit-inspect__row-label", {label} }
-                                    span { class: "kit-inspect__row-value", {value} }
-                                    if let Some(style) = bar_style {
-                                        span { class: "kit-inspect__bar",
-                                            span { class: "kit-inspect__bar-fill", style: "{style}" }
-                                        }
+                                span { class: "kit-inspect__marker", "data-row": "{row}",
+                                    "data-active": is_current.then_some("true"),
+                                    style: "{top_style}",
+                                    "{INSET_UNITS}"
+                                }
+                                span { class: "kit-inspect__inset", "data-row": "{row}",
+                                    "data-active": is_current.then_some("true"),
+                                    style: "{inset_style}",
+                                    "{INSET_UNITS}"
+                                }
+                                if has_gap {
+                                    span { class: "kit-inspect__gap", "data-row": "{row}",
+                                        "data-active": is_current.then_some("true"),
+                                        style: "{gap_style}",
+                                        "{GAP_UNITS}"
                                     }
                                 }
-                                span { class: "kit-inspect__marker", "data-row": "{index}",
+                                span { class: "kit-inspect__tag", "data-row": "{row}",
                                     "data-active": is_current.then_some("true"),
-                                    style: "top: {top}px;",
-                                    "{GAP_UNITS}"
+                                    style: "{tag_style}",
+                                    "{tag}"
                                 }
                             }
                         }
                     }
-                    footer { class: "kit-inspect__foot",
-                        span { {cost_label} }
-                        span { {time_label} }
-                    }
-                    span { class: "kit-inspect__frame", style: "{frame_style}" }
+                    span { class: "kit-inspect__rail" }
                     span { class: "kit-inspect__guide", style: "{guide_style}" }
+                    span { class: "kit-inspect__frame", key: "{frame_key}", style: "{frame_style}",
+                        span { class: "kit-inspect__handle", "data-corner": "tl" }
+                        span { class: "kit-inspect__handle", "data-corner": "tr" }
+                        span { class: "kit-inspect__handle", "data-corner": "bl" }
+                        span { class: "kit-inspect__handle", "data-corner": "br" }
+                        span { class: "kit-inspect__width", "{width_label}" }
+                    }
                     span { class: "kit-inspect__pointer", style: "{pointer_style}" }
-                    span { class: "kit-inspect__tag", style: "{tag_style}", {row_label} }
                 }
             }
             p { class: "kit-inspect__note", {note} }

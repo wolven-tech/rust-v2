@@ -69,3 +69,37 @@ In reading order:
 6. Issue is disabled when no line is picked or any amount is invalid.
 7. After issuing, the credit note's fields are read-only and its status reads issued.
 8. At phone width the parties stack and nothing scrolls sideways.
+
+## Amendment 6: structure and demo
+
+No earlier amendment exists, so no line is replaced.
+
+Archetype: a switch and actions row above a stacked invoice sheet, with a parties row, terms, a line table and a totals block.
+
+Visible at rest:
+- Header row: at left, a two-position switch with "Invoice" selected and "Credit note". At right, a "PDF" download button and a "Credit invoice" secondary button with an icon.
+- Stack: the invoice sheet in front. A second sheet sits behind it. Its upper rim alone shows above the front sheet.
+- Sheet head: total amount, large, at left; due line beneath with a "Pay online" link; at right, the issuer chip (dot mark and issuer name).
+- Parties: "From" and "To" blocks side by side, each with name and address lines.
+- Terms: label and value rows for invoice number (a link), invoice date, due date, billing period.
+- Line table: columns name, quantity, rate, tax, price. Two fixed lines, then a "Metered usage" group heading, then one metered line indented under the heading. Three lines in total.
+- Totals block below and right of the table: Subtotal, Tax, a rule, then Total in bold.
+- No status label at rest. The due text shows.
+
+Gallery demo:
+- Invoice "INV-2107"; issued 1 Oct 2026; due 31 Oct 2026; billing period 1 Sep to 30 Sep 2026.
+- Issuer "Marlow Works Ltd"; recipient "Larch & Co Ltd".
+- Lines: "Team plan", 1, 980.00, 20%, 980.00. "Extra storage", 4, 25.00, 20%, 100.00. Under "Metered usage": "Image renders", 9,640, 0.30, 20%, 2,892.00.
+- Subtotal 3,972.00; Tax 794.40; Total 4,766.40.
+
+Scale: the sheet covers about four fifths of the stage width, centred. The header row spans the same width above it. The total sits at the sheet's upper left.
+
+Motion, settled frame: invoice side; second sheet's edge visible; no selection marks.
+Moves and reduced motion: as stated in Motion (functional).
+
+Defects, stated as checks: no subtotal or tax rows; two lines where the stack has three and a metered group (checks 9 and 10).
+
+Acceptance checks (continued):
+9. The totals block shows Subtotal, Tax and Total, and Total equals Subtotal plus Tax.
+10. The line table shows two fixed lines and one metered line under a "Metered usage" group heading.
+11. At rest the second sheet's top edge shows behind the invoice, and the switch shows Invoice selected.

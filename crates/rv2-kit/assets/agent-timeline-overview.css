@@ -15,11 +15,29 @@
   flex-wrap: wrap;
   gap: 4px 16px;
   margin: 0;
+  padding: 0;
+  list-style: none;
   font-size: 13px;
   color: var(--kit-ink-muted);
   font-variant-numeric: tabular-nums;
 }
-.kit-tl__body { display: grid; grid-template-columns: minmax(0, 1fr) minmax(240px, 300px); gap: 16px; align-items: start; }
+.kit-tl__body { display: grid; grid-template-columns: minmax(0, 2fr) minmax(240px, 1fr); gap: 16px; align-items: start; }
+.kit-tl__lanes { display: grid; gap: 10px; min-width: 0; }
+.kit-tl__lanes-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 14px; font-size: 13px; color: var(--kit-ink-muted); font-variant-numeric: tabular-nums; }
+.kit-tl__lanes-title { margin: 0; font-size: 15px; font-weight: 600; color: var(--kit-ink); }
+.kit-tl__summary { display: grid; gap: 10px; min-width: 0; padding: 14px; border: 1px solid var(--kit-rule-soft); border-radius: var(--kit-radius); background: var(--kit-surface); box-shadow: var(--kit-shadow); }
+.kit-tl__since-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start; gap: 8px 16px; }
+.kit-tl__since-label { margin: 0; font-size: 15px; font-weight: 600; }
+.kit-tl__since-meta { margin: 2px 0 0; font-size: 12px; color: var(--kit-ink-muted); font-variant-numeric: tabular-nums; }
+.kit-tl__mark { margin-right: 4px; }
+.kit-tl__curve { position: relative; height: 56px; }
+.kit-tl__curve-svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.kit-tl__curve-grid { fill: none; stroke: var(--kit-rule-soft); stroke-width: 1; vector-effect: non-scaling-stroke; }
+.kit-tl__curve-line { fill: none; stroke: var(--kit-accent); stroke-width: 1.5; vector-effect: non-scaling-stroke; }
+.kit-tl__dot { position: absolute; width: 7px; height: 7px; margin: -3.5px 0 0 -3.5px; border-radius: 50%; background: var(--kit-accent); }
+.kit-tl__curve-axis { display: flex; justify-content: space-between; font-size: 11px; color: var(--kit-ink-faint); }
+.kit-tl__pill { justify-self: start; padding: 0 6px; border: 1px solid var(--kit-rule); border-radius: var(--kit-radius-pill); font-size: 11px; color: var(--kit-ink-muted); }
+.kit-tl__pill[data-status="waiting"] { border-color: var(--kit-warn); color: var(--kit-warn-ink); }
 .kit-tl__grid {
   display: grid;
   gap: 6px;
@@ -35,7 +53,7 @@
 .kit-tl__corner { font-size: 12px; color: var(--kit-ink-muted); align-self: end; }
 .kit-tl__ticks { display: flex; justify-content: space-between; font-size: 11px; color: var(--kit-ink-faint); font-variant-numeric: tabular-nums; }
 .kit-tl__lane {
-  min-height: 48px;
+  min-height: 56px;
   padding: 4px 0;
   border-top: 1px solid var(--kit-rule-soft);
   transition: opacity var(--kit-fast) var(--kit-ease);
@@ -55,7 +73,7 @@
 .kit-tl__agent-model { font-size: 11px; color: var(--kit-ink-muted); }
 .kit-tl__track {
   position: relative;
-  min-height: 36px;
+  min-height: 48px;
   border-radius: var(--kit-radius-sm);
   background: repeating-linear-gradient(90deg, transparent 0 calc(16.66% - 1px), var(--kit-rule-soft) calc(16.66% - 1px) 16.66%);
 }
@@ -74,14 +92,17 @@
   all: unset;
   box-sizing: border-box;
   position: absolute;
-  top: 6px;
-  bottom: 6px;
+  top: 4px;
+  bottom: 4px;
   min-width: 6px;
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 6px;
-  padding: 0 8px;
-  white-space: nowrap;
+  align-content: center;
+  gap: 0 6px;
+  padding: 2px 8px;
+  line-height: 1.25;
+  white-space: normal;
   border-radius: var(--kit-radius-sm);
   background: var(--kit-ok-soft);
   color: var(--kit-ok-ink);
@@ -92,7 +113,7 @@
 .kit-tl__span[data-status="failed"] { background: color-mix(in srgb, var(--kit-fault) 22%, var(--kit-surface)); color: var(--kit-fault-ink); }
 .kit-tl__span[data-status="done"] { background: var(--kit-raised); color: var(--kit-ink-hover); border: 1px solid var(--kit-rule); }
 .kit-tl__span[data-running] .kit-tl__span-state::before { content: "● "; }
-.kit-tl__span-label { overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.kit-tl__span-label { min-width: 0; overflow-wrap: normal; }
 .kit-tl__span-state { font-size: var(--kit-text-xs); text-transform: uppercase; letter-spacing: 0.04em; opacity: 0.85; }
 .kit-tl__span:focus-visible, .kit-tl button:focus-visible { outline: 2px solid var(--kit-accent); outline-offset: 2px; }
 .kit-tl__tip {

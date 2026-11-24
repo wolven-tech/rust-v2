@@ -301,8 +301,7 @@ fn register_empty_view_replaces_the_table_with_its_add_action() {
 use std::collections::BTreeMap;
 
 use rv2_kit::screens::connected_apps_catalogue::{
-    Account as CatalogueAccount, App, ConnectedAppsCatalogue, Tab, can_submit, effective_connected,
-    tab_count, visible_apps,
+    App, ConnectedAppsCatalogue, Tab, can_submit, effective_connected, tab_count, visible_apps,
 };
 
 fn catalogue_apps() -> Vec<App> {
@@ -366,18 +365,17 @@ fn request_needs_a_name() {
 fn catalogue_loaded_app() -> Element {
     rsx! {
         ConnectedAppsCatalogue {
-            account: CatalogueAccount { name: "Ada Lovelace".into(), avatar_url: None },
             apps: catalogue_apps(),
         }
     }
 }
 
 fn catalogue_empty_app() -> Element {
-    rsx! { ConnectedAppsCatalogue { account: CatalogueAccount { name: "Ada Lovelace".into(), avatar_url: None }, is_empty: true } }
+    rsx! { ConnectedAppsCatalogue { is_empty: true } }
 }
 
 fn catalogue_loading_app() -> Element {
-    rsx! { ConnectedAppsCatalogue { account: CatalogueAccount { name: "Ada Lovelace".into(), avatar_url: None }, is_loading: true } }
+    rsx! { ConnectedAppsCatalogue { is_loading: true } }
 }
 
 #[test]
@@ -741,10 +739,10 @@ fn autonomy_empty_app() -> Element {
 fn autonomy_names_the_app_counts_and_the_checked_level() {
     let html = render(autonomy_loaded_app);
     assert!(html.contains("aria-checked=\"true\""));
-    assert!(html.contains("Mailroom, account: ops@juniper.example: 1 on its own, 2 asks, 1 never"));
+    assert!(html.contains("Mailroom, account: ops@juniper.example: 1 on its own, 2 asks, 0 never"));
     assert!(html.contains("Fixed rules"));
-    assert!(html.contains("Reads"));
-    assert!(html.contains("Needs care"));
+    assert!(html.contains("Read only"));
+    assert!(html.contains("Sensitive"));
 }
 
 #[test]
@@ -1277,6 +1275,7 @@ fn canvas_node(id: &str, kind: NodeKind, x: f64, y: f64) -> CanvasNode {
         pos_x: x,
         pos_y: y,
         node_status: NodeStatus::Ready,
+        chip: None,
     }
 }
 
@@ -1374,7 +1373,7 @@ fn canvas_loading_app() -> Element {
 fn canvas_names_steps_with_kind_and_status_and_offers_the_run_control() {
     let html = render(canvas_loaded_app);
     assert!(html.contains("aria-label=\"Step t, Trigger, Ready\""));
-    assert!(html.contains("Start test"));
+    assert!(html.contains("aria-label=\"Run area\""));
     assert!(html.contains("Production"));
     assert!(html.contains("Select a step to configure it."));
 }
@@ -1393,7 +1392,7 @@ fn chat_trend() -> ChartBlock {
         category_labels: vec!["Mon".into(), "Tue".into(), "Wed".into()],
         current_values: vec![10.0, 12.0, 15.0],
         previous_values: vec![8.0, 9.0, 11.0],
-        marker: Some("Up 20% on last year".into()),
+        marked_point: Some(1),
     }
 }
 
@@ -1427,7 +1426,7 @@ fn chat_answer_shows_metric_chart_sources_and_follow_ups() {
     let html = render(chat_loaded_app);
     assert!(html.contains("48.2k"));
     assert!(html.contains("Revenue rose this week."));
-    assert!(html.contains("Sources: Ledger"));
+    assert!(html.contains("kit-rca__source"));
     assert!(html.contains("Split by region"));
     assert!(html.contains("kit-trend"));
 }

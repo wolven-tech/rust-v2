@@ -149,6 +149,10 @@
   align-items: start;
 }
 
+.kit-ate__body:not([data-open]) {
+  grid-template-columns: minmax(0, 1fr);
+}
+
 .kit-ate__chart {
   display: grid;
   justify-items: center;
@@ -175,11 +179,17 @@
   margin: 0;
   padding: 0;
   list-style: none;
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 180px));
   justify-content: center;
   gap: 10px;
   position: relative;
+}
+
+@media (max-width: 640px) {
+  .kit-ate__tool-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 .kit-ate__tool-row::before {
@@ -490,10 +500,10 @@
 }
 
 .kit-ate__row-actions {
-  display: inline-flex;
+  display: flex;
   flex-wrap: wrap;
   gap: 6px;
-  margin-block-start: 4px;
+  margin-block-start: 6px;
 }
 
 .kit-ate__table td {
@@ -553,6 +563,14 @@
 
   .kit-ate__tiles {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .kit-ate__tool-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .kit-ate__card {
+    min-width: 0;
   }
 
   .kit-ate__back {

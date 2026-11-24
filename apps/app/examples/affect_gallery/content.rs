@@ -5,7 +5,7 @@ use rv2_affect::comment_thread::{CommentThread, ThreadAuthor, ThreadMessage};
 use rv2_affect::decision_inbox::{Decision, DecisionAnswer, DecisionInbox};
 use rv2_affect::email_draft::EmailDraft;
 use rv2_affect::message_actions::{MessageActionKey, MessageActions, MessageText};
-use rv2_affect::notification_stack::{Notice, NoticePattern, NotificationStack};
+use rv2_affect::notification_stack::{Notice, NoticeAction, NoticePattern, NotificationStack};
 use rv2_affect::progress_tracker::{ProgressStep, ProgressTracker};
 use rv2_affect::reaction_bar::{ReactionBar, ReactionKey, ReactionState};
 use rv2_affect::smart_recommendation::{Recommendation, SmartRecommendation};
@@ -42,7 +42,7 @@ fn decisions() -> Vec<Decision> {
         Decision {
             id: "d1".into(),
             title: "Use incremental sync for Northwind?".into(),
-            detail: None,
+            detail: Some("Test run cut the nightly import to 6 minutes · 2 weeks of data".into()),
             primary: "Approve".into(),
             secondary: "Decline".into(),
             collapsed: false,
@@ -50,10 +50,10 @@ fn decisions() -> Vec<Decision> {
         Decision {
             id: "d2".into(),
             title: "Raise the seat price by 8%?".into(),
-            detail: None,
-            primary: "Approve".into(),
-            secondary: "Hold".into(),
-            collapsed: true,
+            detail: Some("12 seats · $1,800 per year · renews in 5 days".into()),
+            primary: "Raise price".into(),
+            secondary: "Keep price".into(),
+            collapsed: false,
         },
     ]
 }
@@ -69,6 +69,111 @@ fn notice(id: &str, title: &str, pattern: NoticePattern) -> Notice {
     }
 }
 
+fn deck() -> Vec<Notice> {
+    vec![
+        Notice {
+            id: "n1".into(),
+            badge: Some("New".into()),
+            title: "Dark mode is here".into(),
+            text: "Every screen now follows your system theme, or pick one yourself in settings."
+                .into(),
+            action: Some(NoticeAction {
+                label: "Try it".into(),
+                href: None,
+                on_click: None,
+                external: false,
+            }),
+            pattern: NoticePattern::Orbit,
+        },
+        notice("n2", "Import finished", NoticePattern::Grid),
+        notice("n3", "Export ready", NoticePattern::Rays),
+    ]
+}
+
+fn tip(id: &str, title: &str, text: &str, action: &str, primary: bool) -> Tip {
+    Tip {
+        id: id.into(),
+        title: title.into(),
+        description: rsx! { "{text}" },
+        action: action.into(),
+        done_label: None,
+        primary,
+        on_action: None,
+    }
+}
+
+fn tips(mut done: Signal<String>) -> Vec<Tip> {
+    let mut search = tip(
+        "search",
+        "Quick search",
+        "Press Cmd K to jump to any page, project or setting.",
+        "Try it",
+        false,
+    );
+    search.on_action = Some(EventHandler::new(move |_| {
+        done.set("search tried".to_string())
+    }));
+    vec![
+        tip(
+            "invite",
+            "Invite your team",
+            "Work on projects together and keep feedback in one place.",
+            "Invite",
+            false,
+        ),
+        search,
+        tip(
+            "digest",
+            "Weekly digest",
+            "Get a short summary of what changed every Monday morning.",
+            "Turn on",
+            false,
+        ),
+        tip(
+            "slack",
+            "Connect Slack",
+            "Post an update to a channel when something needs attention.",
+            "Connect",
+            false,
+        ),
+        tip(
+            "mobile",
+            "Mobile app",
+            "Check activity and approve requests while you're on the go.",
+            "Get the app",
+            false,
+        ),
+        tip(
+            "upgrade",
+            "Ready to upgrade?",
+            "More seats, priority support and advanced analytics.",
+            "See plans",
+            true,
+        ),
+        tip(
+            "keys",
+            "Keyboard map",
+            "Press ? anywhere to see every shortcut.",
+            "Open",
+            false,
+        ),
+        tip(
+            "import",
+            "Import a CSV",
+            "Bring runs and contacts in from a spreadsheet.",
+            "Import",
+            false,
+        ),
+        tip(
+            "audit",
+            "Audit log",
+            "See who changed what, and when.",
+            "View",
+            false,
+        ),
+    ]
+}
+
 fn step(id: &str, label: &str, done: bool) -> ProgressStep {
     ProgressStep {
         id: id.into(),
@@ -81,14 +186,24 @@ fn step(id: &str, label: &str, done: bool) -> ProgressStep {
 #[component]
 pub fn Content() -> Element {
     let mut thread = use_signal(|| {
-        vec![ThreadMessage {
-            id: "m1".into(),
-            author: ada(),
-            created_at: 1_700_000_000_000,
-            text: "/edit tighten the intro".into(),
-            status: None,
-            details: Vec::new(),
-        }]
+        vec![
+            ThreadMessage {
+                id: "m1".into(),
+                author: ada(),
+                created_at: 1_700_000_000_000,
+                text: "/edit tighten the intro".into(),
+                status: None,
+                details: Vec::new(),
+            },
+            ThreadMessage {
+                id: "m2".into(),
+                author: helper(),
+                created_at: 1_700_000_060_000,
+                text: "Tightened the intro to two sentences.".into(),
+                status: Some("Edit completed".into()),
+                details: vec!["Replaced three sentences with two".into()],
+            },
+        ]
     });
     let mut reactions = use_signal(|| {
         vec![(
@@ -99,12 +214,7 @@ pub fn Content() -> Element {
             },
         )]
     });
-    let mut stack = use_signal(|| {
-        vec![
-            notice("n1", "Import finished", NoticePattern::Grid),
-            notice("n2", "Export ready", NoticePattern::Orbit),
-        ]
-    });
+    let mut stack = use_signal(deck);
     let mut steps = use_signal(|| {
         vec![
             step("connect", "Connect", true),
@@ -200,6 +310,22 @@ pub fn Content() -> Element {
                 p { class: "gl-out", "Email: {sent}" }
             }
             Item { name: "MessageActions",
+                Ex { label: "In a conversation, rated down",
+                    div { class: "gl-box", style: "display: grid; gap: 10px;",
+                        div { style: "justify-self: end; max-width: 80%; padding: 8px 12px; border-radius: 12px; background: #0000000d; font-size: 13px;",
+                            "Summarize the 2.4 release notes in one sentence."
+                        }
+                        div { style: "display: grid; gap: 6px; font-size: 13px;",
+                            span { style: "font-size: 12px; opacity: 0.6;", "Sonnet 5.5" }
+                            p { style: "margin: 0;", "Version 2.4 adds shared folders, halves sync time and fixes the Windows export bug." }
+                        }
+                        MessageActions {
+                            text: "Version 2.4 adds shared folders, halves sync time and fixes the Windows export bug.".to_string(),
+                            feedback_open: true,
+                            on_feedback: move |(kind, reason)| feedback.set(format!("{kind:?} {reason:?}")),
+                        }
+                    }
+                }
                 Ex { label: "Two versions, feedback",
                     MessageActions {
                         text: "Here is a short summary of the renewal terms.".to_string(),
@@ -218,7 +344,7 @@ pub fn Content() -> Element {
                 MessageText { version: version().to_string(), p { "Version body number {version}" } }
             }
             Item { name: "NotificationStack",
-                Ex { label: "Two notices",
+                Ex { label: "One deck, front notice with an action",
                     div { class: "gl-box",
                         NotificationStack {
                             notices: stack(),
@@ -226,12 +352,7 @@ pub fn Content() -> Element {
                         }
                     }
                 }
-                Ex { label: "Rays pattern",
-                    div { class: "gl-box",
-                        NotificationStack { notices: vec![notice("n4", "Backup complete", NoticePattern::Rays)], on_dismiss: move |_| {} }
-                    }
-                }
-                button { r#type: "button", onclick: move |_| stack.set(vec![notice("n3", "Fresh notice", NoticePattern::Grid)]), "Reset stack" }
+                button { r#type: "button", onclick: move |_| stack.set(deck()), "Reset stack" }
             }
             Item { name: "ProgressTracker",
                 Ex { label: "Onboarding, in progress",
@@ -303,14 +424,12 @@ pub fn Content() -> Element {
                     ThinkingLoader { done: true, done_label: DoneLabel::Text("Answer ready".to_string()) }
                 }
             }
-            Item { name: "TipsPanel",
-                Ex { label: "Two tips",
-                    div { class: "gl-box",
+            Item { name: "TipsPanel", wide: true,
+                Ex { label: "Nine tips in a grid, with close",
+                    div { class: "gl-box", style: "max-width: none;",
                         TipsPanel {
-                            tips: vec![
-                                Tip { id: "shortcut".into(), title: "Shortcut".into(), description: rsx! { "Press Cmd K to search" }, action: "Enable".into(), done_label: None, primary: true, on_action: Some(EventHandler::new(move |_| tips_done.set("shortcut enabled".to_string()))) },
-                                Tip { id: "sync".into(), title: "Sync".into(), description: rsx! { "Sync often to avoid conflicts" }, action: "Try".into(), done_label: None, primary: false, on_action: None },
-                            ],
+                            tips: tips(tips_done),
+                            on_close: Some(EventHandler::new(move |_| tips_done.set("closed".to_string()))),
                         }
                     }
                 }
@@ -318,33 +437,56 @@ pub fn Content() -> Element {
             }
             Item { name: "ToolCallCard",
                 Ex { label: "Success",
-                    ToolCallCard { name: "lookup_account", status: ToolCallStatus::Success, result: "{{\"ok\": true, \"seats\": 42}}", duration: 400u64 }
+                    div { class: "gl-box",
+                        ToolCallCard { name: "lookup_account", summary: "Read the Northwind account", status: ToolCallStatus::Success, result: "{{\"ok\": true, \"seats\": 42}}", duration: 400u64 }
+                    }
                 }
                 Ex { label: "Running",
-                    ToolCallCard { name: "draft_reply", status: ToolCallStatus::Running }
+                    div { class: "gl-box",
+                        ToolCallCard { name: "draft_reply", summary: "Drafting a reply to Jonas", status: ToolCallStatus::Running }
+                    }
                 }
                 Ex { label: "Error",
-                    ToolCallCard { name: "search_web", status: ToolCallStatus::Error, error: "Timed out after 5s", duration: 5012u64 }
+                    div { class: "gl-box",
+                        ToolCallCard { name: "search_web", summary: "Searched the web for 'CRM pricing'", status: ToolCallStatus::Error, error: "Timed out after 5s", duration: 5012u64 }
+                    }
+                }
+                Ex { label: "Grouped, calls listed",
+                    div { class: "gl-box",
+                        ToolCallGroup {
+                            calls: vec![
+                                GroupCall { name: "search_web".into(), icon: None, status: ToolCallStatus::Success, duration: Some(1500), started_at: None },
+                                GroupCall { name: "fetch_page".into(), icon: None, status: ToolCallStatus::Running, duration: None, started_at: None },
+                            ],
+                            default_open: true,
+                            ToolCallCard { name: "search_web", summary: "Searched the web for 'CRM pricing'", status: ToolCallStatus::Success, duration: 1500u64 }
+                            ToolCallCard { name: "fetch_page", summary: "Reading acme.example/pricing", status: ToolCallStatus::Running }
+                        }
+                    }
                 }
             }
             Item { name: "ToolCallGroup",
                 Ex { label: "Finished, one failed",
-                    ToolCallGroup {
-                        calls: vec![
-                            GroupCall { name: "search_crm".into(), icon: None, status: ToolCallStatus::Success, duration: Some(180), started_at: None },
-                            GroupCall { name: "draft_email".into(), icon: None, status: ToolCallStatus::Success, duration: Some(920), started_at: None },
-                            GroupCall { name: "send_email".into(), icon: None, status: ToolCallStatus::Error, duration: Some(50), started_at: None },
-                        ],
-                        span { "Drafted a reply to Jonas." }
+                    div { class: "gl-box",
+                        ToolCallGroup {
+                            calls: vec![
+                                GroupCall { name: "search_crm".into(), icon: None, status: ToolCallStatus::Success, duration: Some(180), started_at: None },
+                                GroupCall { name: "draft_email".into(), icon: None, status: ToolCallStatus::Success, duration: Some(920), started_at: None },
+                                GroupCall { name: "send_email".into(), icon: None, status: ToolCallStatus::Error, duration: Some(50), started_at: None },
+                            ],
+                            span { "Drafted a reply to Jonas." }
+                        }
                     }
                 }
                 Ex { label: "Still running",
-                    ToolCallGroup {
-                        calls: vec![
-                            GroupCall { name: "search_crm".into(), icon: None, status: ToolCallStatus::Success, duration: Some(180), started_at: None },
-                            GroupCall { name: "pull_invoices".into(), icon: None, status: ToolCallStatus::Running, duration: None, started_at: None },
-                        ],
-                        span { "Pulling invoices for Northwind." }
+                    div { class: "gl-box",
+                        ToolCallGroup {
+                            calls: vec![
+                                GroupCall { name: "search_crm".into(), icon: None, status: ToolCallStatus::Success, duration: Some(180), started_at: None },
+                                GroupCall { name: "pull_invoices".into(), icon: None, status: ToolCallStatus::Running, duration: None, started_at: None },
+                            ],
+                            span { "Pulling invoices for Northwind." }
+                        }
                     }
                 }
             }

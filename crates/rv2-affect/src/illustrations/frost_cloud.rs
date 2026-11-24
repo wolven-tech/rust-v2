@@ -182,7 +182,7 @@ fn eye(id: &str, x: f64, side: &str, class: &str) -> Element {
             clipPath { id: "{clip}",
                 rect { x: "{x}", y: "{EYE_Y}", width: "{EYE_W}", height: "{EYE_H}", rx: "{rx}" }
             }
-            rect { x: "{x}", y: "{shade_y}", width: "{EYE_W}", height: "{EYE_H}", rx: "{rx}", class: "ui-fc__eye-shade", fill: "none", "strokeWidth": "5", filter: "{edge}", "clipPath": "{clip_url}" }
+            rect { x: "{x}", y: "{shade_y}", width: "{EYE_W}", height: "{EYE_H}", rx: "{rx}", class: "ui-fc__eye-shade", fill: "none", "stroke-width": "5", filter: "{edge}", "clip-path": "{clip_url}" }
         }
     }
 }

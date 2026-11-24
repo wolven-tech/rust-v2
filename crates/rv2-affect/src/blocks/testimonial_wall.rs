@@ -351,9 +351,9 @@ fn Card(quote: Testimonial, interactive: bool) -> Element {
                                         d: "M5.2 8.1l1.9 1.9 3.7-3.8",
                                         fill: "none",
                                         stroke: "var(--ui-tw-card)",
-                                        "strokeWidth": "1.6",
-                                        "strokeLinecap": "round",
-                                        "strokeLinejoin": "round",
+                                        stroke_width: "1.6",
+                                        stroke_linecap: "round",
+                                        stroke_linejoin: "round",
                                     }
                                 }
                             }

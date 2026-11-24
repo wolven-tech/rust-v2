@@ -1,10 +1,11 @@
-//! Connected apps catalogue: a directory of external services the assistant can connect to, filtered by tab and by
-//! search, with a request form for services that are not listed.
+//! Connected apps catalogue: a directory of external services the assistant can connect to. A sticky header holds
+//! the title, the request control, the filter tabs and a search field; the apps sit below as tiles in sections.
+//! Popular apps form their own first section; every other app sits under its category.
 //!
-//! Design choice: connect and disconnect change the row in place at once, so the screen keeps its own connection
+//! Design choice: connect and disconnect change the tile in place at once, so the screen keeps its own connection
 //! overrides on top of `connected`; the host still receives `on_connect` and `on_disconnect` and owns the truth.
 //! Design choice: "Connecting" resolves after `CONNECT_MS` in the browser, standing in for the host's round trip.
-//! Design choice: the sidebar is drawn inline so the screen stands alone, without the workspace frame.
+//! Design choice: the screen renders its content area only; the navigation sidebar belongs to the workspace frame.
 
 use std::collections::BTreeMap;
 
@@ -14,14 +15,11 @@ use crate::internal::*;
 
 const CSS: Asset = asset!("/assets/connected-apps-catalogue.css");
 
+/// Heading of the section that holds popular apps, always first.
+pub const POPULAR_SECTION: &str = "Popular";
+
 /// How long the connecting state shows before it resolves, in milliseconds.
 pub const CONNECT_MS: u32 = 650;
-
-#[derive(Clone, Debug, PartialEq)]
-pub struct Account {
-    pub name: String,
-    pub avatar_url: Option<String>,
-}
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct App {
@@ -102,6 +100,44 @@ pub fn tab_count(apps: &[App], tab: Tab, overrides: &BTreeMap<String, bool>) -> 
         .count()
 }
 
+/// Section headings for the visible apps: popular apps first, then each category in its given order, keeping only
+/// categories that have a visible app. Popular apps are not repeated under their category.
+pub fn section_headings(apps: &[App], categories: &[String]) -> Vec<String> {
+    let mut headings: Vec<String> = Vec::new();
+    if apps.iter().any(|a| a.popular) {
+        headings.push(POPULAR_SECTION.to_string());
+    }
+    let mut names: Vec<String> = categories.to_vec();
+    if names.is_empty() {
+        for app in apps.iter().filter(|a| !a.popular) {
+            if !names.contains(&app.category) {
+                names.push(app.category.clone());
+            }
+        }
+    }
+    for name in names {
+        if apps.iter().any(|a| !a.popular && a.category == name) {
+            headings.push(name);
+        }
+    }
+    headings
+}
+
+/// The visible apps a section shows: the popular ones for the popular section, otherwise the non-popular apps of
+/// the category, in their given order.
+pub fn section_apps<'a>(apps: &[&'a App], heading: &str) -> Vec<&'a App> {
+    apps.iter()
+        .copied()
+        .filter(|a| {
+            if heading == POPULAR_SECTION {
+                a.popular
+            } else {
+                !a.popular && a.category == heading
+            }
+        })
+        .collect()
+}
+
 /// Whether the request form may submit: a name is required.
 pub fn can_submit(name: &str) -> bool {
     !name.trim().is_empty()
@@ -114,16 +150,8 @@ fn initial_of(name: &str) -> String {
         .unwrap_or_default()
 }
 
-fn initials(name: &str) -> String {
-    name.split_whitespace()
-        .filter_map(|w| w.chars().next())
-        .take(2)
-        .collect::<String>()
-        .to_uppercase()
-}
-
 #[derive(Clone, PartialEq)]
-struct RowView {
+struct TileView {
     id: String,
     name: String,
     summary: String,
@@ -133,11 +161,10 @@ struct RowView {
     connected: bool,
 }
 
-/// Connected apps catalogue: sticky header with tabs and search, category sections of app rows, and a request form.
+/// Connected apps catalogue: sticky header with tabs and search, popular and category sections of app tiles, and a
+/// request form.
 #[component]
 pub fn ConnectedAppsCatalogue(
-    #[props(default = "Juniper Works".to_string(), into)] workspace_name: String,
-    account: Account,
     #[props(default)] apps: Vec<App>,
     #[props(default)] categories: Vec<String>,
     #[props(default)] is_loading: bool,
@@ -165,25 +192,14 @@ pub fn ConnectedAppsCatalogue(
         .into_iter()
         .cloned()
         .collect();
-    let mut section_names: Vec<String> = if categories.is_empty() {
-        let mut names: Vec<String> = Vec::new();
-        for app in &apps {
-            if !names.contains(&app.category) {
-                names.push(app.category.clone());
-            }
-        }
-        names
-    } else {
-        categories.clone()
-    };
-    section_names.retain(|c| visible.iter().any(|a| a.category == *c));
-    let sections: Vec<(String, Vec<RowView>)> = section_names
+    let visible_refs: Vec<&App> = visible.iter().collect();
+    let headings = section_headings(&visible, &categories);
+    let sections: Vec<(String, usize, Vec<TileView>)> = headings
         .iter()
-        .map(|cat| {
-            let rows = visible
-                .iter()
-                .filter(|a| a.category == *cat)
-                .map(|a| RowView {
+        .map(|heading| {
+            let tiles: Vec<TileView> = section_apps(&visible_refs, heading)
+                .into_iter()
+                .map(|a| TileView {
                     id: a.id.clone(),
                     name: a.name.clone(),
                     summary: a.summary.clone(),
@@ -193,12 +209,11 @@ pub fn ConnectedAppsCatalogue(
                     connected: effective_connected(a, &overrides_now),
                 })
                 .collect();
-            (cat.clone(), rows)
+            (heading.clone(), tiles.len(), tiles)
         })
         .collect();
     let searching = !query().trim().is_empty();
     let no_match = !is_loading && !is_empty && visible.is_empty();
-    let account_initials = initials(&account.name);
     let tab_ids: Vec<String> = (0..Tab::ALL.len())
         .map(|i| format!("{base}-tab-{i}"))
         .collect();
@@ -229,31 +244,115 @@ pub fn ConnectedAppsCatalogue(
         document::Link { rel: "stylesheet", href: KIT_CSS }
         document::Link { rel: "stylesheet", href: CSS }
         section { class: "kit-cac", "aria-labelledby": "{base}-title",
-            nav { class: "kit-cac__nav", "aria-label": "Sidebar",
-                p { class: "kit-cac__ws", "{workspace_name}" }
-                ul { class: "kit-cac__nav-list",
-                    for item in ["Home", "Inbox", "Integrations", "Assistant", "Settings"] {
-                        li { key: "{item}",
-                            span { class: "kit-cac__nav-item", "aria-current": if item == "Integrations" { "page" } else { "false" }, "{item}" }
+            header { class: "kit-cac__head",
+                div { class: "kit-cac__headrow",
+                    h1 { id: "{base}-title", class: "kit-cac__title", "Connected apps" }
+                    button { class: "kit-cac__btn kit-cac__btn--primary", r#type: "button",
+                        onclick: move |_| {
+                            request_open.set(true);
+                            tab.set(Tab::Request);
+                        },
+                        "Request integration"
+                    }
+                }
+                div { class: "kit-cac__tabs", role: "tablist", "aria-label": "Filter apps", onkeydown: on_tab_keys,
+                    for (i, (t, count)) in counts.iter().enumerate() {
+                        button { key: "{i}", id: "{tab_ids[i]}", class: "kit-cac__tab", r#type: "button", role: "tab",
+                            "aria-selected": if *t == current_tab { "true" } else { "false" },
+                            tabindex: if *t == current_tab { "0" } else { "-1" },
+                            onclick: {
+                                let t = *t;
+                                move |_| {
+                                    tab.set(t);
+                                    request_open.set(t == Tab::Request);
+                                }
+                            },
+                            "{t.label()}"
+                            if *t != Tab::Request {
+                                span { class: "kit-cac__count", "{count}" }
+                            }
                         }
                     }
                 }
-                div { class: "kit-cac__account",
-                    span { class: "kit-cac__avatar", "aria-hidden": "true",
-                        if let Some(src) = account.avatar_url.clone() {
-                            img { src: "{src}", alt: "" }
-                        } else {
-                            "{account_initials}"
-                        }
+                label { class: "kit-cac__search",
+                    span { class: "kit-sr", "Search apps" }
+                    input { r#type: "search", class: "kit-cac__input", placeholder: "Search apps", value: "{query()}",
+                        oninput: move |e| query.set(e.value()),
+                        onkeydown: move |event: KeyboardEvent| {
+                            if matches!(event.key(), Key::Escape) {
+                                query.set(String::new());
+                            }
+                        },
                     }
-                    span { class: "kit-cac__account-name", "{account.name}" }
                 }
             }
 
-            div { class: "kit-cac__page",
-                header { class: "kit-cac__head",
-                    div { class: "kit-cac__headrow",
-                        h1 { id: "{base}-title", class: "kit-cac__title", "Connected apps" }
+            if request_open() {
+                form { class: "kit-cac__request", "aria-label": "Request an integration",
+                    onsubmit: move |event: FormEvent| {
+                        event.prevent_default();
+                        if can_submit(&request_name()) {
+                            on_request.call((request_name(), request_note()));
+                            announce.set(format!("Request sent for {}", request_name()));
+                            request_name.set(String::new());
+                            request_note.set(String::new());
+                            request_open.set(false);
+                            tab.set(Tab::All);
+                        }
+                    },
+                    onkeydown: move |event: KeyboardEvent| {
+                        if matches!(event.key(), Key::Escape) {
+                            event.prevent_default();
+                            request_open.set(false);
+                            tab.set(Tab::All);
+                            request_name.set(String::new());
+                            request_note.set(String::new());
+                        }
+                    },
+                    label { class: "kit-cac__field",
+                        span { "Integration name" }
+                        input { class: "kit-cac__input", r#type: "text", name: "name", value: "{request_name()}",
+                            oninput: move |e| request_name.set(e.value()),
+                        }
+                    }
+                    label { class: "kit-cac__field",
+                        span { "Note" }
+                        textarea { class: "kit-cac__input", name: "note", rows: "2", value: "{request_note()}",
+                            oninput: move |e| request_note.set(e.value()),
+                        }
+                    }
+                    div { class: "kit-cac__form-actions",
+                        button { class: "kit-cac__btn", r#type: "button",
+                            onclick: move |_| {
+                                request_open.set(false);
+                                tab.set(Tab::All);
+                            },
+                            "Cancel"
+                        }
+                        button { class: "kit-cac__btn kit-cac__btn--primary", r#type: "submit", disabled: !submit_enabled, "Submit request" }
+                    }
+                }
+            }
+
+            main { class: "kit-cac__list", "aria-busy": "{is_loading}",
+                if is_loading {
+                    for s in 0..2 {
+                        section { key: "{s}", class: "kit-cac__section",
+                            span { class: "kit-cac__ph kit-cac__ph--head" }
+                            ul { class: "kit-cac__grid",
+                                for r in 0..4 {
+                                    li { key: "{r}", class: "kit-cac__tile kit-cac__tile--ph",
+                                        span { class: "kit-cac__ph kit-cac__ph--tile" }
+                                        span { class: "kit-cac__ph kit-cac__ph--line" }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } else if is_empty {
+                    div { class: "kit-cac__empty",
+                        p { class: "kit-cac__empty-title", "No integrations yet" }
+                        p { class: "kit-cac__empty-text", "Services you connect appear here, grouped by what they do." }
                         button { class: "kit-cac__btn kit-cac__btn--primary", r#type: "button",
                             onclick: move |_| {
                                 request_open.set(true);
@@ -262,218 +361,116 @@ pub fn ConnectedAppsCatalogue(
                             "Request integration"
                         }
                     }
-                    div { class: "kit-cac__tabs", role: "tablist", "aria-label": "Filter apps", onkeydown: on_tab_keys,
-                        for (i, (t, count)) in counts.iter().enumerate() {
-                            button { key: "{i}", id: "{tab_ids[i]}", class: "kit-cac__tab", r#type: "button", role: "tab",
-                                "aria-selected": if *t == current_tab { "true" } else { "false" },
-                                tabindex: if *t == current_tab { "0" } else { "-1" },
-                                onclick: {
-                                    let t = *t;
-                                    move |_| {
-                                        tab.set(t);
-                                        request_open.set(t == Tab::Request);
-                                    }
-                                },
-                                "{t.label()}"
-                                if *t != Tab::Request {
-                                    span { class: "kit-cac__count", "{count}" }
-                                }
-                            }
+                } else if no_match {
+                    div { class: "kit-cac__empty",
+                        p { class: "kit-cac__empty-title", "No apps match" }
+                        if searching {
+                            button { class: "kit-cac__btn", r#type: "button", onclick: move |_| query.set(String::new()), "Clear search" }
                         }
                     }
-                    label { class: "kit-cac__search",
-                        span { class: "kit-sr", "Search apps" }
-                        input { r#type: "search", class: "kit-cac__input", placeholder: "Search apps", value: "{query()}",
-                            oninput: move |e| query.set(e.value()),
-                            onkeydown: move |event: KeyboardEvent| {
-                                if matches!(event.key(), Key::Escape) {
-                                    query.set(String::new());
-                                }
-                            },
-                        }
-                    }
-                }
-
-                if request_open() {
-                    form { class: "kit-cac__request", "aria-label": "Request an integration",
-                        onsubmit: move |event: FormEvent| {
-                            event.prevent_default();
-                            if can_submit(&request_name()) {
-                                on_request.call((request_name(), request_note()));
-                                announce.set(format!("Request sent for {}", request_name()));
-                                request_name.set(String::new());
-                                request_note.set(String::new());
-                                request_open.set(false);
-                                tab.set(Tab::All);
+                } else {
+                    for (si, (heading, count, tiles)) in sections.iter().enumerate() {
+                        section { key: "{si}", class: "kit-cac__section", "aria-labelledby": "{base}-sec-{si}",
+                            h2 { id: "{base}-sec-{si}", class: "kit-cac__section-title",
+                                "{heading}"
+                                span { class: "kit-cac__section-count", "{count}" }
                             }
-                        },
-                        onkeydown: move |event: KeyboardEvent| {
-                            if matches!(event.key(), Key::Escape) {
-                                event.prevent_default();
-                                request_open.set(false);
-                                tab.set(Tab::All);
-                                request_name.set(String::new());
-                                request_note.set(String::new());
-                            }
-                        },
-                        label { class: "kit-cac__field",
-                            span { "Integration name" }
-                            input { class: "kit-cac__input", r#type: "text", name: "name", value: "{request_name()}",
-                                oninput: move |e| request_name.set(e.value()),
-                            }
-                        }
-                        label { class: "kit-cac__field",
-                            span { "Note" }
-                            textarea { class: "kit-cac__input", name: "note", rows: "2", value: "{request_note()}",
-                                oninput: move |e| request_note.set(e.value()),
-                            }
-                        }
-                        div { class: "kit-cac__form-actions",
-                            button { class: "kit-cac__btn", r#type: "button",
-                                onclick: move |_| {
-                                    request_open.set(false);
-                                    tab.set(Tab::All);
-                                },
-                                "Cancel"
-                            }
-                            button { class: "kit-cac__btn kit-cac__btn--primary", r#type: "submit", disabled: !submit_enabled, "Submit request" }
-                        }
-                    }
-                }
-
-                main { class: "kit-cac__list", "aria-busy": "{is_loading}",
-                    if is_loading {
-                        for s in 0..2 {
-                            section { key: "{s}", class: "kit-cac__section",
-                                span { class: "kit-cac__ph kit-cac__ph--head" }
-                                for r in 0..3 {
-                                    div { key: "{r}", class: "kit-cac__row kit-cac__row--ph",
-                                        span { class: "kit-cac__ph kit-cac__ph--tile" }
-                                        span { class: "kit-cac__ph kit-cac__ph--line" }
-                                    }
-                                }
-                            }
-                        }
-                    } else if is_empty {
-                        div { class: "kit-cac__empty",
-                            p { class: "kit-cac__empty-title", "No integrations yet" }
-                            p { class: "kit-cac__empty-text", "Services you connect appear here, grouped by what they do." }
-                            button { class: "kit-cac__btn kit-cac__btn--primary", r#type: "button",
-                                onclick: move |_| {
-                                    request_open.set(true);
-                                    tab.set(Tab::Request);
-                                },
-                                "Request integration"
-                            }
-                        }
-                    } else if no_match {
-                        div { class: "kit-cac__empty",
-                            p { class: "kit-cac__empty-title", "No apps match" }
-                            if searching {
-                                button { class: "kit-cac__btn", r#type: "button", onclick: move |_| query.set(String::new()), "Clear search" }
-                            }
-                        }
-                    } else {
-                        for (si, (category, rows)) in sections.iter().enumerate() {
-                            section { key: "{si}", class: "kit-cac__section", "aria-label": "{category}",
-                                h2 { class: "kit-cac__section-title", "{category}" }
-                                ul { class: "kit-cac__rows",
-                                    for row in rows.iter() {
-                                        li { key: "{row.id}", class: "kit-cac__row", role: "group", "aria-label": "{row.name}, {row.summary}",
-                                            span { class: "kit-cac__tile", "aria-hidden": "true",
-                                                if let Some(src) = row.logo_url.clone() {
-                                                    img { src: "{src}", alt: "" }
-                                                } else {
-                                                    "{row.initial}"
-                                                }
+                            ul { class: "kit-cac__grid",
+                                for tile in tiles.iter() {
+                                    li { key: "{tile.id}", class: "kit-cac__tile", role: "group", "aria-label": "{tile.name}, {tile.summary}",
+                                        span { class: "kit-cac__logo", "aria-hidden": "true",
+                                            if let Some(src) = tile.logo_url.clone() {
+                                                img { src: "{src}", alt: "" }
+                                            } else {
+                                                "{tile.initial}"
                                             }
-                                            div { class: "kit-cac__body",
-                                                button { class: "kit-cac__name", r#type: "button",
+                                        }
+                                        div { class: "kit-cac__body",
+                                            button { class: "kit-cac__name", r#type: "button",
+                                                onclick: {
+                                                    let id = tile.id.clone();
+                                                    move |_| on_open_app.call(id.clone())
+                                                },
+                                                "{tile.name}"
+                                            }
+                                            span { class: "kit-cac__summary", "{tile.summary}" }
+                                            if let Some(bundle) = tile.bundle_text.clone() {
+                                                span { class: "kit-cac__bundle", "Includes {bundle}" }
+                                            }
+                                        }
+                                        div { class: "kit-cac__control",
+                                            if connecting().contains(&tile.id) {
+                                                span { class: "kit-cac__progress", role: "status", "Connecting…" }
+                                            } else if tile.connected {
+                                                span { class: "kit-cac__badge", "Connected" }
+                                                button { class: "kit-cac__btn", r#type: "button", "aria-haspopup": "menu",
+                                                    "aria-expanded": if menu_for() == Some(tile.id.clone()) { "true" } else { "false" },
+                                                    "aria-label": "Connected: {tile.name}, open menu",
                                                     onclick: {
-                                                        let id = row.id.clone();
-                                                        move |_| on_open_app.call(id.clone())
+                                                        let id = tile.id.clone();
+                                                        move |_| {
+                                                            let next = if menu_for() == Some(id.clone()) { None } else { Some(id.clone()) };
+                                                            menu_for.set(next);
+                                                        }
                                                     },
-                                                    "{row.name}"
+                                                    "Menu"
                                                 }
-                                                span { class: "kit-cac__summary", "{row.summary}" }
-                                                if let Some(bundle) = row.bundle_text.clone() {
-                                                    span { class: "kit-cac__bundle", "Includes {bundle}" }
-                                                }
-                                            }
-                                            div { class: "kit-cac__control",
-                                                if connecting().contains(&row.id) {
-                                                    span { class: "kit-cac__progress", role: "status", "Connecting…" }
-                                                } else if row.connected {
-                                                    span { class: "kit-cac__badge", "Connected" }
-                                                    button { class: "kit-cac__btn", r#type: "button", "aria-haspopup": "menu",
-                                                        "aria-expanded": if menu_for() == Some(row.id.clone()) { "true" } else { "false" },
-                                                        "aria-label": "Connected: {row.name}, open menu",
-                                                        onclick: {
-                                                            let id = row.id.clone();
-                                                            move |_| {
-                                                                let next = if menu_for() == Some(id.clone()) { None } else { Some(id.clone()) };
-                                                                menu_for.set(next);
+                                                if menu_for() == Some(tile.id.clone()) {
+                                                    div { class: "kit-cac__menu", role: "menu",
+                                                        onkeydown: move |event: KeyboardEvent| {
+                                                            if matches!(event.key(), Key::Escape) {
+                                                                menu_for.set(None);
+                                                                confirm_for.set(None);
                                                             }
                                                         },
-                                                        "Menu"
-                                                    }
-                                                    if menu_for() == Some(row.id.clone()) {
-                                                        div { class: "kit-cac__menu", role: "menu",
-                                                            onkeydown: move |event: KeyboardEvent| {
-                                                                if matches!(event.key(), Key::Escape) {
-                                                                    menu_for.set(None);
-                                                                    confirm_for.set(None);
-                                                                }
-                                                            },
-                                                            if confirm_for() == Some(row.id.clone()) {
-                                                                p { class: "kit-cac__confirm", "Disconnect {row.name}?" }
-                                                                button { class: "kit-cac__btn kit-cac__btn--danger", r#type: "button", role: "menuitem",
-                                                                    onclick: {
-                                                                        let id = row.id.clone();
-                                                                        move |_| {
-                                                                            overrides.with_mut(|m| {
-                                                                                m.insert(id.clone(), false);
-                                                                            });
-                                                                            on_disconnect.call(id.clone());
-                                                                            announce.set(format!("Disconnected {id}"));
-                                                                            confirm_for.set(None);
-                                                                            menu_for.set(None);
-                                                                        }
-                                                                    },
-                                                                    "Confirm disconnect"
-                                                                }
-                                                            } else {
-                                                                button { class: "kit-cac__btn", r#type: "button", role: "menuitem",
-                                                                    onclick: {
-                                                                        let id = row.id.clone();
-                                                                        move |_| confirm_for.set(Some(id.clone()))
-                                                                    },
-                                                                    "Disconnect"
-                                                                }
+                                                        if confirm_for() == Some(tile.id.clone()) {
+                                                            p { class: "kit-cac__confirm", "Disconnect {tile.name}?" }
+                                                            button { class: "kit-cac__btn kit-cac__btn--danger", r#type: "button", role: "menuitem",
+                                                                onclick: {
+                                                                    let id = tile.id.clone();
+                                                                    move |_| {
+                                                                        overrides.with_mut(|m| {
+                                                                            m.insert(id.clone(), false);
+                                                                        });
+                                                                        on_disconnect.call(id.clone());
+                                                                        announce.set(format!("Disconnected {id}"));
+                                                                        confirm_for.set(None);
+                                                                        menu_for.set(None);
+                                                                    }
+                                                                },
+                                                                "Confirm disconnect"
+                                                            }
+                                                        } else {
+                                                            button { class: "kit-cac__btn", r#type: "button", role: "menuitem",
+                                                                onclick: {
+                                                                    let id = tile.id.clone();
+                                                                    move |_| confirm_for.set(Some(id.clone()))
+                                                                },
+                                                                "Disconnect"
                                                             }
                                                         }
                                                     }
-                                                } else {
-                                                    button { class: "kit-cac__btn kit-cac__btn--primary", r#type: "button", "aria-label": "Connect {row.name}",
-                                                        onclick: {
-                                                            let id = row.id.clone();
-                                                            move |_| {
-                                                                connecting.with_mut(|c| c.push(id.clone()));
-                                                                on_connect.call(id.clone());
-                                                                announce.set(format!("Connecting {id}"));
-                                                                let finish = id.clone();
-                                                                spawn(async move {
-                                                                    sleep(CONNECT_MS).await;
-                                                                    connecting.with_mut(|c| c.retain(|x| *x != finish));
-                                                                    overrides.with_mut(|m| {
-                                                                        m.insert(finish.clone(), true);
-                                                                    });
-                                                                    announce.set(format!("Connected {finish}"));
+                                                }
+                                            } else {
+                                                button { class: "kit-cac__btn kit-cac__btn--primary", r#type: "button", "aria-label": "Connect {tile.name}",
+                                                    onclick: {
+                                                        let id = tile.id.clone();
+                                                        move |_| {
+                                                            connecting.with_mut(|c| c.push(id.clone()));
+                                                            on_connect.call(id.clone());
+                                                            announce.set(format!("Connecting {id}"));
+                                                            let finish = id.clone();
+                                                            spawn(async move {
+                                                                sleep(CONNECT_MS).await;
+                                                                connecting.with_mut(|c| c.retain(|x| *x != finish));
+                                                                overrides.with_mut(|m| {
+                                                                    m.insert(finish.clone(), true);
                                                                 });
-                                                            }
-                                                        },
-                                                        "Connect"
-                                                    }
+                                                                announce.set(format!("Connected {finish}"));
+                                                            });
+                                                        }
+                                                    },
+                                                    "Connect"
                                                 }
                                             }
                                         }

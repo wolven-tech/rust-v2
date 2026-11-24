@@ -82,3 +82,29 @@ Reading order:
 8. Escape in the request form closes it without calling `on_request`.
 9. The header with its tabs stays visible while the list scrolls.
 10. At phone width the page has no horizontal scroll, and the tab strip scrolls inside itself.
+
+## Amendment 5: structure and demo
+
+Replaces: none (no earlier amendment in this spec).
+
+**Archetype:** sticky header with a tab strip and search, over a two-column tile grid organised into sections.
+
+**At rest (gallery demo):**
+- Header: page title, Request control, tabs All (16), Connected (5), Available (11), Request, Popular (4), and a search field.
+- Sections in this order, 16 tiles in all: Popular (4 tiles), Documents and design (4), Communication (4), Scheduling and analytics (2), Data and payments (2).
+- Each tile: logo or initial tile, name, one-line summary, connection control (Connect, or Connected with a menu).
+- Two of the 16 tiles are bundles. Each lists its grouped service names after its summary.
+- Five tiles show Connected.
+
+**States at rest:** loaded; All tab selected; search empty; no request form open.
+
+**Arrangement:** two tile columns at desktop width, one column below phone width. Sections stack vertically in the order above.
+
+**Motion, settled frame:** nothing moves at rest.
+
+**Checks (continued):**
+11. At rest the grid holds 16 tiles in five sections, Popular first, and each section heading's count matches its tiles.
+12. The Popular section sits above the category sections and contains only apps whose `popular` is true.
+13. At desktop width the tiles lay out in two columns; below phone width they lay out in one.
+14. A bundle tile shows its grouped service names as a line after its summary.
+15. Each tab's count equals the number of tiles that tab shows.

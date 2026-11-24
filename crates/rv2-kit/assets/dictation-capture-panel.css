@@ -1,7 +1,30 @@
 /* Dictation capture panel. Bars scale by transform; the track slides one bar step by transform. */
 .kit-dict-scene {
+  position: relative;
   width: 100%;
   min-width: 0;
+  padding-bottom: 36px;
+}
+
+/* Two light layers under the card's lower edge; the card paints above them. */
+.kit-dict__light {
+  position: absolute;
+  top: calc(100% - 54px);
+  z-index: 0;
+  width: 46%;
+  height: 64px;
+  pointer-events: none;
+  opacity: var(--kit-dict-light, 0.6);
+  filter: blur(16px);
+  background: radial-gradient(ellipse at 50% 0%, var(--kit-accent) 0%, transparent 70%);
+}
+
+.kit-dict__light[data-half="a"] {
+  left: 4%;
+}
+
+.kit-dict__light[data-half="b"] {
+  left: 50%;
 }
 
 .kit-dict {
@@ -38,6 +61,7 @@
   inset: 0;
   display: flex;
   align-items: stretch;
+  justify-content: space-between;
   padding: 0 6px;
   animation: kit-dict-slide var(--kit-fast) var(--kit-ease);
 }
@@ -48,9 +72,9 @@
 }
 
 .kit-dict__bar {
-  flex: 1 1 0;
-  min-width: 0;
-  margin: 8px 1px;
+  flex: 0 0 3px;
+  width: 3px;
+  margin: 8px 0;
   border-radius: 2px;
   background: var(--kit-accent);
   transform-origin: 50% 50%;
@@ -89,6 +113,15 @@
 .kit-dict[data-state="paused"] .kit-dict__dot,
 .kit-dict[data-state="idle"] .kit-dict__dot {
   background: var(--kit-ink-faint);
+}
+
+.kit-dict__sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
 }
 
 .kit-dict__time {

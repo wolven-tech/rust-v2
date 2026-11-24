@@ -2,6 +2,9 @@
 //! agents, who pop in one after another with their role and the tools they use, then the scene
 //! starts over. Laid out on a 600 × 400 grid inside a 3 : 2 frame.
 //!
+//! The first render is the finished scene, so a still frame shows the team; the loop waits `HOLD`
+//! before it types again.
+//!
 //! Port losses: the choreography runs as a `spawn` loop over `sleep`, with the timeline built by
 //! `schedule`. Reduced motion is read once on mount through `document::eval`; the finished scene
 //! is then shown and no loop starts.
@@ -18,7 +21,7 @@ const TYPE: u32 = 22;
 const SEND: u32 = 420;
 const SPREAD: u32 = 700;
 const STAGGER: u32 = 160;
-const HOLD: u32 = 2600;
+const HOLD: u32 = 6000;
 const RESET: u32 = 600;
 const LEAD_IN: u32 = 500;
 
@@ -131,8 +134,8 @@ pub fn AgentTeam(
     #[props(default)] label: Option<String>,
 ) -> Element {
     let id = use_hook(|| format!("ui-atm{}", next_id()));
-    let mut typed = use_signal(|| 0usize);
-    let mut phase = use_signal(|| Phase::Typing);
+    let mut typed = use_signal(|| prompt.chars().count());
+    let mut phase = use_signal(|| Phase::Team);
     let mut task = use_signal(|| None::<dioxus::core::Task>);
 
     use_effect(use_reactive((&prompt,), move |(prompt,)| {
@@ -149,6 +152,7 @@ pub fn AgentTeam(
             }
             let steps = schedule(length);
             let cycle = cycle_len(length);
+            sleep(HOLD).await;
             loop {
                 phase.set(Phase::Typing);
                 typed.set(0);

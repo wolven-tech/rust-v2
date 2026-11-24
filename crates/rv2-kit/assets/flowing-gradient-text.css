@@ -1,6 +1,18 @@
 /* --kit-flow-fill is set inline from the gradient token in flowing_gradient_text.rs. */
 .kit-gradient-text {
+  display: block;
   overflow-wrap: break-word;
+}
+
+.kit-gradient-text--display {
+  max-width: 16em;
+  margin: 0 auto;
+  font-size: var(--kit-text-display);
+  font-weight: 650;
+  line-height: 1.15;
+  text-align: center;
+  text-wrap: balance;
+  color: var(--kit-ink);
 }
 
 .kit-gradient-text__fill {
@@ -29,10 +41,9 @@
 }
 
 .kit-gradient-text__replay {
-  display: inline-block;
-  margin-left: 0.5em;
-  padding: 0.125em 0.5em;
-  vertical-align: middle;
+  display: block;
+  margin: var(--kit-space-3) auto 0;
+  padding: 0.25em 0.75em;
   font: inherit;
   font-size: 0.8rem;
   color: var(--kit-ink-muted);

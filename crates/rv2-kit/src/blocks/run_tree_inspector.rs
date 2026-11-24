@@ -25,6 +25,7 @@ const CSS: Asset = asset!("/assets/run-tree-inspector.css");
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum RunStatus {
     Running,
+    Waiting,
     Completed,
     Error,
 }
@@ -33,6 +34,7 @@ impl RunStatus {
     fn label(self) -> &'static str {
         match self {
             Self::Running => "Running",
+            Self::Waiting => "Waiting",
             Self::Completed => "Done",
             Self::Error => "Error",
         }
@@ -41,6 +43,7 @@ impl RunStatus {
     fn tone(self) -> BadgeTone {
         match self {
             Self::Running => BadgeTone::Info,
+            Self::Waiting => BadgeTone::Neutral,
             Self::Completed => BadgeTone::Success,
             Self::Error => BadgeTone::Danger,
         }
@@ -55,6 +58,9 @@ pub struct RunInfo {
     pub duration_secs: f64,
     pub cost_usd: f64,
     pub token_count: u64,
+    /// Totals for the whole run; the calls passed in may be a subset.
+    pub model_call_count: usize,
+    pub tool_call_count: usize,
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -67,7 +73,12 @@ pub struct RunAgent {
     pub cost_usd: f64,
     pub elapsed_secs: f64,
     pub current_step: Option<String>,
+    /// Drawn faded so the card reads as background to the focused agents.
+    pub faded: bool,
 }
+
+/// Call rows drawn per agent card; the rest are counted in the card's footer.
+pub const CALL_PREVIEW: usize = 3;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum CallKind {
@@ -89,6 +100,26 @@ impl CallStatus {
             Self::Running => "running",
             Self::Error => "error",
         }
+    }
+
+    /// Glyph shown beside the call name; the word is still in the row's accessible name.
+    fn mark(self) -> &'static str {
+        match self {
+            Self::Ok => "✓",
+            Self::Running => "…",
+            Self::Error => "✕",
+        }
+    }
+}
+
+/// `96k`, `1.2M`, or the exact count below one thousand.
+pub fn token_label(count: u64) -> String {
+    if count >= 1_000_000 {
+        format!("{:.1}M", count as f64 / 1_000_000.0)
+    } else if count >= 1_000 {
+        format!("{}k", count / 1_000)
+    } else {
+        count.to_string()
     }
 }
 
@@ -224,6 +255,7 @@ fn AgentNode(
     let key_id = agent.id.clone();
     let elapsed = duration_label(agent.elapsed_secs);
     let cost = format!("${:.2}", agent.cost_usd);
+    let hidden_calls = own.len().saturating_sub(CALL_PREVIEW);
     let step = agent.current_step.clone();
     let order = tree_order(&agents);
     let me = order.iter().position(|a| *a == agent.id).unwrap_or(0);
@@ -234,6 +266,7 @@ fn AgentNode(
             "aria-expanded": if open { "true" } else { "false" },
             div { class: "kit-rti__card", "data-status": agent.status.label().to_lowercase(),
                 "data-link": link,
+                "data-faded": agent.faded.then_some("true"),
                 onmouseenter: move |_| on_hover.call(Some(hover_id.clone())),
                 onmouseleave: move |_| on_hover.call(None),
                 button {
@@ -264,20 +297,21 @@ fn AgentNode(
                     span { class: "kit-rti__name", "{agent.name}" }
                     span { class: "kit-rti__model", "{agent.model_label}" }
                     Badge { tone: agent.status.tone(), "{agent.status.label()}" }
-                    span { class: "kit-rti__meta", "{elapsed} · {cost}" }
                     if let Some(step) = step {
                         span { class: "kit-rti__step", "{step}" }
                     }
                 }
                 if open {
                     ul { class: "kit-rti__calls", role: "group",
-                        for call in own.iter() {
+                        for call in own.iter().take(CALL_PREVIEW) {
                             {
                                 let picked = selected_call_id.as_deref() == Some(call.id.as_str());
                                 let width = bar_percent(call.duration_secs, longest);
                                 let call_id = call.id.clone();
                                 let aria = format!("{} {}, {}, {}", if call.kind == CallKind::Model { "model" } else { "tool" }, call.name, call.status.word(), duration_label(call.duration_secs));
                                 let error = call.error_message.clone();
+                                let kind_mark = if call.kind == CallKind::Model { "M" } else { "T" };
+                                let status_mark = call.status.mark();
                                 rsx! {
                                     li { key: "{call.id}", class: "kit-rti__call", "data-status": call.status.word(), "data-picked": picked.then_some("true"),
                                         button {
@@ -286,7 +320,9 @@ fn AgentNode(
                                             "aria-pressed": if picked { "true" } else { "false" },
                                             "aria-label": "{aria}",
                                             onclick: move |_| on_select_call.call(if picked { None } else { Some(call_id.clone()) }),
+                                            span { class: "kit-rti__kind", "aria-hidden": "true", "{kind_mark}" }
                                             span { class: "kit-rti__call-name", "{call.name}" }
+                                            span { class: "kit-rti__status-mark", "aria-hidden": "true", "{status_mark}" }
                                             span { class: "kit-rti__bar-track",
                                                 span { class: "kit-rti__bar", style: "width: {width:.2}%", "data-status": call.status.word() }
                                             }
@@ -307,6 +343,13 @@ fn AgentNode(
                         if own.is_empty() {
                             li { class: "kit-rti__none", "No calls yet" }
                         }
+                    }
+                }
+                div { class: "kit-rti__foot",
+                    span { class: "kit-rti__meta", "{cost} · {elapsed}" }
+                    span { class: "kit-rti__more", "aria-hidden": "true",
+                        "{hidden_calls}"
+                        span { class: "kit-rti__chevron" }
                     }
                 }
             }
@@ -354,8 +397,11 @@ pub fn RunTreeInspector(
         .map(|c| c.duration_secs)
         .fold(0.0_f64, f64::max);
     let errors = error_count(&calls);
-    let model_calls = calls.iter().filter(|c| c.kind == CallKind::Model).count();
-    let tool_calls = calls.iter().filter(|c| c.kind == CallKind::Tool).count();
+    let agent_count = agents.len();
+    let running_agents = agents
+        .iter()
+        .filter(|a| a.status == RunStatus::Running)
+        .count();
     let root_class = class_list("kit-rti", &extra_classes);
     let roots: Vec<RunAgent> = agents
         .iter()
@@ -383,15 +429,20 @@ pub fn RunTreeInspector(
             },
             header { class: "kit-rti__head",
                 div { class: "kit-rti__title-row",
+                    span { class: "kit-rti__sparkle", "aria-hidden": "true", "✦" }
                     h2 { class: "kit-rti__title", "{run.title}" }
                     Badge { tone: run.status.tone(), "{run.status.label()}" }
+                    p { class: "kit-rti__summary",
+                        span { "{agent_count} agents · {running_agents} running" }
+                        span { "${run.cost_usd:.2}" }
+                    }
                 }
                 dl { class: "kit-rti__figures",
                     div { dt { "Duration" } dd { "{duration_label(run.duration_secs)}" } }
                     div { dt { "Cost" } dd { "${run.cost_usd:.2}" } }
-                    div { dt { "Tokens" } dd { "{run.token_count}" } }
-                    div { dt { "Model calls" } dd { "{model_calls}" } }
-                    div { dt { "Tool calls" } dd { "{tool_calls}" } }
+                    div { dt { "Tokens" } dd { "{token_label(run.token_count)}" } }
+                    div { dt { "Model calls" } dd { "{run.model_call_count}" } }
+                    div { dt { "Tool calls" } dd { "{run.tool_call_count}" } }
                     div { dt { "Errors" } dd { "{errors}" } }
                 }
             }

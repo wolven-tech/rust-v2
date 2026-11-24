@@ -542,7 +542,7 @@ pub fn FileLibrary(
                             button { class: "kit-fl__btn", r#type: "button", onclick: move |_| template_filter.set(TemplateFilter::All), "Show all templates" }
                         }
                     } else {
-                        ul { class: "{grid_class}",
+                        ul { class: "{grid_class} kit-fl__items--templates",
                             for t in visible_templates.iter() {
                                 li { key: "{t.id}", class: "kit-fl__item kit-fl__item--template",
                                     button { class: "kit-fl__card", r#type: "button",

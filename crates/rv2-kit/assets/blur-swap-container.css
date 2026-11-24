@@ -54,3 +54,121 @@
     display: none;
   }
 }
+
+.kit-blur-step {
+  display: grid;
+  gap: var(--kit-gap);
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  padding: var(--kit-space-4);
+  border: 1px solid var(--kit-rule-soft);
+  border-radius: var(--kit-radius-card);
+  background: var(--kit-surface);
+  box-shadow: var(--kit-shadow-card);
+  color: var(--kit-ink);
+  font-family: var(--kit-font);
+}
+
+.kit-blur-step__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--kit-space-2);
+}
+
+.kit-blur-step__heading {
+  min-width: 0;
+}
+
+.kit-blur-step__title {
+  margin: 0;
+  font-size: var(--kit-text-xl);
+  font-weight: 600;
+}
+
+.kit-blur-step__status {
+  margin: 2px 0 0;
+  font-size: var(--kit-text-sm);
+  color: var(--kit-ink-muted);
+}
+
+.kit-blur-step__primary,
+.kit-blur-step__next {
+  flex: none;
+  padding: var(--kit-space-1) var(--kit-space-3);
+  border: 0;
+  border-radius: var(--kit-radius);
+  font: inherit;
+  font-size: var(--kit-text-md);
+  cursor: pointer;
+}
+
+.kit-blur-step__primary {
+  background: var(--kit-primary);
+  color: var(--kit-on-primary);
+}
+
+.kit-blur-step__next {
+  background: var(--kit-raised);
+  color: var(--kit-ink);
+  border: 1px solid var(--kit-rule-soft);
+}
+
+.kit-blur-step__body {
+  min-height: 0;
+}
+
+.kit-blur-step__panel {
+  display: grid;
+  gap: var(--kit-space-2);
+  padding: var(--kit-space-2) 0;
+}
+
+.kit-blur-step__tag {
+  justify-self: start;
+  padding: 2px var(--kit-space-2);
+  border-radius: var(--kit-radius-pill);
+  background: var(--kit-raised);
+  color: var(--kit-ink-muted);
+  font-size: var(--kit-text-xs);
+}
+
+.kit-blur-step__sentence {
+  margin: 0;
+  font-size: var(--kit-text-lg);
+  line-height: 1.5;
+}
+
+.kit-blur-step__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--kit-space-2);
+}
+
+.kit-blur-step__dots {
+  display: flex;
+  gap: var(--kit-space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.kit-blur-step__dot {
+  width: 10px;
+  height: 10px;
+  border-radius: var(--kit-radius-pill);
+  background: var(--kit-rule);
+}
+
+.kit-blur-step__dot[data-current] {
+  background: var(--kit-accent);
+}
+
+.kit-blur-step__primary:focus-visible,
+.kit-blur-step__next:focus-visible {
+  outline: 2px solid var(--kit-accent);
+  outline-offset: 2px;
+}

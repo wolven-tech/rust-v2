@@ -70,9 +70,9 @@ pub enum ActionClass {
 impl ActionClass {
     pub fn heading(self) -> &'static str {
         match self {
-            Self::Read => "Reads",
-            Self::Write => "Changes",
-            Self::Risky => "Needs care",
+            Self::Read => "Read only",
+            Self::Write => "Edits",
+            Self::Risky => "Sensitive",
         }
     }
 }
@@ -152,8 +152,20 @@ pub fn implied_setting(level: AutonomyLevel, class: ActionClass) -> Setting {
 }
 
 /// True when a non-fixed rule's setting is not what the level implies.
+///
+/// A level that implies Ask first already holds a Never rule back, and an amount limit is the threshold for
+/// that same Ask, so neither is a departure from the level.
 pub fn is_changed(rule: &ActionRule, level: AutonomyLevel) -> bool {
-    !rule.is_fixed && rule.rule_setting != implied_setting(level, rule.action_class)
+    if rule.is_fixed {
+        return false;
+    }
+    let implied = implied_setting(level, rule.action_class);
+    if implied == Setting::Ask
+        && (rule.rule_setting == Setting::Never || rule.amount_limit.is_some())
+    {
+        return false;
+    }
+    rule.rule_setting != implied
 }
 
 /// Counts of rules at each setting, as `(on its own, asks first, never)`.
@@ -167,14 +179,31 @@ pub fn setting_counts(rules: &[ActionRule]) -> (usize, usize, usize) {
         })
 }
 
-/// The rules an app owns, as `(on its own, asks first, never)`.
+/// The app action rules, as `(on its own, asks first, never)`. Fixed rules are counted separately.
+pub fn action_counts(rules: &[ActionRule]) -> (usize, usize, usize) {
+    let owned: Vec<ActionRule> = rules.iter().filter(|r| !r.is_fixed).cloned().collect();
+    setting_counts(&owned)
+}
+
+/// The rules an app owns, as `(on its own, asks first, never)`. Fixed rules are counted separately.
 pub fn app_counts(rules: &[ActionRule], app_id: &str) -> (usize, usize, usize) {
     let owned: Vec<ActionRule> = rules
         .iter()
         .filter(|r| r.app_id == app_id)
         .cloned()
         .collect();
-    setting_counts(&owned)
+    action_counts(&owned)
+}
+
+/// The first `limit` events of the app's action rules, in rule order. Each rule's `recent_events` must be newest
+/// first, because the host has no timestamp it can sort on.
+pub fn lately(rules: &[ActionRule], app_id: &str, limit: usize) -> Vec<RecentEvent> {
+    rules
+        .iter()
+        .filter(|r| r.app_id == app_id && !r.is_fixed)
+        .flat_map(|r| r.recent_events.iter().cloned())
+        .take(limit)
+        .collect()
 }
 
 /// One app's count sentence, as its accessible name reads it.
@@ -208,6 +237,14 @@ pub fn menu_options(rule: &ActionRule) -> Vec<Setting> {
     } else {
         vec![Setting::Allow, Setting::Ask, Setting::Never]
     }
+}
+
+/// What an amount limit does, in words, under the limit field.
+pub fn limit_sentence(limit: &AmountLimit) -> String {
+    format!(
+        "Runs on its own up to {} {:.2}. Asks above that amount.",
+        limit.currency, limit.amount
+    )
 }
 
 /// Parses a limit typed in the field. Blank, negative and non-numeric input is refused.
@@ -264,7 +301,7 @@ pub fn AutonomySettings(
 
     let current_level = level();
     let rules_now = rules();
-    let (allow, ask, never) = setting_counts(&rules_now);
+    let (allow, ask, never) = action_counts(&rules_now);
     let total = allow + ask + never;
     let pct_allow = share_percent(allow, total);
     let pct_ask = share_percent(ask, total);
@@ -280,7 +317,11 @@ pub fn AutonomySettings(
                     c,
                     rules_now
                         .iter()
-                        .filter(|r| Some(&r.app_id) == open_app.as_ref() && r.action_class == c)
+                        .filter(|r| {
+                            !r.is_fixed
+                                && Some(&r.app_id) == open_app.as_ref()
+                                && r.action_class == c
+                        })
                         .cloned()
                         .collect(),
                 )
@@ -307,6 +348,10 @@ pub fn AutonomySettings(
         })
         .collect();
     let mark_text = |a: &AppEntry| a.mark.clone().unwrap_or_else(|| initial_of(&a.entry_name));
+    let recent = open_app
+        .as_deref()
+        .map(|id| lately(&rules_now, id, 3))
+        .unwrap_or_default();
 
     let on_level_keys = move |event: KeyboardEvent| {
         let index = AutonomyLevel::ALL
@@ -369,9 +414,9 @@ pub fn AutonomySettings(
                 } else if !is_empty {
                     section { class: "kit-aus__summary", "aria-label": "Rules by setting",
                         p { class: "kit-aus__counts",
-                            span { "On its own: {allow}" }
-                            span { "Asks first: {ask}" }
-                            span { "Never: {never}" }
+                            span { "{allow} on its own" }
+                            span { "{ask} ask first" }
+                            span { "{never} never" }
                         }
                         div { class: "kit-aus__bar", "aria-hidden": "true",
                             span { class: "kit-aus__seg", "data-setting": "allow", style: "width: {pct_allow:.1}%;" }
@@ -428,7 +473,7 @@ pub fn AutonomySettings(
                     if !is_empty && !is_loading {
                         section { class: "kit-aus__card", "aria-labelledby": "{base}-fixed",
                             h2 { id: "{base}-fixed", class: "kit-aus__card-title", "Fixed rules" }
-                            p { class: "kit-aus__note", "These ignore the level. Each one either asks first or never runs." }
+                            p { class: "kit-aus__note", "The level does not change these rules. Each one either asks first or never runs." }
                             ul { class: "kit-aus__fixed",
                                 for rule in fixed_rules.iter() {
                                     li { key: "{rule.id}", class: "kit-aus__fixed-row",
@@ -457,7 +502,7 @@ pub fn AutonomySettings(
                             for (class, views) in groups.iter() {
                                 if !views.is_empty() {
                                     div { key: "{class.heading()}", class: "kit-aus__group",
-                                        h3 { class: "kit-aus__group-title", "{class.heading()}" }
+                                        h3 { class: "kit-aus__group-title", "{class.heading()} · {views.len()}" }
                                         ul { class: "kit-aus__actions",
                                             for rule in views.iter() {
                                                 li { key: "{rule.id}", class: "kit-aus__action",
@@ -486,12 +531,13 @@ pub fn AutonomySettings(
                                                     if let Some(limit) = rule.amount_limit.clone() {
                                                         LimitField {
                                                             rule: rule.clone(),
-                                                            limit,
+                                                            limit: limit.clone(),
                                                             draft: limit_draft,
                                                             rules,
                                                             announce,
                                                             on_change,
                                                         }
+                                                        p { class: "kit-aus__detail", "{limit_sentence(&limit)}" }
                                                     }
                                                     if !rule.recent_events.is_empty() {
                                                         ul { class: "kit-aus__events",
@@ -516,6 +562,16 @@ pub fn AutonomySettings(
                                                     }
                                                 }
                                             }
+                                        }
+                                    }
+                                }
+                            }
+                            if !recent.is_empty() {
+                                div { class: "kit-aus__group kit-aus__lately",
+                                    h3 { class: "kit-aus__group-title", "Lately" }
+                                    ul { class: "kit-aus__events",
+                                        for (i, event) in recent.iter().enumerate() {
+                                            li { key: "{i}", "{event.what}: {event.outcome.word()}, {event.occurred_at}" }
                                         }
                                     }
                                 }

@@ -339,7 +339,8 @@ fn spend_overview_renders_hero_lists_and_attention() {
     assert!(html.contains("aria-label=\"Projects\""));
     assert!(html.contains("aria-label=\"Worth a look\""));
     assert!(html.contains("Research spent 3x its usual"));
-    assert!(html.contains("role=\"progressbar\""));
+    assert!(!html.contains("role=\"progressbar\""));
+    assert!(html.contains("% of budget"));
 }
 
 #[test]
@@ -912,6 +913,7 @@ fn list_row(id: &str, project: &str, is_done: bool) -> ListRecord {
         goal_text: None,
         started_at_ms: None,
         decision_log: Vec::new(),
+        event_log: Vec::new(),
     }
 }
 

@@ -5,7 +5,8 @@
 //! with its template, and `PromptInputBar` keeps its draft internal, so it cannot be filled.
 //! Design choice: `SendRequest.attachments` is always empty here; no attach contract exists in the
 //! composer's data, so the attach control is disabled until `on_attach` is given.
-//! Design choice: the connect action shows when `is_empty` is set or no apps are connected.
+//! Design choice: suggestions live in the work area's New tab, not the centre column, so the start
+//! column stays a greeting, a composer and its chips.
 //! Not implemented: the sidebar. It belongs to the shared app frame, which this screen does not render.
 //! Browser checks: Enter sends and Shift+Enter adds a line; a tool chip fills and does not send;
 //! closing the last tab folds the work area and focuses its open control.
@@ -119,6 +120,10 @@ pub fn active_after_close(closed: usize, count_before: usize) -> usize {
 #[component]
 pub fn AssistantStartPage(
     #[props(into)] greeting_text: String,
+    #[props(default, into)] invitation_text: Option<String>,
+    #[props(default, into)] working_folder: Option<String>,
+    #[props(default, into)] approval_mode: Option<String>,
+    #[props(default)] open_work_area: bool,
     #[props(default)] tool_chip_list: Vec<ToolChip>,
     #[props(default)] connected_app_list: Vec<ConnectedApp>,
     #[props(default)] suggestion_list: Vec<Suggestion>,
@@ -134,9 +139,19 @@ pub fn AssistantStartPage(
     let open_id = format!("{id}-open");
     let area_id = format!("{id}-area");
     let mut draft = use_signal(String::new);
-    let mut area_open = use_signal(|| false);
+    let mut area_open = use_signal(|| open_work_area);
     let mut tab_seq = use_signal(|| 1usize);
-    let mut tabs = use_signal(Vec::<WorkTab>::new);
+    let mut tabs = use_signal(move || {
+        if open_work_area {
+            vec![WorkTab {
+                id: 0,
+                title: "New tab".to_string(),
+                kind: TabKind::New,
+            }]
+        } else {
+            Vec::new()
+        }
+    });
     let mut active = use_signal(|| 0usize);
 
     let loading = is_loading;
@@ -208,6 +223,9 @@ pub fn AssistantStartPage(
                         Skeleton { width: "60%", height: "32px" }
                     } else {
                         h1 { class: "kit-start__greeting", "{greeting_text}" }
+                        if let Some(line) = invitation_text.clone() {
+                            p { class: "kit-start__invitation", "{line}" }
+                        }
                     }
                     form { class: "kit-start__composer", "aria-busy": loading.then_some("true"),
                         onsubmit: move |event: FormEvent| event.prevent_default(),
@@ -231,121 +249,95 @@ pub fn AssistantStartPage(
                                 }
                             },
                         }
-                        div { class: "kit-start__tray",
-                            div { class: "kit-start__tools", role: "group", "aria-label": "Tools",
+                        div { class: "kit-start__footer",
+                            button {
+                                r#type: "button",
+                                class: "kit-start__attach",
+                                "aria-label": "Attach a file",
+                                disabled: on_attach.is_none(),
+                                onclick: move |_| {
+                                    if let Some(attach) = on_attach {
+                                        attach.call(());
+                                    }
+                                },
+                                "+"
+                            }
+                            if let Some(folder) = working_folder.clone() {
+                                span { class: "kit-start__control", "{folder}" }
+                            }
+                            if let Some(mode) = approval_mode.clone() {
+                                span { class: "kit-start__control", "{mode}" }
+                            }
+                            div { class: "kit-start__apps", role: "group", "aria-label": "Connected apps",
                                 if loading {
-                                    Skeleton { width: "96px", height: "28px" }
-                                    Skeleton { width: "88px", height: "28px" }
+                                    Skeleton { width: "120px", height: "28px" }
                                 } else {
-                                    for chip in tool_chip_list.iter() {
-                                        {
-                                            let template = chip.prompt_template.clone();
-                                            let label = chip.entry_label.clone();
-                                            let key = chip.id.clone();
-                                            let target = composer_id.clone();
-                                            rsx! {
-                                                button {
-                                                    key: "{key}",
-                                                    r#type: "button",
-                                                    class: "kit-start__tool",
-                                                    onclick: move |_| {
-                                                        draft.set(template.clone());
-                                                        document::eval(&format!(
-                                                            "const el = document.getElementById({target:?}); if (el) {{ el.focus(); el.setSelectionRange({len}, {len}); }}",
-                                                            len = template.chars().count()
-                                                        ));
-                                                    },
-                                                    "{label}"
+                                    Button {
+                                        variant: ButtonVariant::Secondary,
+                                        label: "Connect apps",
+                                        onclick: move |_| {
+                                            if let Some(nav) = on_navigate {
+                                                nav.call("Connect apps".to_string());
+                                            }
+                                        },
+                                    }
+                                    if !apps_empty {
+                                        ul { class: "kit-start__app-list",
+                                            for app in connected_app_list.iter() {
+                                                {
+                                                    let mark = app.app_mark.clone().unwrap_or_else(|| app.entry_name.chars().take(1).collect());
+                                                    let name = app.entry_name.clone();
+                                                    rsx! {
+                                                        li { key: "{app.id}", class: "kit-start__app",
+                                                            span { class: "kit-start__app-mark", role: "img", title: "{name}", "aria-label": "{name}", "{mark}" }
+                                                        }
+                                                    }
                                                 }
                                             }
                                         }
                                     }
                                 }
                             }
-                            div { class: "kit-start__send-row",
-                                button {
-                                    r#type: "button",
-                                    class: "kit-start__attach",
-                                    "aria-label": "Attach a file",
-                                    disabled: on_attach.is_none(),
-                                    onclick: move |_| {
-                                        if let Some(attach) = on_attach {
-                                            attach.call(());
-                                        }
-                                    },
-                                    "+"
-                                }
-                                button {
-                                    r#type: "button",
-                                    class: "kit-start__send",
-                                    disabled: !sendable,
-                                    onclick: move |_| {
-                                        if can_send(&draft.peek(), loading) {
-                                            let text = send_text(&draft.peek()).unwrap_or_default();
-                                            draft.set(String::new());
-                                            on_send.call(SendRequest { text, attachments: Vec::new() });
-                                        }
-                                    },
-                                    "Send"
-                                }
-                            }
-                        }
-                    }
-                    section { class: "kit-start__apps", "aria-label": "Connected apps",
-                        if loading {
-                            Skeleton { width: "100%", height: "36px" }
-                        } else if apps_empty {
-                            Button {
-                                variant: ButtonVariant::Secondary,
-                                label: "Connect apps",
+                            button {
+                                r#type: "button",
+                                class: "kit-start__send",
+                                disabled: !sendable,
                                 onclick: move |_| {
-                                    if let Some(nav) = on_navigate {
-                                        nav.call("Connect apps".to_string());
+                                    if can_send(&draft.peek(), loading) {
+                                        let text = send_text(&draft.peek()).unwrap_or_default();
+                                        draft.set(String::new());
+                                        on_send.call(SendRequest { text, attachments: Vec::new() });
                                     }
                                 },
-                            }
-                        } else {
-                            ul { class: "kit-start__app-list",
-                                for app in connected_app_list.iter() {
-                                    {
-                                        let mark = app.app_mark.clone().unwrap_or_else(|| app.entry_name.chars().take(1).collect());
-                                        let name = app.entry_name.clone();
-                                        rsx! {
-                                            li { key: "{app.id}", class: "kit-start__app",
-                                                span { class: "kit-start__app-mark", "aria-hidden": "true", "{mark}" }
-                                                span { "{name}" }
-                                            }
-                                        }
-                                    }
-                                }
+                                "Send"
                             }
                         }
                     }
-                    section { class: "kit-start__suggestions", "aria-label": "Suggestions",
+                    div { class: "kit-start__tools", role: "group", "aria-label": "Tools",
                         if loading {
-                            div { class: "kit-start__grid",
-                                Skeleton { width: "100%", height: "72px" }
-                                Skeleton { width: "100%", height: "72px" }
-                                Skeleton { width: "100%", height: "72px" }
-                            }
+                            Skeleton { width: "96px", height: "28px" }
+                            Skeleton { width: "88px", height: "28px" }
                         } else {
-                            div { class: "kit-start__grid",
-                                for suggestion in suggestion_list.iter() {
-                                    {
-                                        let label = suggestion.entry_label.clone();
-                                        let prompt = suggestion.prompt_text.clone();
-                                        let artifact = suggestion.artifact.clone();
-                                        rsx! {
-                                            button {
-                                                key: "{suggestion.id}",
-                                                r#type: "button",
-                                                class: "kit-start__suggestion",
-                                                onclick: move |_| match artifact.clone() {
-                                                    Some(name) => open_output.call(name),
-                                                    None => on_send.call(SendRequest { text: prompt.clone(), attachments: Vec::new() }),
-                                                },
-                                                span { class: "kit-start__suggestion-label", "{label}" }
-                                            }
+                            for chip in tool_chip_list.iter() {
+                                {
+                                    let template = chip.prompt_template.clone();
+                                    let label = chip.entry_label.clone();
+                                    let key = chip.id.clone();
+                                    let target = composer_id.clone();
+                                    rsx! {
+                                        button {
+                                            key: "{key}",
+                                            r#type: "button",
+                                            class: "kit-start__tool",
+                                            onclick: move |_| {
+                                                draft.set(template.clone());
+                                                document::eval(&format!(
+                                                    "const el = document.getElementById({target:?}); if (el) {{ el.focus(); el.setSelectionRange({len}, {len}); }}",
+                                                    len = template.chars().count()
+                                                ));
+                                            },
+                                            span { class: "kit-start__tool-icon", "aria-hidden": "true" }
+                                            "{label}"
                                         }
                                     }
                                 }
@@ -448,17 +440,28 @@ pub fn AssistantStartPage(
                                             }
                                         }
                                         h2 { class: "kit-start__heading", "Suggested" }
-                                        ul { class: "kit-start__list",
-                                            for artifact in suggested_artifacts.iter() {
-                                                {
-                                                    let name = artifact.entry_name.clone();
-                                                    rsx! {
-                                                        li { key: "{name}",
-                                                            button {
-                                                                r#type: "button",
-                                                                class: "kit-start__link",
-                                                                onclick: move |_| open_output.call(name.clone()),
-                                                                "{name}"
+                                        if loading {
+                                            Skeleton { width: "100%", height: "36px" }
+                                            Skeleton { width: "100%", height: "36px" }
+                                        } else {
+                                            ul { class: "kit-start__list",
+                                                for suggestion in suggestion_list.iter() {
+                                                    {
+                                                        let key = suggestion.id.clone();
+                                                        let label = suggestion.entry_label.clone();
+                                                        let prompt = suggestion.prompt_text.clone();
+                                                        let artifact = suggestion.artifact.clone();
+                                                        rsx! {
+                                                            li { key: "{key}",
+                                                                button {
+                                                                    r#type: "button",
+                                                                    class: "kit-start__link",
+                                                                    onclick: move |_| match artifact.clone() {
+                                                                        Some(name) => open_output.call(name),
+                                                                        None => on_send.call(SendRequest { text: prompt.clone(), attachments: Vec::new() }),
+                                                                    },
+                                                                    "{label}"
+                                                                }
                                                             }
                                                         }
                                                     }

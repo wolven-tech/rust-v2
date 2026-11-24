@@ -13,10 +13,75 @@
 use dioxus::prelude::*;
 
 use super::workspace_frame_inset::{
-    Artifact, ChatRow, FrameAccount, FrameStyle, MenuGroup, MenuItem, WorkspaceFrame,
+    Artifact, ArtifactKind, ChatRow, FrameAccount, FrameStyle, FrameTabs, MenuGroup, MenuItem,
+    WorkspaceFrame,
 };
 
 const FLAT_CSS: Asset = asset!("/assets/workspace-frame-flat.css");
+
+/// One row of the Start tab: its name and the line that says where it comes from.
+#[derive(Clone, Debug, PartialEq)]
+pub struct StartRow {
+    pub title: String,
+    pub source: String,
+}
+
+/// The Start tab body: a Tools group, then a Suggested group, each under its heading in the
+/// order given. Activating a row opens it as a work-area tab and then calls `on_select`.
+#[component]
+pub fn FlatStartPanel(
+    tools: Vec<StartRow>,
+    suggested: Vec<StartRow>,
+    #[props(default)] on_select: Option<EventHandler<StartRow>>,
+) -> Element {
+    rsx! {
+        div { class: "kit-flat-start",
+            StartGroup { heading: "Tools", rows: tools, on_select }
+            StartGroup { heading: "Suggested", rows: suggested, on_select }
+        }
+    }
+}
+
+#[component]
+fn StartGroup(
+    heading: &'static str,
+    rows: Vec<StartRow>,
+    on_select: Option<EventHandler<StartRow>>,
+) -> Element {
+    let frame_tabs = try_use_context::<FrameTabs>();
+    rsx! {
+        section { class: "kit-flat-start__group",
+            h3 { class: "kit-flat-start__heading", "{heading}" }
+            ul { class: "kit-flat-start__list",
+                for row in rows {
+                    li { key: "{row.title}", class: "kit-flat-start__item",
+                        button {
+                            r#type: "button",
+                            class: "kit-flat-start__row",
+                            onclick: {
+                                let picked = row.clone();
+                                move |_| {
+                                    if let Some(tabs) = frame_tabs {
+                                        tabs.open_artifact(Artifact {
+                                            name: picked.title.clone(),
+                                            kind: ArtifactKind::Document,
+                                            body: format!("{}\n\n{}", picked.title, picked.source),
+                                        });
+                                    }
+                                    if let Some(select) = on_select {
+                                        select.call(picked.clone());
+                                    }
+                                }
+                            },
+                            span { class: "kit-flat-start__title", "{row.title}" }
+                            span { class: "kit-flat-start__source", "{row.source}" }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
 
 #[component]
 pub fn WorkspaceFrameFlat(
@@ -35,6 +100,7 @@ pub fn WorkspaceFrameFlat(
     #[props(default)] on_open_chat: Option<EventHandler<ChatRow>>,
     #[props(default)] work_area: bool,
     #[props(default)] side_panel: Option<Element>,
+    #[props(default)] panel_heading: Option<String>,
     #[props(default)] artifacts: Vec<Artifact>,
     #[props(default)] on_open_artifact: Option<EventHandler<String>>,
     #[props(default)] initial_tabs: Vec<Artifact>,
@@ -59,6 +125,7 @@ pub fn WorkspaceFrameFlat(
             on_open_chat,
             work_area,
             side_panel,
+            panel_heading,
             artifacts,
             on_open_artifact,
             initial_tabs,

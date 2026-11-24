@@ -17,3 +17,62 @@
 .kit-frame[data-style="flat"] .kit-frame__work {
   border-left: 1px solid var(--kit-rule-soft);
 }
+
+.kit-flat-start {
+  display: grid;
+  gap: var(--kit-space-5);
+  min-width: 0;
+}
+
+.kit-flat-start__heading {
+  margin: 0 0 var(--kit-space-2);
+  color: var(--kit-ink-muted);
+  font-size: var(--kit-text-xs);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.kit-flat-start__list {
+  display: grid;
+  gap: var(--kit-space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.kit-flat-start__row {
+  display: grid;
+  gap: 2px;
+  width: 100%;
+  min-width: 0;
+  padding: var(--kit-space-2) var(--kit-space-3);
+  border: 0;
+  border-radius: var(--kit-radius-sm);
+  background: none;
+  color: var(--kit-ink);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.kit-flat-start__row:hover {
+  background: var(--kit-raised);
+}
+
+.kit-flat-start__row:focus-visible {
+  outline: 2px solid var(--kit-ink);
+  outline-offset: 2px;
+}
+
+.kit-flat-start__title {
+  font-size: var(--kit-text-sm);
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.kit-flat-start__source {
+  color: var(--kit-ink-muted);
+  font-size: var(--kit-text-xs);
+  overflow-wrap: anywhere;
+}

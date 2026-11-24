@@ -15,7 +15,7 @@ A sales or partner team keeps its companies in one editable table. The open view
 | sections | { label: string; items: string[] }[] | Sidebar groups: primary navigation first, then pipelines (for example "New business", "Renewals"). |
 | is_loading | boolean | Table rows become secondary placeholders shaped like real rows, under the real column headings. |
 | is_empty | boolean | The table for the open view is replaced by an empty message carrying a title, a line of text and an add button. |
-| on_add | (view: string) => void | Called by the empty state's button and by "Add row", with the open view. |
+| on_add | (view: string) => void | Fired by the empty-state action and by "Add row", passing the open view. |
 | on_navigate | (label: string) => void | A sidebar item was activated. |
 | on_cell_change | (id, column, deal_value) => void | An edit was committed in a cell. (Own addition; the host must persist the record.) |
 
@@ -89,3 +89,31 @@ The page header is a single line. The table is the main region of the page and f
 8. Clicking "Add row" appends an empty row and focuses its company cell.
 9. Switching views with the tab strip changes the visible columns and rows without a full reload.
 10. At phone width the page itself does not scroll sideways; only the table scrolls inside its box.
+
+## Amendment 5: structure and demo
+
+Replaces: none (no earlier amendment in this spec).
+
+**Archetype:** workspace frame with a one-line header, a view tab strip and toolbar, and a full-height editable table.
+
+**At rest (gallery demo):**
+- Single-line breadcrumb header.
+- Tabs for the four views, Company CRM open, plus the add control.
+- Toolbar: Add row button and the double-click hint.
+- Table: seven columns (company with logo chip, category, domain, owner, value, stage, last contact) and ten company rows. Each row holds distinct values. A footer row holds Add row.
+- Sidebar: primary navigation with counts (four items), and a pipelines group with four entries.
+- No cell is in edit mode at rest.
+
+**States at rest:** table loaded; Company CRM view open; no selection frame.
+
+**Arrangement:** table fills the height under the toolbar and scrolls inside itself. Its header row stays fixed while rows scroll.
+
+**Motion, settled frame:** nothing moves at rest.
+
+**Checks (continued):**
+11. At rest the table shows ten company rows and seven columns, headed Company, Category, Domain, Owner, Value, Stage and Last contact.
+12. At 1280 wide no Category or Last contact cell is cut mid-word. A value too long for its cell ends in an ellipsis and its full text is in a tooltip.
+13. Every column header reads in full at 1280 wide, including Last contact.
+14. At 1280 wide all seven columns fit without a horizontal scroll of the table.
+15. The sidebar shows the primary navigation with counts and a pipelines group with four entries.
+16. The table fills the height left under the toolbar, and its header row stays at the top while rows scroll.

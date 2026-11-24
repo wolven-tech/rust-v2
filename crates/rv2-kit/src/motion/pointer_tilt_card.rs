@@ -170,3 +170,61 @@ pub fn PointerTiltCard(
         }
     }
 }
+
+/// Card number as shown on a membership card: bullets, then the last four digits.
+pub fn masked_number(number: &str) -> String {
+    let digits: Vec<char> = number.chars().filter(|c| c.is_ascii_digit()).collect();
+    let tail: String = digits[digits.len().saturating_sub(4)..].iter().collect();
+    format!("•••• •••• •••• {tail}")
+}
+
+/// A membership card that leans with the pointer, with a caption beneath it.
+#[component]
+pub fn MembershipCard(
+    #[props(into)] name: String,
+    #[props(into)] holder: String,
+    #[props(into)] since: String,
+    #[props(into)] last_four: String,
+    #[props(into)] caption: String,
+    #[props(default)] max_tilt: TiltStrength,
+) -> Element {
+    let number = masked_number(&last_four);
+    rsx! {
+        document::Link { rel: "stylesheet", href: KIT_CSS }
+        document::Link { rel: "stylesheet", href: CSS }
+        figure { class: "kit-tilt-card",
+            PointerTiltCard { max_tilt,
+                div { class: "kit-tilt-card__face",
+                    div { class: "kit-tilt-card__top",
+                        span { class: "kit-tilt-card__name", "{name}" }
+                        svg {
+                            class: "kit-tilt-card__contactless",
+                            "aria-hidden": "true",
+                            view_box: "0 0 24 24",
+                            fill: "none",
+                            stroke: "currentColor",
+                            "stroke-width": "1.6",
+                            "stroke-linecap": "round",
+                            path { d: "M8.5 9.5a4.5 4.5 0 0 1 0 5" }
+                            path { d: "M11.5 7a8 8 0 0 1 0 10" }
+                            path { d: "M14.5 4.5a11.5 11.5 0 0 1 0 15" }
+                        }
+                    }
+                    span { class: "kit-tilt-card__chip", "aria-hidden": "true" }
+                    p { class: "kit-tilt-card__number", "{number}" }
+                    div { class: "kit-tilt-card__fields",
+                        div { class: "kit-tilt-card__field",
+                            span { class: "kit-tilt-card__label", "Member" }
+                            span { class: "kit-tilt-card__value", "{holder}" }
+                        }
+                        div { class: "kit-tilt-card__field",
+                            span { class: "kit-tilt-card__label", "Since" }
+                            span { class: "kit-tilt-card__value", "{since}" }
+                        }
+                    }
+                }
+            }
+            figcaption { class: "kit-tilt-card__caption", "{caption}" }
+        }
+    }
+}

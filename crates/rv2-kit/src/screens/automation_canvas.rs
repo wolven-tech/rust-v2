@@ -10,7 +10,7 @@
 //! so they are never cut off by its overflow and their keys never reach the board's arrow handling.
 //! Design choice: tooltips are native `title` attributes that carry the shortcut.
 //! Design choice: the sidebar is drawn inline so the screen stands alone, without the workspace frame.
-//! Design choice: the flow runs at zoom 1 on open; zoom floors at 0.5 so steps stay legible.
+//! Design choice: the flow opens fitted to the board, at zoom 1 at most; zoom floors at 0.5 so steps stay legible.
 //! Design choice: the flow is seeded from `canvas_nodes`, `canvas_edges` and `canvas_comments` at mount; a host that
 //! opens another flow keys the component by the flow id. `is_loading` and `is_empty` apply live.
 //! Design choice: touch pinch is taken from the two pointers that go down on the empty backdrop; a step under a finger
@@ -39,20 +39,34 @@ pub const NUDGE_FAR: f64 = 40.0;
 /// Delay per step during a test run, in milliseconds.
 pub const STEP_MS: u32 = 400;
 
-/// Card size in board units. The stylesheet sizes the card to match.
+/// Card width in board units. The stylesheet sizes the card to match.
 pub const NODE_W: f64 = 170.0;
+/// Card height in board units for an ordinary step; triggers and tools are taller, see `node_height`.
 pub const NODE_H: f64 = 88.0;
+
+/// Card height in board units for a kind. Triggers are the tallest card, tools a little taller than
+/// the rest; the fit and the port positions both read it.
+pub fn node_height(kind: NodeKind) -> f64 {
+    match kind {
+        NodeKind::Trigger => 110.0,
+        NodeKind::Tool => 92.0,
+        _ => NODE_H,
+    }
+}
 
 pub const MIN_ZOOM: f64 = 0.5;
 pub const MAX_ZOOM: f64 = 1.5;
 const ZOOM_FACTOR: f64 = 1.25;
-const FIT_PAD: f64 = 48.0;
+/// A fitted flow spans this share of the board width and height, and its top edge sits this far down.
+const FIT_WIDTH: f64 = 0.77;
+const FIT_HEIGHT: f64 = 0.86;
+const FIT_TOP: f64 = 0.03;
 const PAN_STEP: f64 = 40.0;
 const DRAG_SLOP: f64 = 4.0;
 
 pub const RUN_MIN: f64 = 120.0;
 pub const RUN_MAX: f64 = 480.0;
-const RUN_DEFAULT: f64 = 180.0;
+const RUN_DEFAULT: f64 = 120.0;
 const RUN_STEP: f64 = 20.0;
 
 const TABS: [(&str, &str); 5] = [
@@ -63,20 +77,29 @@ const TABS: [(&str, &str); 5] = [
     ("runs", "Runs"),
 ];
 
-const PALETTE: [(NodeKind, &str); 5] = [
-    (NodeKind::Trigger, "Webhook trigger"),
-    (NodeKind::Tool, "HTTP request"),
-    (NodeKind::Agent, "Assistant step"),
-    (NodeKind::Logic, "Branch"),
-    (NodeKind::Action, "Send message"),
+/// Palette items in group order: group name, the kind the step takes, and the item's label.
+const PALETTE: [(&str, NodeKind, &str); 18] = [
+    ("Triggers", NodeKind::Trigger, "Webhook"),
+    ("Triggers", NodeKind::Trigger, "Schedule"),
+    ("Triggers", NodeKind::Trigger, "Form submitted"),
+    ("Triggers", NodeKind::Trigger, "Email received"),
+    ("Tools", NodeKind::Tool, "HTTP request"),
+    ("Tools", NodeKind::Tool, "Sheet row"),
+    ("Tools", NodeKind::Tool, "Database query"),
+    ("Tools", NodeKind::Tool, "Web search"),
+    ("Tools", NodeKind::Agent, "Assistant step"),
+    ("Logic", NodeKind::Logic, "Branch"),
+    ("Logic", NodeKind::Logic, "Wait"),
+    ("Logic", NodeKind::Logic, "Loop"),
+    ("Logic", NodeKind::Logic, "Merge"),
+    ("Actions", NodeKind::Action, "Send message"),
+    ("Actions", NodeKind::Action, "Send email"),
+    ("Actions", NodeKind::Action, "Create record"),
+    ("Actions", NodeKind::Action, "Post to channel"),
+    ("Actions", NodeKind::Action, "Update record"),
 ];
 
-const GROUPS: [(&str, &[NodeKind]); 4] = [
-    ("Triggers", &[NodeKind::Trigger]),
-    ("Tools", &[NodeKind::Tool, NodeKind::Agent]),
-    ("Logic", &[NodeKind::Logic]),
-    ("Actions", &[NodeKind::Action]),
-];
+const GROUP_NAMES: [&str; 4] = ["Triggers", "Tools", "Logic", "Actions"];
 
 const NAV: [&str; 9] = [
     "Workflows",
@@ -171,6 +194,9 @@ pub struct CanvasNode {
     pub pos_x: f64,
     pub pos_y: f64,
     pub node_status: NodeStatus,
+    /// The header chip of an agent, tool or logic card ("3 tools", "GET", "2 paths"). Triggers and
+    /// actions show their status word there instead.
+    pub chip: Option<String>,
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -331,25 +357,28 @@ pub fn port_caption(port: Port) -> &'static str {
     }
 }
 
-/// Where a port sits in board units: outputs on the bottom edge, a branch's two outputs at 30% and 70% of the width.
+/// Where a port sits in board units: outputs on the bottom edge; a branch's yes and no at 29% and 71% of the width.
 pub fn port_point(node: &CanvasNode, port: Port) -> (f64, f64) {
-    let y = node.pos_y + NODE_H;
+    let y = node.pos_y + node_height(node.node_type);
     match port {
         Port::Out => (node.pos_x + NODE_W / 2.0, y),
-        Port::Yes => (node.pos_x + NODE_W * 0.3, y),
-        Port::No => (node.pos_x + NODE_W * 0.7, y),
+        Port::Yes => (node.pos_x + NODE_W * 0.29, y),
+        Port::No => (node.pos_x + NODE_W * 0.71, y),
     }
 }
 
-/// The input port of a card: the middle of its left edge.
+/// The input port of a card: the middle of its top edge.
 pub fn input_point(node: &CanvasNode) -> (f64, f64) {
-    (node.pos_x, node.pos_y + NODE_H / 2.0)
+    (node.pos_x + NODE_W / 2.0, node.pos_y)
 }
 
-/// A vertical S-curve from an output to an input, the flow reading top to bottom.
+/// A straight line when the ends share a column, otherwise a vertical S-curve; the flow reads top to bottom.
 pub fn edge_path(from: (f64, f64), to: (f64, f64)) -> String {
     let (x1, y1) = from;
     let (x2, y2) = to;
+    if (x1 - x2).abs() < 0.5 {
+        return format!("M {x1:.1} {y1:.1} L {x2:.1} {y2:.1}");
+    }
     let reach = ((y2 - y1).abs() / 2.0).max(40.0);
     let c1 = y1 + reach;
     let c2 = y2 - reach;
@@ -463,8 +492,9 @@ pub fn pinch_view(
     }
 }
 
-/// The view that shows every step in a board of `width` by `height` px. Never enlarges past actual size, and never
-/// zooms below the legibility floor.
+/// The view that shows every step in a board of `width` by `height` px: the flow spans `FIT_WIDTH` of the width
+/// and `FIT_HEIGHT` of the height, centred across and set `FIT_TOP` down. Never enlarges past actual size, and
+/// never zooms below the legibility floor.
 pub fn fit_view(nodes: &[CanvasNode], width: f64, height: f64) -> View {
     if nodes.is_empty() || width <= 0.0 || height <= 0.0 {
         return View::default();
@@ -477,18 +507,18 @@ pub fn fit_view(nodes: &[CanvasNode], width: f64, height: f64) -> View {
         .fold(f64::NEG_INFINITY, f64::max);
     let max_y = nodes
         .iter()
-        .map(|n| n.pos_y + NODE_H)
+        .map(|n| n.pos_y + node_height(n.node_type))
         .fold(f64::NEG_INFINITY, f64::max);
     let span_x = (max_x - min_x).max(1.0);
     let span_y = (max_y - min_y).max(1.0);
-    let zoom = ((width - 2.0 * FIT_PAD) / span_x)
-        .min((height - 2.0 * FIT_PAD) / span_y)
+    let zoom = (FIT_WIDTH * width / span_x)
+        .min(FIT_HEIGHT * height / span_y)
         .min(1.0)
         .clamp(MIN_ZOOM, MAX_ZOOM);
-    let (cx, cy) = ((min_x + max_x) / 2.0, (min_y + max_y) / 2.0);
+    let cx = (min_x + max_x) / 2.0;
     View {
         pan_x: width / 2.0 - cx * zoom,
-        pan_y: height / 2.0 - cy * zoom,
+        pan_y: FIT_TOP * height - min_y * zoom,
         zoom,
     }
 }
@@ -630,6 +660,33 @@ enum Anchor {
     Link { edge: String },
 }
 
+/// Outputs with no link, as (step id, port, screen x, screen y of the add control under the output dot).
+fn unlinked_outputs(
+    nodes: &[CanvasNode],
+    edges: &[CanvasEdge],
+    view: View,
+) -> Vec<(String, Port, f64, f64)> {
+    let mut found = Vec::new();
+    for node in nodes {
+        for port in ports_of(node.node_type).iter().copied() {
+            if edges
+                .iter()
+                .any(|e| e.source_node == node.id && e.source_port == port)
+            {
+                continue;
+            }
+            let (x, y) = port_point(node, port);
+            found.push((
+                node.id.clone(),
+                port,
+                view.pan_x + x * view.zoom,
+                view.pan_y + (y + 14.0) * view.zoom,
+            ));
+        }
+    }
+    found
+}
+
 fn dist(a: (f64, f64), b: (f64, f64)) -> f64 {
     ((a.0 - b.0).powi(2) + (a.1 - b.1).powi(2)).sqrt()
 }
@@ -652,6 +709,7 @@ pub fn AutomationCanvas(
     #[props(default)] canvas_edges: Vec<CanvasEdge>,
     #[props(default)] canvas_comments: Vec<CanvasComment>,
     #[props(default)] step_results: BTreeMap<String, StepResult>,
+    #[props(default)] run_history: Vec<String>,
     #[props(default = "{}".to_string(), into)] payload: String,
     #[props(default)] is_loading: bool,
     #[props(default)] is_empty: bool,
@@ -682,14 +740,14 @@ pub fn AutomationCanvas(
     let mut picker = use_signal(|| None::<Anchor>);
     let mut palette_open = use_signal(|| false);
     let mut side_open = use_signal(|| false);
-    let mut config_open = use_signal(|| true);
-    let mut run_open = use_signal(|| true);
+    let mut config_open = use_signal(|| false);
+    let mut run_open = use_signal(|| false);
     let mut tab = use_signal(|| "timeline");
     let mut run_h = use_signal(|| RUN_DEFAULT);
     let mut running = use_signal(|| false);
     let mut run_state = use_signal(BTreeMap::<String, RunStep>::new);
     let mut run_timeline = use_signal(Vec::<(String, f64)>::new);
-    let mut run_log = use_signal(Vec::<String>::new);
+    let mut run_log = use_signal(|| run_history.clone());
     let mut announce = use_signal(String::new);
 
     let node_now = nodes();
@@ -747,6 +805,13 @@ pub fn AutomationCanvas(
     let log_count = run_log().len();
     let tab_now = tab();
     let failed_message = run_now.iter().find_map(|(_, s)| s.error.clone());
+    let mut error_list: Vec<String> = node_now
+        .iter()
+        .filter(|n| n.node_status == NodeStatus::Unset)
+        .map(|n| format!("{} is not configured", n.node_title))
+        .collect();
+    error_list.extend(failed_message.clone());
+    let error_count = error_list.len();
     let branch_status = if path_branch == "Main" {
         "Production"
     } else {
@@ -762,6 +827,7 @@ pub fn AutomationCanvas(
         view_now.pan_x, view_now.pan_y, view_now.zoom
     );
     let run_style = format!("height: {:.0}px;", run_h());
+    let zoom_pct = format!("{:.0}%", view_now.zoom * 100.0);
     let picker_now = picker();
     let draft_now = draft();
     let draft_value = draft_text();
@@ -804,6 +870,7 @@ pub fn AutomationCanvas(
             pos_x: pos.0.max(0.0),
             pos_y: pos.1.max(0.0),
             node_status: NodeStatus::Unset,
+            chip: None,
         });
         if let Some((from, port)) = link_from {
             if let Some(linked) = connect(&next_edges, &from, port, &id) {
@@ -1440,6 +1507,7 @@ pub fn AutomationCanvas(
                     pos_x: (at.0 - NODE_W / 2.0).max(0.0),
                     pos_y: (at.1 - NODE_H / 2.0).max(0.0),
                     node_status: NodeStatus::Unset,
+                    chip: None,
                 };
                 if let Some((next_nodes, next_edges)) = insert_between(&list, &edges(), &edge, step)
                 {
@@ -1721,6 +1789,16 @@ pub fn AutomationCanvas(
 
                 div { class: "kit-ac__body",
                     aside { class: "{palette_class}", "aria-label": "Steps",
+                        div { class: "kit-ac__palhead",
+                            h3 { class: "kit-ac__palttl", "Nodes" }
+                            button {
+                                class: "kit-ac__btn kit-ac__palclose",
+                                r#type: "button",
+                                "aria-label": "Close node list",
+                                onclick: move |_| palette_open.set(false),
+                                "×"
+                            }
+                        }
                         button {
                             id: "{ui_dom(base, \"addnode\")}",
                             class: "kit-ac__btn kit-ac__addnode",
@@ -1729,13 +1807,14 @@ pub fn AutomationCanvas(
                             onclick: move |_| palette_open.toggle(),
                             "Add node"
                         }
-                        for (group, kinds) in GROUPS {
+                        for group in GROUP_NAMES {
                             section { key: "{group}", class: "kit-ac__group", "aria-label": "{group}",
-                                h3 { class: "kit-ac__grouptitle", "{group}" }
+                                h3 { class: "kit-ac__grouptitle", "{group}",
+                                    span { class: "kit-ac__groupcount", {PALETTE.iter().filter(|(g, _, _)| *g == group).count().to_string()} }
+                                }
                                 ul { class: "kit-ac__items",
-                                    for kind in kinds.iter().copied() {
+                                    for (kind, title) in PALETTE.iter().filter(|(g, _, _)| *g == group).map(|(_, k, t)| (*k, *t)) {
                                         {
-                                            let title = PALETTE.iter().find(|(k, _)| *k == kind).map(|(_, t)| *t).unwrap_or("Step");
                                             let glyph = kind.glyph();
                                             let word = kind.word();
                                             rsx! {
@@ -1798,7 +1877,25 @@ pub fn AutomationCanvas(
                                 style: "{board_style}",
                                 onmounted: move |e: Event<MountedData>| {
                                     board_mount.set(Some(e.data()));
-                                    with_board(board_mount, move |b| board_origin.set((b.x, b.y)));
+                                    // Fits on every size change, so a stylesheet that lands after mount is measured too.
+                                    let observed = board_id.clone();
+                                    spawn(async move {
+                                        let mut sizes = document::eval(&format!(
+                                            "const el = document.getElementById({observed:?});\
+                                             if (!el) return;\
+                                             const ro = new ResizeObserver(() => dioxus.send(true));\
+                                             el.__kitFitObserver?.disconnect();\
+                                             el.__kitFitObserver = ro;\
+                                             ro.observe(el);\
+                                             await new Promise(() => {{}});"
+                                        ));
+                                        while sizes.recv::<bool>().await.is_ok() {
+                                            with_board(board_mount, move |b| {
+                                                board_origin.set((b.x, b.y));
+                                                view.set(fit_view(&nodes(), b.w, b.h));
+                                            });
+                                        }
+                                    });
                                 },
                                 onkeydown: move |e: KeyboardEvent| board_keys(e),
                                 onkeyup: board_keyup,
@@ -1874,12 +1971,16 @@ pub fn AutomationCanvas(
                                                 let running_flag = if status == NodeStatus::Running { "true" } else { "false" };
                                                 let drop_flag = if linking && drag_now.as_ref().map(|d| matches!(d, Drag::Link { from, .. } if *from != node.id)).unwrap_or(false) { "true" } else { "false" };
                                                 let style = format!(
-                                                    "left: {:.0}px; top: {:.0}px; width: {NODE_W:.0}px; height: {NODE_H:.0}px;",
-                                                    node.pos_x, node.pos_y
+                                                    "left: {:.0}px; top: {:.0}px; width: {NODE_W:.0}px; height: {:.0}px;",
+                                                    node.pos_x, node.pos_y, node_height(node.node_type)
                                                 );
                                                 let label = format!("{}, {}, {}", node.node_title, node.node_type.word(), status.word());
                                                 let kind_word = node.node_type.word();
                                                 let glyph = node.node_type.glyph();
+                                                let chip = match node.node_type {
+                                                    NodeKind::Trigger | NodeKind::Action => line.clone(),
+                                                    _ => node.chip.clone().unwrap_or_default(),
+                                                };
                                                 let node_id = node.id.clone();
                                                 let node_id_up = node.id.clone();
                                                 let node_id_click = node.id.clone();
@@ -1907,15 +2008,15 @@ pub fn AutomationCanvas(
                                                             }
                                                             select_node(node_id_click.clone());
                                                         },
+                                                        span { class: "kit-ac__kindtag", "aria-hidden": "true", "{kind_word}" }
                                                         span { class: "kit-ac__nodehead",
                                                             span { class: "kit-ac__glyph", "aria-hidden": "true", "{glyph}" }
-                                                            span { class: "kit-ac__kindword", "{kind_word}" }
+                                                            span { class: "kit-ac__nodetitle", "{node.node_title}" }
+                                                            span { class: "kit-ac__nodechip", "{chip}" }
                                                         }
-                                                        span { class: "kit-ac__nodetitle", "{node.node_title}" }
                                                         if let Some(sub) = node.subtitle.clone() {
                                                             span { class: "kit-ac__nodesub", "{sub}" }
                                                         }
-                                                        span { class: "kit-ac__nodestatus", "{line}" }
                                                         if let Some(message) = error {
                                                             span { class: "kit-ac__nodeerr", "{message}" }
                                                         }
@@ -1997,6 +2098,26 @@ pub fn AutomationCanvas(
                                                 }
                                                 None => rsx! {},
                                             }
+                                        }
+                                    }
+                                }
+                                if !is_loading {
+                                    for (from, port, sx, sy) in unlinked_outputs(&node_now, &edge_now, view_now) {
+                                        button {
+                                            key: "{from}-{port.word()}",
+                                            class: "kit-ac__portadd",
+                                            r#type: "button",
+                                            style: "left: {sx:.0}px; top: {sy:.0}px;",
+                                            "aria-label": "Add a step after this output",
+                                            title: "Add a step",
+                                            onclick: {
+                                                let from = from.clone();
+                                                move |_| {
+                                                    picker.set(Some(Anchor::Port { from: from.clone(), port }));
+                                                    focus_after_frame(&picker_dom(base, 0));
+                                                }
+                                            },
+                                            "+"
                                         }
                                     }
                                 }
@@ -2107,7 +2228,7 @@ pub fn AutomationCanvas(
                                                 "aria-label": "{menu_label}",
                                                 "data-port": "{anchor_port}",
                                                 style: "{style}",
-                                                for (index, (kind, title)) in PALETTE.iter().copied().enumerate() {
+                                                for (index, (_, kind, title)) in PALETTE.iter().copied().enumerate() {
                                                     {
                                                         let glyph = kind.glyph();
                                                         let word = kind.word();
@@ -2136,26 +2257,51 @@ pub fn AutomationCanvas(
                                 }
                                 div { class: "kit-ac__strip", role: "toolbar", "aria-label": "Board controls",
                                     button {
-                                        class: "kit-ac__btn",
+                                        class: "kit-ac__btn kit-ac__tool",
+                                        r#type: "button",
+                                        title: "Add node (A)",
+                                        "aria-label": "Add node",
+                                        onclick: move |_| palette_open.toggle(),
+                                        "⊞"
+                                    }
+                                    button {
+                                        class: "kit-ac__btn kit-ac__tool",
                                         r#type: "button",
                                         "aria-pressed": "{!comment_tool()}",
                                         title: "Select (Escape)",
                                         "aria-label": "Select",
                                         onclick: move |_| comment_tool.set(false),
-                                        "Select"
+                                        "↖"
                                     }
                                     button {
                                         id: "{ui_dom(base, \"comment\")}",
-                                        class: "kit-ac__btn",
+                                        class: "kit-ac__btn kit-ac__tool",
                                         r#type: "button",
                                         "aria-pressed": "{comment_tool()}",
                                         title: "Comment (C)",
                                         "aria-label": "Comment",
                                         onclick: move |_| comment_tool.set(true),
-                                        "Comment"
+                                        "✎"
                                     }
                                     button {
-                                        class: "kit-ac__btn",
+                                        class: "kit-ac__btn kit-ac__tool",
+                                        r#type: "button",
+                                        title: "Fit to view (0)",
+                                        "aria-label": "Fit to view",
+                                        onclick: move |_| fit(),
+                                        "⤢"
+                                    }
+                                    button {
+                                        class: "kit-ac__btn kit-ac__tool",
+                                        r#type: "button",
+                                        title: "Zoom out (-)",
+                                        "aria-label": "Zoom out",
+                                        onclick: move |_| zoom_by(1.0 / ZOOM_FACTOR),
+                                        "−"
+                                    }
+                                    span { class: "kit-ac__zoom", "{zoom_pct}" }
+                                    button {
+                                        class: "kit-ac__btn kit-ac__tool",
                                         r#type: "button",
                                         title: "Zoom in (+)",
                                         "aria-label": "Zoom in",
@@ -2163,30 +2309,14 @@ pub fn AutomationCanvas(
                                         "+"
                                     }
                                     button {
-                                        class: "kit-ac__btn",
-                                        r#type: "button",
-                                        title: "Zoom out (-)",
-                                        "aria-label": "Zoom out",
-                                        onclick: move |_| zoom_by(1.0 / ZOOM_FACTOR),
-                                        "−"
-                                    }
-                                    button {
-                                        class: "kit-ac__btn",
-                                        r#type: "button",
-                                        title: "Fit to view (0)",
-                                        "aria-label": "Fit to view",
-                                        onclick: move |_| fit(),
-                                        "Fit"
-                                    }
-                                    button {
                                         id: "{ui_dom(base, \"run\")}",
-                                        class: "kit-ac__btn",
+                                        class: "kit-ac__btn kit-ac__btn--primary kit-ac__tool",
                                         r#type: "button",
                                         "aria-pressed": "{run_open()}",
                                         title: "Run area",
                                         "aria-label": "Run area",
                                         onclick: move |_| run_open.toggle(),
-                                        "Run"
+                                        "▶"
                                     }
                                 }
                             }
@@ -2232,6 +2362,9 @@ pub fn AutomationCanvas(
                                             onclick: move |_| tab.set(name),
                                             onkeydown: move |e: KeyboardEvent| root_tab_keys(e, index),
                                             "{label}"
+                                            if name == "errors" && error_count > 0 {
+                                                span { class: "kit-ac__count", "{error_count}" }
+                                            }
                                         }
                                     }
                                     button {
@@ -2239,7 +2372,7 @@ pub fn AutomationCanvas(
                                         r#type: "button",
                                         disabled: loading_disabled,
                                         onclick: start_run,
-                                        if running() { "Running…" } else { "Start test" }
+                                        if running() { "Running…" } else { "Start test run" }
                                     }
                                     button {
                                         class: "kit-ac__btn kit-ac__runclose",
@@ -2265,10 +2398,14 @@ pub fn AutomationCanvas(
                                             }
                                         }
                                     } else if tab_now == "errors" {
-                                        if let Some(message) = failed_message.clone() {
-                                            p { class: "kit-ac__error", role: "alert", "{message}" }
-                                        } else {
+                                        if error_list.is_empty() {
                                             p { class: "kit-ac__muted", "No errors" }
+                                        } else {
+                                            ul { class: "kit-ac__timeline",
+                                                for (index, item) in error_list.iter().enumerate() {
+                                                    li { key: "{index}", "{item}" }
+                                                }
+                                            }
                                         }
                                     } else if tab_now == "runs" {
                                         ol { class: "kit-ac__timeline",
@@ -2289,7 +2426,8 @@ pub fn AutomationCanvas(
                                                 }
                                             }
                                             if timeline.is_empty() {
-                                                li { class: "kit-ac__muted", "No run yet" }
+                                                li { class: "kit-ac__muted", "No runs yet" }
+                                                li { class: "kit-ac__muted", "Start a test run to time each step." }
                                             }
                                         }
                                     }

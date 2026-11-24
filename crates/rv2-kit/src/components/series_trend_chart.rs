@@ -635,8 +635,9 @@ struct Hit {
 
 /// A line, area, column or sparkline over shared labels.
 ///
-/// Missing or non-finite values break the line. Nothing but zeros (or nothing at
-/// all) shows `empty_message` and no axis. Keyboard: Tab enters the plot, Left and
+/// Missing or non-finite values break the line. A point that no series has a value for is
+/// marked "No data"; a point another series covers is not. Nothing but zeros (or
+/// nothing at all) shows `empty_message` and no axis. Keyboard: Tab enters the plot, Left and
 /// Right step, Home and End jump, Escape hides the tooltip.
 ///
 /// A locally owned highlight (`initial_active`) rests without a tooltip; the tooltip
@@ -654,8 +655,15 @@ pub fn SeriesTrendChart(
     value_prefix: String,
     #[props(default)] height: Option<f64>,
     #[props(default)] axis: Option<AxisMode>,
+    /// Points labelled on the date axis in addition to the first, middle and last.
+    #[props(default)]
+    axis_marks: Vec<usize>,
     #[props(default = true)] show_tooltip: bool,
     #[props(default = true)] from_zero: bool,
+    /// Value-axis intervals requested before the step rounds to 1-2-5; fewer intervals
+    /// draw fewer value labels.
+    #[props(default = 4)]
+    value_intervals: usize,
     #[props(default)] active: Option<Option<usize>>,
     #[props(default)] initial_active: Option<usize>,
     #[props(default)] on_active_change: Option<EventHandler<Option<usize>>>,
@@ -703,7 +711,7 @@ pub fn SeriesTrendChart(
         .iter()
         .flat_map(|s| s.values.iter().flatten().copied());
     let (lo, hi) = value_domain(values, from_zero || is_bar);
-    let (nlo, nhi, step) = nice_axis(lo, hi, 4);
+    let (nlo, nhi, step) = nice_axis(lo, hi, value_intervals);
     let y_of = |v: f64| project_y(v, nlo, nhi, top, bottom);
     let x_of = |i: usize| project_x(i, n, left, right);
     let slot_w = (right - left) / n.max(1) as f64;
@@ -845,7 +853,11 @@ pub fn SeriesTrendChart(
         Vec::new()
     };
     let x_ticks: Vec<(usize, f64, String, &'static str)> = if show_axis_x && visible {
-        axis_indices(n)
+        let mut marks = axis_indices(n);
+        marks.extend(axis_marks.iter().copied().filter(|i| *i < n));
+        marks.sort_unstable();
+        marks.dedup();
+        marks
             .into_iter()
             .map(|i| {
                 let anchor = if i == 0 {
@@ -886,7 +898,7 @@ pub fn SeriesTrendChart(
     let gap_styles: Vec<(usize, String)> = if visible && !sparkline {
         (0..n)
             .filter(|&i| {
-                series.iter().any(|s| {
+                series.iter().all(|s| {
                     !s.values
                         .get(i)
                         .copied()

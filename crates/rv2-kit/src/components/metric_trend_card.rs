@@ -78,6 +78,12 @@ pub fn MetricTrendCard(
     #[props(default)] footer_text: Option<String>,
     #[props(default)] resting_index: Option<usize>,
     #[props(default = "No data yet".to_string(), into)] empty_message: String,
+    /// Visible words after the change chip, for example "vs last period"; empty draws none.
+    #[props(default, into)]
+    comparison_text: String,
+    /// Whether the tooltip for the resting point is drawn before any pointer or key use.
+    #[props(default = true)]
+    tooltip_at_rest: bool,
     #[props(default, into)] extra_class: String,
 ) -> Element {
     let mut hovered = use_signal(|| None::<usize>);
@@ -211,7 +217,8 @@ pub fn MetricTrendCard(
     };
     let class = class_list("kit-metric-card", &extra_class);
     let view_box = format!("0 0 {WIDTH} {HEIGHT}");
-    let tooltip_on = visible && !tip_hidden();
+    let engaged = hovered().is_some() || keyed().is_some();
+    let tooltip_on = visible && !tip_hidden() && (tooltip_at_rest || engaged);
     let name_label = metric_name.clone();
     let footer = footer_text.clone();
     let empty_text = empty_message.clone();
@@ -224,6 +231,9 @@ pub fn MetricTrendCard(
             div { class: "kit-metric-card__headline",
                 span { class: "kit-metric-card__value", "{headline_value}" }
                 span { class: "kit-metric-card__chip", "data-tone": chip_tone, "aria-hidden": "true", "{chip}" }
+                if !comparison_text.is_empty() {
+                    span { class: "kit-metric-card__vs", "{comparison_text}" }
+                }
                 span { class: "kit-metric-card__sr", "{chip_words}" }
             }
             div { class: "kit-sr", role: "status", if !visible { "{empty_text}" } }

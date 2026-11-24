@@ -227,7 +227,8 @@
   box-shadow: var(--kit-shadow);
 }
 
-.kit-rev__card--chart {
+.kit-rev__card--chart,
+.kit-rev__card--wide {
   grid-column: 1 / -1;
 }
 

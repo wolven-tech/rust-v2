@@ -1,16 +1,16 @@
-//! Expandable panel strip: a row of feature tiles. Opening one reveals its larger preview in a
-//! framed card below the row, with its caption; the other tiles collapse to slim tiles.
+//! Expandable panel strip: a row of feature tiles. Opening one widens it in place into a framed
+//! preview card with its caption row and previous and next controls; the other tiles stay slim.
 //!
-//! Design choice: the open preview sits under the row rather than in its middle. A strip
-//! that holds a preview in the middle of a narrow row has no room for its neighbours.
+//! Design choice: the open preview is the row's own item, so the tiles on either side keep their
+//! places and the card widens into the middle of the row.
 //! Design choice: selection is controlled when `on_open_change` is given (`open_id` is then
 //! the truth, `None` closes all). Without it the strip keeps its own open tile, starting at
 //! `initial_open_id` or the first panel.
-//! Design choice: at narrow widths the open tile fills the row and its two neighbours peek
-//! as slim tiles; the pager and swipe move the selection and wrap at the ends.
+//! Design choice: at narrow widths the open card fills the row and its two neighbours peek as
+//! slim tiles; the controls and swipe move the selection and wrap at the ends.
 //! Not implemented: the width transition is a CSS flex transition, not a shared motion value.
 //! Browser checks: click opens and collapses the previous tile, Left/Right move focus without
-//! opening, Enter opens, Escape closes and returns focus, hover does not open, pager wraps,
+//! opening, Enter opens, Escape closes and returns focus, hover does not open, controls wrap,
 //! one neighbour per side at narrow width, no sideways scroll.
 
 use dioxus::prelude::*;
@@ -91,6 +91,8 @@ fn focus_tile(id: &str) {
 #[component]
 pub fn ExpandablePanelStrip(
     panels: Vec<StripPanel>,
+    #[props(default)] heading: Option<String>,
+    #[props(default)] intro: Option<String>,
     #[props(default)] open_id: Option<String>,
     #[props(default)] initial_open_id: Option<String>,
     #[props(default)] on_open_change: Option<EventHandler<Option<String>>>,
@@ -122,111 +124,122 @@ pub fn ExpandablePanelStrip(
         document::Link { rel: "stylesheet", href: KIT_CSS }
         document::Link { rel: "stylesheet", href: CSS }
         div { class: "{root_class}", "data-disabled": disabled.then_some("true"),
+            if heading.is_some() || intro.is_some() {
+                header { class: "kit-strip__head",
+                    if let Some(title) = heading.clone() {
+                        h2 { class: "kit-strip__heading", "{title}" }
+                    }
+                    if let Some(line) = intro.clone() {
+                        p { class: "kit-strip__intro", "{line}" }
+                    }
+                }
+            }
             div { class: "kit-strip__row", role: "tablist", "aria-label": "{preview_label} panels",
                 for (index, panel) in panels.iter().enumerate() {
                     {
                         let open = open_at == Some(index);
                         let near = open_at.is_some_and(|o| o.abs_diff(index) == 1);
+                        let far = open_at.is_some() && !open && !near;
                         let tid = tile_id(&strip_id, index);
                         let pick = panel.id.clone();
                         let key_strip = strip_id.clone();
                         let focus_key = tid.clone();
                         let title = panel.title.clone();
                         let caption = panel.caption.clone();
-                        rsx! {
-                            button {
-                                key: "{panel.id}",
-                                id: "{tid}",
-                                r#type: "button",
-                                role: "tab",
-                                class: "kit-strip__tile",
-                                "aria-selected": if open { "true" } else { "false" },
-                                "aria-label": "{title}",
-                                "aria-controls": "{key_strip}-panel",
-                                tabindex: "0",
-                                disabled: disabled && !open,
-                                "data-open": open.then_some("true"),
-                                "data-peek": near.then_some("true"),
-                                onclick: move |_| {
-                                    if !open {
+                        if open {
+                            let prev_at = wrap_index(len, index, -1);
+                            let next_at = wrap_index(len, index, 1);
+                            let prev_pick = prev_ids.get(prev_at).cloned();
+                            let next_pick = next_ids.get(next_at).cloned();
+                            let swipe_for = swipe_ids.clone();
+                            rsx! {
+                                section {
+                                    key: "{panel.id}",
+                                    id: "{tid}",
+                                    class: "kit-strip__preview",
+                                    role: "tabpanel",
+                                    tabindex: "-1",
+                                    "aria-label": "{preview_label}: {title}",
+                                    onpointerdown: move |e: PointerEvent| swipe_start.set(Some(e.client_coordinates().x)),
+                                    onpointerup: move |e: PointerEvent| {
+                                        let Some(start) = swipe_start() else { return };
+                                        swipe_start.set(None);
+                                        let dx = e.client_coordinates().x - start;
+                                        if dx.abs() > 40.0 && len > 1 {
+                                            let step = if dx < 0.0 { 1 } else { -1 };
+                                            select.pick(swipe_for.get(wrap_index(len, index, step)).cloned());
+                                        }
+                                    },
+                                    onkeydown: move |e: KeyboardEvent| {
+                                        if e.key() == Key::Escape {
+                                            select.pick(None);
+                                            focus_after_frame(&focus_key);
+                                        }
+                                    },
+                                    div { class: "kit-strip__frame",
+                                        {panel.preview.clone()}
+                                        div { class: "kit-strip__caption-row",
+                                            p { class: "kit-strip__figcaption",
+                                                strong { "{title}" }
+                                                " {caption}"
+                                            }
+                                            if len > 1 {
+                                                div { class: "kit-strip__pager",
+                                                    Button {
+                                                        variant: ButtonVariant::Secondary,
+                                                        size: ButtonSize::Sm,
+                                                        label: "Previous",
+                                                        disabled: disabled,
+                                                        onclick: move |_| select.pick(prev_pick.clone()),
+                                                    }
+                                                    Button {
+                                                        variant: ButtonVariant::Secondary,
+                                                        size: ButtonSize::Sm,
+                                                        label: "Next",
+                                                        disabled: disabled,
+                                                        onclick: move |_| select.pick(next_pick.clone()),
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        } else {
+                            rsx! {
+                                button {
+                                    key: "{panel.id}",
+                                    id: "{tid}",
+                                    r#type: "button",
+                                    role: "tab",
+                                    class: "kit-strip__tile",
+                                    "aria-selected": "false",
+                                    "aria-label": "{title}",
+                                    tabindex: "0",
+                                    disabled: disabled,
+                                    "data-peek": near.then_some("true"),
+                                    "data-far": far.then_some("true"),
+                                    onclick: move |_| {
                                         select.pick(Some(pick.clone()));
-                                    }
-                                },
-                                onkeydown: move |e: KeyboardEvent| {
-                                    let target = match e.key() {
-                                        Key::ArrowRight => Some(wrap_index(len, index, 1)),
-                                        Key::ArrowLeft => Some(wrap_index(len, index, -1)),
-                                        Key::Home => Some(edge_index(len, false)),
-                                        Key::End => Some(edge_index(len, true)),
-                                        _ => None,
-                                    };
-                                    if let Some(target) = target {
-                                        e.prevent_default();
-                                        focus_tile(&tile_id(&key_strip, target));
-                                    }
-                                    if e.key() == Key::Escape && open {
-                                        select.pick(None);
-                                        focus_after_frame(&focus_key);
-                                    }
-                                },
-                                span { class: "kit-strip__artwork", "aria-hidden": "true" }
-                                span { class: "kit-strip__title", "{title}" }
-                                span { class: "kit-strip__caption", "{caption}" }
+                                    },
+                                    onkeydown: move |e: KeyboardEvent| {
+                                        let target = match e.key() {
+                                            Key::ArrowRight => Some(wrap_index(len, index, 1)),
+                                            Key::ArrowLeft => Some(wrap_index(len, index, -1)),
+                                            Key::Home => Some(edge_index(len, false)),
+                                            Key::End => Some(edge_index(len, true)),
+                                            _ => None,
+                                        };
+                                        if let Some(target) = target {
+                                            e.prevent_default();
+                                            focus_tile(&tile_id(&key_strip, target));
+                                        }
+                                    },
+                                    span { class: "kit-strip__artwork", "aria-hidden": "true" }
+                                    span { class: "kit-strip__title", "{title}" }
+                                    span { class: "kit-strip__caption", "{caption}" }
+                                }
                             }
-                        }
-                    }
-                }
-            }
-            div { class: "kit-strip__stage",
-                if let Some(index) = open_at {
-                    {
-                        let panel = panels[index].clone();
-                        let labelled = tile_id(&strip_id, index);
-                        let panel_id = format!("{strip_id}-panel");
-                        rsx! {
-                            section {
-                                id: "{panel_id}",
-                                class: "kit-strip__preview",
-                                role: "tabpanel",
-                                "aria-labelledby": "{labelled}",
-                                "aria-label": "{preview_label}: {panel.title}",
-                                onpointerdown: move |e: PointerEvent| swipe_start.set(Some(e.client_coordinates().x)),
-                                onpointerup: move |e: PointerEvent| {
-                                    let Some(start) = swipe_start() else { return };
-                                    swipe_start.set(None);
-                                    let dx = e.client_coordinates().x - start;
-                                    if dx.abs() > 40.0 && len > 1 {
-                                        let step = if dx < 0.0 { 1 } else { -1 };
-                                        select.pick(swipe_ids.get(wrap_index(len, index, step)).cloned());
-                                    }
-                                },
-                                div { class: "kit-strip__frame", {panel.preview.clone()} }
-                                p { class: "kit-strip__figcaption", "{panel.caption}" }
-                            }
-                        }
-                    }
-                }
-                if len > 1 {
-                    div { class: "kit-strip__pager",
-                        Button {
-                            variant: ButtonVariant::Secondary,
-                            size: ButtonSize::Sm,
-                            label: "Previous",
-                            disabled: disabled,
-                            onclick: move |_| {
-                                let at = open_at.unwrap_or(0);
-                                select.pick(prev_ids.get(wrap_index(len, at, -1)).cloned());
-                            },
-                        }
-                        Button {
-                            variant: ButtonVariant::Secondary,
-                            size: ButtonSize::Sm,
-                            label: "Next",
-                            disabled: disabled,
-                            onclick: move |_| {
-                                let at = open_at.unwrap_or(0);
-                                select.pick(next_ids.get(wrap_index(len, at, 1)).cloned());
-                            },
                         }
                     }
                 }

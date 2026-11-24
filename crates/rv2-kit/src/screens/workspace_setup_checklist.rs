@@ -113,6 +113,42 @@ pub fn progress_line(done: usize) -> String {
     format!("{done} of {STEP_COUNT} done")
 }
 
+/// The hint under an unfinished step's title.
+pub fn step_hint(number: usize) -> &'static str {
+    match number {
+        1 => "Name the workspace",
+        2 => "Pick the tools to connect",
+        3 => "Add teammates by email",
+        _ => "Create the first agent",
+    }
+}
+
+/// The one-line status under a step's title: the value entered on a finished step, else its hint.
+pub fn step_status(number: usize, state: &str, value: &str) -> String {
+    if state == "done" && !value.is_empty() {
+        value.to_string()
+    } else {
+        step_hint(number).to_string()
+    }
+}
+
+/// The word that states a step's progress.
+pub fn step_word(state: &str) -> &'static str {
+    match state {
+        "done" => "Done",
+        "current" => "In progress",
+        _ => "Not started",
+    }
+}
+
+/// The letter that marks a connectable tool in its row.
+pub fn tool_mark(name: &str) -> String {
+    name.chars()
+        .next()
+        .map(|c| c.to_uppercase().to_string())
+        .unwrap_or_default()
+}
+
 /// Continue is off until the step's required field is valid.
 pub fn step_valid(step: usize, name: &str) -> bool {
     match step {
@@ -149,6 +185,7 @@ pub fn WorkspaceSetupChecklist(
     #[props(default)] connected_tools: Vec<ConnectableTool>,
     #[props(default)] templates: Vec<AgentTemplate>,
     #[props(default)] team_size: TeamSize,
+    #[props(default)] crumbs: Vec<String>,
     on_complete: EventHandler<SetupValues>,
     #[props(default)] on_navigate: Option<EventHandler<String>>,
 ) -> Element {
@@ -225,6 +262,15 @@ pub fn WorkspaceSetupChecklist(
         document::Link { rel: "stylesheet", href: KIT_CSS }
         document::Link { rel: "stylesheet", href: CSS }
         div { class: "kit-wsc", "data-step": "{step}",
+            if !crumbs.is_empty() {
+                nav { class: "kit-wsc__crumbs", "aria-label": "Breadcrumb",
+                    ol {
+                        for (index, crumb) in crumbs.iter().enumerate() {
+                            li { key: "{index}", "{crumb}" }
+                        }
+                    }
+                }
+            }
             aside { class: "kit-wsc__aside",
                 p { class: "kit-wsc__greeting",
                     if first.is_empty() { "Welcome" } else { "Welcome, {first}" }
@@ -236,7 +282,14 @@ pub fn WorkspaceSetupChecklist(
                         {
                             let number = index + 1;
                             let state = if done_now[index] { "done" } else if number == step { "current" } else { "upcoming" };
-                            let word = match state { "done" => "Done", "current" => "Current", _ => "Not started" };
+                            let word = step_word(state);
+                            let value = match number {
+                                1 => name_now.trim().to_string(),
+                                2 => format!("{} connected", tools().len()),
+                                3 => format!("{invited} invited"),
+                                _ => agent_name().trim().to_string(),
+                            };
+                            let status = step_status(number, state, &value);
                             let key = number;
                             rsx! {
                                 li { key: "{key}", class: "kit-wsc__step-item", "data-state": state,
@@ -247,6 +300,7 @@ pub fn WorkspaceSetupChecklist(
                                         onclick: move |_| go_to(number),
                                         span { class: "kit-wsc__step-title", "{title}" }
                                         span { class: "kit-wsc__step-word", "{word}" }
+                                        span { class: "kit-wsc__step-status", "{status}" }
                                     }
                                 }
                             }
@@ -320,9 +374,11 @@ pub fn WorkspaceSetupChecklist(
                                 let tool_id = tool.id.clone();
                                 let name_text = tool.name.clone();
                                 let summary = tool.summary.clone();
+                                let tool_mark_letter = tool_mark(&tool.name);
                                 let on = tools().contains(&tool.id);
                                 rsx! {
                                     li { key: "{key}", class: "kit-wsc__tool",
+                                        span { class: "kit-wsc__tool-mark", "aria-hidden": "true", "{tool_mark_letter}" }
                                         Switch {
                                             id: format!("{id}-tool-{key}"),
                                             label: rsx! { "{name_text}" },

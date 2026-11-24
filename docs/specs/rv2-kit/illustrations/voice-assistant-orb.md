@@ -58,3 +58,51 @@ In reading order:
 6. At phone width the orb scales and nothing scrolls sideways.
 
 Uses no partner logos.
+
+## Amendment 6: structure and demo
+
+No earlier amendment exists, so no line is replaced.
+
+Archetype: one dotted sphere, its status word, and a four-segment demonstration switch.
+
+Visible at rest:
+- One orb in the listening state: dots on a sphere, denser at the front, pushed slightly outward at a moderate level.
+- Status word beneath the orb: "Listening…".
+- Four-segment switch beneath the status word: Idle, Listening, Thinking, Speaking. Listening is selected and shown as a raised segment. The switch is demonstration only.
+- No ring and no ripple rings.
+
+Scale and arrangement: the sphere is about a sixth of the stage width, centred horizontally, its centre at about 42% of the stage height. The status word sits at about 67%. The switch sits at about 78%.
+
+Motion, settled frame: listening sphere at a moderate level, no ripple.
+Moves and reduced motion: as stated in Motion (functional).
+
+Defects, stated as checks: two Idle orbs and no listening state at rest (check 7).
+
+Acceptance checks (continued):
+7. At rest exactly one orb is drawn, in the listening state, with the status word "Listening…".
+8. The four-segment switch sits under the status word with Listening selected. A consumer that renders the orb alone gets no switch.
+9. The dots form one sphere at rest: no ring and no ripple rings are drawn.
+
+## Amendment 7: structure and demo
+
+Replaces: Amendment 6 "Scale and arrangement" paragraph, and Amendment 6 "Visible at rest" first bullet (dots "pushed slightly outward" is kept as the settled listening frame only). Amendment 6 checks 7 to 9 stand; checks 10 to 12 are new.
+
+Archetype: one dot sphere above a status word above a four-segment switch, on an empty stage.
+
+Stage: the card, neutral surface, edge to edge. Width to height about 1.85 to 1.
+
+Sphere:
+- Diameter 17% of stage width. Centre at 50% of W horizontally and 41% of H vertically.
+- Dots form a regular lattice: about 15 latitude rings from pole to pole, each ring spaced evenly around the sphere. A visible hemisphere holds roughly 150 to 200 dots.
+- All dots the same size, in the ink token. On screen the spacing shrinks toward the rim so the outline reads as a clean circle; rim dots are paler.
+- No random scatter and no jitter at rest.
+- Listening, settled frame: the sphere at a moderate level, dots pushed outward by about 3% of the diameter. No ring and no ripple.
+
+Status word: centred at 67% of H. Small, muted, ink token. Reads "Listening…".
+
+Switch: a segmented track centred at 77.5% of H, 33% of W wide, about 7% of H tall. Four equal segments: Idle, Listening, Thinking, Speaking. Listening is the raised segment, a light surface pill inside the track. The others are plain text. Demonstration only.
+
+Acceptance checks (continued):
+10. One sphere in lattice form: about 15 rings, 150 to 200 dots on the visible hemisphere, all the same size. No random scatter.
+11. Sphere diameter is 16% to 18% of stage width. Its centre is at 41% of stage height, within 2 points.
+12. The status word is centred at 67% of stage height. The switch is 33% of stage width (within 3 points) with its centre at 77% to 78% of stage height, and Listening is its raised segment.
