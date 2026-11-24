@@ -12,6 +12,7 @@
 //!   published JSON Schema generated from the same table.
 //! - [`surface`]: applying messages atomically, and the tree checks that make
 //!   an agent's output safe to render.
+//! - [`testing`]: the check an agent's own tests run on what it emits.
 //!
 //! Rendering lives in `rv2-a2ui-dioxus`, so this crate needs no renderer.
 
@@ -20,6 +21,7 @@
 pub mod catalog;
 pub mod pointer;
 pub mod surface;
+pub mod testing;
 pub mod value;
 pub mod wire;
 

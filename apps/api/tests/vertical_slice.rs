@@ -422,7 +422,12 @@ async fn domain_routes_reject_anonymous_callers_with_401() {
     let base = serve().await;
     let client = reqwest::Client::new();
 
-    for (method, path) in [("GET", "/posts"), ("GET", "/me")] {
+    for (method, path) in [
+        ("GET", "/posts"),
+        ("GET", "/me"),
+        ("GET", "/a2ui/catalog"),
+        ("GET", "/a2ui/surfaces/runway"),
+    ] {
         let response = client
             .request(method.parse().unwrap(), format!("{base}{path}"))
             .send()

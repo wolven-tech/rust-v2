@@ -4,8 +4,9 @@
 use std::path::{Path, PathBuf};
 use std::process::ExitCode;
 
+use rv2_a2ui::catalog::COMPONENTS;
 use rv2_isa::index::{self, Index, Mode};
-use rv2_isa::isa;
+use rv2_isa::{a2ui, isa};
 
 /// The index as of the commit this binary was built from, for repositories
 /// with no copy of the kit's source.
@@ -17,6 +18,8 @@ usage: rv2-isa <command>
   find <words…>        instructions for an intent, best first
   show <Name>          an instruction's props, example, tests and operands
   list                 every intent and its instructions
+  catalog              what an agent may place through A2UI, and the
+                       instruction each entry renders
   check [--root DIR] [--src DIR]…
                        UI7: fail on a raw button, input, select, textarea,
                        h1–h4 or a in DIR/apps/*/src (and each --src)
@@ -51,6 +54,10 @@ fn run(args: &[String]) -> index::Fallible<()> {
         ["show", name] => show(&load(embedded)?, name),
         ["list"] => {
             list(&load(embedded)?);
+            Ok(())
+        }
+        ["catalog"] => {
+            catalog();
             Ok(())
         }
         ["check", rest @ ..] => check(rest),
@@ -140,6 +147,27 @@ fn list(index: &Index) {
     for row in &index.intents {
         println!("{:<34} {}", row.intent, row.instructions.join(", "));
     }
+}
+
+fn catalog() {
+    println!(
+        "{}  (docs/architecture/004-a2ui-surface.md)\n",
+        a2ui::CATALOG_ID
+    );
+    for spec in COMPONENTS {
+        let renders = if a2ui::LAYOUT_ONLY.contains(&spec.name) {
+            "layout div"
+        } else {
+            spec.name
+        };
+        let props: Vec<String> = spec
+            .props
+            .iter()
+            .map(|p| format!("{}{}", p.name, if p.required { "" } else { "?" }))
+            .collect();
+        println!("{:<12} → {:<12} {}", spec.name, renders, props.join(", "));
+    }
+    println!("\n`rv2-isa show <Name>` for wire props; ? marks an optional prop");
 }
 
 /// `--flag value` pairs, repeated flags kept in order.

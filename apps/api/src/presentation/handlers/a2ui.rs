@@ -10,7 +10,7 @@ use axum::{
     http::{StatusCode, header},
     response::{IntoResponse, Response},
 };
-use rv2_a2ui::{ClientBody, ClientMessage, ServerMessage, to_jsonl};
+use rv2_a2ui::{ClientBody, ClientMessage, ServerMessage, catalog_document, to_jsonl};
 use rv2_domain::ValidationError;
 
 use crate::infrastructure::{auth::ExtractAuthUser, error::ApiError};
@@ -20,6 +20,12 @@ const JSONL: &str = "application/jsonl";
 
 fn jsonl(messages: &[ServerMessage]) -> Response {
     ([(header::CONTENT_TYPE, JSONL)], to_jsonl(messages)).into_response()
+}
+
+/// `GET /a2ui/catalog` — the catalog's JSON Schema, from the same table the
+/// client validates against, so an agent built from it matches this deploy.
+pub async fn catalog(ExtractAuthUser(_actor): ExtractAuthUser) -> Json<serde_json::Value> {
+    Json(catalog_document())
 }
 
 /// `GET /a2ui/surfaces/{name}` — the messages that open a surface.

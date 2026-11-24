@@ -13,6 +13,7 @@ path = "src/main.rs"
 [dependencies]
 proc-macro2 = "1"
 quote = "1"
+rv2-a2ui.workspace = true
 serde.workspace = true
 serde_json.workspace = true
 syn = { version = "2", features = ["full"] }

@@ -1,5 +1,6 @@
 use std::path::{Path, PathBuf};
 
+use rv2_isa::a2ui;
 use rv2_isa::index::{self, Index, KitScope, Mode};
 use rv2_isa::isa::REPLACEMENTS;
 
@@ -169,6 +170,45 @@ fn a_fork_without_the_docs_still_indexes_its_own_kit() {
         "strict needs the ISA doc"
     );
     std::fs::remove_dir_all(&root).unwrap();
+}
+
+#[test]
+fn every_catalog_entry_but_layout_renders_an_instruction_marked_as_placeable() {
+    let kit = kit();
+    for spec in rv2_a2ui::catalog::COMPONENTS {
+        if a2ui::LAYOUT_ONLY.contains(&spec.name) {
+            assert!(kit.component(spec.name).is_none(), "{}", spec.name);
+            continue;
+        }
+        let component = kit.component(spec.name).unwrap();
+        let wire = component.a2ui.as_ref().unwrap();
+        assert_eq!(wire.len(), spec.props.len(), "{}", spec.name);
+    }
+    assert!(kit.component("ConfirmDialog").unwrap().a2ui.is_none());
+}
+
+#[test]
+fn an_instruction_the_catalog_places_cannot_leave_the_kit() {
+    let mut kit = kit();
+    kit.components.retain(|c| c.name != "Stamp");
+    let problems = kit.problems();
+    assert!(
+        problems
+            .iter()
+            .any(|p| p.contains("`Stamp`") && p.contains("A2UI4")),
+        "{problems:?}"
+    );
+}
+
+#[test]
+fn a_search_for_agent_ui_finds_catalog_instructions() {
+    let kit = kit();
+    let hits = kit.search("agent places a verdict");
+    assert!(
+        hits.iter().take(3).any(|c| c.a2ui.is_some()),
+        "{:?}",
+        hits.iter().map(|c| &c.name).collect::<Vec<_>>()
+    );
 }
 
 #[test]

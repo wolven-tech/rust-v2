@@ -432,7 +432,30 @@
         "line": 89,
         "code": "Button { size: Size::Small, onclick: move |_| elapsed += 15, \"+15s\" }"
       },
-      "guarantees": []
+      "guarantees": [],
+      "a2ui": [
+        {
+          "name": "label",
+          "ty": "string | {path}",
+          "required": true,
+          "default": null,
+          "docs": "The button's text."
+        },
+        {
+          "name": "variant",
+          "ty": "primary / secondary / outline / danger / ghost",
+          "required": false,
+          "default": null,
+          "docs": "Emphasis."
+        },
+        {
+          "name": "action",
+          "ty": "{event: {name, context}}",
+          "required": false,
+          "default": null,
+          "docs": "The event sent when pressed."
+        }
+      ]
     },
     {
       "name": "LinkButton",
@@ -731,6 +754,43 @@
           "test": "a_named_field_renders_its_name_and_an_unnamed_one_renders_none",
           "file": "crates/rv2-ui/tests/instructions.rs",
           "docs": "A nameless input contributes nothing to a native form submission, which is\nhalf of how the login screen once shipped unable to submit."
+        }
+      ],
+      "a2ui": [
+        {
+          "name": "label",
+          "ty": "string | {path}",
+          "required": true,
+          "default": null,
+          "docs": "The label."
+        },
+        {
+          "name": "value",
+          "ty": "{path}",
+          "required": true,
+          "default": null,
+          "docs": "Where the input reads and writes."
+        },
+        {
+          "name": "placeholder",
+          "ty": "string | {path}",
+          "required": false,
+          "default": null,
+          "docs": "Example input."
+        },
+        {
+          "name": "help",
+          "ty": "string | {path}",
+          "required": false,
+          "default": null,
+          "docs": "A line under the field."
+        },
+        {
+          "name": "inputType",
+          "ty": "text / email / number",
+          "required": false,
+          "default": null,
+          "docs": "The input's type."
         }
       ]
     },
@@ -1231,6 +1291,29 @@
           "file": "crates/rv2-ui/tests/records.rs",
           "docs": ""
         }
+      ],
+      "a2ui": [
+        {
+          "name": "children",
+          "ty": "[component id]",
+          "required": true,
+          "default": null,
+          "docs": "Ids of the components inside, in order."
+        },
+        {
+          "name": "pad",
+          "ty": "default / none / roomy",
+          "required": false,
+          "default": null,
+          "docs": "Inner spacing."
+        },
+        {
+          "name": "surface",
+          "ty": "flat / slab",
+          "required": false,
+          "default": null,
+          "docs": "flat: hairline border. slab: ink border and offset shadow."
+        }
       ]
     },
     {
@@ -1349,7 +1432,23 @@
         "line": 48,
         "code": "Grid { columns: 2, class: \"mt-6 items-start gap-8\",\n    div { class: \"space-y-4\",\n        p { class: \"text-5xl font-semibold text-ink\", Tally { value: 174 } }\n        Text { tone: Tone::Muted, \"roles counted this week\" }\n        Bar { label: \"Remote\", count: 92, of: 120, arrive: Arrive::Grow }\n        Bar { label: \"Hybrid\", count: 120, of: 120, arrive: Arrive::Grow, emphasis: true }\n        Bar { label: \"On site\", count: 31, of: 120, arrive: Arrive::Grow }\n    }\n    div { class: \"space-y-6\",\n        SplitBar {\n            label: \"Session cost\",\n            arrive: Arrive::Grow,\n            parts: vec![\n                Part::new(\"Energy\", 4.2, \"£4.20\", \"var(--color-takeable)\"),\n                Part::new(\"Fees\", 1.1, \"£1.10\", \"var(--color-caution)\"),\n                Part::new(\"VAT\", 0.27, \"£0.27\", \"var(--color-ink-muted)\"),\n            ],\n        }\n        div { class: \"flex items-end gap-4\",\n            div { class: \"w-40\", Sparkline { values: vec![61.0, 60.0, 62.0, 59.0, 58.0, 57.0], label: \"Resting heart rate, falling over 6 weeks\" } }\n            p { class: \"text-sm text-ink\", \"57 bpm\" }\n        }\n    }\n}"
       },
-      "guarantees": []
+      "guarantees": [],
+      "a2ui": [
+        {
+          "name": "children",
+          "ty": "[component id]",
+          "required": true,
+          "default": null,
+          "docs": "Ids of the components inside, in order."
+        },
+        {
+          "name": "columns",
+          "ty": "integer 1–4",
+          "required": false,
+          "default": null,
+          "docs": "Columns at full width. Default 3."
+        }
+      ]
     },
     {
       "name": "Divider",
@@ -1486,7 +1585,30 @@
         "line": 23,
         "code": "Heading { \"Figures that arrive\" }"
       },
-      "guarantees": []
+      "guarantees": [],
+      "a2ui": [
+        {
+          "name": "text",
+          "ty": "string | {path}",
+          "required": true,
+          "default": null,
+          "docs": "The heading."
+        },
+        {
+          "name": "level",
+          "ty": "integer 1–4",
+          "required": false,
+          "default": null,
+          "docs": "h1 to h4. Default 2."
+        },
+        {
+          "name": "size",
+          "ty": "section / display / title / card",
+          "required": false,
+          "default": null,
+          "docs": "Visual size."
+        }
+      ]
     },
     {
       "name": "Text",
@@ -1523,7 +1645,23 @@
         "line": 24,
         "code": "Text { class: \"mt-2\", tone: Tone::Muted,\n    \"Counts and bars settle as they scroll in. The number is text from the first paint; with reduced motion nothing moves.\"\n}"
       },
-      "guarantees": []
+      "guarantees": [],
+      "a2ui": [
+        {
+          "name": "text",
+          "ty": "string | {path}",
+          "required": true,
+          "default": null,
+          "docs": "The paragraph."
+        },
+        {
+          "name": "tone",
+          "ty": "default / muted / small / lead",
+          "required": false,
+          "default": null,
+          "docs": "Size and emphasis."
+        }
+      ]
     },
     {
       "name": "Eyebrow",
@@ -2975,6 +3113,22 @@
           "file": "crates/rv2-ui/tests/readout.rs",
           "docs": ""
         }
+      ],
+      "a2ui": [
+        {
+          "name": "stats",
+          "ty": "[{label, value, note?, lean?}]",
+          "required": true,
+          "default": null,
+          "docs": "The figures, in order."
+        },
+        {
+          "name": "density",
+          "ty": "compact / hero",
+          "required": false,
+          "default": null,
+          "docs": "compact: a summary row. hero: the band the page is about."
+        }
       ]
     },
     {
@@ -3038,6 +3192,36 @@
           "test": "a_result_panel_announces_a_changed_answer_politely",
           "file": "crates/rv2-ui/tests/readout.rs",
           "docs": ""
+        }
+      ],
+      "a2ui": [
+        {
+          "name": "label",
+          "ty": "string | {path}",
+          "required": true,
+          "default": null,
+          "docs": "What the figure is."
+        },
+        {
+          "name": "value",
+          "ty": "string | {path}",
+          "required": true,
+          "default": null,
+          "docs": "The figure, as text, with its sign and unit."
+        },
+        {
+          "name": "context",
+          "ty": "string | {path}",
+          "required": false,
+          "default": null,
+          "docs": "The period or basis."
+        },
+        {
+          "name": "lean",
+          "ty": "neutral / good / close / bad",
+          "required": false,
+          "default": null,
+          "docs": "Whether the figure is good news."
         }
       ]
     },
@@ -3119,6 +3303,50 @@
           "test": "a_meter_with_a_value_it_cannot_measure_renders_empty_and_neutral",
           "file": "crates/rv2-ui/tests/readout.rs",
           "docs": ""
+        }
+      ],
+      "a2ui": [
+        {
+          "name": "label",
+          "ty": "string | {path}",
+          "required": true,
+          "default": null,
+          "docs": "What is measured."
+        },
+        {
+          "name": "value",
+          "ty": "number | {path}",
+          "required": true,
+          "default": null,
+          "docs": "The current amount."
+        },
+        {
+          "name": "max",
+          "ty": "number | {path}",
+          "required": true,
+          "default": null,
+          "docs": "The limit."
+        },
+        {
+          "name": "readout",
+          "ty": "string | {path}",
+          "required": true,
+          "default": null,
+          "docs": "The amount in words, shown beside the fill."
+        },
+        {
+          "name": "warnAt",
+          "ty": "number 0–1",
+          "required": false,
+          "default": null,
+          "docs": "Share of max from which the fill shows caution."
+        },
+        {
+          "name": "criticalAt",
+          "ty": "number 0–1",
+          "required": false,
+          "default": null,
+          "docs": "Share of max from which the fill shows fault."
         }
       ]
     },
@@ -3222,6 +3450,29 @@
           "test": "only_a_stop_callout_interrupts_as_an_alert",
           "file": "crates/rv2-ui/tests/readout.rs",
           "docs": ""
+        }
+      ],
+      "a2ui": [
+        {
+          "name": "text",
+          "ty": "string | {path}",
+          "required": true,
+          "default": null,
+          "docs": "The body."
+        },
+        {
+          "name": "title",
+          "ty": "string | {path}",
+          "required": false,
+          "default": null,
+          "docs": "The verdict in words."
+        },
+        {
+          "name": "verdict",
+          "ty": "note / clear / caution / stop",
+          "required": false,
+          "default": null,
+          "docs": "What the callout is telling the reader. stop is announced as an alert."
         }
       ]
     },
@@ -3392,6 +3643,43 @@
           "test": "a_unit_field_hides_its_affixes_and_asks_for_a_decimal_keyboard",
           "file": "crates/rv2-ui/tests/readout.rs",
           "docs": ""
+        }
+      ],
+      "a2ui": [
+        {
+          "name": "label",
+          "ty": "string | {path}",
+          "required": true,
+          "default": null,
+          "docs": "The label; name the unit here for screen readers."
+        },
+        {
+          "name": "value",
+          "ty": "{path}",
+          "required": true,
+          "default": null,
+          "docs": "Where the input reads and writes."
+        },
+        {
+          "name": "prefix",
+          "ty": "string | {path}",
+          "required": false,
+          "default": null,
+          "docs": "A unit before the number."
+        },
+        {
+          "name": "suffix",
+          "ty": "string | {path}",
+          "required": false,
+          "default": null,
+          "docs": "A unit after the number."
+        },
+        {
+          "name": "help",
+          "ty": "string | {path}",
+          "required": false,
+          "default": null,
+          "docs": "A line under the field."
         }
       ]
     },
@@ -3885,6 +4173,22 @@
           "test": "a_stamp_and_a_slab_take_their_look_from_operands",
           "file": "crates/rv2-ui/tests/records.rs",
           "docs": ""
+        }
+      ],
+      "a2ui": [
+        {
+          "name": "text",
+          "ty": "string | {path}",
+          "required": true,
+          "default": null,
+          "docs": "One or two words."
+        },
+        {
+          "name": "verdict",
+          "ty": "note / clear / caution / stop",
+          "required": false,
+          "default": null,
+          "docs": "The colour that repeats the word."
         }
       ]
     },
