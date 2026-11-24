@@ -150,6 +150,11 @@ a functional amendment by the spec room. At most three rounds. A component
 still below HIGH after three rounds is listed in the PR body with the reason,
 not hidden.
 
+Outcome: 40, 68, 75 and 83 HIGH after rounds 0 to 3. A fourth round took the
+five left below HIGH through the same loop with two raters per pair, and all
+88 rated HIGH. In two cases one of the four votes was MED, and the PR body
+gives the reason. Round 4 is tracked under epic `t-5532c6`.
+
 ### D1. Design review — rock
 
 A senior UI design review of the kit after P3 and T4, by a reviewer with fresh

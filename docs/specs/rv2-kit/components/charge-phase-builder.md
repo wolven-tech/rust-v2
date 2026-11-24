@@ -135,4 +135,32 @@ Acceptance checks:
 22. Edit phase reveals the amendment-1 controls: each line has its inputs and a Remove action labelled with its name; the discount line shows its unit select beneath its amount; the add row holds one product picker and two buttons on one row. The edit state holds three line rows: two products and one discount.
 23. The summary's phase sum is 300 at rest and 378 in the edit state.
 24. Stop editing returns to the rest state with the edited values kept. on_schedule_change is called once per edit, not when editing stops.
+
+## Amendment 4: structure and demo
+
+**Replaces:** amendment 3 in full. Its read-only rest state, its "Edit phase" control, its separate edit state and its "Stop editing" return no longer exist; the controls they hid are visible at rest. Checks 19 to 24 of amendment 3 are replaced. Of amendment 1, checks 12, 16 and 17 are replaced; checks 11, 13, 14 and 15 stay superseded as amendment 3 left them. Base check 3 is replaced. Base checks 1, 2 and 4 to 10, and amendment 1 check 18, stand.
+
+**Archetype:** a single editable card at rest. Stacked bands: heading, a summary strip, a schedule row of two fields, a line table, an add row, and a summary band of two figures.
+
+**Parts at rest, top to bottom:**
+- Heading band: the heading text, as text.
+- Summary strip: the phase name as an editable field labelled "Phase name", with no visible border at rest; then a separator, the start date as text, an arrow glyph, and the length as text. The start and length text mirror the schedule row below.
+- Schedule row: two labelled fields side by side at desktop width. "Start date" is a date control with a calendar glyph. "Length" is a select-style control showing its value.
+- Line table: a header with three heads, in the order Name, Recurrence, Amount. Each line is one row. Its name is text. Its recurrence is a select. Its amount cell holds the currency prefix, the amount field, and a suffix naming the recurrence; beneath the amount, right-aligned in the same cell, sits a timing select (charged up front or at period end) with no head of its own. An unlabelled trailing action removes the line, labelled "Remove <line name>"; it is hidden until the row is hovered or focused.
+- Add row: a product trigger reading "Include item" at the start, which opens a catalogue listbox and is not a text field; then the buttons "Include adjustment" and "Include floor" at the end. All on one row at desktop width.
+- Summary band: two figures, "First invoice" then "Phase total", left to right. First invoice is the sum of valid product lines billed up front, before any discount. Phase total follows base check 2. No phase end date is shown.
+
+**Gallery demo (our data):** heading "Contract phase"; phase name "Rollout phase"; start 1 March 2026; length "Twelve months". One line: "Kickoff workshop", recurrence once, timing charged up front, amount 300. Summary: first invoice 300, phase total 300. The product trigger holds no selection. No discount or minimum line is present.
+
+**At rest:** every control shows its value. No menu, calendar, invalid message or focused field is open.
+
+**Acceptance checks (continued):**
+25. Top to bottom the card shows the heading, the summary strip, the schedule row, the line table, the add row and the summary band, in that order.
+26. The summary strip shows the phase name in an editable field, and the start and length as text matching the schedule row's values.
+27. At desktop width the Start date and Length fields sit side by side, and the start field shows a calendar glyph.
+28. The line table header shows three heads in the order Name, Recurrence, Amount. The timing select sits beneath the amount inside the Amount cell, and no column head labels it.
+29. The gallery table holds exactly one line row, "Kickoff workshop", with recurrence once, timing charged up front and amount 300. Its Remove action is labelled "Remove Kickoff workshop" and is not visible until the row is hovered or focused.
+30. The add row holds the product trigger "Include item" at its start and the buttons "Include adjustment" and "Include floor" at its end, on one row at desktop width. None is open at rest.
+31. The summary band shows "First invoice" then "Phase total", left to right, with 300 and 300 in the gallery. No end-date figure appears at rest.
+32. Changing the length updates the length text in the summary strip and the Length field together, and leaves the start date unchanged.
 </content>

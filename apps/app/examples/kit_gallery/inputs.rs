@@ -666,7 +666,6 @@ fn ChargePhaseBuilderDemo() -> Element {
         CatalogItem, ChargePhaseBuilder, Line, LineKind, ProductLine, Recurrence, Schedule, Timing,
     };
     let mut last = use_signal(String::new);
-    let mut last_edit = use_signal(String::new);
     let kickoff = Line {
         line_id: "k1".into(),
         kind: LineKind::Product(ProductLine {
@@ -677,27 +676,6 @@ fn ChargePhaseBuilderDemo() -> Element {
             quantity: "1".into(),
         }),
     };
-    let rest_lines = vec![kickoff.clone()];
-    let edit_lines = vec![
-        kickoff,
-        Line {
-            line_id: "p1".into(),
-            kind: LineKind::Product(ProductLine {
-                name: "Platform seat".into(),
-                recurrence: Recurrence::Monthly,
-                timing: Timing::PeriodEnd,
-                amount: "120".into(),
-                quantity: "1".into(),
-            }),
-        },
-        Line {
-            line_id: "d1".into(),
-            kind: LineKind::Discount {
-                percent: true,
-                amount: "10".into(),
-            },
-        },
-    ];
     let catalog = vec![CatalogItem {
         option_name: "Platform seat".into(),
         recurrence: Recurrence::Monthly,
@@ -708,24 +686,12 @@ fn ChargePhaseBuilderDemo() -> Element {
             ChargePhaseBuilder {
                 heading_text: "Contract phase",
                 phase_label: "Rollout phase",
-                item_options: catalog.clone(),
-                starting_lines: rest_lines,
+                item_options: catalog,
+                starting_lines: vec![kickoff],
                 starting_date: "2026-03-01",
                 on_schedule_change: move |s: Schedule| last.set(format!("schedule {} lines {}", s.duration, s.lines.len())),
             }
             div { class: "gl-out", "data-out": "charge-phase-builder", "{last()}" }
-        }
-        Item { slug: "charge-phase-builder-editing", name: "ChargePhaseBuilder (editing)",
-            ChargePhaseBuilder {
-                heading_text: "Contract phase",
-                phase_label: "Rollout phase",
-                item_options: catalog,
-                starting_lines: edit_lines,
-                starting_date: "2026-03-01",
-                start_editing: true,
-                on_schedule_change: move |s: Schedule| last_edit.set(format!("schedule {} lines {}", s.duration, s.lines.len())),
-            }
-            div { class: "gl-out", "data-out": "charge-phase-builder-editing", "{last_edit()}" }
         }
     }
 }

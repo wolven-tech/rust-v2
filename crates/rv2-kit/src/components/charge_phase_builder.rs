@@ -5,8 +5,8 @@
 //! raises the phase sum after the discount. `initial_charge` is the sum of up-front product lines
 //! before discount, which is what the summary reports as due on day one.
 //!
-//! Browser checks: menus and the calendar come from `rv2_affect` (Select, DatePicker); the end
-//! date fades when the length changes; no horizontal scroll at phone width.
+//! Browser checks: menus and the calendar come from `rv2_affect` (Select, DatePicker); the remove
+//! action appears on hover or focus; the line table stacks into one column below 640 px.
 
 use dioxus::prelude::*;
 use rv2_affect::date_picker::{DatePicker, Day};
@@ -16,12 +16,12 @@ use crate::internal::{KIT_CSS, class_list};
 
 const CSS: Asset = asset!("/assets/charge-phase-builder.css");
 const LENGTHS: [(u32, &str); 6] = [
-    (1, "1 month"),
-    (3, "3 months"),
-    (6, "6 months"),
-    (12, "12 months"),
-    (24, "24 months"),
-    (36, "36 months"),
+    (1, "One month"),
+    (3, "Three months"),
+    (6, "Six months"),
+    (12, "Twelve months"),
+    (24, "Twenty-four months"),
+    (36, "Thirty-six months"),
 ];
 const MONTH_NAMES: [&str; 12] = [
     "January",
@@ -228,7 +228,7 @@ pub fn parse_iso(text: &str) -> Option<Day> {
     Day::new(year, month, day)
 }
 
-/// "28 February 2027". The rest state shows the start and the end in this form.
+/// "28 February 2027". The rest state shows the start in this form.
 pub fn long_date(day: Day) -> String {
     format!(
         "{} {} {}",
@@ -238,12 +238,53 @@ pub fn long_date(day: Day) -> String {
     )
 }
 
+/// "Twelve months" for the listed lengths; any other length reads "<n> months".
+pub fn length_text(months: u32) -> String {
+    LENGTHS
+        .iter()
+        .find(|(m, _)| *m == months)
+        .map_or_else(|| format!("{months} months"), |(_, text)| text.to_string())
+}
+
+/// The start date and the length as the schedule strip shows them, from the same values as the
+/// schedule row.
+pub fn schedule_text(start: Option<Day>, months: u32) -> (String, String) {
+    (
+        start.map_or_else(|| "—".to_string(), long_date),
+        length_text(months),
+    )
+}
+
+/// What a line's amount is charged for, shown beside the amount.
+pub fn recurrence_suffix(recurrence: Recurrence) -> &'static str {
+    match recurrence {
+        Recurrence::Once => "once",
+        Recurrence::Monthly => "/ month",
+        Recurrence::Quarterly => "/ quarter",
+        Recurrence::Yearly => "/ year",
+    }
+}
+
 pub fn format_money(symbol: &str, value: f64) -> String {
     format!("{symbol}{value:.2}")
 }
 
-fn money_text(symbol: &str, amount: &str) -> String {
-    parse_amount(amount).map_or_else(|| amount.trim().to_string(), |v| format_money(symbol, v))
+/// Blank is allowed while typing; anything else must parse.
+fn amount_invalid(text: &str) -> bool {
+    parse_amount(text).is_none() && !text.trim().is_empty()
+}
+
+/// `lines` with the line `line_id` changed by `edit`; other lines keep their order and values.
+fn edited(lines: Vec<Line>, line_id: &str, edit: impl Fn(&mut LineKind)) -> Vec<Line> {
+    lines
+        .into_iter()
+        .map(|mut line| {
+            if line.line_id == line_id {
+                edit(&mut line.kind);
+            }
+            line
+        })
+        .collect()
 }
 
 fn notify(
@@ -271,42 +312,226 @@ fn option(value: &str, label: &str) -> SelectOption {
     }
 }
 
-/// One line at rest: its values as text.
+fn length_options() -> Vec<SelectOption> {
+    LENGTHS
+        .iter()
+        .map(|(months, text)| option(&months.to_string(), text))
+        .collect()
+}
+
+fn recurrence_options() -> Vec<SelectOption> {
+    Recurrence::ALL
+        .iter()
+        .map(|r| option(r.value(), r.label()))
+        .collect()
+}
+
+fn timing_options() -> Vec<SelectOption> {
+    [Timing::UpFront, Timing::PeriodEnd]
+        .iter()
+        .map(|t| option(t.value(), t.label()))
+        .collect()
+}
+
+fn unit_options() -> Vec<SelectOption> {
+    vec![option("percent", "%"), option("fixed", "Fixed")]
+}
+
+/// One line of the table. Each edit writes the whole list back, then reports the schedule.
 #[component]
-fn ReadOnlyLine(line: Line, currency_symbol: String) -> Element {
-    let (name, recurrence, timing, amount) = match &line.kind {
-        LineKind::Product(p) => (
-            p.name.clone(),
-            p.recurrence.label().to_string(),
-            p.timing.label().to_string(),
-            money_text(&currency_symbol, &p.amount),
-        ),
-        LineKind::Discount { percent, amount } => (
-            "Discount".to_string(),
-            "—".to_string(),
-            "—".to_string(),
-            if *percent {
-                format!("{}%", amount.trim())
-            } else {
-                money_text(&currency_symbol, amount)
-            },
-        ),
-        LineKind::Minimum { amount } => (
-            "Minimum".to_string(),
-            "—".to_string(),
-            "—".to_string(),
-            money_text(&currency_symbol, amount),
-        ),
+fn LineRow(
+    line: Line,
+    currency_symbol: String,
+    lines: Signal<Vec<Line>>,
+    label: Signal<String>,
+    start: Signal<Option<Day>>,
+    duration: Signal<u32>,
+    on_schedule_change: EventHandler<Schedule>,
+) -> Element {
+    let line_id = line.line_id.clone();
+    let mut commit = move |next: Vec<Line>| {
+        lines.set(next.clone());
+        notify(on_schedule_change, label(), start(), duration(), next);
     };
-    rsx! {
-        tr {
-            td {
-                "{name}"
-                span { class: "kit-cpb__inline-recur", "{recurrence}" }
+    let remove_id = line_id.clone();
+    let remove = move |_: MouseEvent| {
+        commit(
+            lines()
+                .into_iter()
+                .filter(|l| l.line_id != remove_id)
+                .collect(),
+        );
+    };
+
+    match &line.kind {
+        LineKind::Product(product) => {
+            let name = product.name.clone();
+            let recurrence = product.recurrence;
+            let timing = product.timing;
+            let amount = product.amount.clone();
+            let invalid = amount_invalid(&amount);
+            let suffix = recurrence_suffix(recurrence);
+            let remove_label = format!("Remove {name}");
+            let rec_id = line_id.clone();
+            let timing_id = line_id.clone();
+            let amount_id = line_id.clone();
+            rsx! {
+                tr {
+                    td { "{name}" }
+                    td { "data-label": "Recurrence",
+                        Select {
+                            class: "kit-cpb__control",
+                            options: recurrence_options(),
+                            value: recurrence.value().to_string(),
+                            aria_label: format!("Recurrence for {name}"),
+                            onchange: move |option: SelectOption| {
+                                if let Some(next) = Recurrence::from_value(&option.value) {
+                                    commit(edited(lines(), &rec_id, |kind| {
+                                        if let LineKind::Product(p) = kind {
+                                            p.recurrence = next;
+                                        }
+                                    }));
+                                }
+                            },
+                        }
+                    }
+                    td { class: "kit-cpb__money", "data-label": "Amount",
+                        div { class: "kit-cpb__amount",
+                            span { class: "kit-cpb__prefix", "aria-hidden": "true", "{currency_symbol}" }
+                            input {
+                                r#type: "text",
+                                inputmode: "decimal",
+                                "aria-label": "Amount for {name}",
+                                "aria-invalid": if invalid { "true" } else { "false" },
+                                value: "{amount}",
+                                oninput: move |event: FormEvent| {
+                                    let text = event.value();
+                                    commit(edited(lines(), &amount_id, |kind| {
+                                        if let LineKind::Product(p) = kind {
+                                            p.amount = text.clone();
+                                        }
+                                    }));
+                                },
+                            }
+                            span { class: "kit-cpb__suffix", "{suffix}" }
+                        }
+                        div { class: "kit-cpb__under",
+                            Select {
+                                class: "kit-cpb__control",
+                                options: timing_options(),
+                                value: timing.value().to_string(),
+                                aria_label: format!("Timing for {name}"),
+                                onchange: move |option: SelectOption| {
+                                    if let Some(next) = Timing::from_value(&option.value) {
+                                        commit(edited(lines(), &timing_id, |kind| {
+                                            if let LineKind::Product(p) = kind {
+                                                p.timing = next;
+                                            }
+                                        }));
+                                    }
+                                },
+                            }
+                        }
+                        if invalid {
+                            span { class: "kit-cpb__error", role: "alert", "Enter a number" }
+                        }
+                    }
+                    td {
+                        button { r#type: "button", class: "kit-cpb__remove", "aria-label": "{remove_label}", onclick: remove, "Remove" }
+                    }
+                }
             }
-            td { "{recurrence}" }
-            td { "{timing}" }
-            td { "{amount}" }
+        }
+        LineKind::Discount { percent, amount } => {
+            let unit = if *percent { "percent" } else { "fixed" };
+            let amount = amount.clone();
+            let invalid = amount_invalid(&amount);
+            let amount_id = line_id.clone();
+            let unit_id = line_id.clone();
+            rsx! {
+                tr {
+                    td { "Discount" }
+                    td { class: "kit-cpb__dash", "data-label": "Recurrence", "—" }
+                    td { class: "kit-cpb__money", "data-label": "Amount",
+                        div { class: "kit-cpb__amount",
+                            input {
+                                r#type: "text",
+                                inputmode: "decimal",
+                                "aria-label": "Discount amount",
+                                "aria-invalid": if invalid { "true" } else { "false" },
+                                value: "{amount}",
+                                oninput: move |event: FormEvent| {
+                                    let text = event.value();
+                                    commit(edited(lines(), &amount_id, |kind| {
+                                        if let LineKind::Discount { amount: value, .. } = kind {
+                                            *value = text.clone();
+                                        }
+                                    }));
+                                },
+                            }
+                        }
+                        div { class: "kit-cpb__under",
+                            Select {
+                                class: "kit-cpb__control",
+                                options: unit_options(),
+                                value: unit.to_string(),
+                                aria_label: "Discount unit",
+                                onchange: move |option: SelectOption| {
+                                    let is_percent = option.value == "percent";
+                                    commit(edited(lines(), &unit_id, |kind| {
+                                        if let LineKind::Discount { percent: flag, .. } = kind {
+                                            *flag = is_percent;
+                                        }
+                                    }));
+                                },
+                            }
+                        }
+                        if invalid {
+                            span { class: "kit-cpb__error", role: "alert", "Enter a number" }
+                        }
+                    }
+                    td {
+                        button { r#type: "button", class: "kit-cpb__remove", "aria-label": "Remove Discount", onclick: remove, "Remove" }
+                    }
+                }
+            }
+        }
+        LineKind::Minimum { amount } => {
+            let amount = amount.clone();
+            let invalid = amount_invalid(&amount);
+            let amount_id = line_id.clone();
+            rsx! {
+                tr {
+                    td { "Minimum" }
+                    td { class: "kit-cpb__dash", "data-label": "Recurrence", "—" }
+                    td { class: "kit-cpb__money", "data-label": "Amount",
+                        div { class: "kit-cpb__amount",
+                            span { class: "kit-cpb__prefix", "aria-hidden": "true", "{currency_symbol}" }
+                            input {
+                                r#type: "text",
+                                inputmode: "decimal",
+                                "aria-label": "Minimum amount",
+                                "aria-invalid": if invalid { "true" } else { "false" },
+                                value: "{amount}",
+                                oninput: move |event: FormEvent| {
+                                    let text = event.value();
+                                    commit(edited(lines(), &amount_id, |kind| {
+                                        if let LineKind::Minimum { amount: value } = kind {
+                                            *value = text.clone();
+                                        }
+                                    }));
+                                },
+                            }
+                        }
+                        if invalid {
+                            span { class: "kit-cpb__error", role: "alert", "Enter a number" }
+                        }
+                    }
+                    td {
+                        button { r#type: "button", class: "kit-cpb__remove", "aria-label": "Remove Minimum", onclick: remove, "Remove" }
+                    }
+                }
+            }
         }
     }
 }
@@ -319,7 +544,6 @@ pub fn ChargePhaseBuilder(
     #[props(default)] item_options: Vec<CatalogItem>,
     #[props(default)] starting_lines: Vec<Line>,
     #[props(default, into)] starting_date: String,
-    #[props(default)] start_editing: bool,
     #[props(default)] on_schedule_change: EventHandler<Schedule>,
     #[props(default, into)] root_class: String,
 ) -> Element {
@@ -328,21 +552,10 @@ pub fn ChargePhaseBuilder(
     let mut duration = use_signal(|| 12u32);
     let mut lines = use_signal(|| starting_lines.clone());
     let mut next_line = use_signal(|| starting_lines.len());
-    let mut editing = use_signal(|| start_editing);
 
     let current_lines = lines();
-    let is_editing = editing();
     let sums = totals(&current_lines);
-    let end = start().and_then(|s| period_end(s, duration()));
-    let end_text = end.map(long_date).unwrap_or_else(|| "—".to_string());
-    let start_text = start().map(long_date).unwrap_or_else(|| "—".to_string());
-    let length_text = LENGTHS
-        .iter()
-        .find(|(months, _)| *months == duration())
-        .map_or_else(
-            || format!("{} months", duration()),
-            |(_, text)| text.to_string(),
-        );
+    let (start_text, length_text) = schedule_text(start(), duration());
     let initial_text = format_money(&currency_symbol, sums.initial_charge);
     let sum_text = format_money(&currency_symbol, sums.phase_sum);
     let catalog: Vec<SelectOption> = item_options
@@ -350,19 +563,6 @@ pub fn ChargePhaseBuilder(
         .enumerate()
         .map(|(i, item)| option(&i.to_string(), &item.option_name))
         .collect();
-    let length_options: Vec<SelectOption> = LENGTHS
-        .iter()
-        .map(|(months, text)| option(&months.to_string(), text))
-        .collect();
-    let recurrence_options: Vec<SelectOption> = Recurrence::ALL
-        .iter()
-        .map(|r| option(r.value(), r.label()))
-        .collect();
-    let timing_options: Vec<SelectOption> = [Timing::UpFront, Timing::PeriodEnd]
-        .iter()
-        .map(|t| option(t.value(), t.label()))
-        .collect();
-    let unit_options = vec![option("percent", "%"), option("fixed", "Fixed")];
 
     rsx! {
         document::Link { rel: "stylesheet", href: KIT_CSS }
@@ -370,268 +570,82 @@ pub fn ChargePhaseBuilder(
         section { class: class_list("kit-cpb", &root_class), "aria-label": "{heading_text}",
             div { class: "kit-cpb__head",
                 h3 { class: "kit-cpb__heading", "{heading_text}" }
-                if is_editing {
-                    label { class: "kit-cpb__field",
-                        span { "Phase name" }
-                        input {
-                            r#type: "text",
-                            value: "{label}",
-                            oninput: move |event| {
-                                label.set(event.value());
-                                notify(on_schedule_change, event.value(), start(), duration(), lines());
-                            },
-                        }
+            }
+            div { class: "kit-cpb__strip",
+                label { class: "kit-cpb__name-field",
+                    span { class: "kit-cpb__caption", "Phase name" }
+                    input {
+                        r#type: "text",
+                        value: "{label}",
+                        oninput: move |event: FormEvent| {
+                            let text = event.value();
+                            label.set(text.clone());
+                            notify(on_schedule_change, text, start(), duration(), lines());
+                        },
                     }
-                } else {
-                    p { class: "kit-cpb__name", "{label}" }
+                }
+                div { class: "kit-cpb__readout",
+                    span { class: "kit-cpb__read", "{start_text}" }
+                    svg { class: "kit-cpb__arrow", view_box: "0 0 16 16", width: "14", height: "14", fill: "none", stroke: "currentColor", "aria-hidden": "true",
+                        path { d: "M3 8h10M9 4l4 4-4 4" }
+                    }
+                    span { class: "kit-cpb__read", "{length_text}" }
                 }
             }
             div { class: "kit-cpb__phase",
-                if is_editing {
-                    div { class: "kit-cpb__field",
-                        span { class: "kit-cpb__label",
-                            svg { class: "kit-cpb__glyph", view_box: "0 0 16 16", width: "14", height: "14", fill: "none", stroke: "currentColor", "aria-hidden": "true",
-                                path { d: "M3 4h10v9H3zM3 7h10M6 2v3M10 2v3" }
-                            }
-                            "Start"
+                div { class: "kit-cpb__field",
+                    span { class: "kit-cpb__label",
+                        svg { class: "kit-cpb__glyph", view_box: "0 0 16 16", width: "14", height: "14", fill: "none", stroke: "currentColor", "aria-hidden": "true",
+                            path { d: "M3 4h10v9H3zM3 7h10M6 2v3M10 2v3" }
                         }
-                        DatePicker {
-                            value: start(),
-                            onchange: move |day: Day| {
-                                start.set(Some(day));
-                                notify(on_schedule_change, label(), Some(day), duration(), lines());
-                            },
-                        }
+                        "Start date"
                     }
-                    div { class: "kit-cpb__field",
-                        span { "Length" }
-                        Select {
-                            options: length_options,
-                            value: duration().to_string(),
-                            name: "phase-length",
-                            onchange: move |option: SelectOption| {
-                                let months = option.value.parse::<u32>().unwrap_or(12);
-                                duration.set(months);
-                                notify(on_schedule_change, label(), start(), months, lines());
-                            },
-                        }
-                    }
-                } else {
-                    div { class: "kit-cpb__field",
-                        span { class: "kit-cpb__label",
-                            svg { class: "kit-cpb__glyph", view_box: "0 0 16 16", width: "14", height: "14", fill: "none", stroke: "currentColor", "aria-hidden": "true",
-                                path { d: "M3 4h10v9H3zM3 7h10M6 2v3M10 2v3" }
-                            }
-                            "Start"
-                        }
-                        span { class: "kit-cpb__value", "{start_text}" }
-                    }
-                    div { class: "kit-cpb__field",
-                        span { "Length" }
-                        span { class: "kit-cpb__value", "{length_text}" }
+                    DatePicker {
+                        class: "kit-cpb__control",
+                        value: start(),
+                        aria_label: "Start date",
+                        onchange: move |day: Day| {
+                            start.set(Some(day));
+                            notify(on_schedule_change, label(), Some(day), duration(), lines());
+                        },
                     }
                 }
-                span { class: "kit-cpb__end", "Ends {end_text}" }
+                div { class: "kit-cpb__field",
+                    span { class: "kit-cpb__label", "Length" }
+                    Select {
+                        class: "kit-cpb__control",
+                        options: length_options(),
+                        value: duration().to_string(),
+                        name: "phase-length",
+                        aria_label: "Length",
+                        onchange: move |option: SelectOption| {
+                            let months = option.value.parse::<u32>().unwrap_or(12);
+                            duration.set(months);
+                            notify(on_schedule_change, label(), start(), months, lines());
+                        },
+                    }
+                }
             }
             table { class: "kit-cpb__lines", role: "table",
                 thead {
                     tr {
                         th { scope: "col", "Name" }
                         th { scope: "col", "Recurrence" }
-                        th { scope: "col", "Timing" }
                         th { scope: "col", "Amount" }
-                        if is_editing {
-                            th { scope: "col" }
-                        }
+                        th { scope: "col" }
                     }
                 }
                 tbody {
                     for line in current_lines.iter() {
-                        if is_editing {
-                            {
-                                let line_id = line.line_id.clone();
-                                let row_key = line_id.clone();
-                                let amount_ok = match &line.kind {
-                                    LineKind::Product(p) => parse_amount(&p.amount).is_some() || p.amount.trim().is_empty(),
-                                    LineKind::Discount { amount, .. } | LineKind::Minimum { amount } => parse_amount(amount).is_some() || amount.trim().is_empty(),
-                                };
-                                let amount_error = (!amount_ok).then_some("Enter a number");
-                                let remove_id = line_id.clone();
-                                let remove_line = move |_| {
-                                    let next: Vec<Line> = lines().into_iter().filter(|l| l.line_id != remove_id).collect();
-                                    lines.set(next.clone());
-                                    notify(on_schedule_change, label(), start(), duration(), next);
-                                };
-                                let cells: Element = match &line.kind {
-                                    LineKind::Product(product) => {
-                                        let amount = product.amount.clone();
-                                        let name = product.name.clone();
-                                        let rec_value = product.recurrence.value();
-                                        let rec_label = product.recurrence.label();
-                                        let timing_value = product.timing.value();
-                                        let remove_label = format!("Remove {name}");
-                                        let name_id = line_id.clone();
-                                        let rec_id = line_id.clone();
-                                        let timing_id = line_id.clone();
-                                        let amount_id = line_id.clone();
-                                        rsx! {
-                                            td {
-                                                input {
-                                                    r#type: "text",
-                                                    "aria-label": "Product name",
-                                                    value: "{name}",
-                                                    oninput: move |event| {
-                                                        let text = event.value();
-                                                        lines.with_mut(|ls| for l in ls.iter_mut().filter(|l| l.line_id == name_id) {
-                                                            if let LineKind::Product(p) = &mut l.kind { p.name = text.clone(); }
-                                                        });
-                                                        notify(on_schedule_change, label(), start(), duration(), lines());
-                                                    },
-                                                }
-                                                span { class: "kit-cpb__inline-recur", "{rec_label}" }
-                                            }
-                                            td { class: "kit-cpb__recur",
-                                                Select {
-                                                    options: recurrence_options.clone(),
-                                                    value: rec_value.to_string(),
-                                                    onchange: move |option: SelectOption| {
-                                                        if let Some(rec) = Recurrence::from_value(&option.value) {
-                                                            lines.with_mut(|ls| for l in ls.iter_mut().filter(|l| l.line_id == rec_id) {
-                                                                if let LineKind::Product(p) = &mut l.kind { p.recurrence = rec; }
-                                                            });
-                                                            notify(on_schedule_change, label(), start(), duration(), lines());
-                                                        }
-                                                    },
-                                                }
-                                            }
-                                            td {
-                                                Select {
-                                                    options: timing_options.clone(),
-                                                    value: timing_value.to_string(),
-                                                    onchange: move |option: SelectOption| {
-                                                        if let Some(timing) = Timing::from_value(&option.value) {
-                                                            lines.with_mut(|ls| for l in ls.iter_mut().filter(|l| l.line_id == timing_id) {
-                                                                if let LineKind::Product(p) = &mut l.kind { p.timing = timing; }
-                                                            });
-                                                            notify(on_schedule_change, label(), start(), duration(), lines());
-                                                        }
-                                                    },
-                                                }
-                                            }
-                                            td {
-                                                div { class: "kit-cpb__amount",
-                                                    span { class: "kit-cpb__prefix", "aria-hidden": "true", "{currency_symbol}" }
-                                                    input {
-                                                        r#type: "text",
-                                                        inputmode: "decimal",
-                                                        "aria-label": "Amount",
-                                                        "aria-invalid": if amount_error.is_some() { "true" } else { "false" },
-                                                        value: "{amount}",
-                                                        oninput: move |event| {
-                                                            let text = event.value();
-                                                            lines.with_mut(|ls| for l in ls.iter_mut().filter(|l| l.line_id == amount_id) {
-                                                                if let LineKind::Product(p) = &mut l.kind { p.amount = text.clone(); }
-                                                            });
-                                                            notify(on_schedule_change, label(), start(), duration(), lines());
-                                                        },
-                                                    }
-                                                }
-                                                if let Some(message) = amount_error {
-                                                    span { class: "kit-cpb__error", role: "alert", "{message}" }
-                                                }
-                                            }
-                                            td { button { r#type: "button", class: "kit-cpb__remove", "aria-label": "{remove_label}", onclick: remove_line, "Remove" } }
-                                        }
-                                    }
-                                    LineKind::Discount { percent, amount } => {
-                                        let value = amount.clone();
-                                        let unit_value = if *percent { "percent" } else { "fixed" };
-                                        let edit_id = line_id.clone();
-                                        let unit_id = line_id.clone();
-                                        rsx! {
-                                            td {
-                                                input { r#type: "text", "aria-label": "Discount name", value: "Discount", readonly: true }
-                                            }
-                                            td { class: "kit-cpb__dash", "—" }
-                                            td { class: "kit-cpb__dash", "—" }
-                                            td {
-                                                div { class: "kit-cpb__amount",
-                                                    input {
-                                                        r#type: "text",
-                                                        inputmode: "decimal",
-                                                        "aria-label": "Discount amount",
-                                                        "aria-invalid": if amount_error.is_some() { "true" } else { "false" },
-                                                        value: "{value}",
-                                                        oninput: move |event| {
-                                                            let text = event.value();
-                                                            lines.with_mut(|ls| for l in ls.iter_mut().filter(|l| l.line_id == edit_id) {
-                                                                if let LineKind::Discount { amount, .. } = &mut l.kind { *amount = text.clone(); }
-                                                            });
-                                                            notify(on_schedule_change, label(), start(), duration(), lines());
-                                                        },
-                                                    }
-                                                }
-                                                Select {
-                                                    options: unit_options.clone(),
-                                                    value: unit_value.to_string(),
-                                                    onchange: move |option: SelectOption| {
-                                                        let is_percent = option.value == "percent";
-                                                        lines.with_mut(|ls| for l in ls.iter_mut().filter(|l| l.line_id == unit_id) {
-                                                            if let LineKind::Discount { percent, .. } = &mut l.kind { *percent = is_percent; }
-                                                        });
-                                                        notify(on_schedule_change, label(), start(), duration(), lines());
-                                                    },
-                                                }
-                                                if let Some(message) = amount_error {
-                                                    span { class: "kit-cpb__error", role: "alert", "{message}" }
-                                                }
-                                            }
-                                            td { button { r#type: "button", class: "kit-cpb__remove", "aria-label": "Remove Discount", onclick: remove_line, "Remove" } }
-                                        }
-                                    }
-                                    LineKind::Minimum { amount } => {
-                                        let value = amount.clone();
-                                        let edit_id = line_id.clone();
-                                        rsx! {
-                                            td {
-                                                input { r#type: "text", "aria-label": "Minimum name", value: "Minimum", readonly: true }
-                                            }
-                                            td { class: "kit-cpb__dash", "—" }
-                                            td { class: "kit-cpb__dash", "—" }
-                                            td {
-                                                div { class: "kit-cpb__amount",
-                                                    span { class: "kit-cpb__prefix", "aria-hidden": "true", "{currency_symbol}" }
-                                                    input {
-                                                        r#type: "text",
-                                                        inputmode: "decimal",
-                                                        "aria-label": "Minimum amount",
-                                                        "aria-invalid": if amount_error.is_some() { "true" } else { "false" },
-                                                        value: "{value}",
-                                                        oninput: move |event| {
-                                                            let text = event.value();
-                                                            lines.with_mut(|ls| for l in ls.iter_mut().filter(|l| l.line_id == edit_id) {
-                                                                if let LineKind::Minimum { amount } = &mut l.kind { *amount = text.clone(); }
-                                                            });
-                                                            notify(on_schedule_change, label(), start(), duration(), lines());
-                                                        },
-                                                    }
-                                                }
-                                                if let Some(message) = amount_error {
-                                                    span { class: "kit-cpb__error", role: "alert", "{message}" }
-                                                }
-                                            }
-                                            td { button { r#type: "button", class: "kit-cpb__remove", "aria-label": "Remove Minimum", onclick: remove_line, "Remove" } }
-                                        }
-                                    }
-                                };
-                                rsx! { tr { key: "{row_key}", {cells} } }
-                            }
-                        } else {
-                            ReadOnlyLine {
-                                key: "{line.line_id}",
-                                line: line.clone(),
-                                currency_symbol: currency_symbol.clone(),
-                            }
+                        LineRow {
+                            key: "{line.line_id}",
+                            line: line.clone(),
+                            currency_symbol: currency_symbol.clone(),
+                            lines,
+                            label,
+                            start,
+                            duration,
+                            on_schedule_change,
                         }
                     }
                 }
@@ -639,11 +653,13 @@ pub fn ChargePhaseBuilder(
             if current_lines.is_empty() {
                 p { class: "kit-cpb__empty", "No lines yet." }
             }
-            if is_editing {
-                div { class: "kit-cpb__adds",
+            div { class: "kit-cpb__adds",
+                div { class: "kit-cpb__picker",
                     Select {
+                        class: "kit-cpb__control",
                         options: catalog,
                         placeholder: "Include item",
+                        aria_label: "Include item",
                         onchange: move |option: SelectOption| {
                             let index: usize = option.value.parse().unwrap_or(0);
                             if let Some(item) = item_options.get(index) {
@@ -663,6 +679,8 @@ pub fn ChargePhaseBuilder(
                             }
                         },
                     }
+                }
+                div { class: "kit-cpb__add-buttons",
                     button {
                         r#type: "button",
                         onclick: move |_| {
@@ -689,17 +707,9 @@ pub fn ChargePhaseBuilder(
                     }
                 }
             }
-            div { class: "kit-cpb__action",
-                if is_editing {
-                    button { r#type: "button", onclick: move |_| editing.set(false), "Stop editing" }
-                } else {
-                    button { r#type: "button", onclick: move |_| editing.set(true), "Edit phase" }
-                }
-            }
             dl { class: "kit-cpb__summary", role: "status", "aria-live": "polite",
-                div { dt { "Initial charge" } dd { "{initial_text}" } }
-                div { dt { "Phase end" } dd { "{end_text}" } }
-                div { dt { "Phase sum" } dd { "{sum_text}" } }
+                div { dt { "First invoice" } dd { "{initial_text}" } }
+                div { dt { "Phase total" } dd { "{sum_text}" } }
             }
         }
     }

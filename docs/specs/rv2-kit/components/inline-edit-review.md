@@ -83,4 +83,29 @@ Panel, caption, paragraph with inline diff spans, toolbar with counts and button
 8. Left / Right on the toolbar wraps from the last change to the first.
 9. In a narrow panel the arrows are hidden and changes are still reachable by Tab.
 10. Reduced motion: decisions apply without shrink or fade.
+
+## Amendment 4: structure and demo
+
+**Replaces:** none. Anatomy item 3 and the arrow rules in Interactions stand. This amendment fixes their rest-state placement and the position wording. Base checks 1 to 10 stand.
+
+**Archetype:** one panel holding an optional caption, a paragraph with its changes in place, and a toolbar along its foot. The popover is closed at rest.
+
+**Parts at rest, top to bottom:**
+- Caption line: small text above the paragraph. Optional.
+- Paragraph: unchanged words plain. Each pending change shows its removed words struck through, followed by its added words marked as inserted.
+- Toolbar, left to right: a count badge holding the number of pending changes, then the words "pending changes"; a previous arrow; a next arrow; a "Reject all" button; an "Accept all" button.
+- Popover: closed.
+
+**Position wording:** the count badge is the only visible indicator of position. No "n of m" text is drawn at rest or during navigation. Each pending change's accessible name carries its position in the form "Change <n> of <m>: replaces <removed> with <added>. Y accepts, N rejects." A pure deletion reads "removes <removed>" and a pure insertion reads "adds <added>".
+
+**Arrow pointer behaviour:** a click on the next arrow highlights the following pending change and opens its popover above it. The previous arrow does the same for the preceding change. Both wrap. The popover holds Accept, keyed Y, and Reject, keyed N.
+
+**Gallery demo (our data):** caption "Proposed edit · shorten the note". Original: "Hello team, the revised console is now available for every account. It loads a lot quicker than the old one, and reports can be exported as CSV with a single step." Suggested: "Hello team, the revised console is now live for every account. It loads faster than before, and reports can be exported as CSV in one step." Three pending changes: "available" to "live"; "a lot quicker than the old one" to "faster than before"; "with a single" to "in one". At rest the count badge reads 3, no decision is made, and no popover is open.
+
+**Acceptance checks (continued):**
+11. At rest the toolbar reads, left to right: a count badge showing 3, the words "pending changes", a previous arrow, a next arrow, "Reject all", "Accept all".
+12. At rest the paragraph shows three pending changes, each with its removed and added words, and no popover is open.
+13. A click on the next arrow highlights the next pending change and opens its popover above it. From the last change it wraps to the first.
+14. Each pending change's accessible name follows the form in Position wording. The first gallery change reads "Change 1 of 3: replaces “available” with “live”. Y accepts, N rejects."
+15. No visible text shows a position in the form "n of m" at rest or after an arrow click. The count badge is the only visible count.
 </content>

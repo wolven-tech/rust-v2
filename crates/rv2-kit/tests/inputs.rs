@@ -508,7 +508,7 @@ fn notice_stack_at_bottom_centre_names_its_focus_key_and_sits_after_the_host_con
 fn charge_builder_renders_table_with_headers() {
     let html = render(|| rsx! { rv2_kit::components::charge_phase_builder::ChargePhaseBuilder {} });
     assert!(html.contains("<th"));
-    assert!(html.contains("Initial charge"));
+    assert!(html.contains("First invoice"));
 }
 
 #[test]

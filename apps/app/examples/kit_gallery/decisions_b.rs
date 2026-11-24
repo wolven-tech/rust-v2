@@ -298,18 +298,16 @@ pub fn InlineEditReviewDemo() -> Element {
     rsx! {
         Item { slug: "inline-edit-review", name: "InlineEditReview",
             InlineEditReview {
-                before_text: "The team will ship the update next week, once the pricing notes are final.",
-                after_text: "The team ships the update on Tuesday, once the pricing notes and churn figures are final.",
                 segments: vec![
-                    Segment::Same("The team ".to_string()),
-                    Segment::Change { removed: "will ship".to_string(), inserted: "ships".to_string() },
-                    Segment::Same(" the update ".to_string()),
-                    Segment::Change { removed: "next week".to_string(), inserted: "on Tuesday".to_string() },
-                    Segment::Same(", once the ".to_string()),
-                    Segment::Change { removed: "pricing notes".to_string(), inserted: "pricing notes and churn figures".to_string() },
-                    Segment::Same(" are final.".to_string()),
+                    Segment::Same("Hello team, the revised console is now ".to_string()),
+                    Segment::Change { removed: "available".to_string(), inserted: "live".to_string() },
+                    Segment::Same(" for every account. It loads ".to_string()),
+                    Segment::Change { removed: "a lot quicker than the old one".to_string(), inserted: "faster than before".to_string() },
+                    Segment::Same(", and reports can be exported as CSV ".to_string()),
+                    Segment::Change { removed: "with a single".to_string(), inserted: "in one".to_string() },
+                    Segment::Same(" step.".to_string()),
                 ],
-                caption_text: "Suggested rewrite",
+                caption_text: "Proposed edit · shorten the note",
                 on_complete: move |t: String| last.set(format!("accepted {t}")),
                 on_text_change: move |t: String| last.set(format!("edited {} chars", t.len())),
             }
