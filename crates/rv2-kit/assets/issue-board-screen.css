@@ -237,15 +237,19 @@
 }
 
 .kit-ib__boardwrap {
+  display: flex;
+  flex: 1 1 auto;
+  min-height: 0;
   max-width: 100%;
   overflow-x: auto;
-  padding-bottom: 8px;
 }
 
 .kit-ib__board {
   display: grid;
+  flex: 1 1 auto;
+  width: 100%;
   grid-auto-flow: column;
-  grid-auto-columns: minmax(220px, 1fr);
+  grid-auto-columns: minmax(190px, 1fr);
   gap: var(--kit-gap);
   min-width: min-content;
 }
@@ -335,10 +339,7 @@
 .kit-ib__desc {
   color: var(--kit-ink-muted);
   font-size: 12px;
-  overflow: hidden;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
+  overflow-wrap: anywhere;
 }
 
 .kit-ib__meta {
@@ -368,6 +369,21 @@
 .kit-ib__status[data-status="attention"] {
   background: color-mix(in srgb, var(--kit-fault) 16%, transparent);
   color: var(--kit-fault-ink);
+}
+
+.kit-ib__prio {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.kit-ib__prio-mark {
+  display: inline-grid;
+  place-items: center;
+  width: 12px;
 }
 
 .kit-ib__counts {

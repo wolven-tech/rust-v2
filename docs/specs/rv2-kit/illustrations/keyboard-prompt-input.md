@@ -58,3 +58,34 @@ In reading order:
 6. At phone width the keyboard is hidden and the field is still fully visible.
 
 Uses no partner logos.
+
+## Amendment 5: structure and demo
+
+Archetype: one prompt pill above one keyboard, with a glow floor under the keyboard.
+
+Visible at rest:
+- One prompt pill, centred and narrower than the keyboard. Partly typed text, a caret, and the status mark at its left.
+- A halo around the pill: light spills past its edge on all four sides, strongest near the edge.
+- One keyboard in five rows: a function row (escape and twelve function keys), a number row (digits, symbols, backspace), three letter rows (tab, caps and shift rows, each ending in its return or shift key), and a bottom row (modifier keys, a long space key, four arrow keys).
+- One key lifted: the most recent key typed.
+- A floor band under the keyboard, wider than the keyboard at both ends.
+
+Gallery demo:
+- Prompts in rotation: "Summarize last week's support tickets", "Draft a reply to the open invoice", "Compare two plans for a team of ten".
+- Rest frame: first prompt about half typed, last key lifted.
+
+Composition:
+- Pill above the keyboard, centred, with a gap between them.
+- Keyboard spans the content width of the scene.
+- Floor under the keyboard, brightest directly under the lifted key, fading out before the scene's top edge.
+
+Motion, settled frame: halo and floor hold steady; no wave in flight; floor light under the last key.
+Moves: each character appears, its key lifts and sinks, and a wave leaves the key and travels outward, fading with distance. The floor light follows the newest wave. The field clears with a fade between prompts. The two floor layers drift slowly.
+Reduced motion: text appears at once, keys do not lift, one steady glow.
+
+Acceptance checks (continued):
+7. One prompt pill and one keyboard are in the scene at every width; no pair is repeated.
+8. The halo is visible on all four sides of the pill.
+9. The keyboard has the five rows above. Its function row stays visible at every width above the narrow breakpoint.
+10. After three presses on three different keys, the floor light is brightest under the most recent key.
+11. The floor band extends past the keyboard's left and right edges.

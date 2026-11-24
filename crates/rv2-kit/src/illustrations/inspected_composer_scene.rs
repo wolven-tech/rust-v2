@@ -1,15 +1,19 @@
-//! Inspected composer scene: a chat composer shown as if a designer were inspecting it in a layout
-//! tool. It is tilted back, its three rows are framed, spacing values sit beside them, and a guide
-//! walks down the rows, pausing on each.
+//! Inspected composer scene: one composer column tilted back in a layout tool. The message row is in
+//! front and at full strength; the toolbar and attach rows sit faded above it and repeat below it. The
+//! selected row is framed with its tag, spacing values and width, and a guide walks the first three
+//! rows, pausing on each. The faded rows never take the guide.
 //!
 //! Design choice: the play rules, guide clock, keyboard arrows and reduced-motion view are the card
 //! scene's (`inspected_agent_card_scene`); only the geometry and the content differ.
-//! Design choice: the composer has no header, so its first row starts at the top of the scene and
-//! the rows use their own pitch (`COMPOSER_ROW_PX`).
-//! Design choice: connected-app icons are supplied by the caller as `connected_apps`; the scene draws
-//! none of its own.
-//! Browser checks: the guide visits the three rows in order and pauses on each; hovering a row pins
-//! the guide there; reduced motion shows the static composer with all spacing; arrows move the guide a
+//! Design choice: the rows have fixed heights and gaps (`COMPOSER_ROW_HEIGHTS_PX`), so the frame, guide
+//! and markers are placed from pure geometry, as in the card scene. The repeated rows below the message
+//! row take the same heights in CSS and are never framed.
+//! Design choice: connected-app marks are supplied by the caller as `connected_apps`; the scene shows
+//! the first three, on the attach row only, and draws none of its own.
+//! Design choice: the width label is the frame's layout width, read after each step (`offsetWidth`,
+//! since the tilt transform changes the bounding box).
+//! Browser checks: the guide visits the three framed rows in order and pauses on each; the tag changes
+//! as the guide passes; reduced motion holds the message row with all spacing; arrows move the guide a
 //! row and Escape resumes; no sideways scroll at 390 or 320 with the markers hidden.
 
 use dioxus::prelude::*;
@@ -21,29 +25,46 @@ use crate::internal::{KIT_CSS, class_list, next_id};
 
 const CSS: Asset = asset!("/assets/inspected-composer-scene.css");
 
-/// Height of one composer row, px.
-pub const COMPOSER_ROW_PX: u32 = 56;
-/// Spacing value shown beside each row, in design units.
-pub const COMPOSER_GAP_UNITS: u32 = 8;
-/// Rows in the composer: mode and apps, text, attach and send.
+/// Height of each framed composer row (toolbar, attach, message), px.
+pub const COMPOSER_ROW_HEIGHTS_PX: [u32; 3] = [48, 44, 64];
+/// Space between two rows, px; the spacing marker sits in it.
+pub const COMPOSER_ROW_GAP_PX: u32 = 12;
+/// Padding inside the surface above the first row and below the last, px.
+pub const COMPOSER_PAD_PX: u32 = 12;
+/// Spacing value shown in the gap beside each row, in design units.
+pub const COMPOSER_GAP_UNITS: u32 = 12;
+/// Spacing value shown on the frame's top edge and left inset, in design units.
+pub const COMPOSER_INSET_UNITS: u32 = 8;
+/// Rows the guide visits.
 pub const COMPOSER_ROWS: usize = 3;
+/// Tag shown beside each framed row.
+pub const COMPOSER_TAGS: [&str; COMPOSER_ROWS] = ["Toolbar", "Attach", "Message"];
+/// App marks shown in the attach row.
+pub const APP_MARKS_SHOWN: usize = 3;
 
-/// Top of a composer row, px from the top of the scene.
+/// Top of a composer row, px from the top of the surface.
 pub fn composer_row_top(row: usize) -> u32 {
-    row as u32 * COMPOSER_ROW_PX
+    COMPOSER_PAD_PX
+        + COMPOSER_ROW_HEIGHTS_PX[..row.min(COMPOSER_ROWS)]
+            .iter()
+            .map(|h| h + COMPOSER_ROW_GAP_PX)
+            .sum::<u32>()
 }
 
-/// Centre of a composer row, px from the top of the scene; the guide sits here.
+/// Height of a composer row, px.
+pub fn composer_row_height(row: usize) -> u32 {
+    COMPOSER_ROW_HEIGHTS_PX[row.min(COMPOSER_ROWS - 1)]
+}
+
+/// Centre of a composer row, px from the top of the surface; the guide sits here.
 pub fn composer_row_centre(row: usize) -> u32 {
-    composer_row_top(row) + COMPOSER_ROW_PX / 2
+    composer_row_top(row) + composer_row_height(row) / 2
 }
 
 #[derive(Clone, PartialEq)]
 pub struct Composer {
-    pub placeholder_text: String,
+    pub message: String,
     pub mode_label: String,
-    pub tools: Vec<String>,
-    pub send_label: String,
 }
 
 #[component]
@@ -68,7 +89,8 @@ pub fn InspectedComposerScene(
         inspect_steps.clone()
     };
     let steps_len = steps.len();
-    let mut active = use_signal(|| 0usize);
+    let rest_step = steps_len.saturating_sub(1);
+    let mut active = use_signal(|| rest_step);
     let mut pointer_scene = use_signal(|| false);
     let mut pinned = use_signal(|| None::<usize>);
     let mut focused = use_signal(|| false);
@@ -76,6 +98,7 @@ pub fn InspectedComposerScene(
     let visible = use_signal(|| true);
     let motion_on = use_signal(|| true);
     let mut playing = use_signal(|| false);
+    let mut frame_width = use_signal(|| None::<u32>);
 
     let focus_held = focused() && !resumed();
     let want = is_playing(
@@ -98,6 +121,7 @@ pub fn InspectedComposerScene(
             motion_on,
             steps_len,
             speed,
+            rest_step,
         },
     );
 
@@ -113,12 +137,31 @@ pub fn InspectedComposerScene(
         .get(step_index)
         .map(|s| s.note.clone())
         .unwrap_or_default();
-    let guide_y = composer_row_centre(current_row) as i32 - 1;
-    let guide_style = format!("transform: translateY({guide_y}px);");
-    let frame_style = format!("transform: translateY({}px);", guide_y - 28);
-    let tag_style = guide_style.clone();
-    let pointer_style = guide_style.clone();
-    let row_label = ["Mode and apps", "Message", "Attach and send"][current_row];
+
+    let measure_id = uid.clone();
+    use_effect(use_reactive((&current_row,), move |(row,)| {
+        let script = format!(
+            "const el = document.querySelector('#{measure_id} .kit-composer__row[data-row=\"{row}\"]');
+             dioxus.send(el ? el.offsetWidth : 0);"
+        );
+        let mut channel = document::eval(&script);
+        spawn(async move {
+            if let Ok(width) = channel.recv::<u32>().await {
+                frame_width.set((width > 0).then_some(width));
+            }
+        });
+    }));
+
+    let guide_y = composer_row_top(current_row) as i32;
+    let guide_h = composer_row_height(current_row);
+    let frame_y = composer_row_top(current_row) as i32 - 4;
+    let frame_h = composer_row_height(current_row) + 8;
+    let guide_style = format!("transform: translateY({guide_y}px); height: {guide_h}px;");
+    let frame_style = format!("transform: translateY({frame_y}px); height: {frame_h}px;");
+    let tag_y = composer_row_centre(current_row) as i32 - 9;
+    let tag_style = format!("transform: translateY({tag_y}px);");
+    let width_label = frame_width().map(|w| format!("{w}px")).unwrap_or_default();
+    let row_label = COMPOSER_TAGS[current_row];
     let row_pins: Vec<Option<usize>> = (0..COMPOSER_ROWS)
         .map(|row| steps.iter().position(|s| s.row_index == row))
         .collect();
@@ -127,9 +170,7 @@ pub fn InspectedComposerScene(
     let motion_attr = if motion_on() { "on" } else { "off" };
     let root_id = uid.clone();
     let mode_label = composer.mode_label.clone();
-    let placeholder_text = composer.placeholder_text.clone();
-    let send_label = composer.send_label.clone();
-    let tools = composer.tools.clone();
+    let message = composer.message.clone();
     let scene_aria_hidden = (!interactive).then_some("true");
     rsx! {
         document::Link { rel: "stylesheet", href: KIT_CSS }
@@ -165,66 +206,109 @@ pub fn InspectedComposerScene(
                 }
             },
             div { class: "kit-composer__stage",
-                div { class: "kit-composer__ghost", "data-pos": "above" }
-                div { class: "kit-composer__ghost", "data-pos": "below" }
-                div { class: "kit-composer__surface",
-                    div { class: "kit-composer__row", "data-row": "0",
-                        onmouseenter: move |_| {
-                            if let Some(position) = pin0 {
-                                active.set(position);
-                                pinned.set(Some(position));
+                div { class: "kit-composer__column",
+                    div { class: "kit-composer__surface",
+                        div { class: "kit-composer__row kit-composer__row--faded", "data-row": "0",
+                            onmouseenter: move |_| {
+                                if let Some(position) = pin0 {
+                                    active.set(position);
+                                    pinned.set(Some(position));
+                                }
+                            },
+                            onmouseleave: move |_| pinned.set(None),
+                            span { class: "kit-composer__round", "aria-hidden": "true", "+" }
+                            span { class: "kit-composer__mode",
+                                span { class: "kit-composer__mode-label", "{mode_label}" }
+                                span { class: "kit-composer__chevron", "aria-hidden": "true" }
                             }
-                        },
-                        onmouseleave: move |_| pinned.set(None),
-                        span { class: "kit-composer__mode", {mode_label} }
-                        span { class: "kit-composer__apps",
-                            for app in connected_apps.iter() {
-                                span { class: "kit-composer__app", {app.clone()} }
+                            span { class: "kit-composer__spacer" }
+                            span { class: "kit-composer__round kit-composer__round--quiet", "aria-hidden": "true", "!" }
+                            span { class: "kit-composer__round kit-composer__round--send", "aria-hidden": "true", "↑" }
+                        }
+                        div { class: "kit-composer__row kit-composer__row--attach kit-composer__row--faded", "data-row": "1",
+                            onmouseenter: move |_| {
+                                if let Some(position) = pin1 {
+                                    active.set(position);
+                                    pinned.set(Some(position));
+                                }
+                            },
+                            onmouseleave: move |_| pinned.set(None),
+                            span { class: "kit-composer__chip",
+                                span { class: "kit-composer__folder", "aria-hidden": "true" }
+                                span { "Work in a folder" }
+                            }
+                            span { class: "kit-composer__chip kit-composer__chip--apps",
+                                span { class: "kit-composer__apps", "aria-hidden": "true",
+                                    for app in connected_apps.iter().take(APP_MARKS_SHOWN) {
+                                        span { class: "kit-composer__app", {app.clone()} }
+                                    }
+                                }
+                                span { "Connect apps" }
                             }
                         }
-                    }
-                    div { class: "kit-composer__row kit-composer__row--text", "data-row": "1",
-                        onmouseenter: move |_| {
-                            if let Some(position) = pin1 {
-                                active.set(position);
-                                pinned.set(Some(position));
-                            }
-                        },
-                        onmouseleave: move |_| pinned.set(None),
-                        span { class: "kit-composer__placeholder", {placeholder_text} }
-                    }
-                    div { class: "kit-composer__row", "data-row": "2",
-                        onmouseenter: move |_| {
-                            if let Some(position) = pin2 {
-                                active.set(position);
-                                pinned.set(Some(position));
-                            }
-                        },
-                        onmouseleave: move |_| pinned.set(None),
-                        span { class: "kit-composer__attach", "aria-hidden": "true", "+" }
-                        span { class: "kit-composer__tools",
-                            for tool in tools.iter() {
-                                span { class: "kit-composer__tool", {tool.clone()} }
-                            }
+                        div { class: "kit-composer__row kit-composer__row--message", "data-row": "2",
+                            onmouseenter: move |_| {
+                                if let Some(position) = pin2 {
+                                    active.set(position);
+                                    pinned.set(Some(position));
+                                }
+                            },
+                            onmouseleave: move |_| pinned.set(None),
+                            span { class: "kit-composer__message", "{message}" }
+                            span { class: "kit-composer__caret", "aria-hidden": "true" }
                         }
-                        span { class: "kit-composer__send", {send_label} }
-                    }
-                    for row in 0..COMPOSER_ROWS {
-                        {
-                            let top = composer_row_top(row);
-                            rsx! {
-                                span { class: "kit-composer__marker", "data-row": "{row}",
-                                    "data-active": (row == current_row).then_some("true"),
-                                    style: "top: {top}px;",
-                                    "{COMPOSER_GAP_UNITS}"
+                        div { class: "kit-composer__row kit-composer__row--faded", "aria-hidden": "true",
+                            span { class: "kit-composer__round", "+" }
+                            span { class: "kit-composer__mode",
+                                span { class: "kit-composer__mode-label", "{mode_label}" }
+                                span { class: "kit-composer__chevron" }
+                            }
+                            span { class: "kit-composer__spacer" }
+                            span { class: "kit-composer__round kit-composer__round--quiet", "!" }
+                            span { class: "kit-composer__round kit-composer__round--send", "↑" }
+                        }
+                        div { class: "kit-composer__row kit-composer__row--attach kit-composer__row--faded", "aria-hidden": "true",
+                            span { class: "kit-composer__chip",
+                                span { class: "kit-composer__folder" }
+                                span { "Work in a folder" }
+                            }
+                            span { class: "kit-composer__chip", "Connect apps" }
+                        }
+                        for row in 0..COMPOSER_ROWS {
+                            {
+                                let is_current = row == current_row;
+                                let top_y = composer_row_top(row) as i32 - 4;
+                                let row_mid = composer_row_centre(row) as i32 - 6;
+                                let gap_y = (composer_row_top(row) + composer_row_height(row) + COMPOSER_ROW_GAP_PX / 2) as i32 - 6;
+                                let top_style = format!("transform: translateY({}px);", top_y - 18);
+                                let inset_style = format!("transform: translateY({row_mid}px);");
+                                let gap_style = format!("transform: translateY({gap_y}px);");
+                                rsx! {
+                                    span { class: "kit-composer__marker", "data-row": "{row}",
+                                        "data-active": is_current.then_some("true"),
+                                        style: "{top_style}",
+                                        "{COMPOSER_INSET_UNITS}"
+                                    }
+                                    span { class: "kit-composer__inset", "data-row": "{row}",
+                                        "data-active": is_current.then_some("true"),
+                                        style: "{inset_style}",
+                                        "{COMPOSER_INSET_UNITS}"
+                                    }
+                                    span { class: "kit-composer__gap", "data-row": "{row}",
+                                        "data-active": is_current.then_some("true"),
+                                        style: "{gap_style}",
+                                        "{COMPOSER_GAP_UNITS}"
+                                    }
                                 }
                             }
                         }
+                        span { class: "kit-composer__rail" }
+                        span { class: "kit-composer__guide", style: "{guide_style}" }
+                        span { class: "kit-composer__frame", key: "frame-{current_row}", style: "{frame_style}",
+                            span { class: "kit-composer__width", "{width_label}" }
+                        }
+                        span { class: "kit-composer__tag", style: "{tag_style}", "{row_label}" }
                     }
-                    span { class: "kit-composer__frame", style: "{frame_style}" }
-                    span { class: "kit-composer__guide", style: "{guide_style}" }
-                    span { class: "kit-composer__pointer", style: "{pointer_style}" }
-                    span { class: "kit-composer__tag", style: "{tag_style}", {row_label} }
                 }
             }
             p { class: "kit-composer__note", {note} }

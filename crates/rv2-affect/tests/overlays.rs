@@ -1,5 +1,5 @@
 use dioxus::prelude::*;
-use rv2_affect::context_menu::{ContextMenu, is_menu_key, keyboard_origin};
+use rv2_affect::context_menu::{ContextMenu, anchored_point, is_menu_key, keyboard_origin};
 use rv2_affect::dialog::{AlertDialog, Dialog, DialogSize, tab_wrap};
 use rv2_affect::dropdown_menu::{
     DropdownMenu, DropdownTrigger, MenuItem, RovingStep, menu_typeahead, roving_index,
@@ -184,6 +184,27 @@ fn context_menu_wraps_its_area_and_draws_no_menu_until_opened() {
     assert!(html.contains("display: contents"));
     assert!(html.contains("row"));
     assert!(!html.contains("ui-ctxc__panel"));
+}
+
+#[test]
+fn context_menu_with_an_open_at_point_draws_no_panel_before_it_mounts() {
+    let html = render(
+        || rsx! { ContextMenu { items: menu_items(), open_at: (169.0, 126.0), p { "row" } } },
+    );
+    assert!(html.contains("row"));
+    assert!(!html.contains("ui-ctxc__panel"));
+}
+
+#[test]
+fn a_rest_point_is_measured_from_the_area_origin_and_follows_a_scroll() {
+    assert_eq!(
+        anchored_point((120.0, 300.0), (169.0, 126.0)),
+        (289.0, 426.0)
+    );
+    assert_eq!(
+        anchored_point((120.0, -150.0), (169.0, 126.0)),
+        (289.0, -24.0)
+    );
 }
 
 #[test]

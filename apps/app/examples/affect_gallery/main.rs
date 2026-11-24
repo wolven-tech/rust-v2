@@ -68,6 +68,32 @@ body:has(.gl[data-theme="dark"]) { background: #121213; }
 .gl-ex-body > .gl-box { flex: 1 1 260px; }
 .gl-ex-body > .gl-canvas-tall { width: 100%; }
 .gl-space { position: relative; width: 100%; min-height: 340px; }
+/* A contained layer's content box must exceed the 520px phone-sheet breakpoint (its padding is 16px a side) */
+.gl-space-wide { width: calc(100% + 50px); min-height: 400px; margin: 0 -25px; }
+.gl-page { position: absolute; inset: 0; display: grid; align-content: start; gap: 10px; padding: 18px 20px; box-sizing: border-box; font-size: 13px; }
+.gl-page-row { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 10px; background: #0000000a; }
+.gl[data-theme="dark"] .gl-page-row { background: #ffffff0f; }
+.gl-metrics { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.gl-metric-k { font-size: 12px; opacity: 0.6; }
+.gl-metric-v { font-size: 14px; font-variant-numeric: tabular-nums; }
+.gl-tile { display: grid; place-items: center; flex: none; width: 32px; height: 32px; border-radius: 8px; background: #0000000a; }
+.gl[data-theme="dark"] .gl-tile { background: #ffffff14; }
+.gl-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 40px; padding: 6px 8px 6px 14px; border: 1px solid #0000000f; border-radius: 12px; }
+.gl[data-theme="dark"] .gl-toolbar { border-color: #ffffff14; }
+.gl-toolbar-tools { display: flex; gap: 4px; }
+.gl-shortcuts { border: 1px solid #0000000f; border-radius: 12px; overflow: hidden; font-size: 13px; }
+.gl[data-theme="dark"] .gl-shortcuts { border-color: #ffffff14; }
+.gl-shortcuts > * { padding: 10px 14px; }
+.gl-shortcuts-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; border-bottom: 1px solid #0000000f; }
+.gl-shortcuts-title { font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; opacity: 0.7; }
+.gl[data-theme="dark"] .gl-shortcuts-head { border-color: #ffffff14; }
+.gl-shortcut-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; border-bottom: 1px solid #0000000a; }
+.gl-shortcuts-foot { font-size: 12px; opacity: 0.6; }
+.gl-card-wide { max-width: 800px; }
+.gl-tree { display: grid; gap: 2px; padding: 8px 6px; font-size: 13px; }
+.gl-tree-meta { font-size: 12px; opacity: 0.55; white-space: nowrap; }
+.gl-foot { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding-top: 12px; border-top: 1px solid #0000000f; font-size: 12px; opacity: 0.8; }
+.gl[data-theme="dark"] .gl-foot { border-color: #ffffff14; }
 @media (max-width: 480px) { .gl-main { padding: 16px; } .gl-stack { max-width: none; } .gl-stage { padding: 16px 12px; } .gl-card { padding: 16px; gap: 20px; } }
 "#;
 
@@ -138,12 +164,17 @@ pub fn Section(id: &'static str, title: &'static str, children: Element) -> Elem
 }
 
 #[component]
-pub fn Item(name: &'static str, children: Element) -> Element {
+pub fn Item(name: &'static str, #[props(default)] wide: bool, children: Element) -> Element {
+    let card = if wide {
+        "gl-card gl-card-wide"
+    } else {
+        "gl-card"
+    };
     rsx! {
         article { class: "gl-item",
             h3 { "{name}" }
             div { class: "gl-stage",
-                div { class: "gl-card", {children} }
+                div { class: "{card}", {children} }
             }
         }
     }

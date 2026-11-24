@@ -220,6 +220,18 @@
   letter-spacing: 0.04em;
 }
 
+.kit-art__app-mark {
+  display: inline-grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  border-radius: var(--kit-radius-sm);
+  background: var(--kit-raised);
+  color: var(--kit-ink-muted);
+  font-size: 10px;
+  font-weight: 600;
+}
+
 .kit-art__step-name {
   overflow: hidden;
   text-overflow: ellipsis;

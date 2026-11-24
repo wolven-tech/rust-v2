@@ -73,3 +73,27 @@ Metric card; area chart with comparison line; stacked bar chart with legend; for
 6. Each stacked bar's segments add up to the bar's total.
 7. Large values are shortened in metric cards, and the full value is available on hover.
 8. On a phone, a horizontal swipe over a line chart creates a picked range.
+
+## Amendment 5: structure and demo
+
+Replaces: none (no earlier amendment in this spec).
+
+**Archetype:** centred thread at a fixed maximum width, holding two answered exchanges, with suggestion chips above the composer. The sidebar is folded to icons.
+
+**At rest (gallery demo):**
+- Exchange 1: question; answer paragraph; three metric cards in one row; a weekly area chart with 13 points, this year against last year, with its caption; a sources row with two chips; no follow-up chips.
+- Exchange 2: question asking for a split by region; answer paragraph; stacked column chart with four region columns, each with three parts, and a legend; caption; a follow-up chip row.
+- Composer at the foot with three suggestion chips above it.
+- Chart axes: three value labels on the y axis; four labels on the x axis (first week, one marked week, one middle week, last week).
+
+**States at rest:** answers complete; no range picked; pick field closed; sidebar folded.
+
+**Arrangement:** thread column centred; metric cards in one row of three; each chart spans the column width; composer and chips at the foot.
+
+**Motion, settled frame:** answer text complete, cards and charts shown in place. Nothing animates at rest.
+
+**Checks (continued):**
+9. Axis labels come from the chart's own values and no label repeats. On a chart with a target, the target label sits clear of the value labels.
+10. Stepping onto or hovering a week shows a tooltip with the week label and each series' value.
+11. The thread scrolls so the last answer and its follow-up chips sit above the composer. No content is hidden beneath the composer or its chips.
+12. At rest no chart label reads "No data" on a chart that has values.

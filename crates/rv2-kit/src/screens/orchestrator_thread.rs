@@ -110,6 +110,8 @@ pub enum ThreadMessage {
     },
     Agent {
         id: String,
+        name: String,
+        time_label: String,
         parts: Vec<Part>,
         is_streaming: bool,
         is_stopped: bool,
@@ -295,6 +297,8 @@ pub fn OrchestratorThread(
     #[props(default)] on_retry_attachment: Option<EventHandler<String>>,
     #[props(default)] on_remove_attachment: Option<EventHandler<String>>,
     #[props(default)] on_voice_clip: Option<EventHandler<u64>>,
+    #[props(default)] on_toggle_panel: Option<EventHandler<()>>,
+    #[props(default)] approval_chip: Option<String>,
 ) -> Element {
     let uid = use_hook(next_id);
     let now = use_now_ms(clock_ms, 1000);
@@ -312,6 +316,30 @@ pub fn OrchestratorThread(
     let root_id = format!("kit-ot-{uid}-root");
     let (hook_root, hook_input, hook_scroll) =
         (root_id.clone(), input_id.clone(), scroll_id.clone());
+    let mount_scroll = scroll_id.clone();
+
+    // Stays at the bottom while the reader is there; a one-time mount scroll can run before layout.
+    use_effect(move || {
+        document::eval(&format!(
+            "const s = document.getElementById({mount_scroll:?});\
+             if (s && !s.dataset.pinned) {{\
+                 s.dataset.pinned = '1';\
+                 let atEnd = true;\
+                 const pin = () => {{ if (atEnd) s.scrollTop = s.scrollHeight; }};\
+                 s.addEventListener('scroll', () => {{ atEnd = s.scrollTop + s.clientHeight >= s.scrollHeight - 4; }});\
+                 const ro = new ResizeObserver(pin);\
+                 ro.observe(s);\
+                 if (s.firstElementChild) ro.observe(s.firstElementChild);\
+                 (window.__kitPin ||= new Map()).set({uid}, () => ro.disconnect());\
+                 pin();\
+             }}"
+        ));
+    });
+    use_drop(move || {
+        document::eval(&format!(
+            "window.__kitPin?.get({uid})?.(); window.__kitPin?.delete({uid});"
+        ));
+    });
 
     use_hook(move || {
         document::eval(&format!(
@@ -397,6 +425,14 @@ pub fn OrchestratorThread(
             }
         )
     });
+    let tool_running = message_list.iter().any(|m| {
+        match m {
+        ThreadMessage::Agent { parts, .. } => parts.iter().any(|p| {
+            matches!(p, Part::Tools(rows) if rows.iter().any(|r| r.row_state == RowState::Running))
+        }),
+        ThreadMessage::User { .. } => false,
+    }
+    });
     let away = last_seen_at.is_some_and(|seen| is_away(now, seen, away_after_minutes))
         && !away_dismissed();
     let dock_count = decision_queue.len();
@@ -421,11 +457,12 @@ pub fn OrchestratorThread(
         _ => None,
     };
     let running_text = format!("{running_count} running");
-    let needs_text = format!("{needs_count} waiting for you");
+    let needs_text = format!("{needs_count} waiting on you");
     let jump_label = format!("Jump to latest, {new_below_count} new lines. Press End to jump.");
     let away_line =
         format!("While you were away: {running_count} running, {needs_count} need you.");
     let streaming_text = streaming.to_string();
+    let send_idle = draft().trim().is_empty();
     let ready_ids: Vec<String> = attachment_list
         .iter()
         .filter(|a| a.upload_state == UploadState::Done)
@@ -448,8 +485,7 @@ pub fn OrchestratorThread(
             "data-loading": is_loading.then_some("true"),
             "aria-busy": (is_loading || streaming).then_some("true"),
             header { class: "kit-ot__head",
-                h2 { class: "kit-ot__title", "Thread" }
-                p { class: "kit-ot__counts",
+                div { class: "kit-ot__counts kit-ot__col",
                     button {
                         r#type: "button",
                         class: "kit-ot__count-btn",
@@ -458,9 +494,9 @@ pub fn OrchestratorThread(
                                 handler.call(());
                             }
                         },
+                        span { class: "kit-ot__dot kit-ot__dot--ok", "aria-hidden": "true" }
                         "{running_text}"
                     }
-                    span { " · " }
                     button {
                         r#type: "button",
                         class: "kit-ot__count-btn",
@@ -469,7 +505,22 @@ pub fn OrchestratorThread(
                                 handler.call(());
                             }
                         },
+                        span { class: "kit-ot__dot kit-ot__dot--warn", "aria-hidden": "true" }
                         "{needs_text}"
+                    }
+                }
+                button {
+                    r#type: "button",
+                    class: "kit-ot__panel",
+                    "aria-label": "Toggle panel",
+                    onclick: move |_| {
+                        if let Some(handler) = on_toggle_panel {
+                            handler.call(());
+                        }
+                    },
+                    svg { class: "kit-ot__glyph", view_box: "0 0 16 16", fill: "none", stroke: "currentColor", stroke_width: "1.5", "aria-hidden": "true",
+                        rect { x: "2.25", y: "3", width: "11.5", height: "10", rx: "1.5" }
+                        path { d: "M9.75 3v10" }
                     }
                 }
             }
@@ -483,7 +534,7 @@ pub fn OrchestratorThread(
                 }
             }
 
-            div { class: "kit-ot__scroll", id: "{scroll_id}",
+            div { class: "kit-ot__scroll kit-ot__col", id: "{scroll_id}",
                 if is_loading {
                     div { class: "kit-ot__ph kit-ot__ph--agent", "aria-hidden": "true" }
                     div { class: "kit-ot__ph kit-ot__ph--user", "aria-hidden": "true" }
@@ -532,13 +583,18 @@ pub fn OrchestratorThread(
                                             }
                                         }
                                     }
-                                    ThreadMessage::Agent { id, parts, is_streaming, is_stopped } => {
+                                    ThreadMessage::Agent { id, name, time_label, parts, is_streaming, is_stopped } => {
                                         let caret = if is_streaming { "▍" } else { "" };
                                         let stopped_note = if is_stopped { "Stopped." } else { "" };
                                         let message_key = id.clone();
+                                        let mark = name.chars().next().map(|c| c.to_string()).unwrap_or_default();
                                         rsx! {
                                             li { key: "{message_key}", class: "kit-ot__msg kit-ot__msg--agent", "data-streaming": "{is_streaming}",
-                                                span { class: "kit-ot__mark", "aria-hidden": "true", "O" }
+                                                header { class: "kit-ot__agent-head",
+                                                    span { class: "kit-ot__mark", "aria-hidden": "true", "{mark}" }
+                                                    span { class: "kit-ot__agent-name", "{name}" }
+                                                    span { class: "kit-ot__meta", "{time_label}" }
+                                                }
                                                 div { class: "kit-ot__agent-body",
                                                     for (index, part) in parts.iter().cloned().enumerate() {
                                                         {
@@ -556,27 +612,68 @@ pub fn OrchestratorThread(
                                                                     let count = rows.len();
                                                                     let running = rows.iter().any(|r| r.row_state == RowState::Running);
                                                                     let summary = if running {
-                                                                        format!("{count} tools running")
+                                                                        format!("Running {count} tools in parallel")
                                                                     } else {
-                                                                        format!("{count} tools · {seconds:.1} s")
+                                                                        format!("Ran {count} tools")
                                                                     };
+                                                                    let total = format!("{seconds:.1}s");
                                                                     rsx! {
-                                                                        details { key: "{part_key}", class: "kit-ot__tools",
-                                                                            summary { "{summary}" }
+                                                                        details { key: "{part_key}", class: "kit-ot__tools", open: running,
+                                                                            summary { class: "kit-ot__tools-head",
+                                                                                if running {
+                                                                                    span { class: "kit-ot__spin", "aria-hidden": "true" }
+                                                                                } else {
+                                                                                    svg { class: "kit-ot__glyph kit-ot__glyph--ok", view_box: "0 0 16 16", fill: "none", stroke: "currentColor", stroke_width: "1.75", stroke_linecap: "round", stroke_linejoin: "round", "aria-hidden": "true",
+                                                                                        path { d: "M3.25 8.5 6.5 11.75 12.75 4.75" }
+                                                                                    }
+                                                                                }
+                                                                                span { class: "kit-ot__tools-label", "{summary}" }
+                                                                                if !running {
+                                                                                    span { class: "kit-ot__duration", "{total}" }
+                                                                                }
+                                                                            }
                                                                             ul { class: "kit-ot__tool-rows",
                                                                                 for row in rows.iter().cloned() {
                                                                                     {
                                                                                         let row_key = row.id.clone();
                                                                                         let row_label = row.entry_label.clone();
                                                                                         let row_word = row.row_state.word();
-                                                                                        let row_line = format!("{row_label} · {row_word}");
                                                                                         let row_error = row.error_text.clone().unwrap_or_default();
+                                                                                        let row_time = row.duration_ms.map(|ms| format!("{:.1}s", ms as f64 / 1000.0)).unwrap_or_default();
+                                                                                        let row_state = row.row_state;
                                                                                         rsx! {
-                                                                                            li { key: "{row_key}",
-                                                                                                span { "{row_line}" }
+                                                                                            li { key: "{row_key}", class: "kit-ot__tool-row", "data-state": "{row_word}",
+                                                                                                span { class: "kit-ot__tool-status", "aria-hidden": "true",
+                                                                                                    {
+                                                                                                        match row_state {
+                                                                                                            RowState::Running => rsx! { span { class: "kit-ot__spin" } },
+                                                                                                            RowState::Done => rsx! {
+                                                                                                                svg { class: "kit-ot__glyph kit-ot__glyph--ok", view_box: "0 0 16 16", fill: "none", stroke: "currentColor", stroke_width: "1.75", stroke_linecap: "round", stroke_linejoin: "round",
+                                                                                                                    path { d: "M3.25 8.5 6.5 11.75 12.75 4.75" }
+                                                                                                                }
+                                                                                                            },
+                                                                                                            RowState::Failed => rsx! {
+                                                                                                                svg { class: "kit-ot__glyph kit-ot__glyph--fault", view_box: "0 0 16 16", fill: "none", stroke: "currentColor", stroke_width: "1.75", stroke_linecap: "round",
+                                                                                                                    path { d: "M4 4l8 8M12 4l-8 8" }
+                                                                                                                }
+                                                                                                            },
+                                                                                                            RowState::Stopped => rsx! {
+                                                                                                                svg { class: "kit-ot__glyph", view_box: "0 0 16 16", fill: "none", stroke: "currentColor", stroke_width: "1.75", stroke_linecap: "round",
+                                                                                                                    path { d: "M4 8h8" }
+                                                                                                                }
+                                                                                                            },
+                                                                                                        }
+                                                                                                    }
+                                                                                                }
+                                                                                                svg { class: "kit-ot__glyph", view_box: "0 0 16 16", fill: "none", stroke: "currentColor", stroke_width: "1.5", stroke_linecap: "round", stroke_linejoin: "round", "aria-hidden": "true",
+                                                                                                    path { d: "M10.5 2.75a3 3 0 0 0-3.9 3.9L2.9 10.35a1.4 1.4 0 0 0 2 2l3.7-3.7a3 3 0 0 0 3.9-3.9l-1.6 1.6-1.6-.4-.4-1.6z" }
+                                                                                                }
+                                                                                                span { class: "kit-ot__tool-label", "{row_label}" }
+                                                                                                span { class: "kit-sr", "{row_word}" }
                                                                                                 if !row_error.is_empty() {
                                                                                                     span { class: "kit-ot__error", "{row_error}" }
                                                                                                 }
+                                                                                                span { class: "kit-ot__duration", "{row_time}" }
                                                                                             }
                                                                                         }
                                                                                     }
@@ -722,7 +819,7 @@ pub fn OrchestratorThread(
                     let dock_answer = dock_options.clone();
                     rsx! {
                         section {
-                            class: "kit-ot__dock",
+                            class: "kit-ot__dock kit-ot__col",
                             role: "group",
                             "aria-label": "{dock_label}",
                             onkeydown: move |event: KeyboardEvent| {
@@ -834,8 +931,26 @@ pub fn OrchestratorThread(
                 }
             }
 
+            if tool_running {
+                div { class: "kit-ot__stop-row kit-ot__col",
+                    button {
+                        r#type: "button",
+                        class: "kit-ot__stop",
+                        onclick: move |_| {
+                            if let Some(handler) = on_stop {
+                                handler.call(());
+                            }
+                        },
+                        svg { class: "kit-ot__stop-square", view_box: "0 0 10 10", "aria-hidden": "true",
+                            rect { x: "0", y: "0", width: "10", height: "10", rx: "2", fill: "currentColor" }
+                        }
+                        "Stop"
+                    }
+                }
+            }
+
             form {
-                class: "kit-ot__composer",
+                class: "kit-ot__composer kit-ot__col",
                 "aria-label": "Message",
                 onkeydown: move |event: KeyboardEvent| {
                     if event.key() == Key::Escape && recording().is_some() {
@@ -939,8 +1054,8 @@ pub fn OrchestratorThread(
                 textarea {
                     id: "{input_id}",
                     class: "kit-ot__input",
-                    rows: "2",
-                    placeholder: "Message your orchestrator",
+                    rows: "1",
+                    placeholder: "Message the orchestrator",
                     "aria-label": "Message",
                     value: "{draft}",
                     oninput: move |event| draft.set(event.value()),
@@ -962,7 +1077,7 @@ pub fn OrchestratorThread(
                 div { class: "kit-ot__composer-foot",
                     button {
                         r#type: "button",
-                        class: "kit-ot__ghost",
+                        class: "kit-ot__icon",
                         "aria-label": "Attach file",
                         onclick: {
                             let click_id = file_id.clone();
@@ -970,7 +1085,17 @@ pub fn OrchestratorThread(
                                 document::eval(&format!("document.getElementById({click_id:?})?.click();"));
                             }
                         },
-                        "Attach"
+                        svg { class: "kit-ot__glyph", view_box: "0 0 16 16", fill: "none", stroke: "currentColor", stroke_width: "1.75", stroke_linecap: "round", "aria-hidden": "true",
+                            path { d: "M8 3v10M3 8h10" }
+                        }
+                    }
+                    if let Some(chip) = approval_chip.clone() {
+                        span { class: "kit-ot__approval",
+                            svg { class: "kit-ot__glyph kit-ot__glyph--sm", view_box: "0 0 16 16", fill: "none", stroke: "currentColor", stroke_width: "1.5", stroke_linejoin: "round", "aria-hidden": "true",
+                                path { d: "M4 7.5V4a1 1 0 0 1 2 0v3.5M6 6.5V2.75a1 1 0 0 1 2 0V6.5M8 6.5V3a1 1 0 0 1 2 0v3.5M10 6.5V4.25a1 1 0 0 1 2 0V9c0 2.5-1.6 4.25-3.9 4.25H7.5c-1.2 0-2-.5-2.8-1.5L2.6 9.3a1 1 0 0 1 1.5-1.3L6 9.2" }
+                            }
+                            span { "{chip}" }
+                        }
                     }
                     input {
                         id: "{file_id}",
@@ -985,30 +1110,29 @@ pub fn OrchestratorThread(
                             }
                         },
                     }
+                    span { class: "kit-ot__spacer" }
                     button {
                         r#type: "button",
-                        class: "kit-ot__ghost",
+                        class: "kit-ot__icon",
                         "aria-label": "Voice note",
                         onclick: move |_| {
                             if recording().is_none() {
                                 recording.set(Some(now));
                             }
                         },
-                        "Voice"
-                    }
-                    if streaming {
-                        button {
-                            r#type: "button",
-                            class: "kit-ot__danger",
-                            onclick: move |_| {
-                                if let Some(handler) = on_stop {
-                                    handler.call(());
-                                }
-                            },
-                            "Stop"
+                        svg { class: "kit-ot__glyph", view_box: "0 0 16 16", fill: "none", stroke: "currentColor", stroke_width: "1.5", stroke_linecap: "round", "aria-hidden": "true",
+                            rect { x: "5.5", y: "2", width: "5", height: "8", rx: "2.5" }
+                            path { d: "M3.5 7.5a4.5 4.5 0 0 0 9 0M8 12v2" }
                         }
-                    } else {
-                        button { r#type: "submit", class: "kit-ot__primary", "Send" }
+                    }
+                    button {
+                        r#type: "submit",
+                        class: "kit-ot__send",
+                        "data-idle": "{send_idle}",
+                        "aria-label": "Send",
+                        svg { class: "kit-ot__glyph", view_box: "0 0 16 16", fill: "none", stroke: "currentColor", stroke_width: "1.75", stroke_linecap: "round", stroke_linejoin: "round", "aria-hidden": "true",
+                            path { d: "M8 13V3.5M3.9 7.6 8 3.5l4.1 4.1" }
+                        }
                     }
                 }
             }

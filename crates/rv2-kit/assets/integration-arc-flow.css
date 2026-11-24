@@ -1,72 +1,108 @@
-/* Integration arc flow. Positions are cqw of the scene, so pills, connectors and the hub scale together. */
+/* Integration arc flow. The card is the stage: every position is a percent of it. A slot's top edge is
+   42.5% + --s * 26.5% of the stage height, so the centre pill (--s 0) is centred at 50%. */
 .kit-arc {
   position: relative;
-  container-type: inline-size;
   width: 100%;
-  aspect-ratio: 1.4 / 1;
+  aspect-ratio: 16 / 10;
   min-width: 0;
+  overflow: hidden;
+  border-radius: var(--kit-radius-card);
   color: var(--kit-ink);
   font-family: var(--kit-font);
+  background:
+    linear-gradient(to bottom, transparent 85%, var(--kit-surface) 100%),
+    radial-gradient(ellipse 70% 90% at 0% 50%, color-mix(in srgb, var(--kit-accent) 70%, var(--kit-surface)) 0%, transparent 75%),
+    radial-gradient(ellipse 75% 95% at 100% 0%, color-mix(in srgb, var(--kit-accent) 30%, var(--kit-surface)) 0%, transparent 70%),
+    var(--kit-surface);
 }
 
-.kit-arc__connectors,
-.kit-arc__pills {
+.kit-arc__light {
   position: absolute;
-  inset: 0;
+  left: 50%;
+  top: 50%;
+  width: 46%;
+  height: 70%;
+  translate: -50% -50%;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, var(--kit-id-1), transparent);
+  opacity: 0.18;
+  pointer-events: none;
+  animation: kit-arc-drift 14s ease-in-out infinite;
 }
 
-.kit-arc__connector {
+.kit-arc__guide {
   position: absolute;
   left: 0;
   top: 0;
-  width: 100cqw;
-  height: 2px;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
   overflow: visible;
-  background: var(--kit-rule);
+  pointer-events: none;
+}
+
+.kit-arc__guide path {
+  stroke: var(--kit-rule);
+  stroke-width: 1;
+  stroke-dasharray: 4 4;
+  vector-effect: non-scaling-stroke;
+}
+
+.kit-arc__beam {
+  position: absolute;
+  left: 43%;
+  top: 50%;
+  width: 13.7%;
+  height: 2px;
   transform-origin: 0 50%;
-  transform: translate(calc(var(--x) * 1cqw), calc(var(--y) * 1cqw)) rotate(var(--angle)) scaleX(var(--len));
-  transition: transform var(--kit-slow) var(--kit-ease), background var(--kit-fast) var(--kit-ease), opacity var(--kit-slow) var(--kit-ease);
-}
-
-.kit-arc__connector[data-lit] {
+  transform: translateY(-1px);
   background: var(--kit-accent);
+  overflow: visible;
+  animation: kit-arc-sweep 900ms var(--kit-ease) both;
 }
 
-.kit-arc__connector[data-status="paused"] {
+.kit-arc__beam[data-status="paused"] {
+  background: var(--kit-rule);
   opacity: 0.35;
 }
 
 .kit-arc__pulse {
   position: absolute;
-  left: 0;
+  right: 0;
   top: -2px;
   width: 6px;
   height: 6px;
   border-radius: 50%;
   background: var(--kit-accent);
-  animation: kit-arc-pulse 2.4s linear infinite;
+  animation: kit-arc-beam 900ms linear infinite;
 }
 
-.kit-arc__connector[data-lit] .kit-arc__pulse {
-  animation-duration: 1.6s;
-}
-
-.kit-arc__connector[data-status="paused"] .kit-arc__pulse {
+.kit-arc__beam[data-status="paused"] .kit-arc__pulse {
   display: none;
+}
+
+.kit-arc__pills {
+  position: absolute;
+  inset: 0;
 }
 
 .kit-arc__pill {
   position: absolute;
-  left: 0;
-  top: 0;
+  top: calc(42.5% + var(--s) * 26.5%);
   z-index: 1;
-  width: 26cqw;
-  transform: translate(calc(var(--x) * 1cqw - 50%), calc(var(--y) * 1cqw - 50%));
-  transition: transform var(--kit-slow) var(--kit-ease), opacity var(--kit-slow) var(--kit-ease);
+  width: 27%;
+  height: 15%;
+  min-width: 0;
+  opacity: var(--o, 1);
+  transition: top var(--kit-slow) var(--kit-ease), opacity var(--kit-slow) var(--kit-ease), transform var(--kit-slow) var(--kit-ease);
+}
+
+.kit-arc__pill[data-centre] {
+  transform: scale(1.04);
 }
 
 .kit-arc__pill[data-status="paused"] {
-  opacity: 0.45;
+  opacity: calc(var(--o, 1) * 0.5);
 }
 
 .kit-arc__pill[data-active] {
@@ -81,9 +117,11 @@
   gap: 8px;
   box-sizing: border-box;
   width: 100%;
-  padding: 8px 10px;
+  height: 100%;
+  min-width: 0;
+  padding: 0 10px 0 4px;
   border: 1px solid var(--kit-rule-soft);
-  border-radius: var(--kit-radius-lg);
+  border-radius: var(--kit-radius-pill);
   background: var(--kit-surface);
   box-shadow: var(--kit-shadow);
   transition: border-color var(--kit-fast) var(--kit-ease), box-shadow var(--kit-fast) var(--kit-ease);
@@ -98,6 +136,8 @@
   outline-offset: 2px;
 }
 
+.kit-arc__pill[data-centre] .kit-arc__static,
+.kit-arc__pill[data-centre] .kit-arc__button,
 .kit-arc__pill[data-lit] .kit-arc__static,
 .kit-arc__pill[data-lit] .kit-arc__button {
   border-color: var(--kit-accent);
@@ -109,8 +149,11 @@
   flex: none;
   align-items: center;
   justify-content: center;
-  width: 22px;
-  height: 22px;
+  height: 75%;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  border-radius: 50%;
+  background: var(--kit-raised);
 }
 
 .kit-arc__text {
@@ -119,39 +162,40 @@
   min-width: 0;
 }
 
-.kit-arc__name,
-.kit-arc__sub {
+.kit-arc__kind,
+.kit-arc__name {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.kit-arc__name {
-  font-size: 13px;
+.kit-arc__kind {
+  font-size: var(--kit-text-sm);
   font-weight: 600;
+  color: var(--kit-ink);
 }
 
-.kit-arc__sub {
-  font-size: 11px;
+.kit-arc__name {
+  font-size: var(--kit-text-xs);
   color: var(--kit-ink-muted);
 }
 
 .kit-arc__hub {
   position: absolute;
-  left: 50%;
-  top: 56cqw;
-  width: 40cqw;
-  transform: translateX(-50%);
+  left: 8%;
+  top: 42.5%;
+  z-index: 1;
+  width: 35%;
+  height: 15%;
   box-sizing: border-box;
   display: flex;
-  flex-direction: column;
-  gap: 2px;
-  padding: 10px 12px;
-  border: 1px solid var(--kit-rule);
-  border-radius: var(--kit-radius-lg);
+  align-items: center;
+  gap: 10px;
+  padding: 0 12px 0 16px;
+  border: 1px solid var(--kit-accent);
+  border-radius: var(--kit-radius-pill);
   background: var(--kit-surface);
   box-shadow: var(--kit-shadow-pop);
-  text-align: center;
   isolation: isolate;
   overflow: hidden;
 }
@@ -163,28 +207,66 @@
   z-index: -1;
   border-radius: inherit;
   background: var(--kit-accent);
-  opacity: 0;
+  opacity: 0.08;
   animation: kit-arc-hub 2.4s ease-out infinite;
 }
 
+.kit-arc__hub[data-lit]::after {
+  opacity: 0.2;
+  animation: none;
+}
+
+.kit-arc__hub-text {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  text-align: right;
+}
+
+.kit-arc__hub-mark {
+  flex: none;
+  height: 75%;
+  aspect-ratio: 1 / 1;
+  border: 2px solid var(--kit-accent);
+  border-radius: 50%;
+}
+
 .kit-arc__hub-title {
-  font-size: 14px;
+  font-size: var(--kit-text-lg);
   font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .kit-arc__hub-sub {
-  font-size: 11px;
+  font-size: var(--kit-text-xs);
   color: var(--kit-ink-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-@keyframes kit-arc-pulse {
+@keyframes kit-arc-sweep {
+  from { transform: translateY(-1px) scaleX(0); }
+  to { transform: translateY(-1px) scaleX(1); }
+}
+
+@keyframes kit-arc-beam {
   from { transform: translateX(0); opacity: 0.9; }
-  to { transform: translateX(100cqw); opacity: 0.2; }
+  to { transform: translateX(-100%); opacity: 0.2; }
 }
 
 @keyframes kit-arc-hub {
   0% { opacity: 0.12; }
   100% { opacity: 0; }
+}
+
+@keyframes kit-arc-drift {
+  0%, 100% { translate: -50% -50%; }
+  50% { translate: -44% -50%; }
 }
 
 @media (max-width: 560px) {
@@ -193,10 +275,18 @@
     flex-direction: column;
     gap: 10px;
     aspect-ratio: auto;
-    container-type: normal;
+    overflow: visible;
   }
-  .kit-arc__connectors {
+  .kit-arc__guide,
+  .kit-arc__beam,
+  .kit-arc__light {
     display: none;
+  }
+  .kit-arc__hub {
+    position: static;
+    width: 100%;
+    height: auto;
+    min-height: 56px;
   }
   .kit-arc__pills {
     position: static;
@@ -204,25 +294,34 @@
     flex-direction: column;
     gap: 8px;
   }
-  .kit-arc__pill {
+  .kit-arc__pill,
+  .kit-arc__pill[data-centre] {
     position: static;
     width: 100%;
+    height: auto;
+    top: auto;
     transform: none;
+    opacity: 1;
   }
-  .kit-arc__hub {
-    position: static;
-    width: 100%;
-    transform: none;
+  .kit-arc__static,
+  .kit-arc__button {
+    height: auto;
+    min-height: 48px;
+  }
+  .kit-arc__logo {
+    height: 32px;
+    width: 32px;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .kit-arc__pulse,
-  .kit-arc__hub::after {
+  .kit-arc__hub::after,
+  .kit-arc__light,
+  .kit-arc__beam {
     display: none;
     animation: none;
   }
-  .kit-arc__connector,
   .kit-arc__pill {
     transition: none;
   }

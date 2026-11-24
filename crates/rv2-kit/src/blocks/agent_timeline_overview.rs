@@ -4,8 +4,8 @@
 //! Design choice: the filter hides spans, never lanes, so a filtered lane keeps its row.
 //! Design choice: a running span's end is the `now_ms` marker; the host moves `now_ms`,
 //! and the bar grows with it.
-//! Design choice: the summary counts spans and inbox items that changed since
-//! `last_seen_at`; the spec's activity feed is derived from them.
+//! Design choice: the summary tallies and curve come from the `activity` events the host passes in,
+//! one dot per event; `last_seen_at` only sets where the curve starts.
 //! Design choice: the time axis pans by drag or wheel in whole minutes and reports each new
 //! window through `on_window_change`; the host owns the window itself.
 //! Browser checks: running bar stops at the marker, filter keeps lane rows, focus fades lanes,
@@ -52,6 +52,48 @@ pub struct TimelineSpan {
     pub status: AgentStatus,
     /// Error line shown on hover when the span failed.
     pub error_line: Option<String>,
+}
+
+/// One event since the person last looked: an agent finished, failed or started waiting.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct TimelineEvent {
+    pub at_ms: u64,
+    pub status: AgentStatus,
+}
+
+/// The filter's name in this view; the fleet view calls the waiting filter "Needs you".
+pub fn timeline_filter_word(filter: StatusFilter) -> &'static str {
+    match filter {
+        StatusFilter::Waiting => "Waiting",
+        other => other.word(),
+    }
+}
+
+/// Counts of (done, waiting, failed) among the events.
+pub fn event_tallies(events: &[TimelineEvent]) -> (usize, usize, usize) {
+    let count = |status: AgentStatus| events.iter().filter(|e| e.status == status).count();
+    (
+        count(AgentStatus::Done),
+        count(AgentStatus::Waiting),
+        count(AgentStatus::Failed),
+    )
+}
+
+/// Cumulative curve of the events between `from` and `to`, as points in a unit square: x is the
+/// event's time within the window, y the share of events up to and including it.
+pub fn activity_curve(events: &[TimelineEvent], from: u64, to: u64) -> Vec<(f64, f64)> {
+    let mut sorted: Vec<TimelineEvent> = events.to_vec();
+    sorted.sort_by_key(|e| e.at_ms);
+    let total = sorted.len().max(1) as f64;
+    let span = to.saturating_sub(from).max(1) as f64;
+    sorted
+        .iter()
+        .enumerate()
+        .map(|(i, e)| {
+            let x = (e.at_ms.clamp(from, to) - from) as f64 / span;
+            (x, (i + 1) as f64 / total)
+        })
+        .collect()
 }
 
 /// Left and width of a span as percentages of the window. Spans that run past either edge
@@ -129,6 +171,7 @@ pub fn AgentTimelineOverview(
     window_to: u64,
     now_ms: u64,
     last_seen_at: u64,
+    #[props(default)] activity: Vec<TimelineEvent>,
     #[props(default)] status_filter: StatusFilter,
     #[props(default)] on_status_filter_change: Option<EventHandler<StatusFilter>>,
     #[props(default)] spotlight_agent_id: Option<String>,
@@ -141,7 +184,18 @@ pub fn AgentTimelineOverview(
         .iter()
         .map(|f| agents.iter().filter(|a| f.matches(a.status)).count())
         .collect();
-    let (done, needs, failed) = since_last_seen(&spans, &inbox_items, last_seen_at);
+    let (done, needs, failed) = event_tallies(&activity);
+    let curve = activity_curve(&activity, last_seen_at, now_ms);
+    let since_ago = wait_label(now_ms.saturating_sub(last_seen_at) / 1000);
+    let running_count = agents
+        .iter()
+        .filter(|a| a.status == AgentStatus::Running)
+        .count();
+    let waiting_count = agents
+        .iter()
+        .filter(|a| a.status == AgentStatus::Waiting)
+        .count();
+    let window_minutes = window_to.saturating_sub(window_from) / 60_000;
     let spotlight = spotlight_agent_id.clone();
     let inbox: Vec<&InboxItem> = inbox_items
         .iter()
@@ -166,6 +220,12 @@ pub fn AgentTimelineOverview(
         .map(|a| (a.clone(), lane_spans(&spans, &a.id)))
         .collect();
     let lane_ids: Vec<String> = agents.iter().map(|a| a.id.clone()).collect();
+    let mut curve_d = String::from("M 0 40");
+    let mut curve_dots: Vec<(f64, f64)> = Vec::new();
+    for (x, y) in curve.iter().copied() {
+        curve_d.push_str(&format!(" L {:.2} {:.2}", x * 100.0, (1.0 - y) * 40.0));
+        curve_dots.push((x * 100.0, (1.0 - y) * 100.0));
+    }
 
     rsx! {
         document::Link { rel: "stylesheet", href: KIT_CSS }
@@ -192,41 +252,67 @@ pub fn AgentTimelineOverview(
                             .enumerate()
                             .map(|(i, f)| SegmentOption {
                                 value: f.as_str().to_string(),
-                                label: Some(rsx! { "{f.word()} {counts[i]}" }),
+                                label: Some(rsx! { "{timeline_filter_word(*f)} {counts[i]}" }),
                                 ..Default::default()
                             })
                             .collect::<Vec<_>>(),
                     }
                 }
             }
-            section { class: "kit-tl__summary", "aria-label": "Since you last looked",
-                div { class: "kit-tl__pan", role: "group", "aria-label": "Move the time window",
-                    button {
-                        r#type: "button",
-                        class: "kit-tl__action",
-                        onclick: move |_| {
-                            let (nf, nt) = pan_window(window_from, window_to, -5 * 60_000);
-                            if let Some(handler) = on_window_change { handler.call((nf, nt)); }
-                        },
-                        "Earlier"
+            section { class: "kit-tl__summary", "aria-label": "Since you looked",
+                div { class: "kit-tl__since-head",
+                    div {
+                        h3 { class: "kit-tl__since-label", "Since you looked" }
+                        p { class: "kit-tl__since-meta", "Started {since_ago} ago · {since_ago} elapsed" }
                     }
-                    button {
-                        r#type: "button",
-                        class: "kit-tl__action",
-                        onclick: move |_| {
-                            let (nf, nt) = pan_window(window_from, window_to, 5 * 60_000);
-                            if let Some(handler) = on_window_change { handler.call((nf, nt)); }
-                        },
-                        "Later"
+                    ul { class: "kit-tl__tallies", "aria-live": "polite",
+                        li { span { class: "kit-tl__mark", "aria-hidden": "true", "✓" } "{done} done" }
+                        li { span { class: "kit-tl__mark", "aria-hidden": "true", "◷" } "{needs} waiting" }
+                        li { span { class: "kit-tl__mark", "aria-hidden": "true", "!" } "{failed} failed" }
                     }
                 }
-                p { class: "kit-tl__tallies", "aria-live": "polite",
-                    span { "{done} done" }
-                    span { "{needs} needs you" }
-                    span { "{failed} failed" }
+                div { class: "kit-tl__curve",
+                    svg { class: "kit-tl__curve-svg", "viewBox": "0 0 100 40", "preserveAspectRatio": "none", "aria-hidden": "true",
+                        path { class: "kit-tl__curve-grid", d: "M 0 10 H 100 M 0 20 H 100 M 0 30 H 100" }
+                        path { class: "kit-tl__curve-line", d: "{curve_d}" }
+                    }
+                    for (x, y) in curve_dots.iter().copied() {
+                        span { class: "kit-tl__dot", "aria-hidden": "true", style: "left: {x:.2}%; top: {y:.2}%;" }
+                    }
+                }
+                div { class: "kit-tl__curve-axis", "aria-hidden": "true",
+                    span { "{since_ago} ago" }
+                    span { "now" }
                 }
             }
             div { class: "kit-tl__body",
+                section { class: "kit-tl__lanes", "aria-label": "Agents",
+                    div { class: "kit-tl__lanes-head",
+                        h3 { class: "kit-tl__lanes-title", "Agents" }
+                        span { class: "kit-tl__lane-count", "{running_count} running" }
+                        span { class: "kit-tl__lane-count", "{waiting_count} waiting" }
+                        span { class: "kit-tl__window", "Last {window_minutes}m" }
+                        div { class: "kit-tl__pan", role: "group", "aria-label": "Move the time window",
+                            button {
+                                r#type: "button",
+                                class: "kit-tl__action",
+                                onclick: move |_| {
+                                    let (nf, nt) = pan_window(window_from, window_to, -5 * 60_000);
+                                    if let Some(handler) = on_window_change { handler.call((nf, nt)); }
+                                },
+                                "Earlier"
+                            }
+                            button {
+                                r#type: "button",
+                                class: "kit-tl__action",
+                                onclick: move |_| {
+                                    let (nf, nt) = pan_window(window_from, window_to, 5 * 60_000);
+                                    if let Some(handler) = on_window_change { handler.call((nf, nt)); }
+                                },
+                                "Later"
+                            }
+                        }
+                    }
                 div { class: "kit-tl__grid", role: "grid", "aria-label": "Agent lanes over time",
                     div { id: "kit-tl-axis", class: "kit-tl__axis", role: "row", "aria-label": "Time axis, drag or scroll to move the window",
                         onpointerdown: move |e: PointerEvent| drag.set(Some((e.client_coordinates().x, window_from, window_to))),
@@ -286,6 +372,9 @@ pub fn AgentTimelineOverview(
                                         },
                                         span { class: "kit-tl__agent-name", "{agent.name}" }
                                         span { class: "kit-tl__agent-model", "{agent.model_label}" }
+                                        if matches!(agent.status, AgentStatus::Waiting | AgentStatus::Done) {
+                                            span { class: "kit-tl__pill", "data-status": agent.status.as_str(), "{agent.status.label()}" }
+                                        }
                                     }
                                     div { class: "kit-tl__track", role: "gridcell",
                                         div { class: "kit-tl__mini", "aria-hidden": "true",
@@ -366,8 +455,9 @@ pub fn AgentTimelineOverview(
                         }
                     }
                 }
+                }
                 aside { class: "kit-tl__inbox", "aria-label": "Inbox",
-                    h3 { class: "kit-tl__inbox-title", "Needs a decision " span { class: "kit-tl__count", "{inbox.len()}" } }
+                    h3 { class: "kit-tl__inbox-title", "Inbox " span { class: "kit-tl__count", "{inbox.len()}" } }
                     if inbox.is_empty() {
                         p { class: "kit-tl__empty", "Nothing needs a decision." }
                     }

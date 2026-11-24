@@ -59,3 +59,39 @@ In reading order:
 6. At phone width the picker fills the width and nothing scrolls sideways.
 
 Uses partner logos (supplied by caller) for each model's vendor mark. Does not describe any vendor mark.
+
+## Amendment 7: structure and demo
+
+Replaces: none; no earlier amendment exists. Base checks 1 to 6 stand; checks 7 to 11 are new.
+
+Archetype: one single-group list column, offset right of centre, with a faded tail.
+
+Stage: the card, a light neutral surface, edge to edge. Width to height about 1.85 to 1.
+
+List column: one panel with a light surface, a hairline edge and a soft shadow.
+- Left edge at 35% of stage width. Its unfaded right edge at 77%. The right 10% of the panel fades into the stage.
+- Top at 20% of stage height. The bottom fades out between 80% and 92% of stage height.
+
+Group heading: one, at 25% of stage height, left-aligned with the row content, muted. Gallery text: "Fast models".
+
+Rows: seven. Vertical centres at 32%, 40.5%, 49%, 57%, 65.5%, 74% and 82% of stage height. Each row spans the panel's full width and holds, left to right:
+- a leading mark slot, 5% to 10% of panel width, with a placeholder glyph;
+- the model name, starting at 13% of panel width;
+- on the selected row only, a check glyph at 82% of panel width.
+
+Placeholder glyphs: our own simple shapes, one per row (circle, diamond, triangle, square, star, hexagon, ring), in the ink token. Not brand marks.
+
+Gallery names, top to bottom: "Flash 2", "Deep reason", "Large context", "Compact 3", "Vision pro", "Code mini", "Legacy v1".
+
+Selected: row 2, "Deep reason". Its band is one shape spanning the panel's content width, in the accent token at low strength, with the check at 82%.
+
+Faded tail: row 6 at about 60% opacity; row 7 at about 35%. Rows 1 to 5 at full strength. Rows 6 and 7 stay selectable. No row at rest carries the word "unavailable".
+
+Settled frame: row 2 selected, band and check on it, rows 6 and 7 faded, bottom and right edges fading. Selecting another row moves the band in one movement; reduced motion jumps it.
+
+Acceptance checks (continued):
+7. The gallery list has one group heading and seven rows. Each row has a leading mark slot holding its own placeholder glyph.
+8. At rest exactly one row (row 2) carries the band and the check.
+9. Rows 6 and 7 are visibly fainter than rows 1 to 5, and row 7 is fainter than row 6. No row at rest reads "unavailable".
+10. The list's left edge is at 35% of stage width and its unfaded right edge at 77%. The right fifth of the stage is empty.
+11. The list has faded out before 92% of stage height, and the seventh row is not cut by the stage edge.

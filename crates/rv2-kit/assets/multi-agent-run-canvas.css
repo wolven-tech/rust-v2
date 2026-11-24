@@ -153,32 +153,27 @@
 }
 
 .kit-amc {
-  grid-template-columns: minmax(0, 1fr) minmax(240px, 320px);
+  grid-template-columns: minmax(0, 1fr);
   align-items: start;
 }
 
-.kit-amc__head,
-.kit-amc__tiles,
-.kit-amc__lower {
+.kit-amc:has(.kit-amc__panel) {
+  grid-template-columns: minmax(0, 1fr) minmax(240px, 320px);
+}
+
+.kit-amc__head {
   grid-column: 1 / -1;
 }
 
-.kit-amc__canvas-wrap {
+.kit-amc__canvas-wrap,
+.kit-amc__tiles,
+.kit-amc__lower {
   grid-column: 1;
-  grid-row: 3;
 }
 
 .kit-amc__panel {
   grid-column: 2;
-  grid-row: 3;
-}
-
-.kit-amc__lower {
-  grid-row: 4;
-}
-
-.kit-amc:not(:has(.kit-amc__panel)) .kit-amc__canvas-wrap {
-  grid-column: 1 / -1;
+  grid-row: 2 / span 3;
 }
 
 .kit-amc__canvas {
@@ -230,8 +225,8 @@
 
 .kit-amc__stage {
   position: relative;
-  min-width: 560px;
-  height: 420px;
+  min-width: 720px;
+  height: 440px;
 }
 
 .kit-amc__edges {
@@ -254,8 +249,9 @@
   transform: translate(-50%, -50%);
   width: 150px;
   display: grid;
-  gap: 2px;
-  padding: 8px 10px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 2px 6px;
+  padding: 6px 8px;
   border: 1px solid var(--kit-rule-soft);
   border-radius: var(--kit-radius);
   background: var(--kit-surface);
@@ -284,6 +280,7 @@
 }
 
 .kit-amc__node-name {
+  grid-column: 1 / -1;
   font-weight: 600;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -296,8 +293,12 @@
   font-variant-numeric: tabular-nums;
 }
 
+.kit-amc__node-cost {
+  grid-column: 1 / -1;
+}
+
 .kit-amc__badge {
-  justify-self: start;
+  justify-self: end;
   padding: 0 8px;
   border-radius: var(--kit-radius-pill);
   background: var(--kit-raised);
@@ -383,6 +384,14 @@
   bottom: 0;
   border-radius: var(--kit-radius-pill);
   background: var(--kit-ink-muted);
+}
+
+.kit-amc__now {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: var(--kit-accent);
 }
 
 .kit-amc__trace-row[data-state="running"] .kit-amc__bar {
@@ -494,13 +503,12 @@
 }
 
 @media (max-width: 900px) {
-  .kit-amc {
+  .kit-amc,
+  .kit-amc:has(.kit-amc__panel) {
     grid-template-columns: minmax(0, 1fr);
   }
 
-  .kit-amc__canvas-wrap,
-  .kit-amc__panel,
-  .kit-amc__lower {
+  .kit-amc__panel {
     grid-column: 1;
     grid-row: auto;
   }

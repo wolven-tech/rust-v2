@@ -11,6 +11,10 @@ use crate::gallery::Ex;
 use crate::{Item, Section, glyph};
 
 const FOLDER: &str = "M2 4h4l1.5 1.5H14v7H2z";
+const FOLDER_OPEN: &str = "M2 4h4l1.5 1.5H14v1.5H4.5L2 12.5zM4.5 7.5H15l-2 5H2.5z";
+const FILE: &str = "M4.5 2h5l3.5 3.5V14h-8.5zM9.5 2v3.5H13";
+/// Handle lines in the ink colour, so they show on the card in both themes.
+const LINES: &str = "--ui-rszc-line: color-mix(in srgb, currentColor 16%, transparent); --ui-rszc-line-active: color-mix(in srgb, currentColor 36%, transparent); --ui-rszc-grip-edge: color-mix(in srgb, currentColor 24%, transparent);";
 
 fn crumb(label: &str, href: Option<&str>) -> BreadcrumbItem {
     BreadcrumbItem {
@@ -75,29 +79,85 @@ fn branch(id: &str, label: &str, children: Vec<TreeNode>) -> TreeNode {
     }
 }
 
+fn meta(text: &str) -> Option<Element> {
+    Some(rsx! { span { class: "gl-tree-meta", "{text}" } })
+}
+
+fn file(id: &str, label: &str, size: &str) -> TreeNode {
+    TreeNode {
+        icon: Some(glyph(FILE)),
+        meta: meta(size),
+        ..leaf(id, label)
+    }
+}
+
+fn folder(id: &str, label: &str, count: Option<&str>, children: Vec<TreeNode>) -> TreeNode {
+    TreeNode {
+        icon: Some(glyph(FOLDER)),
+        open_icon: Some(glyph(FOLDER_OPEN)),
+        meta: count.and_then(meta),
+        ..branch(id, label, children)
+    }
+}
+
 fn tree() -> Vec<TreeNode> {
     vec![
-        branch(
-            "src",
-            "src",
+        folder(
+            "prompts",
+            "prompts",
+            Some("3"),
             vec![
-                leaf("main", "main.rs"),
-                branch(
-                    "affect",
-                    "affect",
-                    vec![leaf("lib", "lib.rs"), leaf("button", "button.rs")],
-                ),
+                file("digest", "digest.md", "2 KB"),
+                file("triage", "triage.md", "1 KB"),
+                file("reply", "reply.md", "3 KB"),
             ],
         ),
-        branch("docs", "docs", vec![leaf("readme", "README.md")]),
-        leaf("cargo", "Cargo.toml"),
+        folder(
+            "runs",
+            "runs",
+            None,
+            vec![
+                folder(
+                    "run-418",
+                    "run-418",
+                    Some("Today"),
+                    vec![
+                        file("report", "report.md", "12 KB"),
+                        file("sources", "sources.csv", "48 rows"),
+                        folder(
+                            "charts",
+                            "charts",
+                            None,
+                            vec![file("plot", "plot.svg", "4 KB")],
+                        ),
+                    ],
+                ),
+                folder(
+                    "run-417",
+                    "run-417",
+                    Some("Yesterday"),
+                    vec![file("report-417", "report.md", "9 KB")],
+                ),
+                TreeNode {
+                    disabled: true,
+                    ..folder("run-409", "run-409 · archived", None, Vec::new())
+                },
+            ],
+        ),
+        folder(
+            "memory",
+            "memory",
+            None,
+            vec![file("notes", "notes.md", "1 KB")],
+        ),
+        file("agent", "agent.yaml", "1 KB"),
     ]
 }
 
 #[component]
 pub fn Navigation() -> Element {
-    let mut page = use_signal(|| 3usize);
-    let mut size = use_signal(|| 20usize);
+    let mut page = use_signal(|| 1usize);
+    let mut size = use_signal(|| 25usize);
     let mut picked =
         use_signal(|| FilterValue::from([("score".to_string(), vec!["90".to_string()])]));
     let mut selected = use_signal(|| "none".to_string());
@@ -132,7 +192,7 @@ pub fn Navigation() -> Element {
             }
             Item { name: "FilterMenu",
                 Ex { label: "Two groups active",
-                    div { class: "gl-row",
+                    div { class: "gl-box",
                         FilterMenu {
                             title: "Deals",
                             groups: filter_groups(),
@@ -142,7 +202,7 @@ pub fn Navigation() -> Element {
                     }
                 }
                 Ex { label: "Nothing selected",
-                    div { class: "gl-row",
+                    div { class: "gl-box",
                         FilterMenu {
                             title: "Deals",
                             groups: filter_groups(),
@@ -160,6 +220,7 @@ pub fn Navigation() -> Element {
                             page: page(),
                             total: 1284usize,
                             page_size: size(),
+                            page_sizes: vec![10, 25, 50],
                             on_page_change: move |p: usize| page.set(p),
                             on_page_size_change: move |s: usize| size.set(s),
                         }
@@ -217,19 +278,46 @@ pub fn Navigation() -> Element {
             Item { name: "Resizable",
                 Ex { label: "Side by side, with grip",
                     div { class: "gl-canvas gl-canvas-tall",
-                        ResizablePanelGroup { direction: Direction::Horizontal,
-                            ResizablePanel { id: "list", default_size: 30.0, div { style: "padding: 8px", "List pane" } }
+                        ResizablePanelGroup { direction: Direction::Horizontal, style: LINES,
+                            ResizablePanel { id: "list", default_size: 36.0,
+                                div { style: "padding: 10px 8px; display: grid; gap: 2px; font-size: 13px;",
+                                    span { style: "font-size: 12px; opacity: 0.6; padding: 0 8px 6px;", "Runs · 5" }
+                                    for (name, meta, fill) in [("Summarise churn interviews", "Running · 1m 12s", "#0000000d"), ("Draft Q3 pricing memo", "Done · 3m 40s", "transparent"), ("Tag 214 support tickets", "Done · 58s", "transparent"), ("Sync invoices to billing", "Failed · 12s", "transparent")] {
+                                        div { style: "display: grid; padding: 8px; border-radius: 8px; background: {fill};",
+                                            span { style: "overflow: hidden; text-overflow: ellipsis; white-space: nowrap;", "{name}" }
+                                            span { style: "font-size: 12px; opacity: 0.6;", "{meta}" }
+                                        }
+                                    }
+                                }
+                            }
                             ResizableHandle { with_handle: true }
-                            ResizablePanel { id: "detail", default_size: 70.0, div { style: "padding: 8px", "Detail pane" } }
+                            ResizablePanel { id: "detail", default_size: 64.0,
+                                div { style: "padding: 10px 14px; display: grid; gap: 8px; font-size: 13px;",
+                                    span { style: "font-size: 12px; opacity: 0.6;", "Output" }
+                                    strong { "Summarise churn interviews" }
+                                    p { style: "margin: 0;", "Most customers who left in Q3 did so within two weeks of a price change. Five themes came up again and again: surprise overage fees, unclear credit packs, missing annual discounts, slow support replies and seats they no longer used." }
+                                }
+                            }
                         }
                     }
                 }
                 Ex { label: "Stacked, no grip",
-                    div { class: "gl-canvas gl-canvas-tall",
-                        ResizablePanelGroup { direction: Direction::Vertical,
-                            ResizablePanel { id: "top", default_size: 40.0, div { style: "padding: 8px", "Activity" } }
+                    div { class: "gl-canvas", style: "height: 320px;",
+                        ResizablePanelGroup { direction: Direction::Vertical, style: LINES,
+                            ResizablePanel { id: "top", default_size: 50.0,
+                                div { style: "padding: 10px 14px; display: grid; gap: 4px; font-size: 12px; font-family: ui-monospace, monospace;",
+                                    span { "14:02:07  Read 18 interview notes" }
+                                    span { "14:02:19  Grouped quotes into 5 themes" }
+                                    span { "14:02:44  Asked billing-api for plan changes" }
+                                }
+                            }
                             ResizableHandle { with_handle: false }
-                            ResizablePanel { id: "bottom", default_size: 60.0, div { style: "padding: 8px", "Comments" } }
+                            ResizablePanel { id: "bottom", default_size: 50.0,
+                                div { style: "padding: 10px 14px; font-size: 13px;",
+                                    strong { "Comments" }
+                                    p { style: "margin: 6px 0 0;", "Ada: the 14% figure needs the enterprise cohort split out." }
+                                }
+                            }
                         }
                     }
                 }
@@ -260,14 +348,23 @@ pub fn Navigation() -> Element {
                 }
             }
             Item { name: "TreeView",
-                Ex { label: "Expanded to a file",
+                Ex { label: "Workspace, expanded to a file",
                     div { class: "gl-box",
-                        TreeView {
-                            items: tree(),
-                            default_expanded: vec!["src".to_string()],
-                            default_selected: "main".to_string(),
-                            aria_label: "Project files",
-                            on_select: move |n: TreeNode| selected.set(n.label),
+                        div { style: "border: 1px solid #0000000f; border-radius: 12px; overflow: hidden;",
+                            div { style: "display: flex; gap: 8px; align-items: baseline; padding: 12px 14px 8px; font-size: 13px; font-weight: 500;",
+                                "Workspace"
+                                span { style: "font-size: 12px; font-weight: 400; opacity: 0.55;", "research-agent" }
+                            }
+                            div { class: "gl-tree",
+                                TreeView {
+                                    items: tree(),
+                                    default_expanded: vec!["runs".to_string(), "run-418".to_string()],
+                                    default_selected: "report".to_string(),
+                                    aria_label: "Workspace files",
+                                    on_select: move |n: TreeNode| selected.set(n.label),
+                                }
+                            }
+                            div { style: "padding: 10px 14px; border-top: 1px solid #0000000f; font-size: 12px; opacity: 0.6;", "Pick a file" }
                         }
                     }
                 }

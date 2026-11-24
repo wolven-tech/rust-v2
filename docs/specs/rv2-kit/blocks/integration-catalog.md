@@ -72,3 +72,34 @@ In reading order:
 6. Escape in a non-empty search field clears it and keeps focus in the field.
 7. At phone width the category list becomes a horizontal chip row and nothing scrolls sideways.
 8. With no matches, the empty message and clear-search action appear.
+
+## Amendment 5: structure and demo
+
+Archetype: catalogue page: header with a connected count, full-width search, a category rail beside a three-column card grid.
+
+Visible at rest:
+- Header: title "Integrations", one intro line with a "Read more" link, and the connected count at the top right ("1 connected").
+- Search field across the width, with the filter control at its right.
+- Category rail with 13 entries and counts, in this order: Essentials (8, selected), All apps (22), Analytics (3), Automation (1), Billing (2), Communication (5), CRM (3), Design (2), Development (4), Docs (1), Product (2), Scheduling (3), Storage (2).
+- Grid heading "Essentials 8", then three columns and three rows: eight integration cards and one final cell.
+- Integration card: logo, name with a verified mark, "By vendor" line, two-line description, connect control. A connected card shows a status chip; its disconnect control appears on hover or focus only.
+- Final cell: "Discover more", "+14 apps", and a "View all" button.
+
+Gallery demo, eight Essentials cards (name, vendor, description):
+- Chatroom, By Ardent: "Get alerts in your channels and reply without leaving the thread." Connected.
+- Docs hub, By Quillo: "Turn records into pages and keep project notes in step."
+- Tracker, By Brightline: "Turn customer feedback into work items and follow them to release."
+- Design board, By Kestrel: "Preview mockups inline and pin each frame to its ticket."
+- Code host, By Halden: "Link changes and show build status beside each task."
+- Payments, By Oriel: "Sync customers, invoices and renewals as they change."
+- Automation hub, By Veyra: "Connect thousands of apps with no-code triggers."
+- Contacts, By Lumen: "Keep people and companies matched across both tools."
+
+Motion, settled frame: all cards shown; none pending.
+Moves: cards fade in when the category or search changes. A connect control changes width to fit its new label instead of snapping.
+Reduced motion: instant.
+
+Acceptance checks (continued):
+9. The grid has three columns. Cards in the third column end inside the grid with a clear margin, and none is cut at the grid's right edge at any supported width.
+10. The category rail lists 13 entries at rest, each with its count, beginning with Essentials and All apps.
+11. The connected count in the header equals the number of connected cards at rest.

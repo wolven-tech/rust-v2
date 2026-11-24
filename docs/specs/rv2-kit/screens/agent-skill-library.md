@@ -72,3 +72,67 @@ Filter chips; search field; card grid; card with switch and badge; install butto
 6. Pressing "/" focuses search; Escape clears it.
 7. With `is_empty` set, the note and New skill appear.
 8. At phone width the page shows one column and no horizontal scroll.
+
+## Amendment 5: structure and demo
+
+Replaces: none (no earlier amendment in this spec).
+
+**Archetype:** filter row over one card grid in two sections, Installed and Discover, with a right panel for a selected skill that is closed at rest.
+
+**At rest (gallery demo):**
+- Header: title and New skill button.
+- Filter row: All selected, plus five category chips. Search field beside it.
+- Installed section: nine cards. Each card shows name, description, source tag (Built-in, Own, or a community handle), weekly use count and an enable switch. One card is disabled and dimmed.
+- Discover section: six cards. Each card shows name, description, install count and an Install button.
+- Remove control: shown only on Own and community cards, and only in the panel.
+- Skill panel: closed.
+
+**States at rest:** All category; one disabled skill; panel closed.
+
+**Arrangement:** one grid shared by both sections, with columns following the width. Installed cards come first, then Discover cards.
+
+**Motion, settled frame:** nothing moves at rest.
+
+**Checks (continued):**
+9. At rest the Installed section shows nine cards and the Discover section six, in one grid that wraps its rows. Neither section is cut at the bottom edge.
+10. At 1280 wide the grid continues below the first screen, its last row is fully visible, and no empty band sits beneath the last row at rest.
+11. Each Installed card shows name, description, source tag, weekly use and its switch. Each Discover card shows name, description, install count and an Install button.
+12. The panel is closed at rest. When a card opens it, the panel shows trigger phrases, steps, requirements, the fourteen-day run chart and recent usage, in that order.
+13. The category row shows All and five categories, and the chosen one is marked.
+
+## Amendment 6: structure and demo
+
+Replaces, from Amendment 5 (this amendment wins where they differ):
+- "Skill panel: closed". The panel is open at rest on the first Own skill.
+- The filter row with the search field beside it. The search field sits on the header row, beside New skill. The filter chips sit on the row below.
+- "One grid shared by both sections". Installed and Discover are two grids, each under its own heading, with the same column count.
+- Weekly use count on Installed cards. The count appears in the panel only.
+- Install count on Discover cards. The card shows a use count.
+- Checks 10, 11 and 12 are superseded by 18, 15 and 16. Checks 9 and 13 stand. Checks 14 and 17 are new.
+
+**Archetype:** header row with title, search and New skill; a filter row; two card sections, Installed and Discover, in the same column count; a right panel open on one Own skill.
+
+**Parts visible at rest (gallery demo):**
+- Header row: title, a count line reading nine installed, search field, New skill control.
+- Filter row: All (selected) and five categories.
+- Installed heading with count 9. Nine cards in three columns, each with name, one-line description, source tag (Built-in, Own, or a handle) and an enable switch. Two Own, five Built-in and two handle skills. One Built-in card is off and dimmed, and stays listed.
+- Discover heading with count 6, and one line saying what the section holds. Six cards in three columns, two rows, each with name, description, use count ("N use it") and an Install control.
+- Panel open on the first Own skill. In order: header (name, source tag, version); actions (Turn off, and Remove for Own and handle skills only); a runs chart of fourteen daily bars with a count for the week; trigger phrases; steps; requirements, each with a link to Permissions; recent usage, two entries.
+
+**States at rest:** All selected; one Built-in skill off; panel open on the first Own skill; Discover visible.
+
+**Arrangement:** header row and filter row across the top. Installed and then Discover in the main column, each starting under its heading. The panel sits at the right beside them.
+
+**Motion, settled frame:** nothing moves at rest. Chart bars are at their full height.
+
+**Defects to fix in ours:**
+- Ours has no Discover section and the panel is closed.
+- Ours shows two columns where the at-rest grid has three.
+- Ours shows weekly counts on Installed cards. At rest they belong in the panel.
+
+**Checks (continued):**
+14. The search field sits on the header row beside New skill. The filter chips sit on the row below it.
+15. Installed cards show name, description, source tag and switch. Discover cards show name, description, use count and an Install button. Weekly use counts appear only in the panel.
+16. The panel is open at rest on the first Own skill, and its sections appear in this order: header, actions, fourteen-day runs chart, trigger phrases, steps, requirements, recent usage.
+17. Discover has its own heading with count six. Both grids use the same column count, and each starts under its heading.
+18. At 1280 x 720 without page scroll, the header row, filter row, both headings, all fifteen cards and the open panel are visible.

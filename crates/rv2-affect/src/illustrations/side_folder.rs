@@ -35,7 +35,7 @@ pub fn SideFolder(
                             feGaussianBlur { "in": "SourceAlpha", "stdDeviation": "4", result: "blur" }
                             feOffset { "in": "blur", dy: "3", result: "offset" }
                             feComposite { "in": "blur", "in2": "offset", operator: "arithmetic", k2: "1", k3: "-1", result: "diff" }
-                            feFlood { "floodColor": "#fff", "floodOpacity": "0.65" }
+                            feFlood { flood_color: "#fff", flood_opacity: "0.65" }
                             feComposite { "in2": "diff", operator: "in", result: "light" }
                             feComposite { "in": "light", "in2": "SourceAlpha", operator: "in" }
                         }
@@ -47,11 +47,11 @@ pub fn SideFolder(
                 svg { class: "ui-sf-layer", "viewBox": "0 0 440 520",
                     defs {
                         linearGradient { id: "{id}-paper", x1: "0", y1: "0", x2: "0", y2: "1",
-                            stop { offset: "0%", "stopColor": "#fff" }
-                            stop { offset: "100%", "stopColor": "#eaf2f8" }
+                            stop { offset: "0%", stop_color: "#fff" }
+                            stop { offset: "100%", stop_color: "#eaf2f8" }
                         }
                         symbol { id: "{id}-doc", overflow: "visible",
-                            rect { x: "0.6", y: "0.6", width: "278.8", height: "348.8", rx: "19.4", fill: "url(#{id}-paper)", stroke: "rgba(0,0,0,0.12)", "strokeWidth": "1.2" }
+                            rect { x: "0.6", y: "0.6", width: "278.8", height: "348.8", rx: "19.4", fill: "url(#{id}-paper)", stroke: "rgba(0,0,0,0.12)", stroke_width: "1.2" }
                             for (i, width, top) in LINES.iter().copied().enumerate().map(|(i, width)| (i, width, 87.0 + i as f64 * 28.0)) {
                                 rect { key: "{i}", x: "30", y: "{top}", width: "{width}", height: "9", rx: "4.5", fill: "rgba(0,0,0,0.12)" }
                             }
@@ -66,7 +66,7 @@ pub fn SideFolder(
 
                 div { class: "ui-sf-front",
                     svg { "viewBox": "0 0 380 520",
-                        path { d: FRONT, fill: "none", stroke: "rgba(255,255,255,0.3)", "strokeWidth": "4" }
+                        path { d: FRONT, fill: "none", stroke: "rgba(255,255,255,0.3)", stroke_width: "4" }
                     }
                 }
             }

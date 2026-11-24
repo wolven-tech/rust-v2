@@ -35,7 +35,8 @@ const CSS: Asset = asset!("/assets/multi-agent-run-canvas.css");
 pub const ZOOM_MIN: f64 = 0.5;
 pub const ZOOM_MAX: f64 = 1.5;
 /// Natural width of the stage at zoom 1, in CSS px. Matches `.kit-amc__stage`.
-const STAGE_WIDTH: f64 = 560.0;
+/// Four lanes of 150 px nodes need this width before they stop overlapping.
+const STAGE_WIDTH: f64 = 720.0;
 /// Pixels one arrow press pans the canvas.
 const PAN_STEP: i32 = 48;
 
@@ -156,14 +157,17 @@ pub struct TraceRow {
     pub error_text: Option<String>,
 }
 
-/// Node positions as `(id, x, y)` in percent of the canvas, depth down the page.
+/// Node positions as `(id, x, y)` in percent of the canvas. Roots sit on the top
+/// row. Each child of a root heads a lane, one column per lane; the lane's other
+/// nodes stack beneath its head in input order, so every edge is a short drop.
 pub fn layout(nodes: &[AgentNode]) -> Vec<(String, f64, f64)> {
+    let find = |id: &str| nodes.iter().find(|n| n.id == id);
     let depth_of = |id: &str| -> usize {
         let mut depth = 0;
-        let mut current = nodes.iter().find(|n| n.id == id);
+        let mut current = find(id);
         while let Some(node) = current.and_then(|n| n.parent_id.as_deref()) {
             depth += 1;
-            current = nodes.iter().find(|n| n.id == node);
+            current = find(node);
             if depth > nodes.len() {
                 break;
             }
@@ -171,27 +175,58 @@ pub fn layout(nodes: &[AgentNode]) -> Vec<(String, f64, f64)> {
         depth
     };
     let depths: Vec<usize> = nodes.iter().map(|n| depth_of(&n.id)).collect();
-    let max_depth = depths.iter().copied().max().unwrap_or(0);
-    let mut positions = Vec::new();
-    for depth in 0..=max_depth {
-        let level: Vec<&AgentNode> = nodes
-            .iter()
-            .zip(depths.iter())
-            .filter(|(_, d)| **d == depth)
-            .map(|(n, _)| n)
-            .collect();
-        let count = level.len().max(1) as f64;
-        for (index, node) in level.iter().enumerate() {
-            let x = (index as f64 + 0.5) / count * 100.0;
-            let y = if max_depth == 0 {
-                50.0
-            } else {
-                12.0 + depth as f64 / max_depth as f64 * 76.0
-            };
-            positions.push((node.id.clone(), x, y));
+    let lane_heads: Vec<&str> = nodes
+        .iter()
+        .zip(depths.iter())
+        .filter(|(_, d)| **d == 1)
+        .map(|(n, _)| n.id.as_str())
+        .collect();
+    let lane_of = |id: &str| -> Option<usize> {
+        let mut current = find(id)?;
+        for _ in 0..nodes.len() {
+            let parent = current.parent_id.as_deref()?;
+            if depth_of(&current.id) == 1 {
+                return lane_heads.iter().position(|head| *head == current.id);
+            }
+            current = find(parent)?;
+        }
+        None
+    };
+    let lane_count = lane_heads.len().max(1);
+    let lanes: Vec<Option<usize>> = nodes.iter().map(|n| lane_of(&n.id)).collect();
+    let mut by_depth: Vec<usize> = (0..nodes.len()).collect();
+    by_depth.sort_by_key(|&index| depths[index]);
+    let mut rows = vec![0usize; nodes.len()];
+    let mut next_row = vec![1usize; lane_count];
+    for &index in &by_depth {
+        if let Some(lane) = lanes[index] {
+            rows[index] = next_row[lane];
+            next_row[lane] += 1;
         }
     }
-    positions
+    let deepest_row = next_row.iter().copied().max().unwrap_or(1) - 1;
+    let root_count = lanes.iter().filter(|lane| lane.is_none()).count().max(1);
+    let mut roots_seen = 0usize;
+    nodes
+        .iter()
+        .enumerate()
+        .map(|(index, node)| {
+            let (x, y) = match lanes[index] {
+                Some(lane) => {
+                    let x = (lane as f64 + 0.5) / lane_count as f64 * 100.0;
+                    let y = 10.0 + rows[index] as f64 / deepest_row.max(1) as f64 * 80.0;
+                    (x, y)
+                }
+                None => {
+                    let x = (roots_seen as f64 + 0.5) / root_count as f64 * 100.0;
+                    roots_seen += 1;
+                    let y = if deepest_row == 0 { 50.0 } else { 10.0 };
+                    (x, y)
+                }
+            };
+            (node.id.clone(), x, y)
+        })
+        .collect()
 }
 
 /// Edges from each parent to each child; nodes without a parent have none.
@@ -335,6 +370,11 @@ pub fn MultiAgentRunCanvas(
     let zoom_now = zoom();
     let zoom_style = format!("zoom: {zoom_now:.2};");
     let zoom_text = format!("{:.0}%", zoom_now * 100.0);
+    let elapsed_now = run_record.as_ref().map_or(0.0, |r| r.elapsed_seconds);
+    let now_style = format!(
+        "left: {:.2}%;",
+        (elapsed_now / span * 100.0).clamp(0.0, 100.0)
+    );
 
     rsx! {
         document::Link { rel: "stylesheet", href: KIT_CSS }
@@ -361,7 +401,7 @@ pub fn MultiAgentRunCanvas(
                     let cost = run.cost_label.clone();
                     let progress = format!("{}", run.agents_done);
                     let total = format!("{}", run.agents_total);
-                    let pause_label = if paused { "Resume" } else { "Pause" };
+                    let pause_label = if paused { "Resume run" } else { "Pause run" };
                     let live_text = if is_live { "Live" } else { "Frozen" };
                     rsx! {
                         header { class: "kit-amc__head",
@@ -413,25 +453,6 @@ pub fn MultiAgentRunCanvas(
                                         "Stop"
                                     }
                                 }
-                            }
-                        }
-
-                        section { class: "kit-amc__tiles", "aria-label": "Run figures",
-                            div { class: "kit-amc__tile",
-                                span { class: "kit-amc__label", "Agents done" }
-                                span { class: "kit-amc__value", "{progress} of {total}" }
-                            }
-                            div { class: "kit-amc__tile",
-                                span { class: "kit-amc__label", "Elapsed" }
-                                span { class: "kit-amc__value", "{elapsed}" }
-                            }
-                            div { class: "kit-amc__tile",
-                                span { class: "kit-amc__label", "Tokens" }
-                                span { class: "kit-amc__value", "{tokens}" }
-                            }
-                            div { class: "kit-amc__tile",
-                                span { class: "kit-amc__label", "Cost" }
-                                span { class: "kit-amc__value", "{cost}" }
                             }
                         }
 
@@ -593,6 +614,25 @@ pub fn MultiAgentRunCanvas(
                             }
                             }
 
+                            section { class: "kit-amc__tiles", "aria-label": "Run figures",
+                                div { class: "kit-amc__tile",
+                                    span { class: "kit-amc__label", "Agents done" }
+                                    span { class: "kit-amc__value", "{progress} of {total}" }
+                                }
+                                div { class: "kit-amc__tile",
+                                    span { class: "kit-amc__label", "Elapsed" }
+                                    span { class: "kit-amc__value", "{elapsed}" }
+                                }
+                                div { class: "kit-amc__tile",
+                                    span { class: "kit-amc__label", "Tokens" }
+                                    span { class: "kit-amc__value", "{tokens}" }
+                                }
+                                div { class: "kit-amc__tile",
+                                    span { class: "kit-amc__label", "Cost" }
+                                    span { class: "kit-amc__value", "{cost}" }
+                                }
+                            }
+
                             div { class: "kit-amc__lower",
                                 div { class: "kit-amc__tabs", role: "tablist", "aria-label": "Run detail",
                                     for (index, name) in tab_names.iter().enumerate() {
@@ -629,7 +669,11 @@ pub fn MultiAgentRunCanvas(
                                         for row in trace_rows.iter().cloned() {
                                             {
                                                 let row_key = row.id.clone();
-                                                let (start, width) = bar_percent(&row, span);
+                                                let mut shown = row.clone();
+                                                if shown.duration_seconds.is_none() && is_live {
+                                                    shown.duration_seconds = Some((elapsed_now - shown.start_seconds).max(0.0));
+                                                }
+                                                let (start, width) = bar_percent(&shown, span);
                                                 let bar = format!("left: {start:.2}%; width: {width:.2}%;");
                                                 let row_state = row.row_state.key();
                                                 let row_label = format!("{} · {}", row.entry_label, row_state);
@@ -648,7 +692,12 @@ pub fn MultiAgentRunCanvas(
                                                                 }
                                                             },
                                                             span { class: "kit-amc__trace-name", "{row_label}" }
-                                                            span { class: "kit-amc__track", span { class: "kit-amc__bar", style: "{bar}" } }
+                                                            span { class: "kit-amc__track",
+                                                                span { class: "kit-amc__bar", style: "{bar}" }
+                                                                if is_live {
+                                                                    span { class: "kit-amc__now", style: "{now_style}", "aria-hidden": "true" }
+                                                                }
+                                                            }
                                                         }
                                                         if !row_error.is_empty() {
                                                             span { class: "kit-amc__error", role: "alert", "{row_error}" }

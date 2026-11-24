@@ -64,7 +64,11 @@
   pointer-events: none;
 }
 
+/* Left is auto: with inset: 0 the left edge wins and the labels sit over the plot. */
 .kit-trend__ticks {
+  top: 0;
+  bottom: 0;
+  left: auto;
   right: 100%;
   width: 2.5rem;
   margin-right: var(--kit-space-1);

@@ -18,10 +18,16 @@ use crate::internal::{KIT_CSS, class_list, focus_after_frame, next_id};
 
 const CSS: Asset = asset!("/assets/model-picker-scene.css");
 
-/// Height of one option row, px.
-pub const ROW_PX: u32 = 40;
-/// Height of a group heading, px.
-pub const HEADING_PX: u32 = 28;
+/// Top of the list panel and its height, in percent of the stage height.
+pub const LIST_TOP_PCT: f64 = 20.0;
+pub const LIST_HEIGHT_PCT: f64 = 72.0;
+/// Centre of the first row and the pitch between rows, in percent of the stage height.
+pub const FIRST_ROW_CENTRE_PCT: f64 = 32.0;
+pub const ROW_PITCH_PCT: f64 = 50.0 / 6.0;
+/// Height of one row, in percent of the stage height.
+pub const ROW_HEIGHT_PCT: f64 = 7.0;
+/// A group heading sits this far above its first row, in percent of the stage height.
+const HEADING_LIFT_PCT: f64 = 7.0;
 
 #[derive(Clone, PartialEq)]
 pub struct ModelOption {
@@ -46,19 +52,33 @@ pub enum Step {
     Last,
 }
 
-/// Distance from the top of the list to the row of `id`, px. `None` if no option has that id.
-pub fn row_offset(groups: &[ModelGroup], id: &str) -> Option<u32> {
-    let mut top = 0;
-    for group in groups {
-        top += HEADING_PX;
-        for (index, model) in group.models.iter().enumerate() {
-            if model.id == id {
-                return Some(top + index as u32 * ROW_PX);
-            }
-        }
-        top += group.models.len() as u32 * ROW_PX;
+/// Centre of the row at `index` (counted across all groups), in percent of the stage height.
+pub fn row_centre_pct(index: usize) -> f64 {
+    FIRST_ROW_CENTRE_PCT + index as f64 * ROW_PITCH_PCT
+}
+
+/// Offset of a stage height percentage from the top of the list panel, in percent of the panel.
+pub fn panel_pct(stage_pct: f64) -> f64 {
+    (stage_pct - LIST_TOP_PCT) / LIST_HEIGHT_PCT * 100.0
+}
+
+/// Opacity of the row at `index`: the last two rows of the list fade to suggest more models.
+pub fn row_opacity(index: usize) -> f64 {
+    match index {
+        0..=4 => 1.0,
+        5 => 0.6,
+        _ => 0.35,
     }
-    None
+}
+
+/// Position of the row of `id` in the list, in percent of the panel height. `None` if no option has
+/// that id.
+pub fn row_top_pct(groups: &[ModelGroup], id: &str) -> Option<f64> {
+    groups
+        .iter()
+        .flat_map(|g| g.models.iter())
+        .position(|m| m.id == id)
+        .map(|index| panel_pct(row_centre_pct(index)))
 }
 
 /// The option one step away from `current` among `available` ids, clamped at the ends.
@@ -131,11 +151,28 @@ pub fn ModelPickerScene(
         .find(|m| Some(&m.id) == selected.as_ref())
         .map(|m| m.name.clone())
         .unwrap_or_else(|| "Choose a model".to_string());
-    let band_y = selected
+    let band_top = selected
         .as_deref()
-        .and_then(|id| row_offset(&groups, id))
-        .unwrap_or(0);
-    let band_style = format!("transform: translateY({band_y}px);");
+        .and_then(|id| row_top_pct(&groups, id))
+        .unwrap_or_else(|| panel_pct(row_centre_pct(0)));
+    let band_style = format!("top: {band_top:.2}%;");
+    let starts: Vec<usize> = groups
+        .iter()
+        .scan(0, |next, group| {
+            let start = *next;
+            *next += group.models.len();
+            Some(start)
+        })
+        .collect();
+    let heading_styles: Vec<String> = starts
+        .iter()
+        .map(|start| {
+            format!(
+                "top: {:.2}%;",
+                panel_pct(row_centre_pct(*start) - HEADING_LIFT_PCT)
+            )
+        })
+        .collect();
     let available = available_ids(&groups);
     let class = class_list("kit-model", &class);
     let is_open = open();
@@ -236,11 +273,20 @@ pub fn ModelPickerScene(
                                 }
                             },
                             div { class: "kit-model__band", style: "{band_style}", "aria-hidden": "true" }
-                            for group in groups.iter() {
+                            for (group_index, group) in groups.iter().enumerate() {
                                 div { class: "kit-model__group", role: "group", "aria-label": group.label.clone(),
-                                    div { class: "kit-model__heading", "aria-hidden": "true", {group.label.clone()} }
-                                    for model in group.models.iter() {
+                                    div { class: "kit-model__heading", "aria-hidden": "true",
+                                        style: "{heading_styles[group_index]}",
+                                        {group.label.clone()}
+                                    }
+                                    for (model_index, model) in group.models.iter().enumerate() {
                                         {
+                                            let index = starts[group_index] + model_index;
+                                            let row_style = format!(
+                                                "top: {:.2}%; opacity: {:.2};",
+                                                panel_pct(row_centre_pct(index)),
+                                                row_opacity(index)
+                                            );
                                             let is_selected = selected.as_deref() == Some(model.id.as_str());
                                             let is_active = shown_active.as_deref() == Some(model.id.as_str());
                                             let option_id = format!("{uid}-{}", model.id);
@@ -251,6 +297,7 @@ pub fn ModelPickerScene(
                                                 div {
                                                     id: "{option_id}",
                                                     class: row_class,
+                                                    style: "{row_style}",
                                                     role: "option",
                                                     "aria-selected": "{is_selected}",
                                                     "aria-disabled": (!usable).then_some("true"),

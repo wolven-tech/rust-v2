@@ -2,8 +2,8 @@
 //! once when first viewed, then drifts slowly through the letters.
 //!
 //! Design choice: `gradient_token` maps to the design-system variable
-//! `--kit-gradient-<token>`; an undefined token falls back to the status pair
-//! (ok to warn), which stays distinct from body text on both registers.
+//! `--kit-gradient-<token>`; an undefined token falls back to the accent-to-identity
+//! gradient, so the fill never uses a status colour.
 //! Design choice: replay remounts the fill (keyed by a counter), so the sweep
 //! restarts from its first frame even when the fill is already flowing.
 //! Design choice: `play_on_view: false` starts the sweep at mount.
@@ -44,6 +44,29 @@ pub fn split_emphasis(text: &str, range: Option<Range<usize>>) -> Segments {
     }
 }
 
+/// Character range covering the last `words` whitespace-separated words of `text`.
+pub fn last_words_range(text: &str, words: usize) -> Range<usize> {
+    let chars: Vec<char> = text.chars().collect();
+    let mut start = chars.len();
+    let mut seen = 0;
+    let mut in_word = false;
+    for (i, c) in chars.iter().enumerate().rev() {
+        if c.is_whitespace() {
+            if in_word {
+                seen += 1;
+                if seen == words {
+                    break;
+                }
+            }
+            in_word = false;
+        } else {
+            in_word = true;
+            start = i;
+        }
+    }
+    start..chars.len()
+}
+
 /// The token reduced to ASCII letters, digits and `-`, so caller input cannot
 /// break out of a style attribute.
 pub fn token_name(token: &str) -> String {
@@ -55,7 +78,7 @@ pub fn token_name(token: &str) -> String {
 
 /// CSS `background-image` for the fill.
 pub fn gradient_fill(token: &str) -> String {
-    let fallback = "linear-gradient(90deg, var(--kit-ok), var(--kit-warn), var(--kit-ok))";
+    let fallback = "linear-gradient(90deg, var(--kit-accent), var(--kit-id-1))";
     let name = token_name(token);
     if name.is_empty() {
         fallback.to_string()

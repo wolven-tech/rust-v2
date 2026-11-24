@@ -16,13 +16,16 @@ pub fn Motion() -> Element {
 
 #[component]
 fn PointerTiltCardDemo() -> Element {
-    use rv2_kit::motion::pointer_tilt_card::{PointerTiltCard, TiltStrength};
+    use rv2_kit::motion::pointer_tilt_card::{MembershipCard, TiltStrength};
     rsx! {
         Item { slug: "pointer-tilt-card", name: "PointerTiltCard",
-            PointerTiltCard { max_tilt: TiltStrength::Strong,
-                div { class: "gl-canvas", style: "padding: 24px; background: var(--kit-surface, #fff);",
-                    "Hover me"
-                }
+            MembershipCard {
+                name: "Ledger Plus",
+                holder: "Jamie Rivera",
+                since: "03/24",
+                last_four: "2750",
+                caption: "Move the pointer over the card",
+                max_tilt: TiltStrength::Strong,
             }
         }
     }
@@ -30,10 +33,17 @@ fn PointerTiltCardDemo() -> Element {
 
 #[component]
 fn FlowingGradientTextDemo() -> Element {
-    use rv2_kit::motion::flowing_gradient_text::FlowingGradientText;
+    use rv2_kit::motion::flowing_gradient_text::{FlowingGradientText, last_words_range};
+    let text = "Every figure traces back to its source.";
     rsx! {
         Item { slug: "flowing-gradient-text", name: "FlowingGradientText",
-            FlowingGradientText { text: "Streaming answer", emphasis_range: Some(0..9), replay_enabled: true }
+            FlowingGradientText {
+                text,
+                emphasis_range: Some(last_words_range(text, 2)),
+                replay_enabled: true,
+                gradient_token: "accent",
+                class: "kit-gradient-text--display",
+            }
         }
     }
 }
@@ -51,9 +61,9 @@ fn GlowFloorBackdropDemo() -> Element {
                 button { r#type: "button", onclick: move |_| intensity.set(GlowIntensity::Standard), "Standard" }
                 button { r#type: "button", onclick: move |_| intensity.set(GlowIntensity::Strong), "Strong" }
             }
-            GlowFloorBackdrop { intensity: intensity(), anchor: GlowAnchor::Bottom, paused: paused(),
-                div { class: "gl-canvas", style: "min-height: 120px; padding: 24px;",
-                    "Content above the glow"
+            div { style: "width: min(100%, 560px); margin: 0 auto;",
+                GlowFloorBackdrop { intensity: intensity(), anchor: GlowAnchor::Bottom, paused: paused(),
+                    {rsx! {}}
                 }
             }
         }
@@ -62,27 +72,33 @@ fn GlowFloorBackdropDemo() -> Element {
 
 #[component]
 fn BlurSwapContainerDemo() -> Element {
-    use rv2_kit::motion::blur_swap_container::BlurSwapContainer;
-    let mut key = use_signal(|| "one".to_string());
-    let mut last = use_signal(String::new);
-    let label = if key() == "one" {
-        "Panel one"
-    } else {
-        "Panel two"
-    };
+    use rv2_kit::motion::blur_swap_container::{BlurSwapStepCard, StepBody, next_step};
+    let mut step = use_signal(|| 0usize);
+    let steps = vec![
+        StepBody {
+            tag: "Live".into(),
+            sentence: "Offline mode now works on phones.".into(),
+        },
+        StepBody {
+            tag: "Up next".into(),
+            sentence: "Bulk export is ready for review. Check the file format before you publish."
+                .into(),
+        },
+        StepBody {
+            tag: "Done".into(),
+            sentence: "Every change in this version has a named owner.".into(),
+        },
+    ];
     rsx! {
         Item { slug: "blur-swap-container", name: "BlurSwapContainer",
-            div { class: "gl-row",
-                button { r#type: "button", "data-action": "swap", onclick: move |_| {
-                    let next = if key() == "one" { "two" } else { "one" };
-                    key.set(next.to_string());
-                    last.set(format!("swap {next}"));
-                }, "Swap panel" }
+            BlurSwapStepCard {
+                title: "Version 3.1",
+                status: "2 changes · draft",
+                primary_label: "Publish",
+                steps,
+                current: step(),
+                on_next: move |_| step.set(next_step(step(), 3)),
             }
-            BlurSwapContainer { content_key: key(), on_swap_complete: move |_| last.set("swap complete".into()),
-                div { class: "gl-canvas", style: "min-height: 80px; padding: 16px; border-color: var(--kit-rule);", "{label}" }
-            }
-            div { class: "gl-out", "data-out": "blur-swap-container", "{last()}" }
         }
     }
 }

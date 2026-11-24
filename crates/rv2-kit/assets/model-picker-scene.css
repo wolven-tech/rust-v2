@@ -1,11 +1,22 @@
-/* Model picker scene. Rows and headings have fixed heights; the highlight moves by transform. */
+/* Model picker scene. The card is a 1.85 to 1 stage; the list panel, rows and heading are placed in
+   percent of the stage (rows and heading in percent of the panel). The popover keeps the flow layout. */
 .kit-model {
   position: relative;
   width: 100%;
-  max-width: 340px;
   min-width: 0;
   color: var(--kit-ink);
   font-family: var(--kit-font);
+}
+
+.kit-model:not([data-popover]) {
+  aspect-ratio: 1.85 / 1;
+  overflow: hidden;
+  border-radius: var(--kit-radius-card);
+  background: var(--kit-ground);
+}
+
+.kit-model[data-popover] {
+  max-width: 340px;
 }
 
 .kit-model__trigger {
@@ -53,8 +64,26 @@
   right: 0;
 }
 
+.kit-model:not([data-popover]) .kit-model__panel {
+  position: absolute;
+  left: 35%;
+  top: 20%;
+  width: 42%;
+  height: 72%;
+  margin: 0;
+  border-right: 0;
+  border-radius: var(--kit-radius-lg) 0 0 var(--kit-radius-lg);
+  background: linear-gradient(to right, var(--kit-surface) 90%, transparent);
+  box-shadow: var(--kit-shadow-card);
+}
+
 .kit-model__list {
   position: relative;
+}
+
+.kit-model:not([data-popover]) .kit-model__list {
+  position: absolute;
+  inset: 0;
 }
 
 .kit-model__options {
@@ -65,43 +94,64 @@
   outline: none;
 }
 
+.kit-model:not([data-popover]) .kit-model__options {
+  position: absolute;
+  inset: 0;
+  max-height: none;
+  overflow: visible;
+  padding: 0;
+}
+
 .kit-model__band {
   position: absolute;
-  left: 4px;
-  right: 4px;
-  top: 4px;
-  height: 40px;
+  left: 3%;
+  right: 3%;
+  top: 0;
+  height: calc(7 / 72 * 100%);
+  translate: 0 -50%;
   border-radius: var(--kit-radius);
-  background: var(--kit-raised);
+  background: color-mix(in srgb, var(--kit-accent) 14%, transparent);
   pointer-events: none;
-  transition: transform var(--kit-slow) var(--kit-ease);
+  transition: top var(--kit-slow) var(--kit-ease);
+}
+
+.kit-model[data-popover] .kit-model__band {
+  display: none;
 }
 
 .kit-model__group {
   position: relative;
 }
 
+.kit-model:not([data-popover]) .kit-model__group {
+  position: static;
+}
+
 .kit-model__heading {
-  height: 28px;
-  padding: 6px 10px 0;
-  box-sizing: border-box;
-  font-size: 11px;
+  position: absolute;
+  left: 5%;
+  right: 20%;
+  translate: 0 -50%;
+  padding: 0;
+  font-size: var(--kit-text-xs);
   font-weight: 600;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: var(--kit-ink-faint);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--kit-ink-muted);
 }
 
 .kit-model__row {
-  position: relative;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  height: 40px;
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: calc(7 / 72 * 100%);
+  translate: 0 -50%;
   box-sizing: border-box;
-  padding: 0 10px;
   border-radius: var(--kit-radius);
-  font-size: 14px;
+  font-size: var(--kit-text-md);
   cursor: pointer;
   z-index: 1;
 }
@@ -121,16 +171,29 @@
 }
 
 .kit-model__mark {
+  position: absolute;
+  left: 5%;
+  top: 50%;
+  translate: 0 -50%;
+  width: 5%;
+  min-width: 10px;
+  aspect-ratio: 1 / 1;
   display: inline-flex;
-  flex: none;
   align-items: center;
   justify-content: center;
-  width: 18px;
-  height: 18px;
+}
+
+.kit-model__mark > svg {
+  width: 100%;
+  height: 100%;
 }
 
 .kit-model__name {
-  flex: 1 1 auto;
+  position: absolute;
+  left: 13%;
+  right: 20%;
+  top: 50%;
+  translate: 0 -50%;
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -138,15 +201,21 @@
 }
 
 .kit-model__note {
-  flex: none;
-  font-size: 12px;
+  position: absolute;
+  right: 12%;
+  top: 50%;
+  translate: 0 -50%;
+  font-size: var(--kit-text-sm);
   color: var(--kit-ink-faint);
 }
 
 .kit-model__check {
-  flex: none;
-  width: 16px;
-  height: 16px;
+  position: absolute;
+  left: 82%;
+  top: 50%;
+  translate: 0 -50%;
+  width: 12px;
+  height: 12px;
   fill: none;
   stroke: var(--kit-accent);
   stroke-width: 2;
@@ -158,15 +227,69 @@
   position: absolute;
   left: 0;
   right: 0;
+  top: 83.33%;
   bottom: 0;
-  height: 48px;
   background: linear-gradient(to bottom, transparent, var(--kit-surface));
   pointer-events: none;
 }
 
+/* Popover rows are in flow: the stage positions do not apply to a list that grows with its content. */
+.kit-model[data-popover] .kit-model__row,
+.kit-model[data-popover] .kit-model__heading {
+  position: relative;
+  top: auto !important;
+  opacity: 1 !important;
+  translate: none;
+}
+
+.kit-model[data-popover] .kit-model__row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 40px;
+  padding: 0 10px;
+}
+
+.kit-model[data-popover] .kit-model__heading {
+  height: 28px;
+  padding: 6px 10px 0;
+  box-sizing: border-box;
+}
+
+.kit-model[data-popover] .kit-model__row[aria-selected="true"] {
+  background: var(--kit-raised);
+}
+
+.kit-model[data-popover] .kit-model__name {
+  position: static;
+  translate: none;
+  flex: 1 1 auto;
+}
+
+.kit-model[data-popover] .kit-model__mark {
+  position: static;
+  translate: none;
+  width: 18px;
+  height: 18px;
+  min-width: 0;
+}
+
+.kit-model[data-popover] .kit-model__check {
+  position: static;
+  translate: none;
+  flex: none;
+}
+
 @media (max-width: 480px) {
-  .kit-model {
+  .kit-model[data-popover] {
     max-width: none;
+  }
+  .kit-model:not([data-popover]) .kit-model__panel {
+    left: 4%;
+    width: 92%;
+    border-right: 1px solid var(--kit-rule-soft);
+    border-radius: var(--kit-radius-lg);
+    background: var(--kit-surface);
   }
 }
 

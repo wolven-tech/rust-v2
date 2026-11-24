@@ -1,14 +1,19 @@
-//! Outreach fanout lines: one outbound source branching to three destination tools, with pulses
-//! travelling down each branch. It conveys one message going out to several channels.
+//! Outreach fanout lines: one junction point above three destination tiles, with a curve dropping
+//! from the point to each tile and a pulse travelling down each curve. It conveys one message going
+//! out to several channels. The tiles show icons only; the caller's labels reach assistive tech.
 //!
-//! Design choice: the drawing uses a square 100-unit space, so its geometry scales with the
-//! container and the branch curves keep their shape at every width.
-//! Design choice: pulses are SMIL `animateMotion` along each branch path, so they follow the curve
+//! Design choice: the drawing space is 100 by 60.6 units, the stage's own 33 to 20 ratio, so circles
+//! stay round and the curves keep their shape at every width.
+//! Design choice: pulses are SMIL `animateMotion` along each curve, so they follow the curve
 //! without a per-frame layout pass; the reduced-motion stylesheet removes them.
-//! Design choice: branches fade in on first view rather than drawing a stroke, so the motion stays
+//! Design choice: curves fade in on first view rather than drawing a stroke, so the motion stays
 //! on opacity and transform.
+//! Design choice: a pulse is transparent until its motion starts, because before then it sits at
+//! the SVG origin and would show as a stray dot.
 //! Design choice: a destination beyond the third is dropped, not drawn.
-//! Browser checks: pulses run down all three branches; hovering a tile highlights its branch and
+//! Design choice: the centre tile sits higher than the two outer tiles and carries its own light;
+//! the curve to it is straight, because the junction and the tile are on one vertical.
+//! Browser checks: pulses run down all three curves; hovering a tile highlights its curve and
 //! tile; reduced motion draws no pulses; a fourth destination is not rendered; nothing scrolls
 //! sideways at 390 and 320.
 
@@ -20,28 +25,46 @@ const CSS: Asset = asset!("/assets/outreach-fanout-lines.css");
 
 /// The layout supports exactly this many destinations.
 pub const DESTINATION_COUNT: usize = 3;
-/// Seconds between successive pulses leaving the source.
+/// Seconds between successive pulses leaving the junction.
 pub const PULSE_STAGGER_S: f64 = 0.6;
-/// Seconds one pulse takes to travel a branch.
+/// Seconds one pulse takes to travel a curve.
 pub const PULSE_TRAVEL_S: f64 = 2.4;
 
-/// Centre of each destination tile in the 100-unit drawing space.
-pub const DESTINATION_CENTRES: [(f64, f64); DESTINATION_COUNT] =
-    [(16.0, 84.0), (50.0, 84.0), (84.0, 84.0)];
-/// Where the trunk meets the branches.
-pub const BRANCH_POINT: (f64, f64) = (50.0, 40.0);
+/// Horizontal centre of each destination tile, in percent of the stage width.
+pub const DESTINATION_CENTRE_X: [f64; DESTINATION_COUNT] = [34.7, 50.0, 65.3];
+/// Side of each destination tile, in percent of the stage width. The centre tile is the larger.
+pub const DESTINATION_SIDE: [f64; DESTINATION_COUNT] = [9.6, 11.2, 9.6];
+/// Top edge of each destination tile, in percent of the stage height. Tiles share one bottom edge.
+pub const DESTINATION_TOP: [f64; DESTINATION_COUNT] = [52.9, 49.8, 52.9];
+/// Bottom edge shared by the three tiles, in percent of the stage height.
+pub const TILE_BOTTOM: f64 = 68.7;
+/// The junction: a bare point at 50% of the width and 29% of the height, in percent units.
+pub const BRANCH_POINT: (f64, f64) = (50.0, 29.0);
 
-/// Path of the branch to destination `index`, from the branch point to the top of its tile.
-pub fn branch_path(index: usize) -> String {
-    let (x, _) = DESTINATION_CENTRES[index];
-    let (bx, by) = BRANCH_POINT;
-    format!("M {bx} {by} C {bx} 56, {x} 60, {x} 72")
+/// Height of the drawing in its own units when the width is 100: the stage is 33 to 20 (1.65 to 1),
+/// so its drawing units are 100 wide and 60.6 tall. Percent-of-height values are scaled to these.
+pub const VIEW_HEIGHT: f64 = 60.6;
+
+fn unit_y(pct_of_height: f64) -> f64 {
+    pct_of_height * VIEW_HEIGHT / 100.0
 }
 
-/// Path of the trunk, from the bottom of the source tile to the branch point.
-pub fn trunk_path() -> String {
-    let (bx, by) = BRANCH_POINT;
-    format!("M {bx} 22 L {bx} {by}")
+/// Path of the curve to destination `index`, from the junction to the top centre of its tile. The
+/// centre curve is straight; the outer curves leave outward and arrive vertically.
+pub fn branch_path(index: usize) -> String {
+    let x = DESTINATION_CENTRE_X[index];
+    let top = unit_y(DESTINATION_TOP[index]);
+    let (bx, by) = (BRANCH_POINT.0, unit_y(BRANCH_POINT.1));
+    if index == DESTINATION_COUNT / 2 {
+        return format!("M {bx} {by} L {x} {top}");
+    }
+    let outward = (x - bx).signum() * 8.0;
+    format!(
+        "M {bx} {by} C {} {}, {x} {}, {x} {top}",
+        bx + outward,
+        by + unit_y(4.0),
+        top - unit_y(12.9)
+    )
 }
 
 /// Start time of pulse `index`, in seconds from first paint.
@@ -54,7 +77,7 @@ pub fn shown_destinations<T>(destinations: &[T]) -> &[T] {
     &destinations[..destinations.len().min(DESTINATION_COUNT)]
 }
 
-/// A node of the fanout: the source or one destination.
+/// A destination tile: its icon, and the label assistive tech reads for it.
 #[derive(Clone, PartialEq)]
 pub struct Endpoint {
     pub id: String,
@@ -64,7 +87,6 @@ pub struct Endpoint {
 
 #[component]
 pub fn OutreachFanoutLines(
-    source: Endpoint,
     destinations: Vec<Endpoint>,
     #[props(default, into)] active_destination_id: Option<String>,
     #[props(default)] on_select: Option<EventHandler<String>>,
@@ -74,77 +96,88 @@ pub fn OutreachFanoutLines(
     let shown = shown_destinations(&destinations);
     let interactive = on_select.is_some();
     let class = class_list("kit-fan", &class);
-    let source_icon = source.icon.clone();
-    let source_label = source.label.clone();
-    let trunk = trunk_path();
+    let (bx, by) = (BRANCH_POINT.0, unit_y(BRANCH_POINT.1));
     rsx! {
         document::Link { rel: "stylesheet", href: KIT_CSS }
         document::Link { rel: "stylesheet", href: CSS }
         div { class, "aria-hidden": (!interactive).then_some("true"),
-            svg { class: "kit-fan__svg", "viewBox": "0 0 100 100", "preserveAspectRatio": "none",
-                "focusable": "false", "aria-hidden": "true",
-                path { class: "kit-fan__trunk", d: "{trunk}" }
-                for index in 0..shown.len() {
-                    {
-                        let is_active = active_destination_id.as_deref() == Some(shown[index].id.as_str());
-                        let is_hot = hovered() == Some(index);
-                        let branch_class = if is_active {
-                            "kit-fan__branch is-active"
-                        } else if is_hot {
-                            "kit-fan__branch is-hot"
-                        } else {
-                            "kit-fan__branch"
-                        };
-                        let d = branch_path(index);
-                        let begin = format!("{}s", pulse_begin(index));
-                        let dur = format!("{PULSE_TRAVEL_S}s");
-                        rsx! {
-                            path { class: branch_class, d: "{d}" }
-                            circle { class: "kit-fan__pulse", "r": "1.4",
-                                animateMotion {
-                                    "dur": "{dur}",
-                                    "begin": "{begin}",
-                                    "repeatCount": "indefinite",
-                                    "path": "{d}",
+            div { class: "kit-fan__stage",
+                svg { class: "kit-fan__svg", "viewBox": "0 0 100 {VIEW_HEIGHT}", "preserveAspectRatio": "none",
+                    "focusable": "false", "aria-hidden": "true",
+                    circle { class: "kit-fan__junction", "cx": "{bx}", "cy": "{by}", "r": "0.5" }
+                    for index in 0..shown.len() {
+                        {
+                            let is_active = active_destination_id.as_deref() == Some(shown[index].id.as_str());
+                            let is_hot = hovered() == Some(index);
+                            let branch_class = if is_active {
+                                "kit-fan__branch is-active"
+                            } else if is_hot {
+                                "kit-fan__branch is-hot"
+                            } else {
+                                "kit-fan__branch"
+                            };
+                            let d = branch_path(index);
+                            let begin = format!("{}s", pulse_begin(index));
+                            let dur = format!("{PULSE_TRAVEL_S}s");
+                            rsx! {
+                                path { class: branch_class, d: "{d}" }
+                                circle { class: "kit-fan__pulse", "r": "1.4", "opacity": "0",
+                                    animateMotion {
+                                        "dur": "{dur}",
+                                        "begin": "{begin}",
+                                        "repeatCount": "indefinite",
+                                        "path": "{d}",
+                                    }
+                                    animate {
+                                        "attributeName": "opacity",
+                                        "values": "0;0.85;0.85;0",
+                                        "keyTimes": "0;0.08;0.9;1",
+                                        "dur": "{dur}",
+                                        "begin": "{begin}",
+                                        "repeatCount": "indefinite",
+                                    }
                                 }
                             }
                         }
                     }
                 }
-            }
-            div { class: "kit-fan__tile kit-fan__tile--source", "data-state": "source",
-                span { class: "kit-fan__tile-icon", {source_icon} }
-                span { class: "kit-fan__tile-label", "{source_label}" }
-            }
-            for (index, destination) in shown.iter().enumerate() {
-                {
-                    let (x, y) = DESTINATION_CENTRES[index];
-                    let is_active = active_destination_id.as_deref() == Some(destination.id.as_str());
-                    let style = format!("left: {x}%; top: {y}%; animation-delay: {}s;", pulse_begin(index) + PULSE_TRAVEL_S);
-                    let state = if is_active { "active" } else { "rest" };
-                    let icon = destination.icon.clone();
-                    let label = destination.label.clone();
-                    let id = destination.id.clone();
-                    let content = rsx! {
-                        span { class: "kit-fan__tile-icon", {icon} }
-                        span { class: "kit-fan__tile-label", "{label}" }
-                    };
-                    rsx! {
-                        div { class: "kit-fan__tile", style: "{style}", "data-index": "{index}", "data-state": state,
-                            onmouseenter: move |_| hovered.set(Some(index)),
-                            onmouseleave: move |_| hovered.set(None),
-                            if interactive {
-                                button { r#type: "button", class: "kit-fan__button",
-                                    "aria-label": label.clone(),
-                                    onclick: move |_| {
-                                        if let Some(handler) = on_select {
-                                            handler.call(id.clone());
-                                        }
-                                    },
+                for (index, destination) in shown.iter().enumerate() {
+                    {
+                        let x = DESTINATION_CENTRE_X[index];
+                        let side = DESTINATION_SIDE[index];
+                        let is_active = active_destination_id.as_deref() == Some(destination.id.as_str());
+                        let style = format!(
+                            "left: {x}%; top: {TILE_BOTTOM}%; width: {side}%; animation-delay: {}s;",
+                            pulse_begin(index) + PULSE_TRAVEL_S
+                        );
+                        let state = if is_active { "active" } else { "rest" };
+                        let icon = destination.icon.clone();
+                        let label = destination.label.clone();
+                        let id = destination.id.clone();
+                        let centre = index == DESTINATION_COUNT / 2;
+                        let content = rsx! {
+                            if centre {
+                                span { class: "kit-fan__light", "aria-hidden": "true" }
+                            }
+                            span { class: "kit-fan__tile-icon", {icon} }
+                        };
+                        rsx! {
+                            div { class: "kit-fan__tile", style: "{style}", "data-index": "{index}", "data-state": state,
+                                onmouseenter: move |_| hovered.set(Some(index)),
+                                onmouseleave: move |_| hovered.set(None),
+                                if interactive {
+                                    button { r#type: "button", class: "kit-fan__button",
+                                        "aria-label": label.clone(),
+                                        onclick: move |_| {
+                                            if let Some(handler) = on_select {
+                                                handler.call(id.clone());
+                                            }
+                                        },
+                                        {content}
+                                    }
+                                } else {
                                     {content}
                                 }
-                            } else {
-                                {content}
                             }
                         }
                     }

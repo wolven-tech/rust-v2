@@ -4,8 +4,8 @@
 //!
 //! Port losses: `items` is a list, not a function of the element under the pointer; build the list in the
 //! parent. The browser menu shows when the list is empty. A scroll of the area itself is not told apart
-//! from a scroll of the page: any scroll outside the menu closes it. The long-press timer is 500ms and the
-//! contextmenu event that follows a touch or a key open is swallowed for 600ms.
+//! from a scroll of the page: any scroll outside the menu closes a gesture menu. The long-press timer is
+//! 500ms and the contextmenu event that follows a touch or a key open is swallowed for 600ms.
 
 use dioxus::prelude::*;
 
@@ -37,14 +37,79 @@ pub fn keyboard_origin(rect: Rect, rtl: bool) -> (f64, f64) {
     (x, rect.top + rect.height.min(26.0))
 }
 
+/// A point given relative to an area's top-left corner, in viewport coordinates.
+pub fn anchored_point(area: (f64, f64), point: (f64, f64)) -> (f64, f64) {
+    (area.0 + point.0, area.1 + point.1)
+}
+
+#[derive(Clone, Copy, Debug, PartialEq)]
+enum Opener {
+    Pointer,
+    Keyboard,
+    /// Opened at rest by `open_at`, with the point relative to the area. Takes no focus, and
+    /// follows the area through scroll and resize until it is used.
+    Rest((f64, f64)),
+}
+
 #[derive(Clone, Copy, Debug, PartialEq)]
 struct Opening {
     x: f64,
     y: f64,
-    keyboard: bool,
+    by: Opener,
     n: u32,
 }
 
+/// The top-left of the area's first element. The `display: contents` wrapper has no box of its own.
+async fn area_origin(area_id: String) -> Option<(f64, f64)> {
+    let v = document::eval(&format!(
+        "const r = document.getElementById({area_id:?})?.firstElementChild?.getBoundingClientRect(); return r ? [r.left, r.top] : null;"
+    ))
+    .await
+    .ok()?;
+    Some((v.get(0)?.as_f64()?, v.get(1)?.as_f64()?))
+}
+
+/// Places a card of its own size with its top-left at `pointer`, kept inside the viewport.
+async fn place_card(card: Option<MountedEvent>, pointer: (f64, f64)) -> Option<Placement> {
+    let node = card?;
+    let rect = node.get_client_rect().await.ok()?;
+    let view = document::eval(
+        "return [window.innerWidth, window.innerHeight, getComputedStyle(document.documentElement).direction === 'rtl' ? 1 : 0];",
+    )
+    .await
+    .ok()?;
+    let (w, h) = (view.get(0)?.as_f64()?, view.get(1)?.as_f64()?);
+    let rtl = view.get(2)?.as_f64() == Some(1.0);
+    let card_size = Size {
+        width: rect.size.width,
+        height: rect.size.height,
+    };
+    let at = Rect {
+        left: pointer.0,
+        top: pointer.1,
+        width: 0.0,
+        height: 0.0,
+    };
+    let align = if rtl { Align::End } else { Align::Start };
+    Some(place(
+        at,
+        card_size,
+        Size {
+            width: w,
+            height: h,
+        },
+        Side::Bottom,
+        align,
+        0.0,
+        rtl,
+    ))
+}
+
+/// Wraps `children` and opens `items` where the user right-clicks, long-presses or presses Shift+F10.
+///
+/// `open_at` opens the menu once, on mount, at that point relative to the top-left of the first element
+/// of `children`. Until the user presses or focuses inside it, scroll and resize move it with the area
+/// instead of closing it. Outside press, Escape, a pick and window blur close it in both modes.
 #[component]
 pub fn ContextMenu(
     children: Element,
@@ -52,6 +117,7 @@ pub fn ContextMenu(
     #[props(default, into)] title: Option<String>,
     #[props(default = "Actions".to_string(), into)] aria_label: String,
     #[props(default)] disabled: bool,
+    #[props(default)] open_at: Option<(f64, f64)>,
     #[props(default)] onopenchange: Option<EventHandler<bool>>,
     #[props(default, into)] width: Option<String>,
     #[props(default)] menu_class: String,
@@ -66,13 +132,13 @@ pub fn ContextMenu(
     let mut suppress = use_signal(|| false);
     let mut area = use_signal(|| None::<MountedEvent>);
 
-    let mut open_at = move |x: f64, y: f64, keyboard: bool| {
+    let mut show_at = move |x: f64, y: f64, by: Opener| {
         if disabled || !has_items {
             return false;
         }
         let n = count() + 1;
         count.set(n);
-        at.set(Some(Opening { x, y, keyboard, n }));
+        at.set(Some(Opening { x, y, by, n }));
         if let Some(handler) = onopenchange {
             handler.call(true);
         }
@@ -141,7 +207,7 @@ pub fn ContextMenu(
             .and_then(|v| v.as_bool())
             .unwrap_or(false);
             let (x, y) = keyboard_origin(rect, rtl);
-            if open_at(x, y, true) {
+            if show_at(x, y, Opener::Keyboard) {
                 arm_suppress();
             }
         });
@@ -153,7 +219,7 @@ pub fn ContextMenu(
             return;
         }
         let point = event.data().client_coordinates();
-        if open_at(point.x, point.y, false) {
+        if show_at(point.x, point.y, Opener::Pointer) {
             event.prevent_default();
         }
     };
@@ -170,7 +236,7 @@ pub fn ContextMenu(
             sleep(PRESS_MS).await;
             if press().is_some_and(|(_, _, t)| t == token) {
                 press.set(None);
-                if open_at(point.x, point.y, false) {
+                if show_at(point.x, point.y, Opener::Pointer) {
                     arm_suppress();
                 }
             }
@@ -187,12 +253,24 @@ pub fn ContextMenu(
     let on_up = move |_: Event<PointerData>| press.set(None);
 
     let opening = at();
+    let mount_area = area_id.clone();
     rsx! {
         document::Link { rel: "stylesheet", href: CSS }
         div {
             id: "{area_id}",
             style: "display: contents; -webkit-touch-callout: none;",
-            onmounted: move |event: MountedEvent| area.set(Some(event)),
+            onmounted: move |event: MountedEvent| {
+                area.set(Some(event));
+                if let Some(point) = open_at {
+                    let mount_area = mount_area.clone();
+                    spawn(async move {
+                        if let Some(origin) = area_origin(mount_area).await {
+                            let (x, y) = anchored_point(origin, point);
+                            show_at(x, y, Opener::Rest(point));
+                        }
+                    });
+                }
+            },
             oncontextmenu: on_context,
             onkeydown: open_from_key,
             onpointerdown: on_down,
@@ -205,9 +283,10 @@ pub fn ContextMenu(
             ContextPanel {
                 key: "{opened.n}",
                 id: format!("ui-ctxc-{uid}-menu-{}", opened.n),
+                area_id: area_id.clone(),
                 x: opened.x,
                 y: opened.y,
-                keyboard: opened.keyboard,
+                by: opened.by,
                 items: items.clone(),
                 title: title.clone(),
                 label: aria_label.clone(),
@@ -222,9 +301,10 @@ pub fn ContextMenu(
 #[component]
 fn ContextPanel(
     id: String,
+    area_id: String,
     x: f64,
     y: f64,
-    keyboard: bool,
+    by: Opener,
     items: Vec<MenuItem>,
     title: Option<String>,
     label: String,
@@ -233,37 +313,66 @@ fn ContextPanel(
     on_close: EventHandler<FocusBack>,
 ) -> Element {
     let mut placed = use_signal(|| None::<Placement>);
+    let mut card = use_signal(|| None::<MountedEvent>);
     let title_id = format!("{id}-title");
     let list_id = format!("{id}-list");
     let style = placed_style(placed(), width.as_deref());
     let panel_id = id.clone();
+    let resting = matches!(by, Opener::Rest(_));
 
     let setup = format!(
         r#"const panel = () => document.getElementById({panel_id:?});
-on(document, "pointerdown", (e) => {{ if (!panel()?.contains(e.target)) send("close"); }}, true);
+let resting = {resting};
+on(document, "pointerdown", (e) => {{ if (panel()?.contains(e.target)) resting = false; else send("close"); }}, true);
+on(document, "focusin", (e) => {{ if (panel()?.contains(e.target)) resting = false; }});
 // Focusing the panel on open can scroll the page; that scroll must not close it.
 const opened = performance.now();
-on(window, "scroll", (e) => {{ if (performance.now() - opened > 250 && !panel()?.contains(e.target)) send("close"); }}, true);
-on(window, "resize", () => send("close"));
-on(window, "blur", () => send("close"));"#
+on(window, "scroll", (e) => {{
+  if (panel()?.contains(e.target)) return;
+  if (resting) send("reflow");
+  else if (performance.now() - opened > 250) send("close");
+}}, true);
+on(window, "resize", () => send(resting ? "reflow" : "close"));
+on(window, "blur", () => send("close"));
+on(window, "keydown", (e) => {{ if (resting && e.key === "Escape") send("close"); }}, true);"#
     );
     use_effect(use_reactive((&panel_id,), {
         let panel_id = panel_id.clone();
+        let area_id = area_id.clone();
         move |(_,)| {
+            let area_id = area_id.clone();
             listen(listen_js(&panel_id, &setup), move |message| {
-                if message == "close" {
-                    on_close.call(FocusBack::Keep);
+                match message.as_str() {
+                    "close" => on_close.call(FocusBack::Keep),
+                    "reflow" => {
+                        if let Opener::Rest(point) = by {
+                            let area_id = area_id.clone();
+                            spawn(async move {
+                                let Some(origin) = area_origin(area_id).await else {
+                                    return;
+                                };
+                                if let Some(next) =
+                                    place_card(card(), anchored_point(origin, point)).await
+                                {
+                                    placed.set(Some(next));
+                                }
+                            });
+                        }
+                    }
+                    _ => {}
                 }
             });
         }
     }));
 
-    let focus_script = if keyboard {
-        format!(
+    let focus_script = match by {
+        Opener::Keyboard => format!(
             "document.getElementById({list_id:?})?.querySelector(':scope > [role^=\"menuitem\"]:not([aria-disabled=\"true\"])')?.focus({{ preventScroll: true }});"
-        )
-    } else {
-        format!("document.getElementById({list_id:?})?.focus({{ preventScroll: true }});")
+        ),
+        Opener::Pointer => {
+            format!("document.getElementById({list_id:?})?.focus({{ preventScroll: true }});")
+        }
+        Opener::Rest(_) => String::new(),
     };
     let shown_side = placed().map_or(Side::Bottom, |p| p.side);
     let shown_align = placed().map_or(Align::Start, |p| p.align);
@@ -287,26 +396,16 @@ on(window, "blur", () => send("close"));"#
                 event.stop_propagation();
             },
             onmounted: move |event: MountedEvent| {
-                let node = event.clone();
+                card.set(Some(event));
                 spawn(async move {
-                    let Ok(rect) = node.get_client_rect().await else {
-                        return;
-                    };
-                    let Ok(view) = document::eval("return [window.innerWidth, window.innerHeight, getComputedStyle(document.documentElement).direction === 'rtl' ? 1 : 0];").await else {
-                        return;
-                    };
-                    let (Some(w), Some(h)) = (view.get(0).and_then(|v| v.as_f64()), view.get(1).and_then(|v| v.as_f64())) else {
-                        return;
-                    };
-                    let rtl = view.get(2).and_then(|v| v.as_f64()) == Some(1.0);
-                    let card_size = Size { width: rect.size.width, height: rect.size.height };
-                    let pointer = Rect { left: x, top: y, width: 0.0, height: 0.0 };
-                    let align = if rtl { Align::End } else { Align::Start };
-                    placed.set(Some(place(pointer, card_size, Size { width: w, height: h }, Side::Bottom, align, 0.0, rtl)));
+                    if let Some(next) = place_card(card(), (x, y)).await {
+                        placed.set(Some(next));
+                    }
                 });
-                document::eval(&format!(
-                    "const p = document.getElementById({panel_id:?}); if (p) {{ p.style.visibility = 'visible'; p.showPopover?.(); }} {focus_script}"
-                ));
+                let show = format!(
+                    "const p = document.getElementById({panel_id:?}); if (p) {{ p.style.visibility = 'visible'; p.showPopover?.(); }}"
+                );
+                document::eval(&format!("{show} {focus_script}"));
             },
             if let Some(title) = title {
                 span { class: "ui-ctxc__title", id: "{title_id}", "{title}" }

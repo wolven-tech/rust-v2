@@ -70,3 +70,32 @@ Timeline chart with markers and a now line; status line; badge; switch; list row
 6. While a run is in progress, the status line names it and shows its progress.
 7. With `is_empty` set, the note and the Ask in Thread action appear.
 8. At phone width each row takes three lines and the page does not scroll horizontally.
+
+## Amendment 5: structure and demo
+
+Replaces: none (no earlier amendment in this spec).
+
+**Archetype:** horizontal run timeline centred on the present, a status line, a schedule list, and a right panel for one selected schedule.
+
+**At rest (gallery demo):**
+- Header: title and active count (6 of 7).
+- Timeline: an axis spanning ten hours around now, with ticks at round two-hour intervals. The now line sits in the central third of the axis.
+- Markers: four past runs to the left of the now line (three done, one failed), and six upcoming runs to the right. No run is in progress at rest.
+- Agent activity trace above the axis, flat at rest.
+- Status line beneath the timeline: names the next run and its moment in words.
+- Schedule list: seven rows. Each row shows name, cadence in words, next run, last outcome badge, average cost and a pause switch. One row is paused: dimmed, switch off, no upcoming markers on the timeline.
+- Panel open on one schedule with, in order: name, brief, cadence, Run now and Pause buttons, the next five runs each with a Skip control, recent runs with outcome badges, cost per run.
+
+**States at rest:** one paused schedule; panel open; no run in progress.
+
+**Arrangement:** timeline across the full width at the top; status line under it; schedule list on the left below; panel on the right.
+
+**Motion, settled frame:** the activity trace is flat and the now line is at its position. Nothing moves at rest.
+
+**Checks (continued):**
+9. Four markers sit left of the now line, each with its outcome word. At least six markers sit to its right.
+10. The schedule list has seven rows, each with cadence in words, next run, last outcome badge, average cost and a switch.
+11. The paused schedule's row is dimmed, its switch is off, and the timeline shows no upcoming markers for it.
+12. The panel lists the next five runs for the selected schedule, each with a Skip control.
+13. The status line names the next run and its moment in words. The header reads the active count over the total.
+14. At 1280 wide the timeline spans the full width, and its ticks and the now line are visible.

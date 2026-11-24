@@ -1,12 +1,12 @@
-/* Keyboard prompt input. Keys lift and waves spread by transform and opacity; the spot moves by transform. */
+/* Keyboard prompt input. Keys lift and waves spread by transform and opacity; the floor spot moves by left. */
 .kit-kbp {
   display: grid;
-  gap: 14px;
+  gap: 18px;
   width: 100%;
-  max-width: 520px;
+  max-width: 720px;
   min-width: 0;
   margin: 0 auto;
-  padding: 0 6px;
+  padding: 26px 28px 0;
   box-sizing: border-box;
   color: var(--kit-ink);
   font-family: var(--kit-font);
@@ -18,35 +18,30 @@
 
 .kit-kbp__field {
   position: relative;
+  justify-self: center;
   display: flex;
   align-items: center;
   gap: 10px;
-  isolation: isolate;
+  width: min(100%, 340px);
   min-height: 48px;
   box-sizing: border-box;
   padding: 0 18px;
   border: 1px solid var(--kit-rule-soft);
   border-radius: var(--kit-radius-pill);
   background: var(--kit-surface);
-  box-shadow: var(--kit-shadow);
+  box-shadow:
+    var(--kit-shadow),
+    0 0 0 3px color-mix(in srgb, var(--kit-id-2) 22%, transparent),
+    0 0 22px 6px color-mix(in srgb, var(--kit-id-2) 40%, transparent);
   transition: border-color var(--kit-fast) var(--kit-ease), box-shadow var(--kit-fast) var(--kit-ease);
 }
 
-.kit-kbp__field::before {
-  content: "";
-  position: absolute;
-  inset: -4px;
-  z-index: -1;
-  border-radius: inherit;
-  border: 1px solid var(--kit-accent);
-  opacity: 0.25;
-  animation: kit-kbp-ring 2.6s ease-in-out infinite;
-  pointer-events: none;
-}
-
-.kit-kbp[data-paused] .kit-kbp__field::before {
-  animation: none;
-  opacity: 0.08;
+.kit-kbp__mark {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--kit-accent);
 }
 
 .kit-kbp__field:focus-within {
@@ -109,16 +104,20 @@
 }
 
 .kit-kbp__floor-wrap {
-  padding: 4px 0 12px;
+  padding: 0;
+}
+
+.kit-kbp__stage {
+  position: relative;
+  padding: 0 3% 64px;
 }
 
 .kit-kbp__keyboard {
   position: relative;
-  container-type: inline-size;
   isolation: isolate;
   display: grid;
   gap: 6px;
-  padding: 12px 10px 16px;
+  padding: 10px 10px 12px;
   box-sizing: border-box;
   border: 1px solid var(--kit-rule-soft);
   border-radius: var(--kit-radius-lg);
@@ -127,25 +126,18 @@
 }
 
 .kit-kbp__row {
-  --kit-kbp-unit: calc((100cqw - 45px) / 10);
   position: relative;
   z-index: 1;
   display: flex;
-  justify-content: center;
   gap: 5px;
-}
-
-.kit-kbp__row[data-row="0"] {
-  --kit-kbp-unit: calc((100cqw - 60px) / 13);
 }
 
 .kit-kbp__key {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  flex: none;
-  width: var(--kit-kbp-unit);
-  height: calc(var(--kit-kbp-unit) * 0.9);
+  min-width: 0;
+  height: 24px;
   box-sizing: border-box;
   border: 1px solid var(--kit-rule-soft);
   border-bottom-width: 2px;
@@ -158,20 +150,6 @@
   transition: transform var(--kit-fast) var(--kit-ease), background var(--kit-fast) var(--kit-ease);
 }
 
-.kit-kbp__key--mod {
-  width: calc(var(--kit-kbp-unit) * 1.5);
-}
-
-.kit-kbp__key--space {
-  width: 46%;
-}
-
-@container (max-width: 300px) {
-  .kit-kbp__row[data-row="0"] {
-    display: none;
-  }
-}
-
 .kit-kbp__key[data-lit] {
   transform: translateY(-3px);
   background: var(--kit-surface);
@@ -181,13 +159,14 @@
 
 .kit-kbp__spot {
   position: absolute;
-  top: 40%;
+  left: calc(3% + var(--gx) * 0.94%);
+  bottom: 4px;
   z-index: 0;
-  width: 40%;
-  height: 60%;
+  width: 34%;
+  height: 56px;
+  transform: translateX(-50%);
   pointer-events: none;
-  background: radial-gradient(ellipse at center, color-mix(in srgb, var(--kit-accent) 22%, transparent), transparent 70%);
-  left: calc(var(--gx) * 1% - 20%);
+  background: radial-gradient(ellipse at 50% 60%, color-mix(in srgb, var(--kit-id-1) 60%, transparent), transparent 70%);
   transition: left var(--kit-fast) var(--kit-ease);
 }
 
@@ -211,11 +190,6 @@
   50.01%, 100% { opacity: 0; }
 }
 
-@keyframes kit-kbp-ring {
-  0%, 100% { opacity: 0.15; }
-  50% { opacity: 0.45; }
-}
-
 @keyframes kit-kbp-wave {
   from {
     transform: translate(-50%, -50%) scale(0.2);
@@ -234,14 +208,16 @@
 }
 
 @media (max-width: 560px) {
+  .kit-kbp {
+    padding: 26px 12px 0;
+  }
   .kit-kbp__keyboard,
-  .kit-kbp__floor-wrap {
+  .kit-kbp__spot {
     display: none;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .kit-kbp__field::before,
   .kit-kbp__caret,
   .kit-kbp__wave,
   .kit-kbp[data-sending] .kit-kbp__field {

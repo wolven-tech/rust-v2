@@ -5,8 +5,9 @@
 //! the open state is one short movement with no layout change.
 //! Design choice: the mark is never focusable. Focus opens it when an ancestor carries
 //! `kit-folder-scope` (the focusable card), which is the caller's job to add.
-//! Design choice: `size_token` sets the mark's width; the aspect ratio is fixed and the papers
-//! stay inside the box at every step.
+//! Design choice: the mark is its own stage (5 to 3, full container width). Every part is placed
+//! in fractions of that stage, and `size_token` scales the folder about its centre, so the
+//! folder keeps its place and its papers stay inside the box at every step.
 
 use dioxus::prelude::*;
 
@@ -33,12 +34,12 @@ impl SizeStep {
     }
 }
 
-/// Rendered width in CSS px for a size step.
-pub fn folder_px(size: SizeStep) -> u32 {
+/// Scale of the folder about its centre; the default step is the stage's own proportion.
+pub fn folder_scale(size: SizeStep) -> f64 {
     match size {
-        SizeStep::Sm => 48,
-        SizeStep::Md => 72,
-        SizeStep::Lg => 96,
+        SizeStep::Sm => 0.75,
+        SizeStep::Md => 1.0,
+        SizeStep::Lg => 1.25,
     }
 }
 
@@ -52,7 +53,7 @@ pub fn FrostedFolderMark(
     #[props(default)] class: String,
 ) -> Element {
     let class = class_list("kit-folder", &class);
-    let style = format!("--kit-folder-size: {}px;", folder_px(size_token));
+    let style = format!("--kit-folder-scale: {};", folder_scale(size_token));
     let named = label.is_some();
     rsx! {
         document::Link { rel: "stylesheet", href: KIT_CSS }
@@ -67,14 +68,17 @@ pub fn FrostedFolderMark(
             "data-open-hover": open_on_hover.to_string(),
             "data-open-focus": open_when_focused.to_string(),
             "data-disabled": disabled.then_some("true"),
-            span { class: "kit-folder__back" }
-            span { class: "kit-folder__tab" }
-            span { class: "kit-folder__papers",
-                span { class: "kit-folder__sheet" }
-                span { class: "kit-folder__sheet" }
-                span { class: "kit-folder__sheet" }
+            span { class: "kit-folder__box",
+                span { class: "kit-folder__shadow" }
+                span { class: "kit-folder__back" }
+                span { class: "kit-folder__tab" }
+                span { class: "kit-folder__papers",
+                    span { class: "kit-folder__sheet" }
+                    span { class: "kit-folder__sheet" }
+                    span { class: "kit-folder__sheet" }
+                }
+                span { class: "kit-folder__pocket" }
             }
-            span { class: "kit-folder__pocket" }
         }
     }
 }

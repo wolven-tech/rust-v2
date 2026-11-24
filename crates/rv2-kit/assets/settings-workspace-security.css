@@ -37,6 +37,10 @@
   overflow-wrap: anywhere;
 }
 
+.kit-sec__row-main .kit-sec__remove {
+  margin-inline-start: auto;
+}
+
 .kit-sec__txt {
   align-items: center;
   display: flex;

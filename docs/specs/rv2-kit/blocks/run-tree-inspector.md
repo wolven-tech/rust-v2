@@ -63,3 +63,70 @@ In reading order:
 5. Arrow keys move between agent cards in tree order; Right and Left expand and collapse.
 6. A running call's bar length increases while the run is running and stops at its final length when it completes.
 7. At phone width the tree is an indented list and nothing scrolls sideways.
+
+## Amendment 5: structure and demo
+
+Archetype: run header, a figure strip, and a node graph of agent cards.
+
+Visible at rest:
+- Run header: title, status badge, agent count with running count, total cost.
+- Figure strip, one row: Duration, Cost, Tokens, Model calls, Tool calls, Errors.
+- Node graph: a root card top centre; two child cards beneath it, one left and one right, joined by elbow lines from the root's lower edge. A peer card beside the root, joined to it by a dashed horizontal link.
+- Each agent card: name, model line, status badge, then its call rows.
+- Each call row: a small kind mark, the call name, a status mark, a duration bar with its duration figure.
+- An errored call row carries an error mark at rest.
+
+Gallery demo:
+- Title "Ship the spring newsletter", status "Running".
+- Figures: Duration 8m 40s, Cost $0.31, Tokens 96k, Model calls 4, Tool calls 6, Errors 1.
+- Root "Planner" (large model, running), call row "Draft the send plan" ($0.12).
+- Peer "Budget checker" (small model, running), call row "Read the spend limit".
+- Child "Researcher" (mid model, running), calls "Search price pages", "Search partner terms", "Query price history" (error).
+- Child "Writer" (mid model, waiting), no calls, drawn faded.
+
+Motion, settled frame: connectors drawn; running bars at their current length.
+Moves: connectors draw as the tree grows, and new children appear under their parent. A running call's bar grows. Bars stop at final length on completion.
+Reduced motion: all bars at final length; nothing draws.
+
+Acceptance checks (continued):
+8. Agents render as cards joined by elbow connectors; no agent is shown as a bar row.
+9. Each call row shows its name, a status mark and a duration bar; the errored row shows its error mark at rest.
+10. The Writer card shows a waiting status and no running mark.
+
+## Amendment 6: structure and demo
+
+Supersedes Amendment 5 where they differ. Replaces:
+- "Visible at rest", error bullet ("An errored call row carries an error mark at rest"): no call row carries an error mark at rest. Error marks appear only on calls whose status is error.
+- "Gallery demo", Errors figure 1: Errors reads 0.
+- "Gallery demo", Researcher calls: three calls, all running. "Query price history (error)" is removed.
+- "Gallery demo", Writer: mid model, running, drawn faded, with two running calls. Replaces "waiting, no calls".
+- Check 9: the error-row clause is replaced by "each call row shows name, status mark, duration bar and figure; none shows an error mark at rest".
+- Check 10: replaced by check 13 below.
+
+Archetype: run header, figure strip, and a node graph of agent cards.
+
+Visible at rest, added to Amendment 5:
+- Run header: sparkle mark and title at left; at right, agent count with running count, and total cost.
+- Each agent card footer: cost and elapsed time at left; a disclosure count with a chevron at right giving the number of calls not shown.
+- Figure strip: six figures in one bordered row.
+- Peer card joined to the root by a dashed horizontal link.
+
+Scale: root card top centre-left. Peer card to its right at the same height. Left child card below the root, about a quarter of the stage width. Right child, faded, further right and lower. Each agent card is about a quarter of the stage width. Call rows take the card's full inner width, with name, bar and figure on one line.
+
+Gallery demo:
+- Title "Ship the spring newsletter", status Running.
+- Figures: Duration 8m 40s, Cost $0.31, Tokens 96k, Model calls 4, Tool calls 6, Errors 0.
+- Root "Planner" (large model, running), call "Draft the send plan" ($0.12).
+- Peer "Budget checker" (small model, running), call "Read the spend limit".
+- Child "Researcher" (mid model, running), calls "Search price pages", "Search partner terms", "Query price history", all running.
+- Child "Writer" (mid model, running, drawn faded), calls "Read the style guide", "Read the price frames", both running.
+
+Motion, settled frame: connectors drawn; running bars at their current length.
+Moves and reduced motion: as Amendment 5.
+
+Defects, stated as checks: planner and tool-call rows squeezed into a narrow column with labels wrapped one word or one character per line (check 11).
+
+Acceptance checks (continued):
+11. Call names never break to one word or one character per line. At 1280 px and 390 px they stay on one line or end with an ellipsis.
+12. Each agent card is about a quarter of the stage width at 1280 px or wider. Each call row shows its name, bar and figure.
+13. The Writer card is faded and reads Running. Its two call rows show running durations and no error mark.

@@ -25,6 +25,9 @@ pub fn Checkbox(
     #[props(default)] label: Option<Element>,
     #[props(default)] description: Option<Element>,
     #[props(default)] indeterminate: bool,
+    /// Checkboxes that belong to this one, indented under its row.
+    #[props(default)]
+    children: Option<Element>,
     #[props(default)] error: Option<Element>,
     #[props(default)] invalid: bool,
     #[props(default)] variant: CheckboxVariant,
@@ -136,6 +139,9 @@ pub fn Checkbox(
                         }
                     }
                 }
+            }
+            if let Some(nested) = children {
+                div { class: "ui-chkc__children", role: "group", {nested} }
             }
             if let Some(message) = error {
                 p { class: "ui-chkc__error", id: "{error_id}", aria_live: "polite", {message} }

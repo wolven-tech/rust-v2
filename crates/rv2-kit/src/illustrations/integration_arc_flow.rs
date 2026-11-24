@@ -1,18 +1,19 @@
-//! Integration arc flow: several connected tools feed data into one central analysis hub. It tells a
-//! visitor that their tools' data gathers in one place.
+//! Integration arc flow: connected tools sit on one vertical spine beside a hub card. The centre pill
+//! is the active one. After each turn a beam sweeps from it to the hub and the hub brightens. At rest
+//! no beam is drawn. It tells a visitor that their tools' data gathers in one place.
 //!
-//! Design choice: the arc is laid out in container-width units (`cqw`), so pills, connectors and the
-//! hub scale together with no measurement.
-//! Design choice: the arc turns one slot every `ROTATE_MS` by a timer, and pills and connectors move
-//! by transform. A paused pill keeps its slot in the turn (so the arc stays full) and fades; it does
-//! not stop turning.
-//! Design choice: the timer is not started when the viewer prefers reduced motion; the arc stays in
+//! Design choice: every position is a percent of the stage (the card), so the hub, pills and dashed
+//! guide keep their proportions at any width. The spine is one column of five slots, two above and
+//! two below the centre, and the outer slots run past the stage edges.
+//! Design choice: the spine turns one slot every `ROTATE_MS` by a timer, and pills move by `top` on
+//! their own transition. The pill that arrives at the centre slot becomes the active one and drives the
+//! beam. A paused pill keeps its slot in the turn and fades; it does not stop turning.
+//! Design choice: the timer is not started when the viewer prefers reduced motion; the spine stays in
 //! its first arrangement and no pulses are drawn.
-//! Design choice: pills are buttons only when `on_toggle` is given; otherwise they highlight on hover
-//! or click and are not focusable.
-//! Browser checks: each live connector shows pulses toward the hub; hovering a pill highlights it and
-//! its connector; paused pills show no pulses and are faded; reduced motion draws no pulses; at 390 and
-//! 320 the arc becomes a stack with no sideways scroll.
+//! Design choice: pills are buttons only when `on_toggle` is given; otherwise they are not focusable.
+//! Browser checks: the centre pill is full strength and the others fade away from it; the beam joins
+//! the centre pill to the hub with no gap; reduced motion draws no pulses; at 390 and 320 nothing scrolls
+//! sideways.
 
 use dioxus::prelude::*;
 
@@ -20,8 +21,10 @@ use crate::internal::{KIT_CSS, class_list, prefers_motion_script, sleep};
 
 const CSS: Asset = asset!("/assets/integration-arc-flow.css");
 
-/// Milliseconds between one turn of the arc by a slot.
+/// Milliseconds between one turn of the spine by a slot.
 pub const ROTATE_MS: u32 = 3200;
+/// Milliseconds the beam stays drawn after a turn, while it sweeps to the hub.
+pub const SWEEP_MS: u32 = 900;
 
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub enum IntegrationStatus {
@@ -56,34 +59,8 @@ pub struct Hub {
 pub struct Integration {
     pub id: String,
     pub label: String,
-    pub sub_label: String,
     pub status: IntegrationStatus,
     pub logo: Option<Element>,
-}
-
-/// Angle in degrees of the arc slot `slot` of `count`: the first slot is at the left end (165), the
-/// last at the right end (15), and the front (90) sits between them.
-pub fn slot_angle(slot: usize, count: usize) -> f64 {
-    if count <= 1 {
-        90.0
-    } else {
-        165.0 - slot as f64 * 150.0 / (count - 1) as f64
-    }
-}
-
-/// Pill centre for a slot, in cqw, with the hub centred at (50, 60).
-pub fn slot_point(slot: usize, count: usize) -> (f64, f64) {
-    let angle = slot_angle(slot, count).to_radians();
-    (50.0 + 36.0 * angle.cos(), 60.0 - 36.0 * angle.sin())
-}
-
-/// Connector geometry from a pill centre to the hub's top centre: (x, y, angle in degrees, length in
-/// cqw).
-pub fn connector(slot: usize, count: usize) -> (f64, f64, f64, f64) {
-    let (x, y) = slot_point(slot, count);
-    let (tx, ty) = (50.0, 56.0);
-    let (dx, dy) = (tx - x, ty - y);
-    (x, y, dy.atan2(dx).to_degrees(), (dx * dx + dy * dy).sqrt())
 }
 
 /// The slot an integration occupies after `turn` steps.
@@ -92,6 +69,31 @@ pub fn slot_for(index: usize, count: usize, turn: usize) -> usize {
         0
     } else {
         (index + turn) % count
+    }
+}
+
+/// Offset of a slot from the centre of the spine: negative above, positive below, 0 at the centre.
+pub fn slot_offset(slot: usize, count: usize) -> i64 {
+    slot as i64 - (count / 2) as i64
+}
+
+/// Opacity of a pill `offset` slots from the centre: full at the centre, about half one slot away,
+/// about a third two slots away.
+pub fn spine_opacity(offset: i64) -> f64 {
+    match offset.unsigned_abs() {
+        0 => 1.0,
+        1 => 0.5,
+        _ => 0.33,
+    }
+}
+
+/// Left edge of a pill, in percent of the stage width. The column bows: the centre pill sits
+/// furthest left and the outer slots step right.
+pub fn pill_left_pct(offset: i64) -> f64 {
+    match offset.unsigned_abs() {
+        0 => 56.7,
+        1 => 61.0,
+        _ => 71.0,
     }
 }
 
@@ -105,6 +107,7 @@ pub fn IntegrationArcFlow(
     #[props(default)] class: String,
 ) -> Element {
     let mut turn = use_signal(|| 0usize);
+    let mut sweeping = use_signal(|| false);
     let mut hovered = use_signal(|| None::<String>);
     let mut picked = use_signal(|| None::<String>);
     use_hook(move || {
@@ -118,12 +121,21 @@ pub fn IntegrationArcFlow(
                 return;
             }
             loop {
-                sleep(ROTATE_MS).await;
+                sleep(ROTATE_MS - SWEEP_MS).await;
                 turn += 1;
+                sweeping.set(true);
+                sleep(SWEEP_MS).await;
+                sweeping.set(false);
             }
         });
     });
     let count = integrations.len();
+    let centre_slot = count / 2;
+    let centre_status = integrations
+        .iter()
+        .enumerate()
+        .find(|(index, _)| slot_for(*index, count, turn()) == centre_slot)
+        .map(|(_, item)| item.status);
     let interactive = on_toggle.is_some();
     let lit = hovered().or_else(|| picked()).or_else(|| active_id.clone());
     let group_label = label.unwrap_or_else(|| "Integrations feeding one analysis".to_string());
@@ -134,24 +146,21 @@ pub fn IntegrationArcFlow(
         document::Link { rel: "stylesheet", href: KIT_CSS }
         document::Link { rel: "stylesheet", href: CSS }
         div { class, role: "group", "aria-label": "{group_label}",
-            div { class: "kit-arc__connectors", "aria-hidden": "true",
-                for (index, item) in integrations.iter().enumerate() {
-                    {
-                        let slot = slot_for(index, count, turn());
-                        let (x, y, angle, len) = connector(slot, count);
-                        let style = format!(
-                            "--x: {x:.2}; --y: {y:.2}; --angle: {angle:.2}deg; --len: {:.4};",
-                            len / 100.0,
-                        );
-                        let highlighted = lit.as_deref() == Some(item.id.as_str());
-                        rsx! {
-                            span { class: "kit-arc__connector", style: "{style}",
-                                "data-status": item.status.as_str(),
-                                "data-lit": highlighted.then_some("true"),
-                                "data-id": item.id.clone(),
-                                span { class: "kit-arc__pulse" }
-                            }
-                        }
+            span { class: "kit-arc__light", "aria-hidden": "true" }
+            div { class: "kit-arc__hub", "data-lit": sweeping().then_some("true"),
+                span { class: "kit-arc__hub-text",
+                    span { class: "kit-arc__hub-title", "{hub_title}" }
+                    span { class: "kit-arc__hub-sub", "{hub_subtitle}" }
+                }
+                span { class: "kit-arc__hub-mark", "aria-hidden": "true" }
+            }
+            svg { class: "kit-arc__guide", "aria-hidden": "true", "viewBox": "0 0 100 100", "preserveAspectRatio": "none",
+                path { d: "M 72 -3 Q 50 50 72 103", fill: "none", "vector-effect": "non-scaling-stroke" }
+            }
+            if sweeping() {
+                if let Some(status) = centre_status {
+                    span { class: "kit-arc__beam", "aria-hidden": "true", "data-status": status.as_str(),
+                        span { class: "kit-arc__pulse" }
                     }
                 }
             }
@@ -159,8 +168,13 @@ pub fn IntegrationArcFlow(
                 for (index, item) in integrations.iter().enumerate() {
                     {
                         let slot = slot_for(index, count, turn());
-                        let (x, y) = slot_point(slot, count);
-                        let style = format!("--x: {x:.2}; --y: {y:.2};");
+                        let offset = slot_offset(slot, count);
+                        let style = format!(
+                            "--s: {offset}; --o: {:.2}; left: {:.1}%;",
+                            spine_opacity(offset),
+                            pill_left_pct(offset)
+                        );
+                        let centred = offset == 0;
                         let highlighted = lit.as_deref() == Some(item.id.as_str());
                         let is_active = active_id.as_deref() == Some(item.id.as_str());
                         let aria = format!("{} integration, {}", item.label, item.status.word());
@@ -168,13 +182,14 @@ pub fn IntegrationArcFlow(
                         let content = rsx! {
                             span { class: "kit-arc__logo", {item.logo.clone()} }
                             span { class: "kit-arc__text",
+                                span { class: "kit-arc__kind", "Connector" }
                                 span { class: "kit-arc__name", {item.label.clone()} }
-                                span { class: "kit-arc__sub", {item.sub_label.clone()} }
                             }
                         };
                         rsx! {
                             div { class: "kit-arc__pill", key: "{id}", style: "{style}",
                                 "data-status": item.status.as_str(),
+                                "data-centre": centred.then_some("true"),
                                 "data-lit": highlighted.then_some("true"),
                                 "data-active": is_active.then_some("true"),
                                 onmouseenter: {
@@ -213,10 +228,6 @@ pub fn IntegrationArcFlow(
                         }
                     }
                 }
-            }
-            div { class: "kit-arc__hub",
-                span { class: "kit-arc__hub-title", "{hub_title}" }
-                span { class: "kit-arc__hub-sub", "{hub_subtitle}" }
             }
         }
     }

@@ -102,9 +102,9 @@ fn column_for(key: &str, stages: &[String]) -> Column {
     let label = match key {
         "company" => "Company",
         "category" => "Category",
-        "domain" => "Website",
+        "domain" => "Domain",
         "owner" => "Owner",
-        "deal_value" => "Deal value",
+        "deal_value" => "Value",
         "stage" => "Stage",
         "contact" => "Primary contact",
         _ => "Last contact",

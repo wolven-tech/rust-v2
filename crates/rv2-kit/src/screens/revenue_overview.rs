@@ -622,7 +622,7 @@ pub fn RevenueOverview(
                                 }
                             }
 
-                            section { class: "kit-rev__card", "aria-labelledby": "{base}-sessions",
+                            section { class: "kit-rev__card kit-rev__card--wide", "aria-labelledby": "{base}-sessions",
                                 div { class: "kit-rev__card-head",
                                     h2 { id: "{base}-sessions", class: "kit-rev__card-title", "Sessions" }
                                     p { class: "kit-rev__total",
@@ -646,7 +646,7 @@ pub fn RevenueOverview(
                             }
 
                             if let Some(avg) = average_value {
-                                section { class: "kit-rev__card", "aria-labelledby": "{base}-average",
+                                section { class: "kit-rev__card kit-rev__card--wide", "aria-labelledby": "{base}-average",
                                     h2 { id: "{base}-average", class: "kit-rev__card-title", "Average order" }
                                     p { class: "kit-rev__avg",
                                         span { class: "kit-rev__total-value", "{avg.current}" }

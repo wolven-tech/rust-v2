@@ -69,3 +69,70 @@ The detail view of one autonomous run. The agent works through a plan of steps, 
 6. Opening a file from the list shows it in its own work area tab.
 7. Enter on a focused approval card's default button does not approve.
 8. When every step is done, `on_done` fires once.
+
+## Amendment 5: structure and demo
+
+Replaces: none (no earlier amendment in this spec).
+
+**Archetype:** run header and summary tiles over a plan column, with a right work area of two tabs, Needs your input and Activity.
+
+**At rest (gallery demo):**
+- Header: run title, agent name and start time, state badge reading Running, Stop run button.
+- Five summary tiles: uses, progress (1 of 5), tool calls, elapsed, cost.
+- Plan: five steps. Step 1 is done with its two tool calls expanded beneath it. Step 2 is running. Steps 3 to 5 are pending.
+- Draft section below the plan: inline diff with five changes. Accept all and Reject all sit above it.
+- Work area open on the Needs your input tab, whose count is 0. Its body holds the empty message, one line on what the run will ask here, and a Files list with three rows.
+- Second work area tab, Activity: six entries, newest first.
+
+**States at rest:** running; no approval pending; Needs your input tab active.
+
+**Arrangement:** header across the top; plan and draft in the main column; work area on the right beside them.
+
+**Motion, settled frame:** progress is at its current value. The running step shows its state as text; under reduced motion it has no moving highlight.
+
+**Checks (continued):**
+9. At rest the Needs your input tab comes first in the work area and shows count 0; its body states that no item is waiting.
+10. When an approval is pending, the run reads waiting, the approval card appears under Needs your input, and that tab's count reads 1.
+11. The Activity tab lists six entries, newest first, each with its time and text.
+12. The Files list has three rows. Opening one adds its tab after the fixed tabs.
+13. The draft shows five changes at rest. Accept all and Reject all sit above the diff.
+14. Each step's tool calls appear under that step in the plan. No separate tool-call panel sits below the plan.
+15. At 1280 wide the plan, the draft and the work area are visible side by side.
+
+## Amendment 6: structure and demo
+
+Replaces, from Amendment 5 (this amendment wins where they differ):
+- The Archetype line. The work area is one fixed tab, Needs your input. Activity is a section of the main column, not a second tab.
+- "Five summary tiles". The at-rest figures are four (steps done, tool calls, elapsed time, cost) and a row of app marks for uses.
+- "Step 1 is done ... Step 2 is running". At rest step 1 is running and steps 2 to 5 are pending.
+- "Draft section below the plan" and the Arrangement line. The draft moves to the right pane.
+- The files list inside the tab body. The files list sits in the right pane under the draft.
+- "Second work area tab, Activity: six entries". Replaced by an Activity section with one entry at rest.
+- "Five changes". The draft shows nine changes.
+- Checks 11, 13 and 15 are superseded by 17, 18 and 20. Checks 9, 10, 12 and 14 stand. Checks 16 and 19 are new.
+
+**Archetype:** run header and figures over a plan column, with an activity section beneath the plan; a right pane holds the approval tab, the draft and the files.
+
+**Parts visible at rest (gallery demo):**
+- Header: run title; agent name with start time; state badge reading Running; Stop run button; a row of app marks for the apps the run uses.
+- Four figures: steps done as "0 of 5"; tool calls, 2; elapsed time; cost.
+- Plan: a one-line key hint, then five numbered steps, each with a tool-name tag. Step 1 is running, with its two tool calls beneath it: the first done, the second running. Steps 2 to 5 are pending. Plan footer: running, "1 of 5", elapsed time.
+- Activity: in the main column under the plan. One entry, for step 1, with its tool-call count and duration.
+- Right pane: one tab, Needs your input, with count 0 and an add-tab control. Its body states that nothing is waiting. Below it, the Draft section: a title, a count of nine changes, Accept all and Reject all above an inline diff of a short reminder email. Below the draft, a files list with three rows, each with name and kind.
+
+**States at rest:** running; step 1 running; no approval pending; Needs your input tab active.
+
+**Arrangement:** header across the top and figures beneath it. Plan and Activity sit in the main column. The right pane sits beside them at about a quarter of the width.
+
+**Motion, settled frame:** progress is at its current value. The running step shows its state in words. Under reduced motion it has no moving highlight.
+
+**Defects to fix in ours:**
+- The draft block runs past the bottom of the stage and is clipped.
+- Activity is hidden behind a tab and does not show at rest.
+
+**Checks (continued):**
+16. At rest step 1 reads running, with its two tool calls beneath it, one done and one running. Steps 2 to 5 read pending.
+17. The Activity section sits in the main column under the plan, lists its entries newest first, and at rest shows one entry without any tab.
+18. The draft in the right pane shows nine changes, with Accept all and Reject all above the diff.
+19. The files list (three rows) sits in the right pane under the draft.
+20. At 1280 x 720 without page scroll, the header, figures, all five steps, the Activity section, the draft with its buttons and the files list are all visible.

@@ -47,11 +47,11 @@ pub fn LeadSourcing(
                     filter { id: "{id}-tile", x: "-30%", y: "-30%", width: "160%", height: "160%",
                         feGaussianBlur { "in": "SourceAlpha", "stdDeviation": "4", result: "dropBlur" }
                         feOffset { "in": "dropBlur", dx: "0", dy: "3", result: "dropOffset" }
-                        feFlood { class: "ui-ls-drop", "floodColor": "#000000", "floodOpacity": "0.06", result: "dropColor" }
+                        feFlood { class: "ui-ls-drop", flood_color: "#000000", flood_opacity: "0.06", result: "dropColor" }
                         feComposite { "in": "dropColor", "in2": "dropOffset", operator: "in", result: "dropShadow" }
                         feOffset { "in": "SourceAlpha", dx: "0", dy: "-4", result: "alphaUp" }
                         feComposite { "in": "SourceAlpha", "in2": "alphaUp", operator: "out", result: "bottomSliver" }
-                        feFlood { class: "ui-ls-sliver", "floodColor": "#EAECEF", "floodOpacity": "1", result: "innerColor" }
+                        feFlood { class: "ui-ls-sliver", flood_color: "#EAECEF", flood_opacity: "1", result: "innerColor" }
                         feComposite { "in": "innerColor", "in2": "bottomSliver", operator: "in", result: "innerShadow" }
                         feMerge {
                             feMergeNode { "in": "dropShadow" }
@@ -63,28 +63,28 @@ pub fn LeadSourcing(
                         feGaussianBlur { "stdDeviation": "10" }
                     }
                     linearGradient { id: "{id}-blob", x1: "0%", y1: "0%", x2: "100%", y2: "0%",
-                        stop { offset: "0%", "stopColor": "#FFA0AB", "stopOpacity": "0.6" }
-                        stop { offset: "33%", "stopColor": "#FFB89E", "stopOpacity": "0.6" }
-                        stop { offset: "66%", "stopColor": "#C8A8E5", "stopOpacity": "0.6" }
-                        stop { offset: "100%", "stopColor": "#A8B5FF", "stopOpacity": "0.6" }
+                        stop { offset: "0%", stop_color: "#FFA0AB", stop_opacity: "0.6" }
+                        stop { offset: "33%", stop_color: "#FFB89E", stop_opacity: "0.6" }
+                        stop { offset: "66%", stop_color: "#C8A8E5", stop_opacity: "0.6" }
+                        stop { offset: "100%", stop_color: "#A8B5FF", stop_opacity: "0.6" }
                     }
                     linearGradient { id: "{id}-edge", x1: "0%", y1: "0%", x2: "100%", y2: "0%",
-                        stop { class: "ui-ls-gray", offset: "0%", "stopColor": "#E4E7EC" }
-                        stop { offset: "18%", "stopColor": "#FFB5BC" }
-                        stop { offset: "40%", "stopColor": "#FFC5AB" }
-                        stop { offset: "60%", "stopColor": "#D5BBEF" }
-                        stop { offset: "82%", "stopColor": "#B5C0FF" }
-                        stop { class: "ui-ls-gray", offset: "100%", "stopColor": "#E4E7EC" }
+                        stop { class: "ui-ls-gray", offset: "0%", stop_color: "#E4E7EC" }
+                        stop { offset: "18%", stop_color: "#FFB5BC" }
+                        stop { offset: "40%", stop_color: "#FFC5AB" }
+                        stop { offset: "60%", stop_color: "#D5BBEF" }
+                        stop { offset: "82%", stop_color: "#B5C0FF" }
+                        stop { class: "ui-ls-gray", offset: "100%", stop_color: "#E4E7EC" }
                     }
                     linearGradient { id: "{id}-shine", "gradientUnits": "userSpaceOnUse", x1: "-195", y1: "120", x2: "195", y2: "120",
-                        stop { class: "ui-ls-gray", offset: "0%", "stopColor": "#E4E7EC" }
-                        stop { class: "ui-ls-gray", offset: "43%", "stopColor": "#E4E7EC" }
-                        stop { offset: "46%", "stopColor": "#FF6B5C" }
-                        stop { offset: "48%", "stopColor": "#FFB89E" }
-                        stop { offset: "50%", "stopColor": "#C8A8E5" }
-                        stop { offset: "52%", "stopColor": "#A8B5FF" }
-                        stop { class: "ui-ls-gray", offset: "56%", "stopColor": "#E4E7EC" }
-                        stop { class: "ui-ls-gray", offset: "100%", "stopColor": "#E4E7EC" }
+                        stop { class: "ui-ls-gray", offset: "0%", stop_color: "#E4E7EC" }
+                        stop { class: "ui-ls-gray", offset: "43%", stop_color: "#E4E7EC" }
+                        stop { offset: "46%", stop_color: "#FF6B5C" }
+                        stop { offset: "48%", stop_color: "#FFB89E" }
+                        stop { offset: "50%", stop_color: "#C8A8E5" }
+                        stop { offset: "52%", stop_color: "#A8B5FF" }
+                        stop { class: "ui-ls-gray", offset: "56%", stop_color: "#E4E7EC" }
+                        stop { class: "ui-ls-gray", offset: "100%", stop_color: "#E4E7EC" }
                         if motion() {
                             animate { "attributeName": "x1", values: "-195;125;125", "keyTimes": "0;0.3;1", dur: "3.6s", "repeatCount": "indefinite" }
                             animate { "attributeName": "x2", values: "195;515;515", "keyTimes": "0;0.3;1", dur: "3.6s", "repeatCount": "indefinite" }
@@ -92,55 +92,55 @@ pub fn LeadSourcing(
                     }
                     for (corner, _, _, ix, iy, mask_x, mask_y) in TILES.map(|(corner, x, y, ix, iy)| (corner, x, y, ix, iy, x - 16.0, y - 16.0)) {
                         radialGradient { key: "{corner}", id: "{id}-fade-{corner}", "gradientUnits": "userSpaceOnUse", cx: "{ix}", cy: "{iy}", r: "78",
-                            stop { offset: "0%", "stopColor": "#FFFFFF" }
-                            stop { offset: "38%", "stopColor": "#FFFFFF" }
-                            stop { offset: "100%", "stopColor": "#000000" }
+                            stop { offset: "0%", stop_color: "#FFFFFF" }
+                            stop { offset: "38%", stop_color: "#FFFFFF" }
+                            stop { offset: "100%", stop_color: "#000000" }
                         }
                         mask { id: "{id}-mask-{corner}", "maskUnits": "userSpaceOnUse", x: "{mask_x}", y: "{mask_y}", width: "82", height: "88",
                             rect { x: "{mask_x}", y: "{mask_y}", width: "82", height: "88", fill: "url(#{id}-fade-{corner})" }
                         }
                     }
                     linearGradient { id: "{id}-ends", "gradientUnits": "userSpaceOnUse", x1: "25", y1: "120", x2: "295", y2: "120",
-                        stop { offset: "0%", "stopColor": "#000000" }
-                        stop { offset: "22%", "stopColor": "#FFFFFF" }
-                        stop { offset: "78%", "stopColor": "#FFFFFF" }
-                        stop { offset: "100%", "stopColor": "#000000" }
+                        stop { offset: "0%", stop_color: "#000000" }
+                        stop { offset: "22%", stop_color: "#FFFFFF" }
+                        stop { offset: "78%", stop_color: "#FFFFFF" }
+                        stop { offset: "100%", stop_color: "#000000" }
                     }
                     mask { id: "{id}-ends-mask", "maskUnits": "userSpaceOnUse", x: "20", y: "115", width: "280", height: "10",
                         rect { x: "20", y: "115", width: "280", height: "10", fill: "url(#{id}-ends)" }
                     }
                     linearGradient { id: "{id}-gmail-0", "gradientUnits": "userSpaceOnUse", x1: "50.3153", y1: "5.76727", x2: "50.3153", y2: "44.8701",
-                        stop { offset: "0", "stopColor": "#60D673" }
-                        stop { offset: "0.17", "stopColor": "#42C868" }
-                        stop { offset: "0.39", "stopColor": "#0EBC5F" }
-                        stop { offset: "0.62", "stopColor": "#00A9BB" }
-                        stop { offset: "0.86", "stopColor": "#3C90FF" }
-                        stop { offset: "1", "stopColor": "#3186FF" }
+                        stop { offset: "0", stop_color: "#60D673" }
+                        stop { offset: "0.17", stop_color: "#42C868" }
+                        stop { offset: "0.39", stop_color: "#0EBC5F" }
+                        stop { offset: "0.62", stop_color: "#00A9BB" }
+                        stop { offset: "0.86", stop_color: "#3C90FF" }
+                        stop { offset: "1", stop_color: "#3186FF" }
                     }
                     linearGradient { id: "{id}-gmail-1", "gradientUnits": "userSpaceOnUse", x1: "6.04194e-05", y1: "6.45153", x2: "56.4107", y2: "6.45153",
-                        stop { offset: "0.08", "stopColor": "#FF63A0" }
-                        stop { offset: "0.3", "stopColor": "#FC413D" }
-                        stop { offset: "0.5", "stopColor": "#FC413D" }
-                        stop { offset: "0.65", "stopColor": "#FC413D" }
-                        stop { offset: "0.72", "stopColor": "#FC5C30" }
-                        stop { offset: "0.86", "stopColor": "#FEB10C" }
-                        stop { offset: "0.91", "stopColor": "#FEC700" }
-                        stop { offset: "0.96", "stopColor": "#FFDB0F" }
+                        stop { offset: "0.08", stop_color: "#FF63A0" }
+                        stop { offset: "0.3", stop_color: "#FC413D" }
+                        stop { offset: "0.5", stop_color: "#FC413D" }
+                        stop { offset: "0.65", stop_color: "#FC413D" }
+                        stop { offset: "0.72", stop_color: "#FC5C30" }
+                        stop { offset: "0.86", stop_color: "#FEB10C" }
+                        stop { offset: "0.91", stop_color: "#FEC700" }
+                        stop { offset: "0.96", stop_color: "#FFDB0F" }
                     }
                 }
 
                 ellipse { cx: "160", cy: "152", rx: "22", ry: "8", fill: "url(#{id}-blob)", filter: "url(#{id}-blur)" }
 
-                line { x1: "25", y1: "120", x2: "295", y2: "120", stroke: "url(#{id}-shine)", "strokeWidth": "1.5", mask: "url(#{id}-ends-mask)" }
+                line { x1: "25", y1: "120", x2: "295", y2: "120", stroke: "url(#{id}-shine)", stroke_width: "1.5", mask: "url(#{id}-ends-mask)" }
 
-                rect { class: "ui-ls-tile", x: "45", y: "95", width: "50", height: "50", rx: "10", fill: "#FFFFFF", stroke: "#E4E7EC", "strokeWidth": "0.5", filter: "url(#{id}-tile)" }
+                rect { class: "ui-ls-tile", x: "45", y: "95", width: "50", height: "50", rx: "10", fill: "#FFFFFF", stroke: "#E4E7EC", stroke_width: "0.5", filter: "url(#{id}-tile)" }
                 svg { x: "58", y: "110.45", width: "24", height: "{gmail_h}", "viewBox": "0 0 56.4108 44.8722", fill: "none",
                     path { d: GMAIL_RIGHT, fill: "url(#{id}-gmail-0)" }
                     path { d: GMAIL_LEFT, fill: "#FC413D" }
                     path { d: GMAIL_MID, fill: "url(#{id}-gmail-1)" }
                 }
 
-                rect { class: "ui-ls-tile", x: "225", y: "95", width: "50", height: "50", rx: "10", fill: "#FFFFFF", stroke: "#E4E7EC", "strokeWidth": "0.5", filter: "url(#{id}-tile)" }
+                rect { class: "ui-ls-tile", x: "225", y: "95", width: "50", height: "50", rx: "10", fill: "#FFFFFF", stroke: "#E4E7EC", stroke_width: "0.5", filter: "url(#{id}-tile)" }
                 svg { x: "238", y: "107", width: "26", height: "26", "viewBox": "0 0 33.4 32", overflow: "visible",
                     path { class: "ui-ls-mark", fill: "#171717", d: GROK_TOP }
                     path { class: "ui-ls-mark", fill: "#171717", d: GROK_BOTTOM }
@@ -148,12 +148,12 @@ pub fn LeadSourcing(
 
                 for (corner, x, y, _, _) in TILES {
                     g { key: "e{corner}", mask: "url(#{id}-mask-{corner})",
-                        rect { class: "ui-ls-tile", x: "{x}", y: "{y}", width: "50", height: "50", rx: "10", fill: "#FFFFFF", stroke: "#E4E7EC", "strokeWidth": "0.5", filter: "url(#{id}-tile)" }
+                        rect { class: "ui-ls-tile", x: "{x}", y: "{y}", width: "50", height: "50", rx: "10", fill: "#FFFFFF", stroke: "#E4E7EC", stroke_width: "0.5", filter: "url(#{id}-tile)" }
                     }
                 }
 
-                rect { class: "ui-ls-tile", x: "128", y: "88", width: "64", height: "64", rx: "14", fill: "#FFFFFF", stroke: "#E4E7EC", "strokeWidth": "0.5", filter: "url(#{id}-tile)" }
-                path { d: "M128 138 A 14 14 0 0 0 142 152 L178 152 A 14 14 0 0 0 192 138", fill: "none", stroke: "url(#{id}-edge)", "strokeWidth": "0.5" }
+                rect { class: "ui-ls-tile", x: "128", y: "88", width: "64", height: "64", rx: "14", fill: "#FFFFFF", stroke: "#E4E7EC", stroke_width: "0.5", filter: "url(#{id}-tile)" }
+                path { d: "M128 138 A 14 14 0 0 0 142 152 L178 152 A 14 14 0 0 0 192 138", fill: "none", stroke: "url(#{id}-edge)", stroke_width: "0.5" }
                 svg { x: "146", y: "106", width: "28", height: "28", "viewBox": "0 0 68.614 68.002", overflow: "visible",
                     path { class: "ui-ls-mark", fill: "#171717", d: CHATGPT }
                 }

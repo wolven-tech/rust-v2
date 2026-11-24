@@ -2,29 +2,22 @@
 //! where the money is heading at the current pace, and where it went by project
 //! and by model. Items that deserve a look come last.
 //!
-//! Design choice: the cumulative chart is `SeriesTrendChart`. Actual spend is a
-//! solid line; the forecast is an earlier-period series, drawn dashed from the
-//! last actual day to month end; the budget is a flat series.
-//! Design choice: the selected project's or model's daily bars use
-//! `DailyUsageBars`, and the stat tiles use `MetricTile`.
+//! Design choice: the hero chart is drawn here, not by `SeriesTrendChart`. Its
+//! y axis carries no labels and its x labels sit at fixed days, so it needs its own
+//! geometry. Actual spend is a solid line over an area; the forecast is dashed from
+//! the last actual day to month end; the budget is a flat line at the top.
+//! Design choice: from 761 px the main column and the right panel take fixed
+//! fractions of the content area; below that they stack in one column.
 //! Design choice: the ranked lists are this module's own rows. Each row needs a
 //! change figure with its sign, which the shared composition card does not carry.
-//! Design choice: at 640 px and below a picked project or model opens its panel as a
-//! full-width sheet with a Back control.
 //! Design choice: the hero total counts up over twelve frames when the daily costs
 //! change; reduced motion sets it at once.
 //! Browser checks: the forecast dash starts at the last actual day; the sentence
 //! names the day the budget is passed; Up/Down move through a list; Enter opens
-//! the panel; the chart tooltip shows the day's total; no horizontal scroll at
-//! 320 px.
+//! the panel; no horizontal scroll at 320 px.
 
 use dioxus::prelude::*;
 
-use crate::components::daily_usage_bars::{DailyUsageBars, DayValue, Figure};
-use crate::components::metric_tile::{MetricTile, MetricValue};
-use crate::components::series_trend_chart::{
-    ChartVariant, SeriesTone, SeriesTrendChart, TrendSeries,
-};
 use crate::internal::{KIT_CSS, focus_after_frame, sleep};
 
 const CSS: Asset = asset!("/assets/agent-spend-overview.css");
@@ -287,10 +280,6 @@ pub fn sorted_by_amount(rows: &[Breakdown]) -> Vec<Breakdown> {
     sorted
 }
 
-fn format_axis(value: f64) -> String {
-    format!("{value:.0}")
-}
-
 /// Steps the hero total from `from` to `to` over twelve frames; reduced motion sets it at once.
 async fn count_up(mut shown: Signal<f64>, from: f64, to: f64) {
     let reduce =
@@ -310,16 +299,13 @@ async fn count_up(mut shown: Signal<f64>, from: f64, to: f64) {
     shown.set(to);
 }
 
-/// The symbol `format_money` puts before the amount for `code`.
-fn currency_symbol(code: &str) -> String {
-    format_money(0.0, code)
-        .chars()
-        .take_while(|c| !c.is_ascii_digit() && *c != '-')
-        .collect()
-}
-
-fn format_count(value: u64) -> String {
-    group_thousands(&value.to_string())
+/// Token counts in words of magnitude: `48.2M`, `1.5K`, or the plain count below a thousand.
+pub fn format_tokens(value: u64) -> String {
+    match value {
+        v if v >= 1_000_000 => format!("{:.1}M", v as f64 / 1_000_000.0),
+        v if v >= 1_000 => format!("{:.1}K", v as f64 / 1_000.0),
+        v => v.to_string(),
+    }
 }
 
 fn direction_of(change: Option<f64>) -> &'static str {
@@ -333,6 +319,113 @@ fn direction_of(change: Option<f64>) -> &'static str {
 /// The month's spend against the budget, its forecast, the breakdowns, and the
 /// items to look at. `on_select` fires with the kind and id of a row;
 /// `on_open_item` with the attention item.
+/// Day labels under the hero chart: days 1, 8, 15 and 23, then the last day of the month.
+pub fn axis_days(days_in_month: usize) -> Vec<usize> {
+    let last = days_in_month.max(1);
+    let mut days: Vec<usize> = [1, 8, 15, 23]
+        .into_iter()
+        .filter(|day| *day < last)
+        .collect();
+    days.push(last);
+    days
+}
+
+/// Horizontal position of a day across the plot: 0 at day 1, 100 at the last day.
+pub fn day_x_percent(day: usize, days_in_month: usize) -> f64 {
+    let span = days_in_month.saturating_sub(1).max(1) as f64;
+    day.saturating_sub(1) as f64 / span * 100.0
+}
+
+/// Vertical position from the plot top: 0 at `top_value`, 100 at zero.
+pub fn value_y_percent(value: f64, top_value: f64) -> f64 {
+    if top_value <= 0.0 {
+        return 100.0;
+    }
+    (100.0 - value / top_value * 100.0).clamp(0.0, 100.0)
+}
+
+/// Value at the top of the hero chart: the budget when set, otherwise the
+/// larger of today's total and the month-end forecast, with headroom.
+pub fn chart_top(daily: &[f64], days_in_month: usize, budget: Option<f64>) -> f64 {
+    if let Some(limit) = budget.filter(|limit| *limit > 0.0) {
+        return limit;
+    }
+    let spent = cumulative(daily).last().copied().unwrap_or(0.0);
+    let forecast_peak = forecast_series(daily, days_in_month)
+        .into_iter()
+        .flatten()
+        .fold(0.0_f64, f64::max);
+    (spent.max(forecast_peak) * 1.1).max(1.0)
+}
+
+/// Path data for the hero chart's three shapes, in a 1000 by 100 box.
+struct ChartPaths {
+    spent: String,
+    area: String,
+    forecast: String,
+    dot: Option<(f64, f64)>,
+}
+
+fn polyline(points: &[(f64, f64)]) -> String {
+    points
+        .iter()
+        .enumerate()
+        .map(|(index, (x, y))| {
+            let command = if index == 0 { "M" } else { "L" };
+            format!("{command} {:.1} {:.1}", x * 10.0, y)
+        })
+        .collect::<Vec<_>>()
+        .join(" ")
+}
+
+fn chart_paths(daily: &[f64], days_in_month: usize, top: f64) -> ChartPaths {
+    let running = cumulative(daily);
+    let spent_points: Vec<(f64, f64)> = running
+        .iter()
+        .enumerate()
+        .map(|(index, value)| {
+            (
+                day_x_percent(index + 1, days_in_month),
+                value_y_percent(*value, top),
+            )
+        })
+        .collect();
+    let forecast_points: Vec<(f64, f64)> = forecast_series(daily, days_in_month)
+        .into_iter()
+        .enumerate()
+        .filter_map(|(index, value)| {
+            value.map(|v| {
+                (
+                    day_x_percent(index + 1, days_in_month),
+                    value_y_percent(v, top),
+                )
+            })
+        })
+        .collect();
+    let spent = polyline(&spent_points);
+    let area = match (spent_points.first(), spent_points.last()) {
+        (Some((first_x, _)), Some((last_x, _))) => format!(
+            "{} L {:.1} 100 L {:.1} 100 Z",
+            polyline(&spent_points),
+            last_x * 10.0,
+            first_x * 10.0
+        ),
+        _ => String::new(),
+    };
+    let dot = spent_points.last().copied();
+    ChartPaths {
+        spent,
+        area,
+        forecast: polyline(&forecast_points),
+        dot,
+    }
+}
+
+/// Series token for a row's marker, cycling through the six series tokens.
+fn row_series(index: usize) -> usize {
+    index % 6 + 1
+}
+
 #[component]
 pub fn AgentSpendOverview(
     #[props(into)] month_label: String,
@@ -350,8 +443,8 @@ pub fn AgentSpendOverview(
     #[props(default)] on_open_item: Option<EventHandler<AttentionItem>>,
 ) -> Element {
     let mut selected = use_signal(|| None::<(EntryKind, String)>);
-    let mut sheet_open = use_signal(|| false);
-    let sheet_now = sheet_open();
+    let mut panel_open = use_signal(|| true);
+    let mut tab = use_signal(|| EntryKind::Project);
     let total: f64 = daily_costs.iter().sum();
     let fc = forecast(&daily_costs, days_in_month, budget_amount);
     let sentence = hero_sentence(&fc, budget_amount, &currency_code);
@@ -363,46 +456,48 @@ pub fn AgentSpendOverview(
     }
     let total_text = format_money(shown_total(), &currency_code);
     let zero_text = format_money(0.0, &currency_code);
-    let budget_fraction = budget_amount.map(|limit| (total / limit * 100.0).clamp(0.0, 100.0));
     let budget_text = budget_amount.map_or_else(String::new, |limit| {
+        format!("of {}", format_money(limit, &currency_code))
+    });
+    let budget_share_text = budget_amount.map_or_else(String::new, |limit| {
         format!(
-            "{:.0}% of {}",
-            budget_fraction.unwrap_or(0.0),
-            format_money(limit, &currency_code)
+            "{:.0}% of budget",
+            (total / limit * 100.0).clamp(0.0, 100.0)
         )
     });
-    let budget_width = format!("width: {:.1}%;", budget_fraction.unwrap_or(0.0));
-    let budget_fraction_value = format!("{:.0}", budget_fraction.unwrap_or(0.0));
-    let x_labels: Vec<String> = (1..=days_in_month).map(|d| d.to_string()).collect();
-    let mut series = vec![
-        TrendSeries {
-            name: "Spent".to_string(),
-            values: actual_series(&daily_costs, days_in_month),
-            tone: SeriesTone::Ink,
-            emphasis: true,
-            is_earlier: false,
-        },
-        TrendSeries {
-            name: "Forecast".to_string(),
-            values: forecast_series(&daily_costs, days_in_month),
-            tone: SeriesTone::Muted,
-            emphasis: false,
-            is_earlier: true,
-        },
-    ];
-    if let Some(limit) = budget_amount {
-        series.push(TrendSeries {
-            name: "Budget".to_string(),
-            values: vec![Some(limit); days_in_month],
-            tone: SeriesTone::Warn,
-            emphasis: false,
-            is_earlier: false,
-        });
-    }
+    let top = chart_top(&daily_costs, days_in_month, budget_amount);
+    let paths = chart_paths(&daily_costs, days_in_month, top);
+    let dot_style = paths.dot.map_or_else(String::new, |(x, y)| {
+        format!("left: {x:.2}%; top: {y:.2}%;")
+    });
+    let budget_line_y = budget_amount.map(|limit| value_y_percent(limit, top));
+    let budget_label = budget_amount
+        .map(|limit| format!("Budget {}", format_money(limit, &currency_code)))
+        .unwrap_or_default();
+    let x_labels: Vec<(String, String)> = axis_days(days_in_month)
+        .into_iter()
+        .map(|day| {
+            let label = if day == days_in_month.max(1) {
+                format!("Day {day}")
+            } else {
+                day.to_string()
+            };
+            let style = format!("left: {:.2}%;", day_x_percent(day, days_in_month));
+            (label, style)
+        })
+        .collect();
+    let chart_label = format!(
+        "Cumulative spend by day: {total_text} spent across {} days of {days_in_month}",
+        daily_costs.len()
+    );
     let stats = usage_stats.unwrap_or_default();
-    let tasks_value = f64::from(stats.task_count.unwrap_or(0));
-    let runs_value = f64::from(stats.run_count.unwrap_or(0));
-    let tokens_text = format_count(stats.token_count.unwrap_or(0));
+    let tasks_text = stats
+        .task_count
+        .map_or_else(|| "—".to_string(), |n| n.to_string());
+    let runs_text = stats
+        .run_count
+        .map_or_else(|| "—".to_string(), |n| n.to_string());
+    let tokens_text = format_tokens(stats.token_count.unwrap_or(0));
     let cost_per_task_text = match stats.task_count {
         Some(tasks) if tasks > 0 => format_money(total / f64::from(tasks), &currency_code),
         _ => "—".to_string(),
@@ -411,144 +506,285 @@ pub fn AgentSpendOverview(
     let models = sorted_by_amount(&model_breakdown);
     let project_total: f64 = projects.iter().map(|p| p.amount).sum();
     let model_total: f64 = models.iter().map(|m| m.amount).sum();
-    let panel_source = selected().and_then(|(kind, id)| {
+    let default_pick = projects
+        .first()
+        .map(|row| (EntryKind::Project, row.id.clone()));
+    let picked = selected().or(default_pick);
+    let panel_source = picked.clone().and_then(|(kind, id)| {
         let rows = match kind {
             EntryKind::Project => &project_breakdown,
             EntryKind::Model => &model_breakdown,
         };
         rows.iter().find(|row| row.id == id).cloned()
     });
-    let is_today_live = !daily_costs.is_empty() && daily_costs.len() < days_in_month;
-    let panel_bars: Vec<DayValue> = panel_source.as_ref().map_or_else(Vec::new, |row| {
-        (0..days_in_month)
-            .map(|index| DayValue {
-                day_label: (index + 1).to_string(),
-                day_value: row.daily_costs.get(index).copied(),
+    let panel_bars: Vec<(String, String)> = panel_source.as_ref().map_or_else(Vec::new, |row| {
+        let peak = row.daily_costs.iter().copied().fold(0.0_f64, f64::max);
+        row.daily_costs
+            .iter()
+            .enumerate()
+            .map(|(index, value)| {
+                let height = if peak > 0.0 {
+                    value / peak * 100.0
+                } else {
+                    0.0
+                };
+                let title = format!(
+                    "Day {}: {}",
+                    index + 1,
+                    format_money(*value, &currency_code)
+                );
+                (title, format!("height: {height:.1}%;"))
             })
             .collect()
     });
     let panel_name = panel_source
         .as_ref()
         .map_or_else(String::new, |row| row.entry_name.clone());
-    let panel_figure = panel_source.as_ref().map_or(0.0, |row| row.amount);
+    let panel_amount = panel_source
+        .as_ref()
+        .map_or_else(String::new, |row| format_money(row.amount, &currency_code));
+    let panel_facts = panel_source.as_ref().map_or_else(String::new, |row| {
+        format!("{:.0}% of the month", share_pct(row.amount, total))
+    });
+    let panel_change =
+        panel_source
+            .as_ref()
+            .map_or_else(String::new, |row| match row.change_vs_last_month {
+                Some(change) => format!("{} vs last month", change_words(change)),
+                None => "no comparison".to_string(),
+            });
+    let panel_direction = panel_source
+        .as_ref()
+        .map_or("flat", |row| direction_of(row.change_vs_last_month));
     let panel_tasks: Vec<TopTask> = panel_source
         .as_ref()
         .map_or_else(Vec::new, |row| row.top_tasks.clone());
+    let panel_day_span = format!("Day 1 to day {}", panel_bars.len());
     let attention_list = attention_items.clone();
     let currency = currency_code.clone();
     let projects_currency = currency_code.clone();
     let models_currency = currency_code.clone();
+    let spent_label = format!("Spent in {month_label}");
+    let week_label = format!("Usage, {month_label}");
 
     rsx! {
         document::Link { rel: "stylesheet", href: KIT_CSS }
         document::Link { rel: "stylesheet", href: CSS }
         div {
             class: "kit-aso",
-            "data-sheet": sheet_now.then_some("open"),
             "data-loading": is_loading.then_some("true"),
             "aria-busy": is_loading.then_some("true"),
-            header { class: "kit-aso__head",
-                h2 { class: "kit-aso__title", "{month_label}" }
+            div { class: "kit-aso__main", "aria-label": "{week_label}",
+                div { class: "kit-aso__canvas",
+                    header { class: "kit-aso__head",
+                        h2 { class: "kit-aso__title", "Usage" }
+                        p { class: "kit-aso__month", "{month_label}" }
+                    }
+
+                    if is_loading {
+                        section { class: "kit-aso__hero kit-aso__hero--loading",
+                            span { class: "kit-aso__ph kit-aso__ph--big", "aria-hidden": "true" }
+                            span { class: "kit-aso__ph", "aria-hidden": "true" }
+                        }
+                    } else if is_empty || daily_costs.is_empty() {
+                        section { class: "kit-aso__hero",
+                            p { class: "kit-aso__total", "{zero_text}" }
+                            p { class: "kit-aso__pace", "No spend yet this month. Costs appear here once a run finishes." }
+                        }
+                    } else {
+                        section { class: "kit-aso__hero", "aria-label": "Month so far",
+                            p { class: "kit-aso__spent-label", "{spent_label}" }
+                            p { class: "kit-aso__total-row",
+                                span { class: "kit-aso__total", "{total_text}" }
+                                if !budget_text.is_empty() {
+                                    span { class: "kit-aso__of", "{budget_text}" }
+                                }
+                                if !budget_share_text.is_empty() {
+                                    span { class: "kit-aso__of", "· {budget_share_text}" }
+                                }
+                            }
+                            p { class: "kit-aso__pace", "{sentence}" }
+                            div { class: "kit-aso__chart", role: "img",
+                                "aria-label": "{chart_label}",
+                                div { class: "kit-aso__plot",
+                                    svg { class: "kit-aso__svg", view_box: "0 0 1000 100", preserve_aspect_ratio: "none", "aria-hidden": "true",
+                                        if let Some(y) = budget_line_y {
+                                            line { class: "kit-aso__budget-line", x1: "0", x2: "1000", y1: "{y:.2}", y2: "{y:.2}" }
+                                        }
+                                        path { class: "kit-aso__area", d: "{paths.area}" }
+                                        path { class: "kit-aso__forecast", d: "{paths.forecast}" }
+                                        path { class: "kit-aso__spent", d: "{paths.spent}" }
+                                    }
+                                    if !budget_label.is_empty() {
+                                        span { class: "kit-aso__budget-label", "{budget_label}" }
+                                    }
+                                    if !dot_style.is_empty() {
+                                        span { class: "kit-aso__dot", "aria-hidden": "true", style: "{dot_style}" }
+                                    }
+                                }
+                                div { class: "kit-aso__xaxis", "aria-hidden": "true",
+                                    for (label, position) in x_labels.iter().cloned() {
+                                        span {
+                                            key: "{label}",
+                                            class: "kit-aso__xlabel",
+                                            style: "{position}",
+                                            "{label}"
+                                        }
+                                    }
+                                }
+                            }
+                            div { class: "kit-aso__divider", "aria-hidden": "true" }
+                            section { class: "kit-aso__stats", "aria-label": "Usage",
+                                div { class: "kit-aso__stat",
+                                    span { class: "kit-aso__stat-label", "Tasks" }
+                                    span { class: "kit-aso__stat-value", "{tasks_text}" }
+                                }
+                                div { class: "kit-aso__stat",
+                                    span { class: "kit-aso__stat-label", "Runs" }
+                                    span { class: "kit-aso__stat-value", "{runs_text}" }
+                                }
+                                div { class: "kit-aso__stat",
+                                    span { class: "kit-aso__stat-label", "Cost per task" }
+                                    span { class: "kit-aso__stat-value", "{cost_per_task_text}" }
+                                }
+                                div { class: "kit-aso__stat",
+                                    span { class: "kit-aso__stat-label", "Tokens" }
+                                    span { class: "kit-aso__stat-value", "{tokens_text}" }
+                                }
+                            }
+                        }
+                        section { class: "kit-aso__ranked", "aria-label": "Ranked",
+                            div { class: "kit-aso__ranked-head",
+                                h3 { class: "kit-aso__section-title", "Where it went" }
+                                div { class: "kit-aso__switch", role: "group", "aria-label": "Ranking",
+                                    button {
+                                        r#type: "button",
+                                        class: "kit-aso__seg-btn",
+                                        "aria-pressed": if tab() == EntryKind::Project { "true" } else { "false" },
+                                        onclick: move |_| tab.set(EntryKind::Project),
+                                        "Projects"
+                                    }
+                                    button {
+                                        r#type: "button",
+                                        class: "kit-aso__seg-btn",
+                                        "aria-pressed": if tab() == EntryKind::Model { "true" } else { "false" },
+                                        onclick: move |_| tab.set(EntryKind::Model),
+                                        "Models"
+                                    }
+                                }
+                            }
+                            if tab() == EntryKind::Project {
+                                BreakdownList {
+                                    heading: "Projects",
+                                    rows: projects,
+                                    kind: EntryKind::Project,
+                                    total: project_total,
+                                    code: projects_currency,
+                                    selected: picked.clone(),
+                                    on_pick: move |(kind, id): (EntryKind, String)| {
+                                        selected.set(Some((kind, id.clone())));
+                                        panel_open.set(true);
+                                        if let Some(handler) = on_select {
+                                            handler.call((kind, id));
+                                        }
+                                    },
+                                }
+                            } else {
+                                BreakdownList {
+                                    heading: "Models",
+                                    rows: models,
+                                    kind: EntryKind::Model,
+                                    total: model_total,
+                                    code: models_currency,
+                                    selected: picked.clone(),
+                                    on_pick: move |(kind, id): (EntryKind, String)| {
+                                        selected.set(Some((kind, id.clone())));
+                                        panel_open.set(true);
+                                        if let Some(handler) = on_select {
+                                            handler.call((kind, id));
+                                        }
+                                    },
+                                }
+                            }
+                        }
+                        if !attention_list.is_empty() {
+                            section { class: "kit-aso__attention", "aria-label": "Worth a look",
+                                h3 { class: "kit-aso__section-title", "Worth a look" }
+                                ul { class: "kit-aso__items",
+                                    for item in attention_list.iter() {
+                                        {
+                                            let item_key = item.id.clone();
+                                            let kind_label = item.item_kind.label();
+                                            let item_text = item.text.clone();
+                                            let item_detail = item.detail_text.clone().unwrap_or_default();
+                                            let open_label = format!("Open: {item_text}");
+                                            let target = item.clone();
+                                            rsx! {
+                                                li { key: "{item_key}", class: "kit-aso__item",
+                                                    span { class: "kit-aso__icon", "aria-hidden": "true",
+                                                        svg { class: "kit-aso__glyph", view_box: "0 0 16 16", fill: "none", stroke: "currentColor", stroke_width: "1.5", stroke_linecap: "round", stroke_linejoin: "round",
+                                                            circle { cx: "8", cy: "8", r: "5.5" }
+                                                            path { d: "M8 5.25v3.25M8 10.75v.01" }
+                                                        }
+                                                    }
+                                                    span { class: "kit-aso__item-body",
+                                                        span { class: "kit-aso__item-text", "{item_text}" }
+                                                        if !item_detail.is_empty() {
+                                                            span { class: "kit-aso__meta", "{item_detail}" }
+                                                        }
+                                                    }
+                                                    span { class: "kit-aso__kind", "{kind_label}" }
+                                                    button {
+                                                        r#type: "button",
+                                                        class: "kit-aso__open",
+                                                        "aria-label": "{open_label}",
+                                                        onclick: move |_| {
+                                                            if let Some(handler) = on_open_item {
+                                                                handler.call(target.clone());
+                                                            }
+                                                        },
+                                                        "Open"
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
             }
 
-            if is_loading {
-                section { class: "kit-aso__hero",
-                    span { class: "kit-aso__ph kit-aso__ph--big", "aria-hidden": "true" }
-                    span { class: "kit-aso__ph", "aria-hidden": "true" }
-                }
-                section { class: "kit-aso__chart kit-aso__ph kit-aso__ph--chart", "aria-hidden": "true" }
-            } else if is_empty || daily_costs.is_empty() {
-                section { class: "kit-aso__hero",
-                    p { class: "kit-aso__total", "{zero_text}" }
-                    p { class: "kit-aso__sentence", "No spend yet this month. Costs appear here once a run finishes." }
-                }
-            } else {
-                section { class: "kit-aso__hero", "aria-label": "Month so far",
-                    p { class: "kit-aso__total", "{total_text}" }
-                    if budget_amount.is_some() {
-                        div { class: "kit-aso__budget",
-                            span {
-                                class: "kit-aso__bar",
-                                role: "progressbar",
-                                "aria-valuemin": "0",
-                                "aria-valuemax": "100",
-                                "aria-valuenow": "{budget_fraction_value}",
-                                "aria-label": "Share of budget spent",
-                                span { class: "kit-aso__bar-fill", style: "{budget_width}" }
-                            }
-                            span { class: "kit-aso__meta", "{budget_text}" }
-                        }
-                    }
-                    p { class: "kit-aso__sentence", "{sentence}" }
-                }
-                section { class: "kit-aso__chart", "aria-label": "Cumulative spend by day",
-                    SeriesTrendChart {
-                        x_labels,
-                        series,
-                        variant: ChartVariant::Line,
-                        fmt_value: format_axis,
-                        value_prefix: currency_symbol(&currency_code),
-                        height: 220.0,
-                        label: "Cumulative spend",
-                        empty_message: "No spend yet",
-                    }
-                }
-                section { class: "kit-aso__stats", "aria-label": "Usage",
-                    MetricTile { metric_label: "Tasks", metric_value: MetricValue::Number(tasks_value) }
-                    MetricTile { metric_label: "Runs", metric_value: MetricValue::Number(runs_value) }
-                    MetricTile { metric_label: "Tokens", metric_value: MetricValue::Text(tokens_text) }
-                    MetricTile { metric_label: "Cost per task", metric_value: MetricValue::Text(cost_per_task_text) }
-                }
-                div { class: "kit-aso__lists",
-                    BreakdownList {
-                        heading: "Projects",
-                        rows: projects,
-                        kind: EntryKind::Project,
-                        total: project_total,
-                        code: projects_currency,
-                        selected: selected(),
-                        on_pick: move |(kind, id): (EntryKind, String)| {
-                            selected.set(Some((kind, id.clone())));
-                            sheet_open.set(true);
-                            if let Some(handler) = on_select {
-                                handler.call((kind, id));
-                            }
-                        },
-                    }
-                    BreakdownList {
-                        heading: "Models",
-                        rows: models,
-                        kind: EntryKind::Model,
-                        total: model_total,
-                        code: models_currency,
-                        selected: selected(),
-                        on_pick: move |(kind, id): (EntryKind, String)| {
-                            selected.set(Some((kind, id.clone())));
-                            sheet_open.set(true);
-                            if let Some(handler) = on_select {
-                                handler.call((kind, id));
-                            }
-                        },
-                    }
-                }
-                if panel_source.is_some() {
-                    section { class: "kit-aso__panel", "aria-label": "{panel_name}",
+            if panel_open() && panel_source.is_some() && !is_loading && !is_empty && !daily_costs.is_empty() {
+                section { class: "kit-aso__panel", "aria-label": "{panel_name}",
+                    div { class: "kit-aso__tab",
+                        span { class: "kit-aso__chip", "{panel_name}" }
                         button {
                             r#type: "button",
-                            class: "kit-aso__back",
-                            onclick: move |_| sheet_open.set(false),
-                            "Back to spend"
+                            class: "kit-aso__close",
+                            "aria-label": "Close panel",
+                            onclick: move |_| panel_open.set(false),
+                            svg { class: "kit-aso__glyph", view_box: "0 0 16 16", fill: "none", stroke: "currentColor", stroke_width: "1.5", stroke_linecap: "round", "aria-hidden": "true",
+                                path { d: "M4 4l8 8M12 4l-8 8" }
+                            }
                         }
-                        h3 { class: "kit-aso__panel-title", "{panel_name}" }
-                        DailyUsageBars {
-                            chart_heading: "Daily spend",
-                            day_values: panel_bars,
-                            total_figures: vec![Figure { figure_label: "Spent".to_string(), figure_value: panel_figure }],
-                            is_today_live,
-                            live_badge_text: "Today",
-                            empty_message: "No spend yet",
-                            plot_height: 140.0,
+                    }
+                    p { class: "kit-aso__panel-name",
+                        span { class: "kit-aso__swatch", "aria-hidden": "true" }
+                        "{panel_name}"
+                    }
+                    p { class: "kit-aso__panel-amount", "{panel_amount} · {panel_facts}" }
+                    p { class: "kit-aso__panel-change", "data-direction": "{panel_direction}", "{panel_change}" }
+                    p { class: "kit-aso__panel-label kit-aso__panel-label--day", "Day by day" }
+                    div { class: "kit-aso__bars", role: "img", "aria-label": "Daily spend for {panel_name}",
+                        for (title, style) in panel_bars.iter().cloned() {
+                            span { class: "kit-aso__bar-day", title: "{title}", style: "{style}" }
                         }
+                    }
+                    p { class: "kit-aso__axis", "{panel_day_span}" }
+                    p { class: "kit-aso__panel-label kit-aso__panel-label--cost", "What cost the most" }
+                    div { class: "kit-aso__task-card",
                         if !panel_tasks.is_empty() {
                             ol { class: "kit-aso__tasks",
                                 for task in panel_tasks.iter() {
@@ -558,48 +794,9 @@ pub fn AgentSpendOverview(
                                         let task_cost = format_money(task.cost, &currency);
                                         rsx! {
                                             li { key: "{task_title}",
-                                                span { "{task_title}" }
+                                                span { class: "kit-aso__task-title", "{task_title}" }
                                                 span { class: "kit-aso__meta", "{task_runs}" }
                                                 span { class: "kit-aso__num", "{task_cost}" }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-                if !attention_list.is_empty() {
-                    section { class: "kit-aso__attention", "aria-label": "Worth a look",
-                        h3 { class: "kit-aso__section-title", "Worth a look" }
-                        ul { class: "kit-aso__items",
-                            for item in attention_list.iter() {
-                                {
-                                    let item_key = item.id.clone();
-                                    let kind_label = item.item_kind.label();
-                                    let item_text = item.text.clone();
-                                    let item_detail = item.detail_text.clone().unwrap_or_default();
-                                    let open_label = format!("Open: {item_text}");
-                                    let target = item.clone();
-                                    rsx! {
-                                        li { key: "{item_key}", class: "kit-aso__item",
-                                            span { class: "kit-aso__kind", "{kind_label}" }
-                                            span { class: "kit-aso__item-body",
-                                                span { class: "kit-aso__item-text", "{item_text}" }
-                                                if !item_detail.is_empty() {
-                                                    span { class: "kit-aso__meta", "{item_detail}" }
-                                                }
-                                            }
-                                            button {
-                                                r#type: "button",
-                                                class: "kit-aso__open",
-                                                "aria-label": "{open_label}",
-                                                onclick: move |_| {
-                                                    if let Some(handler) = on_open_item {
-                                                        handler.call(target.clone());
-                                                    }
-                                                },
-                                                "Open"
                                             }
                                         }
                                     }
@@ -626,59 +823,62 @@ fn BreakdownList(
     let base = format!("kit-aso-{}", kind.as_str());
     let count = rows.len();
     rsx! {
-        section { class: "kit-aso__list", "aria-label": "{heading}",
-            h3 { class: "kit-aso__section-title", "{heading}" }
-            ol { class: "kit-aso__rows",
-                for (index, row) in rows.iter().enumerate() {
-                    {
-                        let row_key = row.id.clone();
-                        let row_id = format!("{base}-{index}");
-                        let row_name = row.entry_name.clone();
-                        let row_amount = format_money(row.amount, &code);
-                        let row_share = share_pct(row.amount, total);
-                        let share_text = format!("{row_share:.0}%");
-                        let share_width = format!("width: {row_share:.1}%;");
-                        let share_label = format!(
-                            "{row_name}, {row_amount}, {row_share:.0} percent of {heading}"
-                        );
-                        let pressed = selected
-                            .as_ref()
-                            .is_some_and(|(k, id)| *k == kind && *id == row.id)
-                            .to_string();
-                        let direction = direction_of(row.change_vs_last_month);
-                        let change_text = match row.change_vs_last_month {
-                            Some(change) => format!("{} vs last month", change_words(change)),
-                            None => "no comparison".to_string(),
-                        };
-                        let pick_id = row.id.clone();
-                        let focus_base = base.clone();
-                        rsx! {
-                            li { key: "{row_key}",
-                                button {
-                                    id: "{row_id}",
-                                    r#type: "button",
-                                    class: "kit-aso__row",
-                                    "aria-pressed": "{pressed}",
-                                    "aria-label": "{share_label}",
-                                    onclick: move |_| on_pick.call((kind, pick_id.clone())),
-                                    onkeydown: move |event: KeyboardEvent| {
-                                        let delta: isize = match event.key() {
-                                            Key::ArrowDown => 1,
-                                            Key::ArrowUp => -1,
-                                            _ => return,
-                                        };
-                                        let next = index as isize + delta;
-                                        if next >= 0 && (next as usize) < count {
-                                            focus_after_frame(&format!("{focus_base}-{next}"));
-                                        }
-                                    },
-                                    span { class: "kit-aso__row-name", "{row_name}" }
-                                    span { class: "kit-aso__num", "{row_amount}" }
-                                    span { class: "kit-aso__share", "{share_text}" }
-                                    span { class: "kit-aso__change", "data-direction": "{direction}", "{change_text}" }
-                                    span { class: "kit-aso__bar kit-aso__bar--share", "aria-hidden": "true",
-                                        span { class: "kit-aso__bar-fill", style: "{share_width}" }
+        ol { class: "kit-aso__rows", "aria-label": "{heading}",
+            for (index, row) in rows.iter().enumerate() {
+                {
+                    let row_key = row.id.clone();
+                    let row_id = format!("{base}-{index}");
+                    let row_name = row.entry_name.clone();
+                    let row_amount = format_money(row.amount, &code);
+                    let row_share = share_pct(row.amount, total);
+                    let share_text = format!("{row_share:.0}%");
+                    let share_width = format!("width: {row_share:.1}%;");
+                    let series = format!("{}", row_series(index));
+                    let share_label = format!(
+                        "{row_name}, {row_amount}, {row_share:.0} percent of {heading}"
+                    );
+                    let pressed = selected
+                        .as_ref()
+                        .is_some_and(|(k, id)| *k == kind && *id == row.id)
+                        .to_string();
+                    let direction = direction_of(row.change_vs_last_month);
+                    let change_text = match row.change_vs_last_month {
+                        Some(change) => change_words(change),
+                        None => "no comparison".to_string(),
+                    };
+                    let pick_id = row.id.clone();
+                    let focus_base = base.clone();
+                    rsx! {
+                        li { key: "{row_key}", class: "kit-aso__cell",
+                            button {
+                                id: "{row_id}",
+                                r#type: "button",
+                                class: "kit-aso__row",
+                                "data-series": "{series}",
+                                "aria-pressed": "{pressed}",
+                                "aria-label": "{share_label}",
+                                onclick: move |_| on_pick.call((kind, pick_id.clone())),
+                                onkeydown: move |event: KeyboardEvent| {
+                                    let delta: isize = match event.key() {
+                                        Key::ArrowDown => 1,
+                                        Key::ArrowUp => -1,
+                                        _ => return,
+                                    };
+                                    let next = index as isize + delta;
+                                    if next >= 0 && (next as usize) < count {
+                                        focus_after_frame(&format!("{focus_base}-{next}"));
                                     }
+                                },
+                                span { class: "kit-aso__marker", "aria-hidden": "true" }
+                                span { class: "kit-aso__row-name", "{row_name}" }
+                                span { class: "kit-aso__bar", "aria-hidden": "true",
+                                    span { class: "kit-aso__bar-fill", style: "{share_width}" }
+                                }
+                                span { class: "kit-aso__num", "{row_amount}" }
+                                span { class: "kit-aso__share", "{share_text}" }
+                                span { class: "kit-aso__change", "data-direction": "{direction}", "{change_text}" }
+                                svg { class: "kit-aso__chevron", view_box: "0 0 16 16", fill: "none", stroke: "currentColor", stroke_width: "1.5", stroke_linecap: "round", stroke_linejoin: "round", "aria-hidden": "true",
+                                    path { d: "M6 3.5 10.5 8 6 12.5" }
                                 }
                             }
                         }

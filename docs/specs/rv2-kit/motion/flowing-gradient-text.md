@@ -55,3 +55,23 @@ In reading order:
 4. With reduced motion preferred, the text shows the fixed gradient and no sweep or flow.
 5. The replay control is reachable by keyboard and named.
 6. At phone width the text wraps and nothing scrolls sideways.
+
+## Amendment 5: structure and demo
+
+Archetype: display headline on two lines with one emphasised phrase, and a replay control beneath it.
+
+Visible at rest:
+- Headline at the display heading token, two lines, centred.
+- Emphasised phrase: the last two words of the second line, carrying the gradient. The rest of the headline is plain text.
+- Replay control centred below the headline.
+
+Gallery demo: "Every figure traces back to its source." Emphasis: "its source."
+
+Motion, settled frame: gradient fully shown after the sweep; flow continues slowly.
+Moves: the sweep runs once across the emphasised phrase on first view. Replay restarts the sweep. The flow continues throughout.
+Reduced motion: fixed gradient, no sweep, no flow.
+
+Acceptance checks (continued):
+7. The headline uses the display heading token and sets on two lines at desktop width.
+8. Only the emphasised phrase carries the gradient; the first line is plain text.
+9. The replay control is centred under the headline.

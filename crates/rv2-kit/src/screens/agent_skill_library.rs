@@ -378,12 +378,23 @@ pub fn AgentSkillLibrary(
                     h2 { class: "kit-asl__title", "Skills" }
                     p { class: "kit-asl__meta", "{count_text}" }
                 }
-                button {
-                    r#type: "button",
-                    class: "kit-asl__primary",
-                    "aria-expanded": dialog_now.to_string(),
-                    onclick: move |_| dialog_open.toggle(),
-                    "New skill"
+                div { class: "kit-asl__head-actions",
+                    input {
+                        id: "{search_id}",
+                        class: "kit-asl__search",
+                        r#type: "search",
+                        placeholder: "Search skills",
+                        "aria-label": "Search skills",
+                        value: "{query}",
+                        oninput: move |event| query.set(event.value()),
+                    }
+                    button {
+                        r#type: "button",
+                        class: "kit-asl__primary",
+                        "aria-expanded": dialog_now.to_string(),
+                        onclick: move |_| dialog_open.toggle(),
+                        "New skill"
+                    }
                 }
             }
 
@@ -446,15 +457,6 @@ pub fn AgentSkillLibrary(
                             }
                         }
                     }
-                }
-                input {
-                    id: "{search_id}",
-                    class: "kit-asl__search",
-                    r#type: "search",
-                    placeholder: "Search skills",
-                    "aria-label": "Search skills",
-                    value: "{query}",
-                    oninput: move |event| query.set(event.value()),
                 }
             }
 
@@ -639,7 +641,7 @@ pub fn AgentSkillLibrary(
                 div { class: "kit-asl__body",
                     div { class: "kit-asl__sections",
                         section { class: "kit-asl__section", "aria-label": "Installed",
-                            h3 { class: "kit-asl__section-title", "Installed" }
+                            h3 { class: "kit-asl__section-title", "Installed · {installed_count}" }
                             ul { class: "kit-asl__grid", role: "list",
                                 for skill in installed.iter().cloned() {
                                     {
@@ -652,7 +654,10 @@ pub fn AgentSkillLibrary(
                                         let toggle_id = skill.id.clone();
                                         let is_open = open_id().as_deref() == Some(skill.id.as_str());
                                         let description = skill.entry_description.clone();
-                                        let source = skill.source_kind.label();
+                                        let source = match (skill.source_kind, skill.author_name.as_deref()) {
+                                            (SkillSource::Community, Some(handle)) => handle.to_string(),
+                                            (kind, _) => kind.label().to_string(),
+                                        };
                                         let card_name_text = skill.entry_name.clone();
                                         rsx! {
                                             li { key: "{card_key}", class: "kit-asl__item", "data-enabled": "{enabled}",
@@ -694,7 +699,8 @@ pub fn AgentSkillLibrary(
                             }
                         }
                         section { class: "kit-asl__section", "aria-label": "Discover",
-                            h3 { class: "kit-asl__section-title", "Discover" }
+                            h3 { class: "kit-asl__section-title", "Discover · {discover.len()}" }
+                            p { class: "kit-asl__meta", "Skills from the catalogue that are not installed yet." }
                             ul { class: "kit-asl__grid", role: "list",
                                 for skill in discover.iter().cloned() {
                                     {
@@ -705,7 +711,7 @@ pub fn AgentSkillLibrary(
                                         let installing_this = installing_now.contains(&skill.id);
                                         let install_label = if installing_this { "Installing" } else { "Install" };
                                         let install_aria = format!("Install {}", skill.entry_name);
-                                        let installs = skill.install_count.map_or_else(String::new, |n| format!("{n} installs"));
+                                        let uses = skill.install_count.map_or_else(String::new, |n| format!("{n} use it"));
                                         let description = skill.entry_description.clone();
                                         let card_name_text = skill.entry_name.clone();
                                         rsx! {
@@ -713,7 +719,7 @@ pub fn AgentSkillLibrary(
                                                 div { class: "kit-asl__card kit-asl__card--discover", "aria-label": "{card_label}",
                                                     span { class: "kit-asl__card-name", "{card_name_text}" }
                                                     span { class: "kit-asl__meta", "{description}" }
-                                                    span { class: "kit-asl__meta", "{installs}" }
+                                                    span { class: "kit-asl__meta", "{uses}" }
                                                 }
                                                 button {
                                                     r#type: "button",
@@ -757,6 +763,9 @@ pub fn AgentSkillLibrary(
                             let requirements = skill.requirement_list.clone();
                             let bars = skill.daily_run_counts.clone();
                             let peak = bars.iter().copied().max().unwrap_or(1).max(1);
+                            let week_runs: u32 = bars.iter().rev().take(7).sum();
+                            let switch_text = if skill.is_enabled { "Turn off" } else { "Turn on" };
+                            let version = skill.version_label.clone().unwrap_or_default();
                             let usage = skill.usage_log.clone();
                             let panel_label = format!("Skill: {title}");
                             let enabled = skill.is_enabled;
@@ -767,10 +776,13 @@ pub fn AgentSkillLibrary(
                                     div { class: "kit-asl__panel-head",
                                         h3 { class: "kit-asl__panel-title", "{title}" }
                                         span { class: "kit-asl__tag", "{source}" }
+                                        if !version.is_empty() {
+                                            span { class: "kit-asl__meta", "v{version}" }
+                                        }
                                     }
                                     Switch {
                                         class: "kit-asl__switch kit-asl__switch--panel",
-                                        label: rsx! { "Enabled" },
+                                        label: rsx! { "{switch_text}" },
                                         checked: enabled,
                                         "aria-label": "{panel_label} enabled",
                                         onchange: move |event: FormEvent| {
@@ -818,6 +830,19 @@ pub fn AgentSkillLibrary(
                                             }
                                         }
                                     }
+                                    section { class: "kit-asl__block", "aria-label": "Last 14 days",
+                                        h4 { class: "kit-asl__section-title", "Last 14 days" }
+                                        div { class: "kit-asl__bars", role: "img", "aria-label": "Runs over the last 14 days",
+                                            for (index, value) in bars.iter().enumerate() {
+                                                {
+                                                    let bar_key = format!("{index}");
+                                                    let height = format!("{:.0}%", f64::from(*value) / f64::from(peak) * 100.0);
+                                                    rsx! { span { key: "{bar_key}", class: "kit-asl__bar", style: "height: {height};" } }
+                                                }
+                                            }
+                                        }
+                                        p { class: "kit-asl__meta", "{week_runs} runs this week" }
+                                    }
                                     section { class: "kit-asl__block", "aria-label": "When it applies",
                                         h4 { class: "kit-asl__section-title", "When it applies" }
                                         ul { class: "kit-asl__list",
@@ -859,18 +884,6 @@ pub fn AgentSkillLibrary(
                                                             }
                                                         }
                                                     }
-                                                }
-                                            }
-                                        }
-                                    }
-                                    section { class: "kit-asl__block", "aria-label": "Last 14 days",
-                                        h4 { class: "kit-asl__section-title", "Last 14 days" }
-                                        div { class: "kit-asl__bars", role: "img", "aria-label": "Runs over the last 14 days",
-                                            for (index, value) in bars.iter().enumerate() {
-                                                {
-                                                    let bar_key = format!("{index}");
-                                                    let height = format!("{:.0}%", f64::from(*value) / f64::from(peak) * 100.0);
-                                                    rsx! { span { key: "{bar_key}", class: "kit-asl__bar", style: "height: {height};" } }
                                                 }
                                             }
                                         }

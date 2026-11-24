@@ -317,6 +317,9 @@ pub fn MessageActions(
     /// A thumbs down that is sent carries its reason.
     #[props(default)]
     on_feedback: Option<EventHandler<(Option<FeedbackKind>, Option<String>)>>,
+    /// Starts with a thumbs down and its reasons open, as a message the user has just rated.
+    #[props(default)]
+    feedback_open: bool,
     /// Quick reasons in the feedback row. `Other` opens a small text field.
     #[props(default = DEFAULT_REASONS.iter().map(|r| r.to_string()).collect())]
     reasons: Vec<String>,
@@ -344,8 +347,8 @@ pub fn MessageActions(
     let count = version_count(versions);
     let mut inner = use_signal(|| clamp_index(default_version.unwrap_or(count - 1), count));
     let mut seen_count = use_signal(move || count);
-    let mut vote = use_signal(|| None::<FeedbackKind>);
-    let mut panel = use_signal(|| false);
+    let mut vote = use_signal(move || feedback_open.then_some(FeedbackKind::Down));
+    let mut panel = use_signal(move || feedback_open);
     let mut reason = use_signal(|| None::<String>);
     let mut other = use_signal(String::new);
     let mut sent = use_signal(|| false);

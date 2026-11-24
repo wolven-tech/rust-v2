@@ -19,18 +19,44 @@ use rv2_affect::illustrations::team_invite::{TeamInvite, TeamInviteAvatar};
 
 use crate::{Item, Section};
 
-fn member(role: &str) -> AgentTeamMember {
+/// Initials on a flat colour, as an SVG data URI: the demo ships no image files.
+fn initials(text: &str, fill: &str) -> String {
+    let svg = format!(
+        "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' fill='{fill}'/><text x='32' y='40' font-family='sans-serif' font-size='24' font-weight='600' text-anchor='middle' fill='white'>{text}</text></svg>"
+    );
+    let encoded = svg
+        .replace('#', "%23")
+        .replace('<', "%3C")
+        .replace('>', "%3E")
+        .replace(' ', "%20");
+    format!("data:image/svg+xml,{encoded}")
+}
+
+fn member(role: &str, text: &str, fill: &str) -> AgentTeamMember {
     AgentTeamMember {
         role: role.into(),
-        avatar: "avatars/agent.png".into(),
+        avatar: initials(text, fill),
         tools: vec![AgentTool::Slack, AgentTool::Gmail],
     }
 }
 
-fn avatar(name: &str) -> TeamInviteAvatar {
+fn avatar(name: &str, text: &str, fill: &str) -> TeamInviteAvatar {
     TeamInviteAvatar {
-        src: "avatars/person.png".into(),
+        src: initials(text, fill),
         name: Some(name.into()),
+    }
+}
+
+fn sheet(title: &str, from: &str, to: &str) -> CoverFlowItem {
+    CoverFlowItem {
+        id: title.into(),
+        title: Some(title.into()),
+        subtitle: Some(format!("{from} → {to}")),
+        image: None,
+        alt: Some(title.into()),
+        cover: Some(rsx! {
+            div { style: "height: 100%; background: linear-gradient(160deg, {from}, {to})" }
+        }),
     }
 }
 
@@ -43,16 +69,24 @@ pub fn Illustrations() -> Element {
     rsx! {
         Section { id: "illustrations", title: "Illustrations",
             Item { name: "AgentTeam",
-                AgentTeam { members: [member("SDR"), member("AE"), member("CSM")] }
+                AgentTeam { members: [member("Lead researcher", "LR", "#FF8A7A"), member("Outreach writer", "OW", "#7A8CFF"), member("Deal scorer", "DS", "#3CB98A")] }
             }
-            Item { name: "CoverFlow",
-                div { class: "gl-box",
+            Item { name: "CoverFlow", wide: true,
+                div { style: "width: 100%;",
                     CoverFlow {
                         items: vec![
-                            CoverFlowItem::titled("1", "Night Drive"),
-                            CoverFlowItem::titled("2", "Harbour"),
-                            CoverFlowItem::titled("3", "Glass Hall"),
+                            sheet("Dawn", "#FFF4E5", "#FFD3A8"),
+                            sheet("Mint", "#E8FAF1", "#B3E6CC"),
+                            sheet("Sky", "#EAF3FF", "#B5D4FA"),
+                            sheet("Sage", "#F0F6EA", "#C9DDB5"),
+                            sheet("Rosewater", "#FDF0F5", "#F4B6D2"),
+                            sheet("Sand", "#FBF6E9", "#EFDFB0"),
+                            sheet("Lilac", "#F3EFFD", "#CFC3F5"),
+                            sheet("Ice", "#EEF9FC", "#B8E3EE"),
+                            sheet("Peach", "#FFF2EC", "#FFC4B0"),
                         ],
+                        item_width: 200.0,
+                        item_height: 264.0,
                         on_index_change: move |i: usize| cover.set(i),
                         on_select: move |_| {},
                     }
@@ -108,7 +142,7 @@ pub fn Illustrations() -> Element {
                 TabOverload {}
             }
             Item { name: "TeamInvite",
-                TeamInvite { avatars: [avatar("Ada"), avatar("Ben"), avatar("Cy")] }
+                TeamInvite { avatars: [avatar("Ada", "A", "#F4A6B7"), avatar("Ben", "B", "#8FB8F5"), avatar("Cy", "C", "#9ED9B8")] }
             }
         }
     }

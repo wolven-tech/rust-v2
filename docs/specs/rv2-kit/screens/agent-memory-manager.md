@@ -79,3 +79,29 @@ Sidebar; tabs with counts; tree view with group headings and rows; source badge;
 6. When `last_used_at` changes on a row, that row shows the recall highlight once.
 7. Arrow keys move through the tree, and each heading reports whether it is expanded or collapsed.
 8. With `is_empty` set on each tab, the matching empty note appears.
+
+## Amendment 5: structure and demo
+
+Replaces: none (no earlier amendment in this spec).
+
+**Archetype:** grouped tree list of memories with a right panel for the selected memory.
+
+**At rest (gallery demo):**
+- Header: title, Saved tab with count 11, To review tab with count 2, search field, Remember button.
+- Tree on the Saved tab, four groups in order: About you (5 memories), then three project groups holding 3, 2 and 1 memories.
+- Each row: memory text, source label, use count, last-used time, in fixed columns.
+- Panel open on one memory with, in order: editable text, Applies to (Everywhere), source block with a quote, usage list with two entries, Forget button.
+- Remember line closed.
+
+**States at rest:** Saved tab; one row selected; no recall highlight; no undo notice.
+
+**Arrangement:** tree on the left, panel on the right. Source, use-count and time columns line up down the whole tree.
+
+**Motion, settled frame:** nothing moves at rest.
+
+**Checks (continued):**
+9. At rest the tree has four groups in order: About you with 5, then project groups with 3, 2 and 1. The Saved tab count equals 11.
+10. The panel for a selected memory shows, in order: text, Applies to, source, usage list, Forget.
+11. The To review tab reads 2 and lists exactly the memories flagged for review.
+12. Each row's source label, use count and last-used time sit in fixed columns that line up down the tree.
+13. At 1280 wide the tree and the panel are visible together, and the source label is not cut off.

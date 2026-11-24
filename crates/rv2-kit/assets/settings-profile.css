@@ -1,5 +1,7 @@
 .kit-set-wrap {
   container: kit-set / inline-size;
+  height: 100%;
+  min-height: 0;
   min-width: 0;
   width: 100%;
 }
@@ -7,9 +9,12 @@
 .kit-set {
   display: grid;
   grid-template-columns: minmax(170px, 220px) minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr);
   gap: 32px;
   color: var(--kit-ink);
   font-family: var(--kit-font);
+  height: 100%;
+  min-height: 0;
   min-width: 0;
   padding: 24px;
   box-sizing: border-box;
@@ -95,7 +100,10 @@
   flex-direction: column;
   gap: 20px;
   min-width: 0;
+  min-height: 0;
   max-width: 760px;
+  overflow-y: auto;
+  padding-bottom: 24px;
 }
 
 .kit-set__head {
@@ -370,6 +378,7 @@
 @container kit-set (max-width: 640px) {
   .kit-set {
     grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr);
     gap: 20px;
     padding: 16px;
   }
@@ -387,7 +396,7 @@
   }
 
   .kit-set__list {
-    display: flex;
+    flex-direction: row;
     flex-wrap: wrap;
     gap: 4px;
   }

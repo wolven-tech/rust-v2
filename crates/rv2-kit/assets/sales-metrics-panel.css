@@ -49,7 +49,7 @@
 .kit-sales__menu-item:hover, .kit-sales__menu-item:focus-visible { background: var(--kit-raised); }
 .kit-sales__metrics { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--kit-gap); }
 .kit-sales__metric { min-width: 0; transition: opacity var(--kit-fast) var(--kit-ease); }
-.kit-sales__metric[data-dimmed] { opacity: 0.55; }
+.kit-sales__metric[data-dimmed] { background: var(--kit-ground); }
 .kit-sales__trend {
   display: grid;
   gap: 10px;
@@ -70,6 +70,7 @@
 }
 .kit-sales__chart[data-fading] { opacity: 0; transform: scaleY(0.94); }
 .kit-sales__chart .kit-trend__svg { overflow: hidden; }
+.kit-sales__chart .kit-trend { max-width: none; }
 .kit-sales__breakdowns { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--kit-gap); }
 .kit-sales__list {
   display: grid;

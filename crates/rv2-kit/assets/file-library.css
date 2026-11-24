@@ -116,7 +116,7 @@
 
 .kit-fl__toolbar {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   align-items: center;
   gap: 10px;
 }
@@ -395,9 +395,8 @@
 }
 
 .kit-fl__name {
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
+  min-width: 0;
+  overflow-wrap: anywhere;
   font-weight: 600;
 }
 
@@ -413,19 +412,23 @@
   background: var(--kit-raised);
 }
 
+.kit-fl__items--templates.is-grid {
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+}
+
 .kit-fl__item--template {
   display: flex;
-  align-items: stretch;
-  gap: 8px;
 }
 
 .kit-fl__item--template .kit-fl__card {
   flex: 1 1 auto;
+  padding-right: 52px;
 }
 
 .kit-fl__more {
-  position: relative;
-  align-self: center;
+  position: absolute;
+  top: 10px;
+  right: 10px;
 }
 
 .kit-fl__ph {
@@ -480,8 +483,13 @@
     padding: 16px;
   }
 
-  .kit-fl__items.is-grid {
+  .kit-fl__items.is-grid,
+  .kit-fl__items--templates.is-grid {
     grid-template-columns: minmax(0, 1fr);
+  }
+
+  .kit-fl__toolbar {
+    flex-wrap: wrap;
   }
 
   .kit-fl__btn,

@@ -63,3 +63,32 @@ In reading order:
 5. A not-included feature shows the words "not included".
 6. The highlighted plan shows its badge and emphasised call to action.
 7. At phone width the plan cards stack in order and nothing scrolls sideways.
+
+## Amendment 5: structure and demo
+
+Archetype: heading and billing switch above three plan cards in one row, each card with its details open.
+
+Replaces the Default state line ("details collapsed on every card"): at rest every card's details are open.
+
+Visible at rest:
+- Heading "Pick the plan that fits your team" and one intro line.
+- Billing switch: Monthly and Yearly, Monthly selected. A saving label beside Yearly: "Save 15%".
+- Three plan cards in one row. The middle card is highlighted: a "Most chosen" badge and a filled call to action. The others have outlined calls to action.
+- Each card: name; price with its period ("per month"); billing note; call to action "Start free trial"; limits list (three rows); integrations block (sync cadence, selection count, a row of caller-supplied marks); feature list (seven rows, each marked included or "not included").
+- Toggle label on each card reads "Hide details".
+
+Gallery demo:
+- Solo $19 per month, $15 billed yearly. Team $59, $47. Studio $149, $119.
+- Limits: monthly readers 5k, 50k, 500k. Seats 2, 10, Unlimited. Workspaces 1, 3, 10.
+- Sync cadence: Daily, Hourly, Live. Selection: Choose 2 of 8, Choose 4 of 8, Choose 8 of 8.
+- Features (Solo, Team, Studio): Unlimited boards (not included, included, included); Custom domain (not included, included, included); API access (not included, included, included); Scheduled exports (included on all three); Single sign-on (not included, not included, included); Dedicated onboarding (not included, not included, included); Email support (included on all three).
+
+Motion, settled frame: Monthly selected; details open; Team highlighted.
+Moves: the billing switch rolls each price from its old figure to the new one. Details open and close downwards; the billing indicator glides between the options.
+Reduced motion: prices and details change instantly.
+
+Acceptance checks (continued):
+8. At rest every card has its details open, its toggle reads "Hide details", and its feature list shows included rows and "not included" rows.
+9. Every price figure is fully legible at rest: no digit overlaps another, and the billing roll has finished before the frame is judged.
+10. Each integrations block shows its sync cadence, its selection count and a row of marks.
+11. The "Most chosen" badge appears on the highlighted card only.

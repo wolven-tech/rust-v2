@@ -6,11 +6,9 @@ use rv2_kit::screens::autonomy_settings::{
     RecentEvent, Setting, WeekCounts,
 };
 use rv2_kit::screens::company_register::{
-    Account as RegisterAccount, CompanyRecord, CompanyRegister,
+    Account as RegisterAccount, CompanyRecord, CompanyRegister, NavItem, NavSection,
 };
-use rv2_kit::screens::connected_apps_catalogue::{
-    Account as CatalogueAccount, App, ConnectedAppsCatalogue,
-};
+use rv2_kit::screens::connected_apps_catalogue::{App, ConnectedAppsCatalogue};
 use rv2_kit::screens::decision_queue::{
     AnswerRecord, AnswerValue, Artifact, DecisionQueue, Paragraph, ParagraphKind, Request,
     RequestKind, RequestOption, Run, TaskDetail, TaskStep,
@@ -102,7 +100,7 @@ fn RevenueOverviewDemo() -> Element {
     rsx! {
         Item { slug: "revenue-overview", name: "RevenueOverview",
             ModePick { slug: "revenue-overview", mode, last: last() }
-            div { style: "height: 980px; overflow: hidden; border: 1px solid var(--kit-rule-soft);",
+            div { style: "border: 1px solid var(--kit-rule-soft);",
                 RevenueOverview {
                     account: Account { name: "Ada Lovelace".into(), avatar_url: None },
                     is_loading: loading,
@@ -223,6 +221,16 @@ fn RevenueChatAnalystDemo() -> Element {
     let mut last = use_signal(|| "no action yet".to_string());
     let loading = mode() == Mode::Loading;
     let empty = mode() == Mode::Empty;
+    let this_year = vec![
+        4.6, 4.9, 4.8, 5.2, 5.1, 5.3, 5.6, 5.5, 5.9, 5.8, 6.2, 6.1, 6.4,
+    ];
+    let last_year = vec![
+        4.2, 4.4, 4.4, 4.7, 4.5, 4.8, 4.9, 5.0, 5.1, 5.0, 5.3, 5.2, 5.4,
+    ];
+    let total = this_year.iter().sum::<f64>() * 1000.0;
+    let prior_total = last_year.iter().sum::<f64>() * 1000.0;
+    let change = (total / prior_total - 1.0) * 100.0;
+    let weeks: Vec<String> = (1..=13).map(|w| format!("Wk {w}")).collect();
     rsx! {
         Item { slug: "revenue-chat-analyst", name: "RevenueChatAnalyst",
             ModePick { slug: "revenue-chat-analyst", mode, last: last() }
@@ -232,47 +240,50 @@ fn RevenueChatAnalystDemo() -> Element {
                     is_loading: loading,
                     is_empty: empty,
                     turn_list: vec![
-                        Turn::Question { id: "q1".into(), text: "How did revenue move this week?".into(), quoted_focus: None },
+                        Turn::Question { id: "q1".into(), text: "How did revenue move over the last 13 weeks?".into(), quoted_focus: None },
                         Turn::Answer {
                             id: "a1".into(),
                             body: AnswerBody {
-                                text: "Revenue rose 12% on last week, led by the web channel.".into(),
+                                text: format!("Revenue reached {total:.0} over 13 weeks, {change:.1}% above the same weeks last year. The gain held after the price change in week 9."),
                                 metric_cards: vec![
-                                    MetricCard { entry_label: "Revenue".into(), value: 48210.0, change_text: Some("+12.4%".into()) },
+                                    MetricCard { entry_label: "Revenue, 13 weeks".into(), value: total, change_text: Some(format!("+{change:.1}% vs last year")) },
                                     MetricCard { entry_label: "Orders".into(), value: 412.0, change_text: Some("−3.1%".into()) },
+                                    MetricCard { entry_label: "Weekly average".into(), value: total / 13.0, change_text: Some("+2.4%".into()) },
                                 ],
-                                chart_block: Some(ChartBlock::Forecast {
-                                    category_labels: vec!["Wk 1".into(), "Wk 2".into(), "Wk 3".into(), "Wk 4".into(), "Wk 5".into(), "Wk 6".into()],
-                                    actual_values: vec![40.0, 44.0, 42.0, 48.2],
-                                    forecast_values: vec![49.0, 52.0],
-                                    target_value: Some(50.0),
+                                chart_block: Some(ChartBlock::Trend {
+                                    category_labels: weeks,
+                                    current_values: this_year,
+                                    previous_values: last_year,
+                                    marked_point: Some(8),
                                 }),
-                                caption_text: Some("Weekly revenue in thousands, with the next two weeks forecast.".into()),
+                                caption_text: Some("Weekly revenue in thousands, this year against last year.".into()),
                                 source_list: vec!["Ledger".into(), "Payments".into()],
-                                follow_up_list: vec!["Split by region".into(), "What drove the web growth?".into()],
-                            },
-                        },
-                        Turn::Answer {
-                            id: "a2".into(),
-                            body: AnswerBody {
-                                text: "By region, EMEA carries most of the growth.".into(),
-                                metric_cards: Vec::new(),
-                                chart_block: Some(ChartBlock::Split {
-                                    title_text: "Revenue by region, in thousands".into(),
-                                    previous_total: Some(51000.0),
-                                    groups: vec![
-                                        SplitGroup { entry_name: "EMEA".into(), parts: vec![SplitPart { entry_name: "Web".into(), entry_value: 18000.0 }, SplitPart { entry_name: "Partners".into(), entry_value: 9000.0 }] },
-                                        SplitGroup { entry_name: "Americas".into(), parts: vec![SplitPart { entry_name: "Web".into(), entry_value: 12000.0 }, SplitPart { entry_name: "Partners".into(), entry_value: 4000.0 }] },
-                                        SplitGroup { entry_name: "APAC".into(), parts: vec![SplitPart { entry_name: "Web".into(), entry_value: 4000.0 }, SplitPart { entry_name: "Partners".into(), entry_value: 1210.0 }] },
-                                    ],
-                                }),
-                                caption_text: None,
-                                source_list: vec!["Ledger".into()],
                                 follow_up_list: Vec::new(),
                             },
                         },
+                        Turn::Question { id: "q2".into(), text: "Split that by region.".into(), quoted_focus: None },
+                        Turn::Answer {
+                            id: "a2".into(),
+                            body: AnswerBody {
+                                text: "EMEA carries the most growth, 31,000 of 65,000 this quarter. Web is the largest channel in every region.".into(),
+                                metric_cards: Vec::new(),
+                                chart_block: Some(ChartBlock::Split {
+                                    title_text: "Revenue by region and channel, this quarter".into(),
+                                    previous_total: Some(58000.0),
+                                    groups: vec![
+                                        SplitGroup { entry_name: "EMEA".into(), parts: vec![SplitPart { entry_name: "Web".into(), entry_value: 18000.0 }, SplitPart { entry_name: "Partners".into(), entry_value: 9000.0 }, SplitPart { entry_name: "Direct".into(), entry_value: 4000.0 }] },
+                                        SplitGroup { entry_name: "Americas".into(), parts: vec![SplitPart { entry_name: "Web".into(), entry_value: 12000.0 }, SplitPart { entry_name: "Partners".into(), entry_value: 4000.0 }, SplitPart { entry_name: "Direct".into(), entry_value: 3000.0 }] },
+                                        SplitGroup { entry_name: "APAC".into(), parts: vec![SplitPart { entry_name: "Web".into(), entry_value: 6000.0 }, SplitPart { entry_name: "Partners".into(), entry_value: 2400.0 }, SplitPart { entry_name: "Direct".into(), entry_value: 1600.0 }] },
+                                        SplitGroup { entry_name: "LATAM".into(), parts: vec![SplitPart { entry_name: "Web".into(), entry_value: 3000.0 }, SplitPart { entry_name: "Partners".into(), entry_value: 1200.0 }, SplitPart { entry_name: "Direct".into(), entry_value: 800.0 }] },
+                                    ],
+                                }),
+                                caption_text: Some("Each column adds its three channels, in dollars.".into()),
+                                source_list: Vec::new(),
+                                follow_up_list: vec!["Show Americas only".into(), "Compare with last year".into(), "Which channel grew most?".into()],
+                            },
+                        },
                     ],
-                    starter_questions: vec!["How did revenue move this week?".into(), "Which region grew most?".into()],
+                    starter_questions: vec!["How did revenue change this quarter?".into(), "Which region grew fastest?".into(), "What will next month look like?".into()],
                     on_ask: move |(question, _focus): (String, Option<FocusRange>)| last.set(format!("ask {question}")),
                     on_navigate: move |label: String| last.set(format!("navigate {label}")),
                 }
@@ -287,7 +298,13 @@ fn CompanyRegisterDemo() -> Element {
     let mut last = use_signal(|| "no action yet".to_string());
     let loading = mode() == Mode::Loading;
     let empty = mode() == Mode::Empty;
-    let record = |id: &str, name: &str, category: &str, value: f64, stage: &str, owner: &str| {
+    let record = |id: &str,
+                  name: &str,
+                  category: &str,
+                  value: f64,
+                  stage: &str,
+                  owner: &str,
+                  contacted: &str| {
         CompanyRecord {
             id: id.into(),
             company_name: name.into(),
@@ -297,23 +314,49 @@ fn CompanyRegisterDemo() -> Element {
             deal_value: value,
             pipeline_stage: stage.into(),
             primary_contact: "Sam Reyes".into(),
-            last_contact: "Nov 18".into(),
+            last_contact: contacted.into(),
             logo_url: None,
         }
     };
     rsx! {
         Item { slug: "company-register", name: "CompanyRegister",
             ModePick { slug: "company-register", mode, last: last() }
-            div { style: "height: 620px; overflow: hidden; border: 1px solid var(--kit-rule-soft);",
+            div { style: "height: 860px; overflow: hidden; border: 1px solid var(--kit-rule-soft);",
                 CompanyRegister {
                     account: RegisterAccount { company_name: "Juniper Works".into(), avatar_url: None },
                     is_loading: loading,
                     is_empty: empty,
+                    sections: vec![
+                        NavSection {
+                            label: String::new(),
+                            items: vec![
+                                NavItem { label: "Home".into(), count: Some(4) },
+                                NavItem { label: "Companies".into(), count: Some(10) },
+                                NavItem { label: "Contacts".into(), count: Some(23) },
+                                NavItem { label: "Reports".into(), count: Some(2) },
+                            ],
+                        },
+                        NavSection {
+                            label: "Pipelines".into(),
+                            items: vec![
+                                NavItem { label: "New business".into(), count: None },
+                                NavItem { label: "Expansion".into(), count: None },
+                                NavItem { label: "Partners".into(), count: None },
+                                NavItem { label: "Renewals".into(), count: None },
+                            ],
+                        },
+                    ],
                     company_records: vec![
-                        record("acme", "Acme Labs", "Software", 12400.0, "Proposal", "Ada"),
-                        record("birch", "Birch & Co", "Retail", 0.0, "Renewal due", "Lin"),
-                        record("cobalt", "Cobalt Health", "Health", 38000.0, "Won", "Ada"),
-                        record("delta", "Delta Freight", "Logistics", 7600.0, "Qualified", "Sam"),
+                        record("acme", "Acme Labs", "Software", 12400.0, "Proposal", "Ada", "Nov 18"),
+                        record("birch", "Birch & Co", "Retail", 0.0, "Renewal due", "Lin", "Nov 04"),
+                        record("cobalt", "Cobalt Health", "Health", 38000.0, "Won", "Ada", "Oct 29"),
+                        record("delta", "Delta Freight", "Logistics", 7600.0, "Qualified", "Sam", "Nov 21"),
+                        record("ember", "Ember Foods", "Food", 5200.0, "Lead", "Lin", "Oct 14"),
+                        record("fjord", "Fjord Design", "Creative", 9800.0, "Proposal", "Sam", "Nov 12"),
+                        record("granite", "Granite Mining", "Industrial", 61000.0, "Won", "Ada", "Sep 30"),
+                        record("harbor", "Harbor Legal", "Services", 0.0, "Renewal due", "Lin", "Nov 09"),
+                        record("iris", "Iris Analytics", "Software", 14300.0, "Qualified", "Sam", "Nov 15"),
+                        record("juno", "Juno Retail", "Retail", 22700.0, "Lead", "Ada", "Oct 22"),
                     ],
                     on_add: move |name: String| last.set(format!("add {name}")),
                     on_new_view: move |_| last.set("new view".into()),
@@ -331,30 +374,46 @@ fn ConnectedAppsCatalogueDemo() -> Element {
     let mut last = use_signal(|| "no action yet".to_string());
     let loading = mode() == Mode::Loading;
     let empty = mode() == Mode::Empty;
-    let app = |id: &str, name: &str, category: &str, connected: bool, popular: bool| App {
-        id: id.into(),
-        name: name.into(),
-        summary: format!("Sync {name} records with the assistant."),
-        category: category.into(),
-        connected,
-        popular,
-        logo_url: None,
-        bundle: Vec::new(),
-    };
+    let app =
+        |id: &str, name: &str, category: &str, summary: &str, connected: bool, popular: bool| App {
+            id: id.into(),
+            name: name.into(),
+            summary: summary.into(),
+            category: category.into(),
+            connected,
+            popular,
+            logo_url: None,
+            bundle: Vec::new(),
+        };
+    let docs = "Documents and design";
+    let comms = "Communication";
+    let sched = "Scheduling and analytics";
+    let data = "Data and payments";
     rsx! {
         Item { slug: "connected-apps-catalogue", name: "ConnectedAppsCatalogue",
             ModePick { slug: "connected-apps-catalogue", mode, last: last() }
             div { style: "height: 760px; overflow: hidden; border: 1px solid var(--kit-rule-soft);",
                 ConnectedAppsCatalogue {
-                    account: CatalogueAccount { name: "Ada Lovelace".into(), avatar_url: None },
                     is_loading: loading,
                     is_empty: empty,
+                    categories: vec![docs.into(), comms.into(), sched.into(), data.into()],
                     apps: vec![
-                        app("slack", "Slack", "Messaging", true, true),
-                        app("teams", "Microsoft Teams", "Messaging", false, false),
-                        app("drive", "Google Drive", "Files", false, true),
-                        app("sheets", "Spreadsheets", "Files", true, false),
-                        app("mail", "Mailroom", "Email", false, true),
+                        app("slack", "Slack", comms, "Post updates and read team threads.", true, true),
+                        app("drive", "Google Drive", docs, "Open and share team files.", true, true),
+                        app("gmail", "Gmail", comms, "Read and send email from the assistant.", false, true),
+                        app("stripe", "Stripe", data, "Read payments, refunds and payouts.", false, true),
+                        app("notion", "Notion", docs, "Search and update pages and databases.", true, false),
+                        App { bundle: vec!["Word".into(), "Excel".into(), "PowerPoint".into()], ..app("office", "Office suite", docs, "Documents, sheets and slides.", false, false) },
+                        app("figma", "Figma", docs, "Read frames and design comments.", false, false),
+                        app("dropbox", "Dropbox", docs, "Find and open shared folders.", false, false),
+                        app("zoom", "Zoom", comms, "Start meetings and read recordings.", true, false),
+                        app("teams", "Microsoft Teams", comms, "Post to channels and read messages.", false, false),
+                        app("intercom", "Intercom", comms, "Read support conversations.", false, false),
+                        app("mailchimp", "Mailchimp", comms, "Read campaign results.", false, false),
+                        App { bundle: vec!["Google Calendar".into(), "Outlook Calendar".into()], ..app("calendars", "Calendars", sched, "Check availability across calendars.", false, false) },
+                        app("looker", "Looker Studio", sched, "Read dashboards and report figures.", true, false),
+                        app("xero", "Xero", data, "Read invoices and bank lines.", false, false),
+                        app("plaid", "Plaid", data, "Read linked bank balances.", false, false),
                     ],
                     on_connect: move |id: String| last.set(format!("connect {id}")),
                     on_disconnect: move |id: String| last.set(format!("disconnect {id}")),
@@ -384,11 +443,13 @@ fn FileLibraryDemo() -> Element {
                         Folder { id: "f1".into(), name: "Q3 Campaign".into(), scope: Scope::Shared, file_count: 12 },
                         Folder { id: "f2".into(), name: "Drafts".into(), scope: Scope::Private, file_count: 3 },
                         Folder { id: "f3".into(), name: "Board packs".into(), scope: Scope::Shared, file_count: 7 },
+                        Folder { id: "f4".into(), name: "Hiring".into(), scope: Scope::Private, file_count: 5 },
                     ],
                     templates: vec![
-                        Template { id: "t1".into(), name: "Weekly update".into(), kind: Kind::Doc, owner: "Ada".into(), scope: Scope::Mine },
-                        Template { id: "t2".into(), name: "Budget".into(), kind: Kind::Sheet, owner: "Lin".into(), scope: Scope::Shared },
-                        Template { id: "t3".into(), name: "Client brief".into(), kind: Kind::Pdf, owner: "Sam".into(), scope: Scope::Shared },
+                        Template { id: "t1".into(), name: "Brand guidelines".into(), kind: Kind::Doc, owner: "Ada".into(), scope: Scope::Shared },
+                        Template { id: "t2".into(), name: "Campaign budget".into(), kind: Kind::Sheet, owner: "Lin".into(), scope: Scope::Mine },
+                        Template { id: "t3".into(), name: "Client onboarding kit".into(), kind: Kind::Pdf, owner: "Sam".into(), scope: Scope::Shared },
+                        Template { id: "t4".into(), name: "Weekly status report".into(), kind: Kind::Doc, owner: "Ada".into(), scope: Scope::Mine },
                     ],
                     on_create_folder: move |_| last.set("create folder".into()),
                     on_add_template: move |_| last.set("add template".into()),
@@ -457,61 +518,125 @@ fn AutonomySettingsDemo() -> Element {
     let loading = mode() == Mode::Loading;
     let empty = mode() == Mode::Empty;
     let rule =
-        |id: &str, class: ActionClass, setting: Setting, fixed: bool, name: &str| ActionRule {
-            id: id.into(),
-            app_id: "mailroom".into(),
-            action_name: name.into(),
-            detail_text: None,
-            mark: None,
-            rule_setting: setting,
-            default_setting: setting,
-            action_class: class,
-            is_fixed: fixed,
-            amount_limit: None,
-            week_counts: WeekCounts {
-                done: 3,
-                asked: 1,
-                blocked: 0,
-            },
-            recent_events: vec![RecentEvent {
-                what: "Filed reply".into(),
-                outcome: Outcome::Done,
-                occurred_at: "Today, 9:14".into(),
-            }],
+        |app: &str, id: &str, class: ActionClass, setting: Setting, fixed: bool, name: &str| {
+            ActionRule {
+                id: id.into(),
+                app_id: app.into(),
+                action_name: name.into(),
+                detail_text: None,
+                mark: None,
+                rule_setting: setting,
+                default_setting: setting,
+                action_class: class,
+                is_fixed: fixed,
+                amount_limit: None,
+                week_counts: WeekCounts {
+                    done: 3,
+                    asked: 1,
+                    blocked: 0,
+                },
+                recent_events: vec![RecentEvent {
+                    what: "Filed reply".into(),
+                    outcome: Outcome::Done,
+                    occurred_at: "Today, 9:14".into(),
+                }],
+            }
         };
-    let refund = ActionRule {
-        mark: Some("$".into()),
-        amount_limit: Some(AmountLimit {
-            amount: 500.0,
-            currency: "USD".into(),
-        }),
-        ..rule(
-            "refund",
-            ActionClass::Risky,
-            Setting::Ask,
-            false,
-            "Issue refunds",
-        )
+    let event = |what: &str, outcome: Outcome, when: &str| RecentEvent {
+        what: what.into(),
+        outcome,
+        occurred_at: when.into(),
+    };
+    let mut credit = rule(
+        "payments",
+        "credit",
+        ActionClass::Risky,
+        Setting::Allow,
+        false,
+        "Issue credit notes",
+    );
+    credit.amount_limit = Some(AmountLimit {
+        amount: 200.0,
+        currency: "USD".into(),
+    });
+    credit.recent_events = vec![event("Credit note 1042", Outcome::Approved, "Today, 8:02")];
+    let mut charges = rule(
+        "payments",
+        "charges",
+        ActionClass::Read,
+        Setting::Allow,
+        false,
+        "Read charges",
+    );
+    charges.recent_events = vec![event("Read charges", Outcome::Done, "Today, 9:14")];
+    let mut prices = rule(
+        "payments",
+        "prices",
+        ActionClass::Risky,
+        Setting::Never,
+        false,
+        "Change plan prices",
+    );
+    prices.recent_events = vec![event("Price change", Outcome::Declined, "Yesterday, 17:40")];
+    let app = |id: &str, name: &str, account: &str, mark: &str| AppEntry {
+        id: id.into(),
+        entry_name: name.into(),
+        account: Some(account.into()),
+        mark: Some(mark.into()),
     };
     rsx! {
         Item { slug: "autonomy-settings", name: "AutonomySettings",
             ModePick { slug: "autonomy-settings", mode, last: last() }
-            div { style: "height: 980px; overflow: hidden; border: 1px solid var(--kit-rule-soft);",
+            div { style: "height: 720px; overflow: auto; border: 1px solid var(--kit-rule-soft);",
                 AutonomySettings {
                     initial_level: AutonomyLevel::Balanced,
                     is_loading: loading,
                     is_empty: empty,
                     app_list: vec![
-                        AppEntry { id: "mailroom".into(), entry_name: "Mailroom".into(), account: Some("ops@juniper.example".into()), mark: None },
-                        AppEntry { id: "ledger".into(), entry_name: "Ledger".into(), account: None, mark: None },
+                        app("mail", "Mail", "ops@juniper.example", "Ma"),
+                        app("chat", "Team chat", "Juniper Works", "Tc"),
+                        app("code", "Code host", "juniper-works", "Co"),
+                        app("drive", "Shared drive", "drive@juniper.example", "Dr"),
+                        app("payments", "Payments", "finance@juniper.example", "Pa"),
+                        app("calendar", "Calendar", "ada@juniper.example", "Ca"),
+                        app("browser", "Web browser", "ada@juniper.example", "Wb"),
                     ],
                     action_rules: vec![
-                        rule("read", ActionClass::Read, Setting::Allow, false, "Read inbox"),
-                        rule("file", ActionClass::Write, Setting::Allow, false, "File replies"),
-                        refund,
-                        rule("fixed", ActionClass::Risky, Setting::Never, true, "Delete threads"),
+                        rule("mail", "read-inbox", ActionClass::Read, Setting::Allow, false, "Read inbox"),
+                        rule("mail", "search", ActionClass::Read, Setting::Allow, false, "Search threads"),
+                        rule("mail", "file", ActionClass::Write, Setting::Allow, false, "File replies"),
+                        rule("mail", "refund", ActionClass::Risky, Setting::Ask, false, "Issue refunds"),
+                        rule("mail", "bulk", ActionClass::Risky, Setting::Never, false, "Send bulk email"),
+                        rule("chat", "read-channels", ActionClass::Read, Setting::Allow, false, "Read channels"),
+                        rule("chat", "post", ActionClass::Write, Setting::Allow, false, "Post messages"),
+                        rule("chat", "share-out", ActionClass::Risky, Setting::Ask, false, "Share files outside the team"),
+                        rule("chat", "delete-history", ActionClass::Risky, Setting::Never, false, "Delete channel history"),
+                        rule("code", "read-repos", ActionClass::Read, Setting::Allow, false, "Read repositories"),
+                        rule("code", "open-prs", ActionClass::Write, Setting::Allow, false, "Open pull requests"),
+                        rule("code", "merge", ActionClass::Risky, Setting::Ask, false, "Merge to main"),
+                        rule("code", "force-push", ActionClass::Risky, Setting::Never, false, "Force-push"),
+                        rule("drive", "list", ActionClass::Read, Setting::Allow, false, "List files"),
+                        rule("drive", "move", ActionClass::Write, Setting::Allow, false, "Move files"),
+                        rule("drive", "sharing", ActionClass::Risky, Setting::Ask, false, "Change sharing settings"),
+                        rule("drive", "delete-folders", ActionClass::Risky, Setting::Never, false, "Delete shared folders"),
+                        charges,
+                        credit,
+                        prices,
+                        rule("calendar", "read-calendar", ActionClass::Read, Setting::Allow, false, "Read calendar"),
+                        rule("calendar", "create-events", ActionClass::Write, Setting::Allow, false, "Create events"),
+                        rule("calendar", "outside-invites", ActionClass::Risky, Setting::Ask, false, "Accept invitations from outside"),
+                        rule("browser", "read-pages", ActionClass::Read, Setting::Allow, false, "Read pages"),
+                        rule("browser", "submit-forms", ActionClass::Risky, Setting::Ask, false, "Submit forms"),
+                        rule("browser", "downloads", ActionClass::Risky, Setting::Never, false, "Download files"),
+                        rule("mail", "delete-threads", ActionClass::Risky, Setting::Never, true, "Delete threads"),
+                        rule("payments", "move-money", ActionClass::Risky, Setting::Never, true, "Move money between accounts"),
+                        rule("drive", "share-outside", ActionClass::Risky, Setting::Ask, true, "Share outside the workspace"),
+                        rule("browser", "publish", ActionClass::Risky, Setting::Never, true, "Publish to the public web"),
+                        rule("code", "delete-repos", ActionClass::Risky, Setting::Never, true, "Delete repositories"),
+                        rule("chat", "admin-roles", ActionClass::Risky, Setting::Never, true, "Change admin roles"),
+                        rule("drive", "sign", ActionClass::Risky, Setting::Never, true, "Sign contracts"),
                     ],
-                    initial_app_id: Some("mailroom".to_string()),
+                    initial_app_id: Some("payments".to_string()),
                     on_change: move |changed: ActionRule| last.set(format!("rule {}", changed.id)),
                     on_preset: move |_: AutonomyLevel| last.set("preset".into()),
                     on_select: move |id: String| last.set(format!("select {id}")),
@@ -693,14 +818,20 @@ fn IssueBoardScreenDemo() -> Element {
     let mut last = use_signal(|| "no action yet".to_string());
     let loading = mode() == Mode::Loading;
     let empty = mode() == Mode::Empty;
-    let issue = |id: &str, column: &str, title: &str, status: IssueStatus, who: &str| Issue {
+    let issue = |id: &str,
+                 column: &str,
+                 title: &str,
+                 text: &str,
+                 status: IssueStatus,
+                 counts: (u32, u32),
+                 who: &str| Issue {
         id: id.into(),
         column_id: column.into(),
         title: title.into(),
-        description: Some("Reproduce on staging before the release.".into()),
+        description: Some(text.into()),
         issue_status: Some(status),
-        comment_count: 2,
-        attachment_count: 1,
+        comment_count: counts.0,
+        attachment_count: counts.1,
         assignee: Some(who.into()),
         labels: Vec::new(),
     };
@@ -710,15 +841,23 @@ fn IssueBoardScreenDemo() -> Element {
             div { style: "height: 760px; overflow: hidden; border: 1px solid var(--kit-rule-soft);",
                 IssueBoardScreen {
                     board_columns: vec![
-                        BoardColumn { id: "high".into(), column_label: "High".into(), priority_tone: PriorityTone::High },
+                        BoardColumn { id: "low".into(), column_label: "Low".into(), priority_tone: PriorityTone::Low },
                         BoardColumn { id: "medium".into(), column_label: "Medium".into(), priority_tone: PriorityTone::Medium },
+                        BoardColumn { id: "high".into(), column_label: "High".into(), priority_tone: PriorityTone::High },
                         BoardColumn { id: "done".into(), column_label: "Done".into(), priority_tone: PriorityTone::Done },
                     ],
                     issues: vec![
-                        issue("i1", "high", "Refund webhook fails", IssueStatus::Attention, "Ada"),
-                        issue("i2", "high", "Invoice PDF layout", IssueStatus::Progress, "Lin"),
-                        issue("i3", "medium", "Onboarding copy", IssueStatus::Review, "Sam"),
-                        issue("i4", "done", "Retire old export", IssueStatus::Fixed, "Ada"),
+                        issue("l1", "low", "Tidy invoice email footer", "Align the footer links with the rest of the template.", IssueStatus::Review, (0, 0), "Sam"),
+                        issue("l2", "low", "Shorten onboarding tooltips", "Cut each tip to one sentence and link the guide.", IssueStatus::Progress, (1, 0), "Lin"),
+                        issue("l3", "low", "Rename legacy export column", "Match the label used in the CSV template.", IssueStatus::Fixed, (0, 1), "Ada"),
+                        issue("m1", "medium", "Onboarding copy review", "Check the welcome steps read well for new admins.", IssueStatus::Review, (2, 0), "Sam"),
+                        issue("m2", "medium", "Empty state for inbox", "Add a line on what appears here and a next step.", IssueStatus::Progress, (0, 2), "Lin"),
+                        issue("m3", "medium", "Pricing page FAQ", "Answer the three questions sales hears most.", IssueStatus::Attention, (3, 1), "Ada"),
+                        issue("h1", "high", "Refund webhook fails", "Retries stop after the second attempt on staging.", IssueStatus::Attention, (4, 1), "Ada"),
+                        issue("h2", "high", "Invoice PDF layout", "Line totals overflow the page on long descriptions.", IssueStatus::Progress, (2, 0), "Lin"),
+                        issue("h3", "high", "Duplicate charge on retry", "Idempotency key is not sent on the second request.", IssueStatus::Attention, (5, 2), "Sam"),
+                        issue("d1", "done", "Retire old export", "Old CSV endpoint removed; links redirect to the new one.", IssueStatus::Fixed, (1, 0), "Ada"),
+                        issue("d2", "done", "Login rate limit", "Limit lowered to ten attempts per minute.", IssueStatus::Fixed, (0, 1), "Lin"),
                     ],
                     is_loading: loading,
                     is_empty: empty,

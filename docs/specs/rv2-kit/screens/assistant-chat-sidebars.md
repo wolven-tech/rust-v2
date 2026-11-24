@@ -65,3 +65,28 @@ Icon rail; project switcher menu; chat list with headings; conversation (plain-c
 5. Clicking an output chip opens it in a work area tab.
 6. Dragging the work area edge resizes it; the minimum width keeps the tabs usable.
 7. With `is_empty` set, the empty note appears and sending stays available.
+
+## Amendment 5: structure and demo
+
+Replaces: none (no earlier amendment in this spec).
+
+**Archetype:** icon rail, chat list column, conversation, and a right work area that holds file previews as tabs.
+
+**At rest (gallery demo):**
+- Icon rail: workspace initial, five section icons, account avatar at the foot. One section is current.
+- Chat list: project switcher set to all projects. One pinned chat. Three project groups holding three, two and two chats (seven in total). Eight chats listed in all.
+- Conversation: four messages (two user, two assistant). The second assistant message holds a folded web-search group of three searches, an answer paragraph, and two output chips.
+- Work area open with two tabs: a sheet tab (active) and a document tab. The sheet has a header row, four data rows and four columns. A formula bar above it shows the active cell.
+- Composer at the foot with the approval-mode control.
+
+**States at rest:** all projects; search group folded; work area open with the sheet tab active.
+
+**Arrangement:** icon rail, chat list, conversation and work area in one row. The conversation keeps its readable column width; the work area takes the remaining right-hand width.
+
+**Motion, settled frame:** nothing moves. The folded group expands only when activated.
+
+**Checks (continued):**
+8. At rest the work area shows the sheet tab active beside the document tab. The sheet has a header row, four data rows, four columns, and a formula bar showing the active cell.
+9. Activating an output chip whose tab is already open makes that tab current and adds no tab.
+10. At rest the chat list shows one pinned chat above three project headings holding seven chats.
+11. At 1280 wide the icon rail, chat list, conversation and work area are visible together, and the conversation holds its readable width.

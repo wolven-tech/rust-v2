@@ -68,6 +68,29 @@ fn spinner_with_a_label_is_a_status_and_without_one_is_hidden() {
 }
 
 #[test]
+fn checkbox_children_render_in_a_group_under_an_indeterminate_parent() {
+    let html = render(|| {
+        rsx! {
+            Checkbox {
+                label: rsx! { "Email me about" },
+                indeterminate: true,
+                children: rsx! { Checkbox { label: rsx! { "Mentions" } } },
+            }
+        }
+    });
+    assert!(html.contains("ui-chkc__children"));
+    assert!(html.contains("role=\"group\""));
+    assert!(html.contains("data-indeterminate=\"true\""));
+    assert!(html.contains("Mentions"));
+}
+
+#[test]
+fn checkbox_without_children_renders_no_group() {
+    let html = render(|| rsx! { Checkbox { label: rsx! { "Solo" } } });
+    assert!(!html.contains("ui-chkc__children"));
+}
+
+#[test]
 fn decorative_horizontal_separator_is_hidden_from_screen_readers() {
     let html = render(|| rsx! { Separator {} });
     assert!(html.contains("class=\"ui-sepc\""));

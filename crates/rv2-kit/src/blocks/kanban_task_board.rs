@@ -52,6 +52,8 @@ pub struct StatusColumn {
 #[derive(Clone, Debug, PartialEq)]
 pub struct WorkItem {
     pub id: String,
+    /// Shown above the title, such as `ST-214 · Size M · Created 3 Oct`.
+    pub identifier_line: String,
     pub title: String,
     pub status_id: String,
     pub priority: u8,
@@ -498,6 +500,11 @@ pub fn KanbanTaskBoard(
     let open_item = open_card().and_then(|id| board.iter().find(|i| i.id == id).cloned());
     let columns = status_columns.clone();
     let shown_total = visible.len();
+    let count_text = if shown_total == total {
+        format!("{total} tasks")
+    } else {
+        format!("{shown_total} of {total} tasks")
+    };
     let limit = shown_limit();
     let dragging_now = dragging();
     let drop_now = drop_at();
@@ -518,7 +525,7 @@ pub fn KanbanTaskBoard(
                 h2 { class: "kit-kb__name", "{board_name}" }
             }
             div { class: "kit-kb__toolbar",
-                span { class: "kit-kb__count", "{shown_total} of {total} tasks" }
+                span { class: "kit-kb__count", "{count_text}" }
                 input {
                     class: "kit-kb__search",
                     r#type: "search",
@@ -655,6 +662,7 @@ pub fn KanbanTaskBoard(
                                                             let mut next = items();
                                                             next.push(WorkItem {
                                                                 id: id.clone(),
+                                                                identifier_line: String::new(),
                                                                 title,
                                                                 status_id: add_target.clone(),
                                                                 priority: 0,
@@ -700,6 +708,7 @@ pub fn KanbanTaskBoard(
                                             let due = card.due_in_days.map(due_words);
                                             let late = card.due_in_days.is_some_and(|d| d < 0);
                                             let title = card.title.clone();
+                                            let identifier = card.identifier_line.clone();
                                             let star_label = format!("Star {}", card.title);
                                             let labels: Vec<String> = card.label_ids.iter().filter_map(|l| tag_options.iter().find(|t| t.id == *l).map(|t| t.label.clone())).collect();
                                             let assignee = card.assignee_id.as_ref().and_then(|a| member_options.iter().find(|m| m.id == *a).cloned());
@@ -825,6 +834,7 @@ pub fn KanbanTaskBoard(
                                                                 focus_card(&format!("kit-kb-card-{key_id}"));
                                                             }
                                                         },
+                                                        span { class: "kit-kb__id", "{identifier}" }
                                                         span { class: "kit-kb__title", "{title}" }
                                                         if !labels.is_empty() {
                                                             span { class: "kit-kb__labels-line",
@@ -841,8 +851,13 @@ pub fn KanbanTaskBoard(
                                                             if let Some(words) = due.clone() {
                                                                 span { class: "kit-kb__due", "data-late": late.then_some("true"), "{words}" }
                                                             }
+                                                            if let Some(pr) = card.pull_request_ref.clone() {
+                                                                span { class: "kit-kb__pr", "PR {pr}" }
+                                                            }
                                                             if let Some(member) = assignee.clone() {
                                                                 span { class: "kit-kb__avatar", "aria-label": "Assigned to {member.name}", "{member.avatar}" }
+                                                            } else {
+                                                                span { class: "kit-kb__avatar kit-kb__avatar--none", "aria-label": "Unassigned" }
                                                             }
                                                         }
                                                     }

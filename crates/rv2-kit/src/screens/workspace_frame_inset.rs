@@ -216,6 +216,55 @@ struct WorkTab {
     artifact: Option<Artifact>,
 }
 
+/// Index of the open tab whose artifact is named `title`. `names` holds each tab's artifact name,
+/// `None` for a tab with no artifact. Opening an artifact that is already open activates that tab.
+pub fn open_tab_index(names: &[Option<String>], title: &str) -> Option<usize> {
+    names.iter().position(|name| name.as_deref() == Some(title))
+}
+
+/// Lets content inside the frame, such as the flat Start tab, open an artifact as a work-area tab.
+#[derive(Clone, Copy)]
+pub struct FrameTabs {
+    tabs: Signal<Vec<WorkTab>>,
+    active_tab: Signal<usize>,
+    next_tab: Signal<usize>,
+    work_open: Signal<bool>,
+}
+
+impl FrameTabs {
+    /// Adds `artifact` as a tab after the open ones and makes it current; an artifact already open
+    /// is made current instead of being added twice.
+    pub fn open_artifact(self, artifact: Artifact) {
+        let mut tabs = self.tabs;
+        let mut active_tab = self.active_tab;
+        let mut next_tab = self.next_tab;
+        let mut work_open = self.work_open;
+        let names: Vec<Option<String>> = tabs
+            .peek()
+            .iter()
+            .map(|tab| tab.artifact.as_ref().map(|a| a.name.clone()))
+            .collect();
+        let id = match open_tab_index(&names, &artifact.name) {
+            Some(index) => tabs.peek()[index].id,
+            None => {
+                let id = next_tab();
+                next_tab.set(id + 1);
+                let title = artifact.name.clone();
+                tabs.with_mut(|list| {
+                    list.push(WorkTab {
+                        id,
+                        title,
+                        artifact: Some(artifact),
+                    })
+                });
+                id
+            }
+        };
+        active_tab.set(id);
+        work_open.set(true);
+    }
+}
+
 /// The frame. `content` is the page; `side_panel` is the work area's first tab.
 #[component]
 pub fn WorkspaceFrame(
@@ -284,6 +333,12 @@ pub fn WorkspaceFrame(
     });
     let mut active_tab = use_signal(|| if initial_tabs.is_empty() { 0usize } else { 1 });
     let mut next_tab = use_signal(|| initial_tabs.len() + 1);
+    use_context_provider(|| FrameTabs {
+        tabs,
+        active_tab,
+        next_tab,
+        work_open,
+    });
 
     {
         let sidebar_id = sidebar_id.clone();

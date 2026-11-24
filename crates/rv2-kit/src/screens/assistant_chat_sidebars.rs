@@ -220,6 +220,104 @@ fn open_work_tab(
     open.set(true);
 }
 
+/// Rows of a sheet's content: one line per row, cells separated by commas. The first row is the header.
+pub fn sheet_rows(content: &str) -> Vec<Vec<String>> {
+    content
+        .lines()
+        .map(|line| {
+            line.split(',')
+                .map(|cell| cell.trim().to_string())
+                .collect()
+        })
+        .collect()
+}
+
+/// Spreadsheet reference of a zero-based cell: column letter, then the row number counted from 1.
+pub fn cell_ref(row: usize, col: usize) -> String {
+    format!("{}{}", char::from(b'A' + (col % 26) as u8), row + 1)
+}
+
+/// An output in the work area: a sheet with a formula bar over its grid, a document as paragraphs,
+/// a folder as a list, or code.
+fn output_view(file: &OutputFile, mut cell: Signal<(usize, usize)>) -> Element {
+    let kind = file.output_kind.label();
+    match file.output_kind {
+        OutputKind::Sheet => {
+            let rows = sheet_rows(&file.content);
+            let header = rows.first().cloned().unwrap_or_default();
+            let body: Vec<Vec<String>> = rows.iter().skip(1).cloned().collect();
+            let (active_row, active_col) = cell();
+            let reference = cell_ref(active_row, active_col);
+            let value = body
+                .get(active_row.saturating_sub(1))
+                .and_then(|line| line.get(active_col))
+                .cloned()
+                .unwrap_or_default();
+            rsx! {
+                p { class: "kit-sb__kind", "{kind}" }
+                div { class: "kit-sb__formula",
+                    span { class: "kit-sb__ref", "{reference}" }
+                    span { class: "kit-sb__value", "{value}" }
+                }
+                table { class: "kit-sb__sheet",
+                    thead {
+                        tr {
+                            for (col, head) in header.iter().enumerate() {
+                                th { key: "{col}", "{head}" }
+                            }
+                        }
+                    }
+                    tbody {
+                        for (line_index, line) in body.iter().enumerate() {
+                            tr { key: "{line_index}",
+                                for (col, text) in line.iter().enumerate() {
+                                    {
+                                        let row = line_index + 1;
+                                        let selected = (row, col) == (active_row, active_col);
+                                        rsx! {
+                                            td { key: "{col}", "data-active": selected.then_some("true"),
+                                                onclick: move |_| cell.set((row, col)),
+                                                "{text}"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        OutputKind::Document => {
+            let paragraphs: Vec<String> = file.content.split("\n\n").map(str::to_string).collect();
+            rsx! {
+                p { class: "kit-sb__kind", "{kind}" }
+                for para in paragraphs.iter() {
+                    p { key: "{para}", class: "kit-sb__doc", "{para}" }
+                }
+            }
+        }
+        OutputKind::Folder => {
+            let lines: Vec<String> = file.content.lines().map(str::to_string).collect();
+            rsx! {
+                p { class: "kit-sb__kind", "{kind}" }
+                ul { class: "kit-sb__items",
+                    for line in lines.iter() {
+                        li { key: "{line}", "{line}" }
+                    }
+                }
+            }
+        }
+        OutputKind::Code => {
+            let content = file.content.clone();
+            rsx! {
+                p { class: "kit-sb__kind", "{kind}" }
+                pre { class: "kit-sb__content", "{content}" }
+            }
+        }
+    }
+}
+
 /// Whether the viewer asked for reduced motion. Unknown counts as yes, so the answer appears whole.
 async fn prefers_reduced_motion() -> bool {
     document::eval("return window.matchMedia('(prefers-reduced-motion: reduce)').matches;")
@@ -255,6 +353,9 @@ pub fn AssistantChatSidebars(
     #[props(default)] active_chat_id: Option<String>,
     #[props(default)] active_chat: Vec<ChatMessage>,
     #[props(default)] output_list: Vec<OutputFile>,
+    /// Outputs open in the work area at mount, in tab order; the first one is current.
+    #[props(default)]
+    open_tab_list: Vec<String>,
     #[props(default)] approval_mode: ApprovalMode,
     #[props(default)] is_generating: bool,
     #[props(default)] is_loading: bool,
@@ -277,10 +378,12 @@ pub fn AssistantChatSidebars(
     let mut root_mount = use_signal(|| None::<Rc<MountedData>>);
     let bounds = use_signal(|| None::<(f64, f64)>);
     let mut dragging = use_signal(|| false);
-    let mut work_open = use_signal(|| false);
+    let initial_open = !open_tab_list.is_empty();
+    let mut work_open = use_signal(move || initial_open);
     let key_trigger = trigger_id.clone();
-    let mut work_tabs = use_signal(Vec::<String>::new);
+    let mut work_tabs = use_signal(move || open_tab_list);
     let mut work_active = use_signal(|| 0usize);
+    let sheet_cell = use_signal(|| (1usize, 0usize));
     let mut known_answers = use_signal(Vec::<String>::new);
     let mut known_chat = use_signal(|| None::<String>);
     let mut typing = use_signal(|| None::<(String, usize)>);
@@ -764,14 +867,7 @@ pub fn AssistantChatSidebars(
                         }
                         div { class: "kit-sb__panel", role: "tabpanel",
                             if let Some(file) = shown_output.clone() {
-                                {
-                                    let kind = file.output_kind.label();
-                                    let content = file.content.clone();
-                                    rsx! {
-                                        p { class: "kit-sb__kind", "{kind}" }
-                                        pre { class: "kit-sb__content", "{content}" }
-                                    }
-                                }
+                                {output_view(&file, sheet_cell)}
                             }
                         }
                     }

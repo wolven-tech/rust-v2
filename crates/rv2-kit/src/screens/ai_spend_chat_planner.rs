@@ -1,35 +1,40 @@
-//! A conversation about what AI usage costs. Answers carry metric cards, a split chart (spend by
-//! provider, stacked by model), and a trend or a plan. A plan's levers move the projected savings and
-//! a six-month forecast. A person can select part of a chart and ask about only that part.
+//! A conversation about what AI usage costs. Answers carry a text paragraph, metric cards, a split chart (spend by
+//! provider, stacked by model), and a trend or a plan. A plan's levers move the projected savings and a six-month
+//! forecast. A person can select part of a chart and ask about only that part.
 //!
-//! Design choice: answers are `GroundedReply` (caption and sources, with follow-up questions), and
-//! figures are `MetricTile`. Trends and forecasts are `SeriesTrendChart`.
-//! Design choice: the split chart is local SVG. `SegmentedBarExplorer` brings its own pickers, which
-//! the spec does not describe.
-//! Design choice: the sidebar is not rendered; it belongs to the shared app frame. `chat_list` is
-//! therefore not a prop here.
-//! Design choice: plan totals are `NumberTicker`s, which roll digit by digit. Assistive technology
-//! reads the settled text from a visually hidden copy, so the rolling figure is not announced.
+//! Design choice: answers are laid out here, not as `GroundedReply`: its source cards and heading do not match the
+//! answer's source row of chips with copy and feedback icons. Trends and forecasts are `SeriesTrendChart`, and
+//! figures are `MetricTile`.
+//! Design choice: the split chart is local HTML over a bar track. `SegmentedBarExplorer` brings its own pickers, which
+//! the spec does not describe. Segment values are read from each bar's tooltip and its focus announcement, so the
+//! thread carries no data table.
+//! Design choice: the sidebar is not rendered; it belongs to the shared app frame. `chat_list` is therefore not a
+//! prop here.
+//! Design choice: plan totals are `NumberTicker`s, which roll digit by digit. Assistive technology reads the settled
+//! text from a visually hidden copy, so the rolling figure is not announced.
 //! Design choice: a lever announces its new saving when the pointer or focus leaves it, not on each step.
-//! Browser checks: arrow keys on a range lever move by 5 percent of its maximum; a switch turns off
-//! and its saving drops to zero; Enter on a split bar selects it and a second Enter asks.
+//! Browser checks: arrow keys on a range lever move by 5 percent of its maximum; a switch turns off and its saving
+//! drops to zero; Enter on a split bar selects it and a second Enter asks.
 
 use dioxus::prelude::*;
 use rv2_affect::motion::number_ticker::NumberTicker;
 use rv2_affect::skeleton::Skeleton;
 
-use crate::components::grounded_reply::{GroundedReply, SourceEntry};
+use crate::components::grounded_reply::SourceEntry;
 use crate::components::metric_tile::{MetricTile, MetricValue};
 use crate::components::prompt_input_bar::{Model, PromptInputBar, Submission};
 use crate::components::series_trend_chart::{
     ChartVariant, SeriesTone, SeriesTrendChart, TrendSeries, group_digits,
 };
-use crate::internal::{KIT_CSS, next_id};
+use crate::internal::{KIT_CSS, follow_thread_end, next_id};
 
 const CSS: Asset = asset!("/assets/ai-spend-chat-planner.css");
 
 /// Months in a plan's forecast.
 pub const FORECAST_MONTHS: usize = 6;
+
+/// Height of a split bar's track in CSS pixels; the tallest bar reaches its top, and the headroom holds its total.
+const SPLIT_TRACK_PX: f64 = 150.0;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Metric {
@@ -91,8 +96,11 @@ pub enum Chart {
 #[derive(Clone, Debug, PartialEq)]
 pub struct Answer {
     pub id: String,
+    /// The answer paragraph, above its figures.
+    pub text: String,
     pub metric_cards: Vec<Metric>,
     pub chart_block: Option<Chart>,
+    /// The line under the chart, such as the hint to click a bar.
     pub caption_text: String,
     pub source_list: Vec<SourceEntry>,
     pub follow_up_list: Vec<String>,
@@ -161,6 +169,28 @@ pub fn group_total(group: &SplitGroup) -> f64 {
     group.parts.iter().map(|p| p.value_dollars).sum()
 }
 
+/// Height of a split bar's stack in pixels, for a bar whose total is `total` against the largest `max`.
+pub fn split_bar_px(total: f64, max: f64) -> f64 {
+    if max > 0.0 {
+        (total / max).clamp(0.0, 1.0) * SPLIT_TRACK_PX
+    } else {
+        0.0
+    }
+}
+
+/// Model names across all bars, in first-seen order: each name keeps one colour across the chart and its legend.
+pub fn split_part_names(groups: &[SplitGroup]) -> Vec<String> {
+    let mut names: Vec<String> = Vec::new();
+    for group in groups {
+        for part in &group.parts {
+            if !names.contains(&part.entry_name) {
+                names.push(part.entry_name.clone());
+            }
+        }
+    }
+    names
+}
+
 /// Step for a range lever's arrow keys: 5 percent of its maximum.
 pub fn range_step(max_percent: f64) -> f64 {
     max_percent * 0.05
@@ -221,6 +251,9 @@ pub fn AiSpendChatPlanner(
     on_ask: EventHandler<AskRequest>,
 ) -> Element {
     let id = use_hook(|| format!("kit-spend-{}", next_id()));
+    let thread_id = format!("{id}-thread");
+    let follow_id = thread_id.clone();
+    use_effect(move || follow_thread_end(&follow_id));
     let models = vec![Model {
         model_id: "standard".to_string(),
         model_name: "Standard".to_string(),
@@ -232,7 +265,8 @@ pub fn AiSpendChatPlanner(
         document::Link { rel: "stylesheet", href: KIT_CSS }
         document::Link { rel: "stylesheet", href: CSS }
         div { class: "kit-spend", "aria-busy": is_loading.then_some("true"),
-            div { class: "kit-spend__thread", role: "log", "aria-live": "polite",
+            div { id: "{thread_id}", class: "kit-spend__thread", role: "log", "aria-live": "polite",
+                div { class: "kit-spend__stream",
                 if is_loading {
                     div { class: "kit-spend__skeleton",
                         Skeleton { width: "65%", height: "40px" }
@@ -268,7 +302,7 @@ pub fn AiSpendChatPlanner(
                         {
                             match turn {
                                 Turn::Question { id: key, text } => rsx! {
-                                    div { key: "{key}", class: "kit-spend__question", p { "{text}" } }
+                                    div { key: "{key}", class: "kit-spend__question", p { class: "kit-spend__bubble", "{text}" } }
                                 },
                                 Turn::Answer(answer) => rsx! {
                                     AnswerView { answer: answer.clone(), on_ask }
@@ -283,12 +317,14 @@ pub fn AiSpendChatPlanner(
                         "Reading your usage…"
                     }
                 }
+                }
             }
             div { class: "kit-spend__composer",
                 PromptInputBar {
                     root_class: "kit-spend__input",
                     empty_hint: "Ask about your AI spend",
                     model_options: models,
+                    show_context_row: false,
                     on_submit: move |submission: Submission| {
                         on_ask.call(AskRequest { question: submission.text, focus_range: None, plan_snapshot: None });
                     },
@@ -301,10 +337,14 @@ pub fn AiSpendChatPlanner(
 
 #[component]
 fn AnswerView(answer: Answer, on_ask: EventHandler<AskRequest>) -> Element {
+    let mut helpful = use_signal(|| None::<bool>);
     let caption = answer.caption_text.clone();
     let follow_ups = answer.follow_up_list.clone();
+    let copy_text = answer.text.clone();
+    let sources = answer.source_list.clone();
     rsx! {
         article { class: "kit-spend__answer", "aria-label": "Answer",
+            p { class: "kit-spend__text", "{answer.text}" }
             if !answer.metric_cards.is_empty() {
                 div { class: "kit-spend__cards",
                     for metric in answer.metric_cards.iter() {
@@ -337,15 +377,56 @@ fn AnswerView(answer: Answer, on_ask: EventHandler<AskRequest>) -> Element {
                     None => rsx! {},
                 }
             }
-            GroundedReply {
-                answer_text: caption,
-                source_entries: answer.source_list.clone(),
-                next_questions: follow_ups,
-                reveal_animated: false,
-                raised_surface: false,
-                on_next_question_chosen: move |question: String| {
-                    on_ask.call(AskRequest { question, focus_range: None, plan_snapshot: None });
-                },
+            if !caption.is_empty() {
+                p { class: "kit-spend__caption", "{caption}" }
+            }
+            if !sources.is_empty() {
+                div { class: "kit-spend__sourcerow",
+                    span { class: "kit-spend__sourcelabel", "Sources" }
+                    ul { class: "kit-spend__sources",
+                        for source in sources.iter() {
+                            li { key: "{source.entry_id}", class: "kit-spend__source", "{source.chip_text}" }
+                        }
+                    }
+                    div { class: "kit-spend__actions",
+                        button { class: "kit-spend__icon", r#type: "button", "aria-label": "Copy answer",
+                            onclick: move |_| {
+                                document::eval(&format!("navigator.clipboard?.writeText({copy_text:?});"));
+                            },
+                            svg { view_box: "0 0 16 16", fill: "none", stroke: "currentColor", stroke_width: "1.5", "aria-hidden": "true",
+                                rect { x: "5", y: "5", width: "8", height: "8", rx: "1.5" }
+                                path { d: "M3 10.5V4a1 1 0 0 1 1-1h6.5" }
+                            }
+                        }
+                        button { class: "kit-spend__icon", r#type: "button", "aria-label": "Helpful", "aria-pressed": "{helpful() == Some(true)}",
+                            onclick: move |_| helpful.set(if helpful() == Some(true) { None } else { Some(true) }),
+                            svg { view_box: "0 0 16 16", fill: "none", stroke: "currentColor", stroke_width: "1.5", "aria-hidden": "true",
+                                path { d: "M4.5 7h-2v6h2zM4.5 7l2.5-4.5c1 0 1.5.7 1.4 1.7L8 6h4.2c.9 0 1.5.8 1.3 1.6l-.9 4.2c-.2.9-.9 1.2-1.6 1.2H4.5" }
+                            }
+                        }
+                        button { class: "kit-spend__icon", r#type: "button", "aria-label": "Not helpful", "aria-pressed": "{helpful() == Some(false)}",
+                            onclick: move |_| helpful.set(if helpful() == Some(false) { None } else { Some(false) }),
+                            svg { view_box: "0 0 16 16", fill: "none", stroke: "currentColor", stroke_width: "1.5", "aria-hidden": "true",
+                                path { d: "M11.5 9h2V3h-2zM11.5 9 9 13.5c-1 0-1.5-.7-1.4-1.7L8 10H3.8c-.9 0-1.5-.8-1.3-1.6l.9-4.2c.2-.9.9-1.2 1.6-1.2h6.5" }
+                            }
+                        }
+                    }
+                }
+            }
+            if !follow_ups.is_empty() {
+                ul { class: "kit-spend__followups", "aria-label": "Follow-up questions",
+                    for (f, follow) in follow_ups.iter().enumerate() {
+                        li { key: "{f}",
+                            button { class: "kit-spend__chip", r#type: "button",
+                                onclick: {
+                                    let question = follow.clone();
+                                    move |_| on_ask.call(AskRequest { question: question.clone(), focus_range: None, plan_snapshot: None })
+                                },
+                                "{follow}"
+                            }
+                        }
+                    }
+                }
             }
         }
     }
@@ -361,12 +442,19 @@ fn SplitChart(
     let id = use_hook(|| format!("kit-split-{}", next_id()));
     let mut selected = use_signal(|| None::<usize>);
     let totals: Vec<f64> = groups.iter().map(group_total).collect();
-    let max = totals.iter().cloned().fold(0.0_f64, f64::max).max(1.0);
+    let max = totals.iter().cloned().fold(0.0_f64, f64::max);
     let grand: f64 = totals.iter().sum();
     let title_id = format!("{id}-title");
-    let previous_text =
-        previous_total.map(|p| format!("Previous period: {} dollars", group_digits(p)));
-    let grand_text = format!("Total {} dollars", group_digits(grand));
+    let names = split_part_names(&groups);
+    let columns = groups.len().max(1);
+    let foot = match previous_total {
+        Some(p) => format!(
+            "Total {} dollars. Previous period {} dollars.",
+            group_digits(grand),
+            group_digits(p)
+        ),
+        None => format!("Total {} dollars.", group_digits(grand)),
+    };
     let selected_index = selected();
     let ask_name = selected_index
         .and_then(|i| groups.get(i))
@@ -374,25 +462,31 @@ fn SplitChart(
     rsx! {
         figure { class: "kit-spend__chart", "aria-labelledby": "{title_id}",
             figcaption { id: "{title_id}", class: "kit-spend__chart-title", "{title_text}" }
-            div { class: "kit-spend__bars-wrap",
-            svg { class: "kit-spend__bars", view_box: "0 0 640 200", role: "group", "aria-label": "Spend by provider and model",
+            ul { class: "kit-spend__legend", "aria-label": "Models",
+                for (pi, name) in names.iter().enumerate() {
+                    li { key: "{pi}", span { class: "kit-spend__swatch", "data-part": "{pi}" } "{name}" }
+                }
+            }
+            div { class: "kit-spend__bars", role: "group", "aria-label": "Spend by provider and model",
+                style: "grid-template-columns: repeat({columns}, minmax(0, 1fr));",
                 for (index, group) in groups.iter().enumerate() {
                     {
                         let total = totals[index];
-                        let x = 24.0 + index as f64 * (592.0 / groups.len().max(1) as f64);
-                        let width = (592.0 / groups.len().max(1) as f64) * 0.6;
-                        let mut y = 180.0;
+                        let bar_px = split_bar_px(total, max);
                         let is_selected = selected() == Some(index);
-                        let label = format!("{}: {} dollars", group.entry_name, group_digits(total.round()));
+                        let total_text = group_digits(total);
+                        let parts_text = group
+                            .parts
+                            .iter()
+                            .map(|p| format!("{} {}", p.entry_name, group_digits(p.value_dollars)))
+                            .collect::<Vec<_>>()
+                            .join(", ");
+                        let label = format!("{}: {} dollars total, {parts_text}", group.entry_name, total_text);
                         let ask_name = group.entry_name.clone();
-                        let segments: Vec<(f64, f64, usize)> = group.parts.iter().enumerate().map(|(part_index, part)| {
-                            let h = part.value_dollars / max * 160.0;
-                            y -= h;
-                            (y, h, part_index)
-                        }).collect();
                         rsx! {
-                            g { key: "{index}", class: "kit-spend__bar", role: "button", tabindex: "0",
+                            div { key: "{index}", class: "kit-spend__bar", role: "button", tabindex: "0",
                                 "aria-label": "{label}",
+                                title: "{label}",
                                 "aria-pressed": is_selected.then_some("true"),
                                 "data-selected": is_selected.then_some("true"),
                                 onclick: move |_| selected.set(Some(index)),
@@ -410,48 +504,25 @@ fn SplitChart(
                                         }
                                     }
                                 },
-                                for (sy, sh, part_index) in segments {
-                                    rect { class: "kit-spend__segment", "data-part": "{part_index}",
-                                        x: "{x}", y: "{sy}", width: "{width}", height: "{sh}" }
-                                }
-                                text { x: "{x}", y: "196", class: "kit-spend__axis", "{group.entry_name}" }
-                            }
-                        }
-                    }
-                }
-            }
-            }
-            table { class: "kit-spend__table",
-                thead { tr { th { "Provider" } th { "Model" } th { "Dollars" } } }
-                tbody {
-                    for (index, group) in groups.iter().enumerate() {
-                        {
-                            let total = totals[index];
-                            let group_name = group.entry_name.clone();
-                            let total_text = group_digits(total);
-                            let rows: Vec<(String, String)> = group.parts.iter().map(|p| (p.entry_name.clone(), group_digits(p.value_dollars))).collect();
-                            rsx! {
-                                for (model, amount) in rows {
-                                    tr { key: "{group_name}-{model}",
-                                        td { "{group_name}" }
-                                        td { "{model}" }
-                                        td { class: "kit-spend__num", "{amount}" }
+                                span { class: "kit-spend__bar-total", style: "bottom: {bar_px + 4.0:.1}px;", "{total_text}" }
+                                div { class: "kit-spend__stack", style: "height: {bar_px:.1}px;",
+                                    for (pi, part) in group.parts.iter().enumerate() {
+                                        {
+                                            let slot = names.iter().position(|n| *n == part.entry_name).unwrap_or(0);
+                                            rsx! {
+                                                span { key: "{pi}", class: "kit-spend__segment", "data-part": "{slot}",
+                                                    style: "flex: {part.value_dollars.max(0.0)} 1 0;" }
+                                            }
+                                        }
                                     }
                                 }
-                                tr { class: "kit-spend__total",
-                                    td { "{group_name}" }
-                                    td { "Total" }
-                                    td { class: "kit-spend__num", "{total_text}" }
-                                }
+                                span { class: "kit-spend__axis", "{group.entry_name}" }
                             }
                         }
                     }
                 }
             }
-            p { class: "kit-spend__chart-foot", "{grand_text}" }
-            if let Some(text) = previous_text {
-                p { class: "kit-spend__chart-foot", "{text}" }
-            }
+            p { class: "kit-spend__chart-foot", "{foot}" }
             if let (Some(index), Some(name)) = (selected_index, ask_name) {
                 button {
                     r#type: "button",

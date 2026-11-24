@@ -17,12 +17,90 @@
 use dioxus::prelude::*;
 
 use crate::components::metric_tile::{MetricTile, MetricValue};
-use crate::components::series_trend_chart::{
-    ChartVariant, SeriesTone, SeriesTrendChart, TrendSeries,
-};
+use crate::components::series_trend_chart::{group_digits, nice_axis, value_domain};
 use crate::internal::{KIT_CSS, class_list};
 
 const CSS: Asset = asset!("/assets/chart-answer-chat.css");
+
+/// Left edge of point `index` of `last + 1` points, in percent of the card. Points run from 8% to 96%.
+pub fn x_pct(index: usize, last: usize) -> f64 {
+    8.0 + if last == 0 {
+        0.0
+    } else {
+        index as f64 / last as f64 * 88.0
+    }
+}
+
+/// Height of `value` in percent of the card, on the axis `lo..hi`: `lo` sits at 78% and `hi` at 14%.
+pub fn y_pct(value: f64, lo: f64, hi: f64) -> f64 {
+    78.0 - (value - lo) / (hi - lo).max(f64::EPSILON) * 64.0
+}
+
+/// Index of the highest value; the first one when two tie.
+pub fn peak_index(values: &[f64]) -> Option<usize> {
+    values
+        .iter()
+        .copied()
+        .enumerate()
+        .fold(None::<(usize, f64)>, |best, (i, v)| match best {
+            Some((_, b)) if b >= v => best,
+            _ => Some((i, v)),
+        })
+        .map(|(i, _)| i)
+}
+
+/// The value axis of a trend: its own nice bounds over both series, from zero.
+pub fn trend_axis(values: &[f64], comparison: &[Option<f64>]) -> (f64, f64) {
+    let all = values
+        .iter()
+        .copied()
+        .chain(comparison.iter().flatten().copied());
+    let (lo, hi) = value_domain(all, true);
+    let (nlo, nhi, _) = nice_axis(lo, hi, 2);
+    (nlo, nhi)
+}
+
+/// Point lists for the drawing, in percent of the card. The comparison line skips missing points.
+#[derive(Clone, Debug, PartialEq)]
+pub struct TrendGeometry {
+    pub main: String,
+    pub comparison: String,
+    pub area: String,
+}
+
+pub fn trend_geometry(
+    values: &[f64],
+    comparison: &[Option<f64>],
+    axis: (f64, f64),
+) -> TrendGeometry {
+    let last = values.len().saturating_sub(1);
+    let (lo, hi) = axis;
+    let main: Vec<(f64, f64)> = values
+        .iter()
+        .enumerate()
+        .map(|(i, v)| (x_pct(i, last), y_pct(*v, lo, hi)))
+        .collect();
+    let compared: Vec<String> = comparison
+        .iter()
+        .enumerate()
+        .filter_map(|(i, v)| Some(format!("{:.2},{:.2}", x_pct(i, last), y_pct((*v)?, lo, hi))))
+        .collect();
+    let mut area: Vec<String> = Vec::with_capacity(main.len() + 2);
+    if let (Some(first), Some(end)) = (main.first(), main.last()) {
+        area.push(format!("{:.2},78.00", first.0));
+        area.extend(main.iter().map(|(x, y)| format!("{x:.2},{y:.2}")));
+        area.push(format!("{:.2},78.00", end.0));
+    }
+    TrendGeometry {
+        main: main
+            .iter()
+            .map(|(x, y)| format!("{x:.2},{y:.2}"))
+            .collect::<Vec<_>>()
+            .join(" "),
+        comparison: compared.join(" "),
+        area: area.join(" "),
+    }
+}
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Figure {
@@ -60,6 +138,8 @@ pub enum AnswerBlock {
         series_label: String,
         comparison_label: String,
         points: Vec<TrendPoint>,
+        /// Line under the chart, such as how to ask about a span.
+        hint: Option<String>,
     },
     Breakdown {
         block_id: String,
@@ -281,6 +361,7 @@ fn TrendBlock(
     x_labels: Vec<String>,
     values: Vec<f64>,
     comparison: Vec<Option<f64>>,
+    hint: Option<String>,
     selection: Option<Selection>,
     on_select: EventHandler<Option<Selection>>,
 ) -> Element {
@@ -289,27 +370,14 @@ fn TrendBlock(
     let mut cursor = use_signal(|| None::<usize>);
     let last = x_labels.len().saturating_sub(1);
 
-    let mut series = vec![TrendSeries {
-        name: series_label.clone(),
-        values: values.iter().map(|v| Some(*v)).collect(),
-        tone: SeriesTone::Ink,
-        emphasis: true,
-        is_earlier: false,
-    }];
-    if comparison.iter().any(Option::is_some) {
-        series.push(TrendSeries {
-            name: comparison_label.clone(),
-            values: comparison.clone(),
-            tone: SeriesTone::Muted,
-            emphasis: false,
-            is_earlier: true,
-        });
-    }
-    let active = Some(hover().or(cursor()));
+    let axis = trend_axis(&values, &comparison);
+    let (axis_lo, axis_hi) = axis;
+    let geometry = trend_geometry(&values, &comparison, axis);
+    let shown = hover().or(cursor()).or(peak_index(&values));
+    let half_column = 44.0 / last.max(1) as f64;
     let overlay = selection.as_ref().map(|s| {
         let (lo, hi) = range_bounds(s.from_index, s.to_index);
-        let denom = last.max(1) as f64;
-        (lo as f64 / denom * 100.0, (hi - lo) as f64 / denom * 100.0)
+        (x_pct(lo, last), x_pct(hi, last) - x_pct(lo, last))
     });
     let summary = selection.as_ref().map(|s| {
         let (change, sum) = range_summary(&values, s.from_index, s.to_index);
@@ -319,6 +387,41 @@ fn TrendBlock(
         "{series_label} against {comparison_label}, {} points",
         x_labels.len()
     );
+    let first_label = x_labels.first().cloned().unwrap_or_default();
+    let mid_label = x_labels.get(last / 2).cloned().unwrap_or_default();
+    let last_label = x_labels.last().cloned().unwrap_or_default();
+    let columns: Vec<(f64, f64)> = (0..values.len())
+        .map(|i| (x_pct(i, last) - half_column, half_column * 2.0))
+        .collect();
+    let axis_labels = [
+        group_digits(axis_hi),
+        group_digits((axis_hi + axis_lo) / 2.0),
+        group_digits(axis_lo),
+    ];
+    let tip = shown.map(|i| {
+        let x = x_pct(i, last);
+        let y = y_pct(values[i], axis_lo, axis_hi);
+        let comparison_y = comparison
+            .get(i)
+            .copied()
+            .flatten()
+            .map(|v| y_pct(v, axis_lo, axis_hi));
+        let comparison_text = comparison
+            .get(i)
+            .copied()
+            .flatten()
+            .map(|v| format!("{comparison_label} {}", group_digits(v)));
+        (
+            x_labels[i].clone(),
+            format!("{series_label} {}", group_digits(values[i])),
+            comparison_text,
+            x,
+            y,
+            comparison_y,
+            format!("right: {:.2}%", 100.0 - x + 2.0),
+        )
+    });
+    let guide = tip.as_ref().map(|t| (t.3, t.4));
     let drag_labels = x_labels.clone();
     let key_labels = x_labels.clone();
     let drag_block = block_id.clone();
@@ -375,26 +478,58 @@ fn TrendBlock(
                     }
                 }
             },
-            header { class: "kit-chat__trend-head",
-                span { class: "kit-chat__trend-name", "{series_label}" }
-                span { class: "kit-chat__trend-vs", "vs {comparison_label}" }
+            div { class: "kit-chat__legend",
+                span { class: "kit-chat__legend-item", span { class: "kit-chat__legend-solid", "aria-hidden": "true" }, "{series_label}" }
+                span { class: "kit-chat__legend-item", span { class: "kit-chat__legend-dashed", "aria-hidden": "true" }, "{comparison_label}" }
             }
-            div { class: "kit-chat__plot",
-                SeriesTrendChart {
-                    x_labels: x_labels.clone(),
-                    series: series,
-                    variant: ChartVariant::Line,
-                    active: active,
-                    on_active_change: move |index: Option<usize>| {
-                        hover.set(index);
-                        if index.is_none() { cursor.set(None); }
-                    },
-                    label: series_label.clone(),
-                    height: 200.0,
+            div { class: "kit-chat__plot", onpointerleave: move |_| { hover.set(None); cursor.set(None); },
+                svg { class: "kit-chat__trend-svg", "viewBox": "0 0 100 100", "preserveAspectRatio": "none", "aria-hidden": "true",
+                    polygon { class: "kit-chat__area", points: "{geometry.area}" }
+                    if !geometry.comparison.is_empty() {
+                        polyline { class: "kit-chat__line-last", points: "{geometry.comparison}" }
+                    }
+                    polyline { class: "kit-chat__line", points: "{geometry.main}" }
+                    if let Some((x, y)) = guide {
+                        line { class: "kit-chat__guide", x1: "{x:.2}", y1: "{y:.2}", x2: "{x:.2}", y2: "78" }
+                    }
                 }
                 if let Some((left, width)) = overlay {
                     span { class: "kit-chat__range", "aria-hidden": "true", style: "left: {left:.2}%; width: {width:.2}%" }
                 }
+                for (i, (left, width)) in columns.iter().copied().enumerate() {
+                    span { class: "kit-chat__hit", "aria-hidden": "true",
+                        style: "left: {left:.2}%; width: {width:.2}%",
+                        onpointerenter: move |_| hover.set(Some(i)),
+                    }
+                }
+                span { class: "kit-chat__axis kit-chat__axis--top", "{axis_labels[0]}" }
+                span { class: "kit-chat__axis kit-chat__axis--mid", "{axis_labels[1]}" }
+                span { class: "kit-chat__axis kit-chat__axis--base", "{axis_labels[2]}" }
+                span { class: "kit-chat__week kit-chat__week--first", "{first_label}" }
+                span { class: "kit-chat__week kit-chat__week--mid", "{mid_label}" }
+                span { class: "kit-chat__week kit-chat__week--last", "{last_label}" }
+                if let Some((week, primary, comparison_text, x, y, comparison_y, tip_style)) = tip.clone() {
+                    span { class: "kit-chat__dot", style: "left: {x:.2}%; top: {y:.2}%" }
+                    if let Some(cy) = comparison_y {
+                        span { class: "kit-chat__dot kit-chat__dot--last", style: "left: {x:.2}%; top: {cy:.2}%" }
+                    }
+                    div { class: "kit-chat__tip", style: "{tip_style}",
+                        span { class: "kit-chat__tip-week", "{week}" }
+                        span { class: "kit-chat__tip-row",
+                            span { class: "kit-chat__legend-solid", "aria-hidden": "true" }
+                            "{primary}"
+                        }
+                        if let Some(text) = comparison_text {
+                            span { class: "kit-chat__tip-row",
+                                span { class: "kit-chat__legend-dashed", "aria-hidden": "true" }
+                                "{text}"
+                            }
+                        }
+                    }
+                }
+            }
+            if let Some(text) = hint.clone() {
+                p { class: "kit-chat__hint", "{text}" }
             }
             if let (Some(s), Some(figure)) = (selection.clone(), summary.clone()) {
                 button {
@@ -467,9 +602,14 @@ pub fn ChartAnswerChat(
     messages: Vec<ChatMessage>,
     #[props(default)] suggested_prompts: Vec<Prompt>,
     #[props(default = "Ask about your numbers".to_string(), into)] placeholder_text: String,
+    #[props(default = "Auto".to_string(), into)] model_label: String,
+    #[props(default)] title: Option<String>,
     #[props(default)] is_waiting: bool,
     #[props(default)] on_ask: Option<EventHandler<AskSubmit>>,
     #[props(default)] on_retry: Option<EventHandler<String>>,
+    /// Source names shown on the line under the last answer.
+    #[props(default)]
+    sources: Vec<String>,
     #[props(default, into)] extra_classes: String,
 ) -> Element {
     let mut draft = use_signal(String::new);
@@ -477,15 +617,38 @@ pub fn ChartAnswerChat(
     let empty = messages.is_empty();
     let root_class = class_list("kit-chat", &extra_classes);
     let chip = selection();
+    let mut send = move || {
+        let text = draft().trim().to_string();
+        if text.is_empty() {
+            return;
+        }
+        let chosen = selection();
+        draft.set(String::new());
+        selection.set(None);
+        if let Some(handler) = on_ask {
+            handler.call(AskSubmit {
+                text,
+                selection: chosen,
+            });
+        }
+    };
 
     rsx! {
         document::Link { rel: "stylesheet", href: KIT_CSS }
         document::Link { rel: "stylesheet", href: CSS }
         section { class: "{root_class}", "aria-label": "Chat about your numbers",
+            if let Some(text) = title.clone() {
+                header { class: "kit-chat__head",
+                    h2 { class: "kit-chat__title", "{text}" }
+                }
+            }
             div { class: "kit-chat__log", role: "log", "aria-live": "polite",
                 for message in messages.iter() {
                     article { key: "{message.id}", class: "kit-chat__msg", "data-role": if message.role == Role::Person { "person" } else { "assistant" },
                         if let Some(text) = message.text.clone() {
+                            if message.role == Role::Assistant {
+                                span { class: "kit-chat__mark", "aria-hidden": "true" }
+                            }
                             p { class: "kit-chat__text", "{text}" }
                         }
                         for (bi, block) in message.blocks.iter().enumerate() {
@@ -504,7 +667,7 @@ pub fn ChartAnswerChat(
                                             }
                                         }
                                     },
-                                    AnswerBlock::Trend { block_id, series_label, comparison_label, points } => {
+                                    AnswerBlock::Trend { block_id, series_label, comparison_label, points, hint } => {
                                         let x_labels: Vec<String> = points.iter().map(|p| p.x_label.clone()).collect();
                                         let values: Vec<f64> = points.iter().map(|p| p.value).collect();
                                         let comparison: Vec<Option<f64>> = points.iter().map(|p| p.comparison_value).collect();
@@ -518,6 +681,7 @@ pub fn ChartAnswerChat(
                                                 x_labels: x_labels,
                                                 values: values,
                                                 comparison: comparison,
+                                                hint: hint,
                                                 selection: chosen,
                                                 on_select: move |s: Option<Selection>| selection.set(s),
                                             }
@@ -571,34 +735,49 @@ pub fn ChartAnswerChat(
                         }
                     }
                 }
+                if !sources.is_empty() {
+                    div { class: "kit-chat__source",
+                        span { class: "kit-chat__source-label", "From" }
+                        for name in sources.iter() {
+                            span { class: "kit-chat__source-chip", "{name}" }
+                        }
+                        span { class: "kit-chat__actions",
+                            button { r#type: "button", class: "kit-chat__icon-btn", "aria-label": "Copy answer", "⧉" }
+                            button { r#type: "button", class: "kit-chat__icon-btn", "aria-label": "Download answer", "↓" }
+                            button { r#type: "button", class: "kit-chat__icon-btn", "aria-label": "Helpful", "+" }
+                            button { r#type: "button", class: "kit-chat__icon-btn", "aria-label": "Retry answer", "↻" }
+                        }
+                    }
+                }
                 if is_waiting {
                     p { class: "kit-chat__thinking", role: "status", "Working out the answer…" }
                 }
                 if empty && !is_waiting {
                     div { class: "kit-chat__empty",
-                        p { "Ask a question about your numbers, or start with one of these." }
-                        div { class: "kit-chat__prompts",
-                            for prompt in suggested_prompts.iter() {
-                                button {
-                                    key: "{prompt.id}",
-                                    r#type: "button",
-                                    class: "kit-chat__action",
-                                    onclick: {
-                                        let label = prompt.label.clone();
-                                        move |_| {
-                                            if let Some(handler) = on_ask {
-                                                handler.call(AskSubmit { text: label.clone(), selection: None });
-                                            }
-                                        }
-                                    },
-                                    "{prompt.label}"
-                                }
+                        p { "Ask a question about your numbers, or start with a suggestion below." }
+                    }
+                }
+            }
+            form { class: "kit-chat__composer", onsubmit: move |e: FormEvent| {
+                    e.prevent_default();
+                    send();
+                },
+                if !suggested_prompts.is_empty() {
+                    div { class: "kit-chat__prompts", role: "group", "aria-label": "Suggested questions",
+                        for prompt in suggested_prompts.iter() {
+                            button {
+                                key: "{prompt.id}",
+                                r#type: "button",
+                                class: "kit-chat__action",
+                                onclick: {
+                                    let label = prompt.label.clone();
+                                    move |_| draft.set(label.clone())
+                                },
+                                "{prompt.label}"
                             }
                         }
                     }
                 }
-            }
-            form { class: "kit-chat__composer", onsubmit: move |e: FormEvent| e.prevent_default(),
                 if let Some(s) = chip.clone() {
                     div { class: "kit-chat__selection",
                         span { "About {s.label}" }
@@ -611,6 +790,7 @@ pub fn ChartAnswerChat(
                         }
                     }
                 }
+                div { class: "kit-chat__box",
                 textarea {
                     class: "kit-chat__input",
                     rows: "2",
@@ -622,16 +802,7 @@ pub fn ChartAnswerChat(
                         match e.key() {
                             Key::Enter if !e.modifiers().shift() => {
                                 e.prevent_default();
-                                let text = draft().trim().to_string();
-                                if text.is_empty() {
-                                    return;
-                                }
-                                let chosen = selection();
-                                draft.set(String::new());
-                                selection.set(None);
-                                if let Some(handler) = on_ask {
-                                    handler.call(AskSubmit { text, selection: chosen });
-                                }
+                                send();
                             }
                             Key::Escape => match escape_action(selection().is_some(), !draft().is_empty()) {
                                 EscapeAction::ClearSelection => selection.set(None),
@@ -641,6 +812,39 @@ pub fn ChartAnswerChat(
                             _ => {}
                         }
                     },
+                }
+                div { class: "kit-chat__bar",
+                    div { class: "kit-chat__bar-left",
+                        button { r#type: "button", class: "kit-chat__plus", "aria-label": "Add to the question", "+" }
+                        span { class: "kit-chat__approval",
+                            svg { class: "kit-chat__glyph", "viewBox": "0 0 16 16", "aria-hidden": "true",
+                                path { d: "M5 8V3.5a1 1 0 0 1 2 0V7m0-1V2.5a1 1 0 0 1 2 0V7m0-.5V3.5a1 1 0 0 1 2 0V9l.5 2.5L10 14H6.5L4 10.5 3.2 9.2A1 1 0 0 1 5 8" }
+                            }
+                            "Ask first"
+                        }
+                    }
+                    div { class: "kit-chat__bar-right",
+                        span { class: "kit-chat__model-wrap",
+                            select { class: "kit-chat__model", "aria-label": "Model",
+                                option { "{model_label}" }
+                            }
+                            svg { class: "kit-chat__chevron", "viewBox": "0 0 16 16", "aria-hidden": "true",
+                                path { d: "M4 6l4 4 4-4" }
+                            }
+                        }
+                        button { r#type: "button", class: "kit-chat__mic", "aria-label": "Dictate",
+                            svg { class: "kit-chat__glyph", "viewBox": "0 0 16 16", "aria-hidden": "true",
+                                rect { x: "6", y: "2", width: "4", height: "8", rx: "2" }
+                                path { d: "M3.5 8a4.5 4.5 0 0 0 9 0M8 12.5V14" }
+                            }
+                        }
+                        button { r#type: "submit", class: "kit-chat__send", "aria-label": "Send question", "data-empty": draft().trim().is_empty().then_some("true"),
+                            svg { class: "kit-chat__glyph", "viewBox": "0 0 16 16", "aria-hidden": "true",
+                                path { d: "M8 13V3M3.5 7.5 8 3l4.5 4.5" }
+                            }
+                        }
+                    }
+                }
                 }
             }
         }

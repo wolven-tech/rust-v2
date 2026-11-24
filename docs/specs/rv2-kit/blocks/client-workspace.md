@@ -79,3 +79,38 @@ In reading order:
 7. A report item toggles its detail with its expanded state matching the visible detail.
 8. At phone width the stat cards form a two-column grid and nothing scrolls sideways.
 9. With no items, the empty prompt appears and the filter count reads zero.
+
+## Amendment 6: structure and demo
+
+No earlier amendment exists, so no line is replaced.
+
+Archetype: a client header, a row of four stat cards, and one section panel holding a composer above a timeline.
+
+Visible at rest:
+- Header: round initial mark, client name, meta line beneath (legal name, country, currency, year end). At right: sync pill with relative time and a refresh control, and a "Switch client" control.
+- Stat row: exactly four cards of equal width. Each: label, formatted value, delta badge, sparkline in the card's lower part with an end dot on its last point.
+- Section panel: four section tabs in order Context, Reports, Financials, Settings. Context is selected. At right: search field and a filter select showing "All".
+- Composer at the top of the context pane: avatar at left; text area with a placeholder; attach control at bottom left; disabled submit at bottom right.
+- Timeline beneath the composer: four entries and one connected-app line. Each entry has a round kind badge at left, author avatar, author name and action sentence, relative time, and body text with inline reference chips.
+  - Note, today: author added context; body with one reference chip.
+  - Report, one day ago: author generated a report; the report name is a link.
+  - Files, two days ago: author added two files; each shown as a file chip.
+  - Note, four days ago: author added context; body with one reference chip.
+  - Connected app, one week ago: app mark and "Connected ledger app".
+
+Gallery demo:
+- Workspace "Larch & Co Ltd"; meta "Berlin · EUR · year closes 31 Dec".
+- Stat cards: "Receivables €48.2k" (up), "Bank balance €612k" (down), "Gross margin 64.1%" (up), "Monthly burn €36.0k" (down).
+- Sync label "Synced 3 min ago".
+- Authors: Ana Ruiz, Ben Koch.
+
+Scale: the header spans the full width. The stat row is four equal columns across the full width. The section panel spans the full width below it, and the whole timeline fits without scrolling at the gallery size.
+
+Motion, settled frame: sparklines drawn; nothing focused; composer empty.
+
+Defects, stated as checks: two stat tiles instead of four (check 10); no Financials tab (check 11); no connected-app line (check 12).
+
+Acceptance checks (continued):
+10. At rest exactly four stat cards are drawn, each with a sparkline.
+11. The section bar shows Context, Reports, Financials and Settings in that order, with Context selected.
+12. The timeline ends with a connected-app line that names the app and shows its relative time.

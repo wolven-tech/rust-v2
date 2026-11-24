@@ -1,6 +1,6 @@
 use dioxus::prelude::*;
 use rv2_affect::badge::{Badge, BadgeTone};
-use rv2_affect::color_picker::{ColorPicker, ColorPickerSize};
+use rv2_affect::color_picker::{ColorPicker, ColorPickerSize, ColorPreset};
 use rv2_affect::date_picker::{DatePicker, DatePickerSize, Day};
 use rv2_affect::number_input::NumberInput;
 use rv2_affect::otp_input::{OtpInput, OtpSeparator, OtpStatus};
@@ -25,6 +25,17 @@ const UNDERLINE: &str = "M4 2v6a4 4 0 008 0V2M3 14h10";
 const INBOX: &str = "M2 9l2-5h8l2 5v3H2zM2 9h3l1 2h4l1-2h3";
 const SEND: &str = "M2 8l12-5-4 11-2-4z";
 const DRAFT: &str = "M3 13l1-3 7-7 2 2-7 7zM10 4l2 2";
+const MAIL: &str = "M2.5 4.5h11v7h-11zM2.5 4.5 8 9l5.5-4.5";
+
+fn rating_word(stars: f64) -> &'static str {
+    if stars >= 4.0 {
+        "Great"
+    } else if stars >= 2.0 {
+        "Okay"
+    } else {
+        "Poor"
+    }
+}
 
 fn segment(value: &str, label: &str) -> SegmentOption {
     SegmentOption {
@@ -79,9 +90,11 @@ pub fn Inputs() -> Element {
     let mut day = use_signal(|| Day::new(2026, 3, 3).expect("valid date"));
     let mut time = use_signal(|| Some("09:30".to_string()));
     let mut count = use_signal(|| Some(4.0f64));
-    let mut otp = use_signal(String::new);
+    let mut otp = use_signal(|| "482913".to_string());
     let mut stars = use_signal(|| 3.0f64);
     let mut thumb = use_signal(|| ThumbRating::Unrated);
+    let mut helpful = use_signal(|| ThumbRating::Unrated);
+    let mut run_stars = use_signal(|| 4.0f64);
     let mut segment_value = use_signal(|| "week".to_string());
     let mut tags = use_signal(|| vec!["rust".to_string(), "dioxus".to_string()]);
     let mut notes = use_signal(String::new);
@@ -107,7 +120,21 @@ pub fn Inputs() -> Element {
                 }
                 Ex { label: "Open panel",
                     div { class: "gl-space",
-                        ColorPicker { label: "Accent", value: "#16a34a", open: true }
+                        ColorPicker {
+                            label: "Accent",
+                            value: "#16a34a",
+                            open: true,
+                            presets: vec![
+                                ColorPreset::new("#0090fe"),
+                                ColorPreset::new("#06b6d4"),
+                                ColorPreset::new("#14b8a6"),
+                                ColorPreset::new("#4ade80"),
+                                ColorPreset::new("#eab308"),
+                                ColorPreset::new("#f97316"),
+                                ColorPreset::new("#ec4899"),
+                                ColorPreset::new("#8b5cf6"),
+                            ],
+                        }
                     }
                 }
                 p { class: "gl-out", "Value: {color}" }
@@ -146,6 +173,53 @@ pub fn Inputs() -> Element {
                 p { class: "gl-out", "Picked weekday index: {day().weekday()}" }
             }
             Item { name: "NumberInput",
+                Ex { label: "Unit, prefix, hints and a paired row",
+                    div { class: "gl-box", style: "display: grid; gap: 18px;",
+                        NumberInput {
+                            label: rsx! { "Max tokens per run" },
+                            name: "max-tokens",
+                            default_value: 32000.0,
+                            min: 0.0,
+                            max: 128000.0,
+                            step: 1000.0,
+                            large_step: 10000.0,
+                            unit: rsx! { "tokens" },
+                            hint: rsx! { "The answer stops here. Page Up adds 10,000." },
+                        }
+                        NumberInput {
+                            label: rsx! { "Budget per run" },
+                            name: "budget",
+                            default_value: 25.0,
+                            min: 0.0,
+                            max: 100.0,
+                            step: 0.5,
+                            max_fraction_digits: 2,
+                            prefix: rsx! { "$" },
+                            hint: rsx! { "Your plan allows up to $100." },
+                        }
+                        div { style: "display: grid; grid-template-columns: 1fr 1fr; gap: 12px;",
+                            NumberInput {
+                                label: rsx! { "Parallel agents" },
+                                name: "agents",
+                                default_value: 3.0,
+                                min: 1.0,
+                                max: 8.0,
+                                step: 1.0,
+                                hint: rsx! { "Up to 8" },
+                            }
+                            NumberInput {
+                                label: rsx! { "Temperature" },
+                                name: "temperature",
+                                default_value: 0.7,
+                                min: 0.0,
+                                max: 2.0,
+                                step: 0.1,
+                                max_fraction_digits: 1,
+                                hint: rsx! { "0 to 2" },
+                            }
+                        }
+                    }
+                }
                 Ex { label: "Bounded, with step",
                     div { class: "gl-box",
                         NumberInput {
@@ -174,16 +248,29 @@ pub fn Inputs() -> Element {
                 p { class: "gl-out", "Seats value: {count:?}" }
             }
             Item { name: "OtpInput",
-                Ex { label: "Idle, middle separator",
-                    div { class: "gl-stack",
-                        OtpInput {
-                            length: 6,
-                            separator: OtpSeparator::Middle,
-                            value: otp(),
-                            status: OtpStatus::Idle,
-                            resend_in: 30u32,
-                            on_change: move |v: String| otp.set(v),
-                            on_resend: move |_| resend += 1,
+                Ex { label: "Idle, middle separator, in a card",
+                    div { class: "gl-box",
+                        div { style: "display: grid; gap: 16px; justify-items: center; text-align: center;",
+                            span { class: "gl-tile", {glyph(MAIL)} }
+                            div { style: "display: grid; gap: 4px;",
+                                strong { style: "font-size: 15px; font-weight: 600;", "Check your email" }
+                                span { style: "font-size: 13px; opacity: 0.7;", "We sent a code to maya@acme.com" }
+                            }
+                            div { style: "width: 100%;",
+                                OtpInput {
+                                    length: 6,
+                                    separator: OtpSeparator::Middle,
+                                    value: otp(),
+                                    status: OtpStatus::Idle,
+                                    resend_in: 30u32,
+                                    on_change: move |v: String| otp.set(v),
+                                    on_resend: move |_| resend += 1,
+                                }
+                            }
+                            div { class: "gl-foot", style: "width: 100%;",
+                                span { "Demo code" }
+                                span { style: "font-variant-numeric: tabular-nums;", "482 913" }
+                            }
                         }
                     }
                 }
@@ -209,7 +296,35 @@ pub fn Inputs() -> Element {
                     Rating { read_only: true, value: 3.0, size: RatingSize::Sm }
                     Rating { read_only: true, value: 3.0, size: RatingSize::Lg }
                 }
-                p { class: "gl-out", "Stars: {stars}" }
+                Ex { label: "Answer, feedback and rating summary",
+                    div { class: "gl-box",
+                        div { style: "display: grid; gap: 12px; font-size: 13px;",
+                            div { style: "display: flex; gap: 8px; align-items: center;",
+                                span { class: "gl-tile", style: "width: 24px; height: 24px; border-radius: 6px;", {glyph(DRAFT)} }
+                                strong { style: "font-weight: 500;", "Research agent" }
+                                span { style: "font-size: 12px; opacity: 0.55;", "2m" }
+                            }
+                            p { style: "margin: 0; line-height: 1.5; opacity: 0.8;", "Three of the five competitors raised prices this quarter, by 8 to 15%. Two moved seats to annual billing only." }
+                            div { class: "gl-foot",
+                                span { "Was this helpful?" }
+                                ThumbsRating { value: helpful(), name: "helpful", size: RatingSize::Sm, on_value_change: move |v: ThumbRating| helpful.set(v) }
+                            }
+                            div { class: "gl-foot", style: "padding-top: 12px;",
+                                span { style: "font-weight: 500; opacity: 1;", "Rate this run" }
+                                span { style: "display: flex; gap: 10px; align-items: center;",
+                                    Rating { value: run_stars(), name: "run", on_value_change: move |v: f64| run_stars.set(v) }
+                                    span { style: "opacity: 0.6;", "{rating_word(run_stars())}" }
+                                }
+                            }
+                            div { class: "gl-foot", style: "justify-content: flex-start;",
+                                Rating { read_only: true, value: 4.5, size: RatingSize::Sm }
+                                strong { style: "font-weight: 500;", "4.5" }
+                                span { style: "opacity: 0.6;", "· 2,184 runs rated" }
+                            }
+                        }
+                    }
+                }
+                p { class: "gl-out", "Stars: {stars}. Run: {run_stars}. Helpful: {helpful:?}" }
             }
             Item { name: "ThumbsRating",
                 Ex { label: "Interactive, unrated",

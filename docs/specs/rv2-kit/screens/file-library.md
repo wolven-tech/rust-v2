@@ -87,3 +87,28 @@ Folder cards show a folder glyph, the folder name, a scope label, and the file c
 8. Escape in search clears the query and restores all items.
 9. Sorting by name orders folders and templates alphabetically within their sections.
 10. At phone width there is no horizontal page scroll; the filter strip scrolls inside itself.
+
+## Amendment 5: structure and demo
+
+Replaces: none (no earlier amendment in this spec).
+
+**Archetype:** two stacked sections, Folders and File templates, under one shared toolbar, each a grid of cards.
+
+**At rest (gallery demo):**
+- Title row: "Files", a one-line explanation and a learn-more link.
+- Shared toolbar on one line: search field, sort control, grid/list toggle with grid selected.
+- Folders section: heading with count 4; filter tabs (All, Shared, Private); Create folder button; four folder cards in one row, each with a folder glyph, name, scope label and file count.
+- File templates section: heading with count 4; filter tabs (All, Mine, Shared with me); type filter; Add template button; four template cards in a grid, each with a kind glyph and its code, name, owner and scope label.
+- Template names at rest: Brand guidelines, Campaign budget, Client onboarding kit, Weekly status report.
+
+**States at rest:** loaded; All selected in both filters; search empty; grid view.
+
+**Arrangement:** toolbar on one line across the top; folders section above templates section; both sections span the full page width.
+
+**Motion, settled frame:** nothing moves at rest.
+
+**Checks (continued):**
+11. At 1280 wide every template name shows in full. A name that does not fit on one line wraps to a second line before it truncates. No demo name is truncated at rest.
+12. Each folder card shows its file count and scope label. Each template card shows its owner and scope label.
+13. At rest the page shows four folders and four templates, and each section heading's count matches its cards.
+14. At 1280 wide the toolbar sits on one line above both sections. It wraps only below phone width.

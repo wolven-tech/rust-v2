@@ -86,7 +86,7 @@ impl AccessLevel {
         match self {
             Self::Everyone => "Everyone",
             Self::Engineering => "Engineering",
-            Self::Admins => "Admins only",
+            Self::Admins => "Admins",
         }
     }
 
@@ -237,6 +237,7 @@ pub fn SettingsModelAccess(
     #[props(default)] on_navigate: Option<EventHandler<String>>,
     #[props(default)] docs_href: Option<String>,
     #[props(default)] on_add_key: Option<EventHandler<(String, String)>>,
+    #[props(default)] open_provider: Option<String>,
 ) -> Element {
     let uid = use_hook(|| next_id());
     let mut state = use_signal(|| ModelAccessState {
@@ -246,7 +247,10 @@ pub fn SettingsModelAccess(
     });
     let mut kind_filter = use_signal(|| filter);
     let mut search = use_signal(|| query.clone());
-    let mut toggled = use_signal(Vec::<String>::new);
+    let mut toggled = use_signal({
+        let seed = open_provider.clone();
+        move || seed.iter().cloned().collect::<Vec<String>>()
+    });
     let mut custom_open = use_signal(|| false);
     let mut key_open = use_signal(|| false);
     let mut custom_name = use_signal(String::new);
@@ -579,7 +583,7 @@ pub fn SettingsModelAccess(
                                                                 },
                                                                 option { value: "everyone", selected: access == AccessLevel::Everyone, "Everyone" }
                                                                 option { value: "engineering", selected: access == AccessLevel::Engineering, "Engineering" }
-                                                                option { value: "admins", selected: access == AccessLevel::Admins, "Admins only" }
+                                                                option { value: "admins", selected: access == AccessLevel::Admins, "Admins" }
                                                             }
                                                         }
                                                     }

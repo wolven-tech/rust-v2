@@ -14,7 +14,7 @@ use dioxus::prelude::*;
 use rv2_affect::tool_call_card::{ToolCallCard, ToolCallStatus};
 
 use super::ai_workspace_home::middle_truncate;
-use crate::components::prompt_input_bar::{Model, PromptInputBar, Submission};
+use crate::components::prompt_input_bar::{ApprovalPolicy, Model, PromptInputBar, Submission};
 use crate::internal::{KIT_CSS, focus_after_frame, next_id};
 use rv2_affect::skeleton::Skeleton;
 
@@ -101,11 +101,14 @@ impl OutputKind {
     }
 }
 
+/// One produced file. `output_list` is newest first: its first entry gets the preview card.
 #[derive(Clone, Debug, PartialEq)]
 pub struct Output {
     pub entry_name: String,
     pub output_kind: OutputKind,
     pub app_name: Option<String>,
+    /// The opening lines the preview card shows; the card shows at most two.
+    pub preview_lines: Vec<String>,
 }
 
 #[derive(Clone, Debug, Default, PartialEq)]
@@ -166,6 +169,41 @@ pub fn usage_present(usage: &UsageRecord) -> bool {
         || !usage.skill_names.is_empty()
 }
 
+/// The fold line's words: "1 earlier step", "3 earlier steps".
+pub fn earlier_steps_words(folded: usize) -> String {
+    if folded == 1 {
+        "1 earlier step".to_string()
+    } else {
+        format!("{folded} earlier steps")
+    }
+}
+
+/// The one-letter mark that stands for an app wherever its name would not fit.
+pub fn app_mark(app: &str) -> String {
+    app.chars()
+        .next()
+        .map(|c| c.to_uppercase().to_string())
+        .unwrap_or_default()
+}
+
+/// The uploads row: the first file name, then a count of the others.
+pub fn uploads_words(names: &[String]) -> String {
+    match names {
+        [] => String::new(),
+        [only] => only.clone(),
+        [first, rest @ ..] => format!("{first} and {} more", rest.len()),
+    }
+}
+
+/// The web search row's page count, singular for one.
+pub fn pages_words(pages: usize) -> String {
+    if pages == 1 {
+        "1 page".to_string()
+    } else {
+        format!("{pages} pages")
+    }
+}
+
 /// The assistant's chat with its progress panel.
 #[component]
 pub fn AssistantChatProgressPanel(
@@ -175,6 +213,7 @@ pub fn AssistantChatProgressPanel(
     #[props(default)] usage_record: UsageRecord,
     #[props(default)] is_loading: bool,
     #[props(default)] is_empty: bool,
+    #[props(default)] approval_policy: ApprovalPolicy,
     on_send: EventHandler<String>,
     #[props(default)] on_navigate: Option<EventHandler<String>>,
     #[props(default)] on_open_output: Option<EventHandler<String>>,
@@ -182,6 +221,7 @@ pub fn AssistantChatProgressPanel(
     let id = use_hook(|| format!("kit-pp-{}", next_id()));
     let bar_id = format!("{id}-bar");
     let panel_id = format!("{id}-panel");
+    let title_id = format!("{id}-title");
     let composer_class = "kit-pp__composer";
     let mut panel_open = use_signal(|| false);
     let mut panel_ready = use_signal(|| false);
@@ -226,6 +266,14 @@ pub fn AssistantChatProgressPanel(
     let bar_text = bar_label(outputs_count);
     let bar_state = bar_state_text(panel_open(), outputs_count);
     let chat_empty = is_empty;
+    let outputs_text = outputs_words(outputs_count);
+    let fold_text = earlier_steps_words(folded);
+    let uploads_text = uploads_words(&usage_record.upload_names);
+    let pages_text = usage_record
+        .web_search_pages
+        .map(pages_words)
+        .unwrap_or_default();
+    let skills_text = usage_record.skill_names.join(", ");
 
     rsx! {
         document::Link { rel: "stylesheet", href: KIT_CSS }
@@ -307,28 +355,25 @@ pub fn AssistantChatProgressPanel(
                         root_class: composer_class,
                         empty_hint: "Message the assistant",
                         model_options: models,
+                        approval_policy,
                         on_submit: move |submission: Submission| on_send.call(submission.text),
                     }
                 }
             }
-            button {
-                id: "{bar_id}",
-                r#type: "button",
-                class: "kit-pp__bar",
-                "aria-expanded": if panel_open() { "true" } else { "false" },
-                "aria-controls": "{panel_id}",
-                "aria-label": "{bar_state}",
-                onclick: move |_| panel_open.toggle(),
-                onkeydown: move |event: KeyboardEvent| {
-                    if event.key() == Key::Escape && panel_open() {
-                        event.prevent_default();
-                        panel_open.set(false);
-                    }
-                },
-                "{bar_text}"
+            if !(panel_ready() && panel_open()) {
+                button {
+                    id: "{bar_id}",
+                    r#type: "button",
+                    class: "kit-pp__bar",
+                    "aria-expanded": "false",
+                    "aria-controls": "{panel_id}",
+                    "aria-label": "{bar_state}",
+                    onclick: move |_| panel_open.set(true),
+                    "{bar_text}"
+                }
             }
             if panel_ready() && panel_open() {
-                aside { id: "{panel_id}", class: "kit-pp__panel", "aria-label": "Progress and outputs",
+                aside { id: "{panel_id}", class: "kit-pp__panel", "aria-labelledby": "{title_id}",
                     onkeydown: move |event: KeyboardEvent| {
                         if event.key() == Key::Escape {
                             event.prevent_default();
@@ -336,15 +381,21 @@ pub fn AssistantChatProgressPanel(
                             focus_after_frame(&key_bar);
                         }
                     },
-                    button {
-                        r#type: "button",
-                        class: "kit-pp__close",
-                        "aria-label": "Close progress panel",
-                        onclick: move |_| {
-                            panel_open.set(false);
-                            focus_after_frame(&close_bar);
-                        },
-                        "×"
+                    header { class: "kit-pp__head",
+                        h2 { id: "{title_id}", class: "kit-pp__title", "This session" }
+                        if outputs_count > 0 {
+                            span { class: "kit-pp__count", "{outputs_text}" }
+                        }
+                        button {
+                            r#type: "button",
+                            class: "kit-pp__close",
+                            "aria-label": "Close progress panel",
+                            onclick: move |_| {
+                                panel_open.set(false);
+                                focus_after_frame(&close_bar);
+                            },
+                            "×"
+                        }
                     }
                     section { class: "kit-pp__section",
                         button {
@@ -360,8 +411,9 @@ pub fn AssistantChatProgressPanel(
                                 button {
                                     r#type: "button",
                                     class: "kit-pp__fold",
+                                    "aria-expanded": "false",
                                     onclick: move |_| steps_open.set(true),
-                                    "Show {folded} earlier steps"
+                                    "{fold_text}"
                                 }
                             }
                             ol { class: "kit-pp__steps",
@@ -394,13 +446,28 @@ pub fn AssistantChatProgressPanel(
                                 "Outputs"
                             }
                             if outputs_open() {
+                                if let Some(newest) = output_list.first().filter(|o| !o.preview_lines.is_empty()) {
+                                    {
+                                        let title = middle_truncate(&newest.entry_name, 22);
+                                        let lines: Vec<String> = newest.preview_lines.iter().take(2).cloned().collect();
+                                        rsx! {
+                                            article { class: "kit-pp__preview",
+                                                p { class: "kit-pp__preview-title", "{title}" }
+                                                for (index, line) in lines.iter().enumerate() {
+                                                    p { key: "{index}", class: "kit-pp__preview-line", "{line}" }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
                                 ul { class: "kit-pp__outputs",
                                     for output in output_list.iter() {
                                         {
                                             let name = output.entry_name.clone();
-                                            let short = middle_truncate(&output.entry_name, 26);
+                                            let short = middle_truncate(&output.entry_name, 22);
                                             let kind = output.output_kind.label();
                                             let app = output.app_name.clone().unwrap_or_default();
+                                            let mark = app_mark(&app);
                                             rsx! {
                                                 li { key: "{name}",
                                                     button {
@@ -419,7 +486,7 @@ pub fn AssistantChatProgressPanel(
                                                         span { class: "kit-pp__output-name", "{short}" }
                                                         span { class: "kit-pp__output-kind", "{kind}" }
                                                         if !app.is_empty() {
-                                                            span { class: "kit-pp__output-app", "{app}" }
+                                                            span { class: "kit-pp__mark", role: "img", "aria-label": "{app}", "{mark}" }
                                                         }
                                                     }
                                                 }
@@ -441,17 +508,38 @@ pub fn AssistantChatProgressPanel(
                             }
                             if used_open() {
                                 ul { class: "kit-pp__used",
-                                    for name in usage_record.upload_names.iter() {
-                                        li { key: "upload-{name}", "File: {name}" }
+                                    if !usage_record.upload_names.is_empty() {
+                                        li { class: "kit-pp__used-row",
+                                            span { class: "kit-pp__used-label", "Uploads" }
+                                            span { class: "kit-pp__used-value", "{uploads_text}" }
+                                        }
                                     }
-                                    for name in usage_record.app_names.iter() {
-                                        li { key: "app-{name}", "App: {name}" }
+                                    if !usage_record.app_names.is_empty() {
+                                        li { class: "kit-pp__used-row",
+                                            span { class: "kit-pp__used-label", "Connectors" }
+                                            span { class: "kit-pp__used-value kit-pp__marks",
+                                                for app in usage_record.app_names.iter() {
+                                                    {
+                                                        let mark = app_mark(app);
+                                                        rsx! {
+                                                            span { key: "{app}", class: "kit-pp__mark", role: "img", "aria-label": "{app}", "{mark}" }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
                                     }
-                                    if let Some(pages) = usage_record.web_search_pages {
-                                        li { key: "web-{pages}", "Web search, {pages} pages" }
+                                    if usage_record.web_search_pages.is_some() {
+                                        li { class: "kit-pp__used-row",
+                                            span { class: "kit-pp__used-label", "Web search" }
+                                            span { class: "kit-pp__used-value", "{pages_text}" }
+                                        }
                                     }
-                                    for name in usage_record.skill_names.iter() {
-                                        li { key: "skill-{name}", "Skill: {name}" }
+                                    if !usage_record.skill_names.is_empty() {
+                                        li { class: "kit-pp__used-row",
+                                            span { class: "kit-pp__used-label", "Skills" }
+                                            span { class: "kit-pp__used-value", "{skills_text}" }
+                                        }
                                     }
                                 }
                             }

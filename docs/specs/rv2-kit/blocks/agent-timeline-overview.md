@@ -70,3 +70,41 @@ In reading order:
 5. Answering an inbox action updates the span status and removes the item.
 6. Left and Right move between spans on a lane in time order.
 7. At phone width each lane is a list entry and nothing scrolls sideways.
+
+## Amendment 6: structure and demo
+
+No earlier amendment exists, so no line is replaced.
+
+Archetype: a since-you-looked curve across the top, a lanes panel beside an inbox panel, one status filter over all three.
+
+Visible at rest:
+- Header row: heading at left. At right, a four-segment status filter: "All 7", "Running 3", "Waiting 2", "Failed 1". Each segment applies the spec's status_filter value.
+- Summary panel, full width: label "Since you looked"; start time and elapsed time beneath it. At right, three counts with icons: done, waiting, failed. Below, a curve across the panel's width with one dot per event, faint horizontal gridlines, and start and end time labels at its ends.
+- Lanes panel, about two thirds of the width: header "Agents" with "3 running" and "2 waiting" counts, and a window label "Last 30m". A time axis across the top with labels at five-minute steps and a "now" label at the right end. One lane per agent, each with name, model line, a status pill where the status is waiting or done, and its spans as labelled bars.
+- Inbox panel, about one third of the width: header "Inbox" with count 3. Three cards, each with title, detail line, waiting or failure line, and actions: Approve and Reject for decisions, Retry for a failure.
+- The inbox count equals waiting agents plus failed agents. "All" equals the lane count.
+
+Gallery demo:
+- Lanes, top to bottom:
+  - Planner, large model, running: "Outline the launch", from 25 minutes ago to now.
+  - Scout, mid model, running: "Compare vendor prices", from 18 minutes ago to now.
+  - Drafter, mid model, done: "Draft launch copy", from 20 to 8 minutes ago.
+  - Publisher, mid model, waiting: "Stage the release", from 9 minutes ago to now, waiting label.
+  - Support, small model, running: "Answer 38 tickets", from 25 minutes ago to now.
+  - Invoicer, small model, failed: "Send invoice batch", from 12 to 6 minutes ago, failure mark.
+  - Monitor, small model, waiting: "Watch the error budget", from 5 minutes ago to now, waiting label.
+- Curve events: four done (Planner, Scout, Drafter, Support), two waiting (Publisher, Monitor), one failed (Invoicer). Seven dots in total.
+- Inbox:
+  - Publisher, decision: "Ship the release notes?", detail "Copy passed review. Publish to the blog?", waiting 14 min.
+  - Invoicer, failure: "Invoice batch stopped", detail "Ledger rejected row 212: tax code missing", action Retry.
+  - Monitor, decision: "Raise the alert threshold?", waiting 11 min.
+
+Motion, settled frame: running spans reach the now marker; curve complete; waiting spans show their waiting label; the failed span shows its mark; no lane focused, all at full strength.
+Moves and reduced motion: as stated in Motion (functional).
+
+Defects, stated as checks: four lanes instead of seven (check 8); no since-you-looked curve (check 9); status counts that do not match the lanes (check 10).
+
+Acceptance checks (continued):
+8. At rest seven lanes are drawn, one per agent, and the All count equals the lane count.
+9. The summary draws a curve with one dot per event, and its done, waiting and failed counts match those events.
+10. Waiting equals the number of waiting agents. Failed equals the number of failed agents. The inbox count equals waiting plus failed.

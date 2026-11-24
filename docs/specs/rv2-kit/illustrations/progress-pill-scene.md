@@ -59,4 +59,32 @@ In reading order:
 6. With reduced motion preferred, the mark and shimmer are static.
 7. At phone width the title truncates and nothing scrolls sideways.
 
+## Amendment 6: structure and demo
+
+No earlier amendment exists, so no line is replaced.
+
+Archetype: one status pill centred in the stage.
+
+Visible at rest:
+- One pill, centred horizontally and vertically, about half the stage width.
+- Left: round holder with a 3 by 3 dot pattern as the mark. The pattern animates while working.
+- Title row: title at left, percentage at right.
+- Agent line beneath: agent label, a middle dot, source count text.
+- Progress bar beneath the agent line: track, fill at the progress value, shimmer on the fill.
+- Soft glow band beneath the pill, light and two-tinted, about as wide as the pill's middle part.
+- No step line at rest. The step line appears under the agent line only when `step_label` is set.
+
+Gallery demo:
+- Title "Q3 revenue report"; progress 0.33 (percentage reads 33%); state "working"; agent label "Analyst · 24 sources read"; `step_label` unset.
+
+Motion, settled frame: fill at one third; shimmer part-way along the fill; mark in its pattern; glow visible beneath.
+Moves and reduced motion: as stated in Motion (functional).
+
+Defects, stated as checks: three stacked rounded cards, not one pill (check 8).
+
+Acceptance checks (continued):
+8. Exactly one pill is drawn at rest, centred in the stage, about half the stage width.
+9. No step line is drawn at rest. Setting `step_label` adds one under the agent line.
+10. The glow band sits under the pill and is not a second pill-shaped surface.
+
 Uses no partner logos.

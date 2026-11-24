@@ -1,26 +1,28 @@
 //! Metric overview board: the headline numbers of a dashboard in one glance. Three trend cards
-//! (total, change against the previous period, sparkline), an overview chart with a segment
-//! filter, and a focus card that follows the day under the pointer or the keyboard.
+//! (total, change against the previous period, sparkline), an overview area chart with a segment
+//! filter and the previous period dashed, and a product card beside it.
 //!
 //! Design choice: each stat card is a `MetricTrendCard`; the overview is a `SeriesTrendChart`.
-//! Design choice: the segment filter narrows only the overview. Its total is the sum of the
-//! visible series on the chosen day, and the delta is the change from the first to the last day.
+//! Design choice: the segment filter narrows only the overview. "All items" charts the sum of
+//! the segments against the previous period; a segment charts its own series.
+//! Design choice: the overview total and every stat card's change are period sums, compared with
+//! the previous period's sum.
 //! Design choice: `lower_is_better` cards say good or bad in words in their footer, since the
 //! card's own chip only knows the sign.
 //! Design choice: the period picker is a `ListPicker`, a button that opens a listbox. Its
 //! stylesheet is linked by the picker itself, so a host that uses it alone is themed too.
 //! Design choice: when the totals change, each one counts from its old value to the new one over
 //! `ROLL_STEPS` frames; under reduced motion it changes at once.
-//! Browser checks: hover marks a day and updates the focus card, period change rolls the totals
-//! and redraws, segment changes only the overview, arrow keys step through days, a flat series
-//! renders zeros, phone focus card below the overview.
+//! Browser checks: hover marks a day, period change rolls the totals and redraws, segment changes
+//! only the overview, arrow keys step through days, a flat series renders zeros, phone product
+//! card below the overview.
 
 use dioxus::prelude::*;
 use rv2_affect::button::{Button, ButtonSize, ButtonVariant};
 
 use crate::components::metric_trend_card::{MetricSeries, MetricTrendCard};
 use crate::components::series_trend_chart::{
-    ChartVariant, SeriesTone, SeriesTrendChart, TrendSeries, compact_number,
+    AxisMode, ChartVariant, SeriesTone, SeriesTrendChart, TrendSeries, compact_number,
 };
 use crate::internal::{KIT_CSS, class_list, prefers_motion_script, sleep};
 
@@ -39,6 +41,8 @@ pub struct StatMetric {
     pub id: String,
     pub label: String,
     pub total: f64,
+    /// Formats the headline total and its tooltip values.
+    pub format_total: fn(f64) -> String,
     pub current_series: Vec<f64>,
     pub previous_series: Vec<f64>,
     pub lower_is_better: bool,
@@ -54,6 +58,20 @@ pub struct OverviewSeries {
 pub struct PickOption {
     pub id: String,
     pub label: String,
+}
+
+/// The product beside the overview: its name and tag, one figure with its change and sparkline,
+/// and labelled comparison figures. Its actions are the board's `setup_action` and
+/// `footer_action`.
+#[derive(Clone, Debug, PartialEq)]
+pub struct ProductCard {
+    pub name: String,
+    pub tag: String,
+    pub figure_label: String,
+    pub figure_value: String,
+    pub delta_percent: f64,
+    pub series: Vec<f64>,
+    pub comparisons: Vec<(String, String)>,
 }
 
 /// Percent change from `previous` to `current`; zero when there is no previous value.
@@ -76,6 +94,17 @@ pub fn good_or_bad(change: f64, lower_is_better: bool) -> &'static str {
     }
 }
 
+/// `up`, `down`, or `flat` for a change.
+pub fn direction_word(change: f64) -> &'static str {
+    if change > 0.0 {
+        "up"
+    } else if change < 0.0 {
+        "down"
+    } else {
+        "flat"
+    }
+}
+
 /// Series shown for a segment: all of them, or the one whose label matches.
 pub fn visible_series<'a>(series: &'a [OverviewSeries], segment: &str) -> Vec<&'a OverviewSeries> {
     series
@@ -93,6 +122,22 @@ pub fn overview_totals(series: &[&OverviewSeries]) -> Vec<f64> {
                 .iter()
                 .map(|s| s.values.get(i).copied().unwrap_or(0.0))
                 .sum()
+        })
+        .collect()
+}
+
+/// Date labels for a stat card: its first and last point only, so the middle label is blank.
+pub fn card_axis(len: usize, labels: &[String]) -> Vec<String> {
+    (0..len)
+        .map(|i| {
+            if i == 0 || i + 1 == len {
+                labels
+                    .get(i)
+                    .cloned()
+                    .unwrap_or_else(|| (i + 1).to_string())
+            } else {
+                String::new()
+            }
         })
         .collect()
 }
@@ -146,6 +191,7 @@ pub fn ListPicker(
     #[props(into)] label: String,
     on_change: EventHandler<String>,
     #[props(default)] disabled: bool,
+    #[props(default)] lead: Option<Element>,
 ) -> Element {
     let uid = use_signal(|| format!("kit-lp-{}", crate::internal::next_id()));
     let mut open = use_signal(|| false);
@@ -186,6 +232,9 @@ pub fn ListPicker(
                         ));
                     }
                 },
+                if let Some(mark) = lead.clone() {
+                    span { class: "kit-pick__lead", "aria-hidden": "true", {mark} }
+                }
                 "{shown}"
             }
             if open() {
@@ -245,9 +294,12 @@ pub fn MetricOverviewBoard(
     stat_cards: Vec<StatMetric>,
     overview_series: Vec<OverviewSeries>,
     axis_labels: Vec<String>,
+    #[props(default)] overview_previous: Vec<f64>,
+    #[props(default = "Overview".to_string(), into)] overview_title: String,
     #[props(default)] period_options: Vec<PickOption>,
     #[props(default)] selected_period: Option<String>,
     #[props(default)] on_period_change: Option<EventHandler<String>>,
+    #[props(default)] period_mark: Option<Element>,
     #[props(default)] segment_options: Vec<PickOption>,
     #[props(default = ALL_SEGMENTS.to_string(), into)] selected_segment: String,
     #[props(default)] on_segment_change: Option<EventHandler<String>>,
@@ -255,6 +307,7 @@ pub fn MetricOverviewBoard(
     #[props(default = "Previous period".to_string(), into)] previous_value_label: String,
     #[props(default = compact_number as fn(f64) -> String)] format_amount: fn(f64) -> String,
     #[props(default)] heading: Option<String>,
+    #[props(default)] product_card: Option<ProductCard>,
     #[props(default)] setup_action: Option<(String, EventHandler<()>)>,
     #[props(default)] footer_action: Option<(String, EventHandler<()>)>,
     #[props(default)] disabled: bool,
@@ -266,18 +319,44 @@ pub fn MetricOverviewBoard(
     let segment_fading = use_signal(|| false);
     let segment_run = use_signal(|| 0_u32);
     let active_segment = shown_segment();
+    let all_segments = active_segment == ALL_SEGMENTS;
     let visible = visible_series(&overview_series, &active_segment);
-    let totals = overview_totals(&visible);
-    let last = totals.len().saturating_sub(1);
+    let current_values: Vec<f64> = if all_segments {
+        overview_totals(&visible)
+    } else {
+        visible
+            .first()
+            .map(|s| s.values.clone())
+            .unwrap_or_default()
+    };
+    let period_total: f64 = current_values.iter().sum();
+    let previous_total: f64 = overview_previous.iter().sum();
+    let overview_change = if all_segments {
+        percent_change(period_total, previous_total)
+    } else {
+        0.0
+    };
+    let last = current_values.len().saturating_sub(1);
     let day = hovered().unwrap_or(last).min(last);
     let day_label = axis_labels.get(day).cloned().unwrap_or_default();
-    let day_value = totals.get(day).copied().unwrap_or(0.0);
-    let total_now = totals.last().copied().unwrap_or(0.0);
-    let overview_change = percent_change(total_now, totals.first().copied().unwrap_or(0.0));
+    let day_value = current_values.get(day).copied().unwrap_or(0.0);
+    let focus_previous = overview_previous.get(day).copied().unwrap_or(0.0);
+    let announce = if all_segments {
+        format!(
+            "{day_label}: {current_value_label} {}, {previous_value_label} {}",
+            format_amount(day_value),
+            format_amount(focus_previous)
+        )
+    } else {
+        format!(
+            "{day_label}: {current_value_label} {}",
+            format_amount(day_value)
+        )
+    };
     let root_class = class_list("kit-mob", &extra_classes);
 
     let mut targets: Vec<f64> = stat_cards.iter().map(|c| c.total).collect();
-    targets.push(total_now);
+    targets.push(period_total);
     let mut shown = use_signal(|| targets.clone());
     let mut roll_run = use_signal(|| 0_u32);
     use_effect(use_reactive((&targets,), move |(to,): (Vec<f64>,)| {
@@ -311,47 +390,52 @@ pub fn MetricOverviewBoard(
     }));
     let shown_now = shown();
 
-    let chart_series: Vec<TrendSeries> = visible
-        .iter()
-        .enumerate()
-        .map(|(i, s)| TrendSeries {
-            name: s.label.clone(),
-            values: s.values.iter().map(|v| Some(*v)).collect(),
-            tone: if i == 0 {
-                SeriesTone::Ink
-            } else {
-                SeriesTone::Ok
-            },
-            emphasis: i == 0,
-            is_earlier: false,
-        })
-        .collect();
-    let focus_previous = visible
-        .first()
-        .and_then(|s| s.values.get(day).copied())
-        .unwrap_or(0.0);
+    let mut chart_series = vec![TrendSeries {
+        name: if all_segments {
+            overview_title.clone()
+        } else {
+            active_segment.clone()
+        },
+        values: current_values.iter().map(|v| Some(*v)).collect(),
+        tone: SeriesTone::Ink,
+        emphasis: true,
+        is_earlier: false,
+    }];
+    if all_segments && !overview_previous.is_empty() {
+        chart_series.push(TrendSeries {
+            name: previous_value_label.clone(),
+            values: overview_previous.iter().map(|v| Some(*v)).collect(),
+            tone: SeriesTone::Muted,
+            emphasis: false,
+            is_earlier: true,
+        });
+    }
     let cards: Vec<(StatMetric, f64)> = stat_cards
         .iter()
         .map(|c| {
-            let change = percent_change(
-                c.current_series.last().copied().unwrap_or(c.total),
-                c.previous_series.last().copied().unwrap_or(0.0),
-            );
-            (c.clone(), change)
+            let current: f64 = c.current_series.iter().sum();
+            let previous: f64 = c.previous_series.iter().sum();
+            (c.clone(), percent_change(current, previous))
         })
         .collect();
-    let overview_word = if overview_change > 0.0 {
-        "up"
-    } else if overview_change < 0.0 {
-        "down"
-    } else {
-        "flat"
-    };
-    let overview_delta = format!("{overview_word} {:.1}%", overview_change.abs());
+    let overview_delta = format!(
+        "{} {:.1}%",
+        direction_word(overview_change),
+        overview_change.abs()
+    );
     let overview_shown = shown_now
         .get(stat_cards.len())
         .copied()
-        .unwrap_or(total_now);
+        .unwrap_or(period_total);
+    let product = product_card.clone().map(|p| {
+        let delta = format!(
+            "{} {:.1}%",
+            direction_word(p.delta_percent),
+            p.delta_percent.abs()
+        );
+        let axis: Vec<String> = (0..p.series.len()).map(|i| i.to_string()).collect();
+        (p, delta, axis)
+    });
 
     rsx! {
         document::Link { rel: "stylesheet", href: KIT_CSS }
@@ -367,6 +451,7 @@ pub fn MetricOverviewBoard(
                         selected: selected_period.clone(),
                         label: "Period",
                         disabled: disabled,
+                        lead: period_mark.clone(),
                         on_change: move |p: String| {
                             if let Some(handler) = on_period_change { handler.call(p); }
                         },
@@ -380,10 +465,10 @@ pub fn MetricOverviewBoard(
                             MetricSeries { series_name: current_value_label.clone(), series_tone: SeriesTone::Ink, series_values: card.current_series.clone() },
                             MetricSeries { series_name: previous_value_label.clone(), series_tone: SeriesTone::Muted, series_values: card.previous_series.clone() },
                         ];
-                        let axis: Vec<String> = (0..card.current_series.len()).map(|i| axis_labels.get(i).cloned().unwrap_or_else(|| (i + 1).to_string())).collect();
+                        let axis = card_axis(card.current_series.len(), &axis_labels);
                         let verdict = good_or_bad(*change, card.lower_is_better);
-                        let footer = format!("{verdict} vs {previous_value_label}");
-                        let headline = format_amount(shown_now.get(idx).copied().unwrap_or(card.total));
+                        let footer = format!("{}, {verdict} vs {previous_value_label}", direction_word(*change));
+                        let headline = (card.format_total)(shown_now.get(idx).copied().unwrap_or(card.total));
                         rsx! {
                             div { key: "{card.id}", class: "kit-mob__stat", "data-verdict": verdict,
                                 MetricTrendCard {
@@ -392,8 +477,10 @@ pub fn MetricOverviewBoard(
                                     change_value: *change,
                                     axis_labels: axis,
                                     data_series: series,
-                                    format_value: format_amount,
+                                    format_value: card.format_total,
                                     footer_text: footer,
+                                    comparison_text: "vs last period",
+                                    tooltip_at_rest: false,
                                 }
                             }
                         }
@@ -401,11 +488,14 @@ pub fn MetricOverviewBoard(
                 }
             }
             div { class: "kit-mob__overview",
-                section { class: "kit-mob__chart", "aria-label": "Overview",
+                section { class: "kit-mob__chart", "aria-label": "{overview_title}",
                     div { class: "kit-mob__chart-head",
-                        p { class: "kit-mob__total",
-                            span { class: "kit-mob__total-figure", "{format_amount(overview_shown)}" }
-                            span { class: "kit-mob__delta", "{overview_delta}" }
+                        div { class: "kit-mob__chart-title",
+                            h3 { class: "kit-mob__chart-name", "{overview_title}" }
+                            p { class: "kit-mob__total",
+                                span { class: "kit-mob__total-figure", "{format_amount(overview_shown)}" }
+                                span { class: "kit-mob__delta", "{overview_delta}" }
+                            }
                         }
                         if segment_options.len() > 1 {
                             ListPicker {
@@ -425,38 +515,72 @@ pub fn MetricOverviewBoard(
                         SeriesTrendChart {
                             x_labels: axis_labels.clone(),
                             series: chart_series,
-                            variant: ChartVariant::Line,
+                            variant: ChartVariant::Area,
+                            axis: AxisMode::XOnly,
+                            show_tooltip: true,
                             on_active_change: move |index: Option<usize>| hovered.set(index),
-                            label: "Overview".to_string(),
+                            label: overview_title.clone(),
                             height: 220.0,
                         }
                     }
+                    p { class: "kit-sr", "aria-live": "polite", "{announce}" }
                 }
-                aside { class: "kit-mob__focus", "aria-live": "polite", "aria-label": "Focused day",
-                    p { class: "kit-mob__focus-day", "{day_label}" }
-                    dl { class: "kit-mob__focus-rows",
-                        dt { "{current_value_label}" }
-                        dd { "{format_amount(day_value)}" }
-                        dt { "{previous_value_label}" }
-                        dd { "{format_amount(focus_previous)}" }
-                    }
-                    if let Some((label, on_activate)) = setup_action.clone() {
-                        Button {
-                            variant: ButtonVariant::Secondary,
-                            size: ButtonSize::Sm,
-                            label: label,
-                            onclick: move |_| on_activate.call(()),
+                if let Some((card, delta, axis)) = product.clone() {
+                    aside { class: "kit-mob__product", "aria-label": "{card.name}",
+                        header { class: "kit-mob__product-head",
+                            h3 { class: "kit-mob__product-name", "{card.name}" }
+                            span { class: "kit-mob__tag", "{card.tag}" }
+                            if let Some((label, on_activate)) = setup_action.clone() {
+                                div { class: "kit-mob__setup",
+                                    Button {
+                                        variant: ButtonVariant::Secondary,
+                                        size: ButtonSize::Sm,
+                                        label: label,
+                                        onclick: move |_| on_activate.call(()),
+                                    }
+                                }
+                            }
                         }
-                    }
-                }
-            }
-            if let Some((label, on_activate)) = footer_action.clone() {
-                footer { class: "kit-mob__footer",
-                    Button {
-                        variant: ButtonVariant::Ghost,
-                        size: ButtonSize::Sm,
-                        label: label,
-                        onclick: move |_| on_activate.call(()),
+                        div { class: "kit-mob__product-figure",
+                            span { class: "kit-mob__product-label", "{card.figure_label}" }
+                            p { class: "kit-mob__product-value",
+                                span { class: "kit-mob__product-figure-value", "{card.figure_value}" }
+                                span { class: "kit-mob__delta", "{delta}" }
+                            }
+                            SeriesTrendChart {
+                                x_labels: axis,
+                                series: vec![TrendSeries {
+                                    name: card.figure_label.clone(),
+                                    values: card.series.iter().map(|v| Some(*v)).collect(),
+                                    tone: SeriesTone::Ink,
+                                    emphasis: true,
+                                    is_earlier: false,
+                                }],
+                                variant: ChartVariant::Sparkline,
+                                axis: AxisMode::Off,
+                                show_tooltip: false,
+                                height: 96.0,
+                                label: card.figure_label.clone(),
+                            }
+                        }
+                        dl { class: "kit-mob__product-compare",
+                            for (label, value) in card.comparisons.iter() {
+                                div { key: "{label}", class: "kit-mob__product-row",
+                                    dt { "{label}" }
+                                    dd { "{value}" }
+                                }
+                            }
+                        }
+                        if let Some((label, on_activate)) = footer_action.clone() {
+                            footer { class: "kit-mob__footer",
+                                Button {
+                                    variant: ButtonVariant::Ghost,
+                                    size: ButtonSize::Sm,
+                                    label: label,
+                                    onclick: move |_| on_activate.call(()),
+                                }
+                            }
+                        }
                     }
                 }
             }

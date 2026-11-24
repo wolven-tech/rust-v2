@@ -1,20 +1,33 @@
-/* Voice assistant orb. Dots move between their sphere and ring positions by transform only. */
+/* Voice assistant orb. The card is the stage (1.85 to 1). The sphere is 17% of its width, centred at
+   41% of its height. Dots are placed in cqw of the sphere and moved by transform only. */
 .kit-orb {
   --level: 0;
   --ripple-max: 1.4;
-  display: inline-flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
+  position: relative;
+  display: block;
   width: 100%;
-  min-width: 0;
+  aspect-ratio: 1.85 / 1;
+  overflow: hidden;
+  border-radius: var(--kit-radius-card);
+  background: var(--kit-surface);
   color: var(--kit-ink);
   font-family: var(--kit-font);
 }
 
-.kit-orb__button {
+.kit-orb__button,
+.kit-orb__hit {
   all: unset;
+  position: absolute;
+  left: 50%;
+  top: 41%;
+  width: 17%;
+  aspect-ratio: 1;
+  translate: -50% -50%;
   display: block;
+  box-sizing: border-box;
+}
+
+.kit-orb__button {
   cursor: pointer;
   border-radius: 50%;
 }
@@ -25,13 +38,10 @@
 }
 
 .kit-orb__field {
-  position: relative;
+  position: absolute;
+  inset: 0;
   display: block;
-  width: 200px;
-  height: 200px;
-  max-width: 100%;
-  aspect-ratio: 1;
-  margin: 0 auto;
+  container-type: inline-size;
 }
 
 .kit-orb__dots {
@@ -54,11 +64,11 @@
   height: 3px;
   margin: -1.5px 0 0 -1.5px;
   border-radius: 50%;
-  background: var(--kit-accent);
+  background: var(--kit-ink);
   opacity: var(--o);
   transform: translate(
-    calc(var(--x) * (1 + var(--level) * 0.35)),
-    calc(var(--y) * (1 + var(--level) * 0.35))
+    calc(var(--x) * (1 + var(--level) * 0.12)),
+    calc(var(--y) * (1 + var(--level) * 0.12))
   );
   transition: transform var(--kit-slow) var(--kit-ease);
 }
@@ -88,15 +98,68 @@
 .kit-orb[data-state="speaking"] .kit-orb__ripple:nth-child(3) { animation-delay: 0.8s; }
 .kit-orb[data-state="speaking"] .kit-orb__ripple:nth-child(4) { animation-delay: 1.6s; }
 
-.kit-orb__label,
-.kit-orb__status {
-  font-size: 13px;
+.kit-orb__status,
+.kit-orb__label {
+  position: absolute;
+  left: 50%;
+  translate: -50% -50%;
+  margin: 0;
+  font-size: var(--kit-text-md);
   text-align: center;
+  white-space: nowrap;
   font-variant-numeric: tabular-nums;
 }
 
 .kit-orb__status {
+  top: 67%;
   color: var(--kit-ink-muted);
+}
+
+.kit-orb__label {
+  top: 74%;
+  color: var(--kit-ink-muted);
+}
+
+.kit-orb__switch {
+  position: absolute;
+  left: 50%;
+  top: 77.5%;
+  width: 36%;
+  height: 7%;
+  translate: -50% -50%;
+  box-sizing: border-box;
+  display: flex;
+  gap: 2px;
+  padding: 2px;
+  border-radius: var(--kit-radius-pill);
+  background: var(--kit-raised);
+}
+
+.kit-orb__segment {
+  all: unset;
+  display: flex;
+  flex: 1 1 0;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  padding: 0 2px;
+  border-radius: var(--kit-radius-pill);
+  color: var(--kit-ink-muted);
+  font-size: var(--kit-text-xs);
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.kit-orb__segment[data-selected] {
+  background: var(--kit-surface);
+  color: var(--kit-ink);
+  box-shadow: var(--kit-shadow);
+}
+
+.kit-orb__segment:focus-visible {
+  outline: 2px solid var(--kit-accent);
+  outline-offset: 2px;
 }
 
 @keyframes kit-orb-breathe {
@@ -121,9 +184,8 @@
 }
 
 @media (max-width: 480px) {
-  .kit-orb__field {
-    width: 160px;
-    height: 160px;
+  .kit-orb__switch {
+    display: none;
   }
 }
 

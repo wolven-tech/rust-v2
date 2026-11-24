@@ -3,14 +3,14 @@
 //!
 //! Design choice: metric cards are `MetricTile`s with a sparkline; the chosen card is marked and
 //! the trend redraws for its series.
-//! Design choice: the trend is a `SeriesTrendChart`, an area or bars; the compare switch adds the
+//! Design choice: the trend is a `SeriesTrendChart`, a line or bars; the compare switch adds the
 //! previous period as a second series with its tooltip value.
-//! Design choice: breakdowns are tables with a name and a value column; each row carries a bar
+//! Design choice: breakdowns are tables with a name and a revenue column; each row carries a bar
 //! scaled to the largest value, which grows from nothing when the row first appears.
 //! Design choice: values arrive as formatted text, so a change counts the leading number up or
 //! down and keeps the host's prefix, decimals and suffix; text without a number changes at once.
-//! Design choice: the period picker is a `ListPicker` and export is a menu of three formats.
-//! Browser checks: metric selection marks and redraws, bars and area share tooltip values,
+//! Design choice: the period is a segmented control and export is a menu of three formats.
+//! Browser checks: metric selection marks and redraws, bars and line share tooltip values,
 //! compare adds a series, hover marker and value, breakdown order and bar widths, export menu
 //! fires the format, phone two-column metric grid.
 
@@ -18,11 +18,9 @@ use dioxus::prelude::*;
 use rv2_affect::segmented_control::{SegmentOption, SegmentedControl};
 use rv2_affect::switch::Switch;
 
-use crate::blocks::metric_overview_board::{
-    ListPicker, PickOption, ROLL_STEPS, fade_swap, motion_allowed, roll_at,
-};
+use crate::blocks::metric_overview_board::{ROLL_STEPS, fade_swap, motion_allowed, roll_at};
 
-use crate::components::metric_tile::{MetricTile, MetricValue};
+use crate::components::metric_tile::{MetricTile, MetricValue, format_percent};
 use crate::components::series_trend_chart::{
     AxisMode, ChartVariant, SeriesTone, SeriesTrendChart, TrendSeries, compact_number,
 };
@@ -37,6 +35,10 @@ pub struct SalesMetric {
     pub label: String,
     pub value: String,
     pub delta_percent: f64,
+    /// Shows the delta as points (`0.3 pts`) rather than percent, for rates.
+    pub delta_in_points: bool,
+    /// A fall is the good direction, as for refunds.
+    pub lower_is_better: bool,
     pub series: Vec<f64>,
 }
 
@@ -62,14 +64,14 @@ pub struct Ranked {
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub enum ChartStyle {
     #[default]
-    Area,
+    Line,
     Bars,
 }
 
 impl ChartStyle {
     fn as_str(self) -> &'static str {
         match self {
-            Self::Area => "area",
+            Self::Line => "line",
             Self::Bars => "bars",
         }
     }
@@ -117,6 +119,15 @@ pub fn scaled_widths(rows: &[Ranked]) -> Vec<f64> {
             }
         })
         .collect()
+}
+
+/// Dollar amounts in thousands: `$48.2k`.
+pub fn dollars_compact(value: f64) -> String {
+    format!("${}", compact_number(value))
+}
+
+fn format_points(value: f64) -> String {
+    format!("{value:.1} pts")
 }
 
 /// A formatted amount split around its number: `$48.2k` is prefix `$`, value 48.2, one decimal
@@ -174,7 +185,7 @@ fn breakdown_rows(title: String, rows: Vec<Ranked>, format_amount: fn(f64) -> St
                     thead {
                         tr {
                             th { "scope": "col", "Name" }
-                            th { "scope": "col", class: "kit-sales__num", "Value" }
+                            th { "scope": "col", class: "kit-sales__num", "Revenue" }
                         }
                     }
                     tbody {
@@ -215,7 +226,7 @@ pub fn SalesMetricsPanel(
     #[props(default)] top_products: Vec<Ranked>,
     #[props(default)] channels: Vec<Ranked>,
     #[props(default)] on_export: Option<EventHandler<ExportFormat>>,
-    #[props(default = compact_number as fn(f64) -> String)] format_amount: fn(f64) -> String,
+    #[props(default = dollars_compact as fn(f64) -> String)] format_amount: fn(f64) -> String,
     #[props(default, into)] extra_classes: String,
 ) -> Element {
     let mut local_metric = use_signal(|| None::<String>);
@@ -249,7 +260,7 @@ pub fn SalesMetricsPanel(
     let style_fading = use_signal(|| false);
     let style_run = use_signal(|| 0_u32);
     let variant = match shown_style() {
-        ChartStyle::Area => ChartVariant::Area,
+        ChartStyle::Line => ChartVariant::Line,
         ChartStyle::Bars => ChartVariant::Bar,
     };
     let root_class = class_list("kit-sales", &extra_classes);
@@ -257,6 +268,18 @@ pub fn SalesMetricsPanel(
     let channel_rows = sort_ranked(&channels);
     let trend_title = metric.as_ref().map(|m| m.label.clone()).unwrap_or_default();
     let style_value = chosen_style().as_str().to_string();
+    let period_options: Vec<SegmentOption> = periods
+        .iter()
+        .map(|p| {
+            let label = p.label.clone();
+            SegmentOption {
+                value: p.id.clone(),
+                label: Some(rsx! { "{label}" }),
+                ..Default::default()
+            }
+        })
+        .collect();
+    let period_value = selected_period.clone().unwrap_or_default();
 
     let values_target: Vec<String> = metric_cards.iter().map(|c| c.value.clone()).collect();
     let mut shown_values = use_signal(|| values_target.clone());
@@ -308,13 +331,13 @@ pub fn SalesMetricsPanel(
                 }
                 div { class: "kit-sales__tools",
                     if !periods.is_empty() {
-                        ListPicker {
-                            options: periods.iter().map(|p| PickOption { id: p.id.clone(), label: p.label.clone() }).collect::<Vec<_>>(),
-                            selected: selected_period.clone(),
-                            label: "Period",
+                        SegmentedControl {
+                            aria_label: "Period",
+                            value: period_value,
                             on_change: move |p: String| {
                                 if let Some(handler) = on_period_change { handler.call(p); }
                             },
+                            options: period_options,
                         }
                     }
                     div { class: "kit-sales__export",
@@ -356,13 +379,16 @@ pub fn SalesMetricsPanel(
                         let headline = shown_now.get(idx).cloned().unwrap_or_else(|| card.value.clone());
                         let x_labels_card: Vec<String> = (0..card.series.len()).map(|i| i.to_string()).collect();
                         let spark = TrendSeries { name: card.label.clone(), values: card.series.iter().map(|v| Some(*v)).collect(), tone: SeriesTone::Ink, emphasis: chosen, is_earlier: false };
+                        let format_change: fn(f64) -> String = if card.delta_in_points { format_points } else { format_percent };
                         rsx! {
                             div { key: "{card.id}", class: "kit-sales__metric", "data-dimmed": (!chosen).then_some("true"),
                                 MetricTile {
                                     metric_label: card.label.clone(),
                                     metric_value: MetricValue::Text(headline),
                                     change_percent: Some(card.delta_percent.abs()),
+                                    format_change,
                                     change_note: Some(if card.delta_percent >= 0.0 { "up vs last period".to_string() } else { "down vs last period".to_string() }),
+                                    lower_is_better: card.lower_is_better,
                                     is_chosen: Some(chosen),
                                     target_attributes: vec![Attribute::new("aria-pressed", if chosen { "true" } else { "false" }, None, false)],
                                     on_activate: move |_| {
@@ -394,13 +420,13 @@ pub fn SalesMetricsPanel(
                             aria_label: "Chart style",
                             value: style_value,
                             on_change: move |value: String| {
-                                let style = if value == "bars" { ChartStyle::Bars } else { ChartStyle::Area };
+                                let style = if value == "bars" { ChartStyle::Bars } else { ChartStyle::Line };
                                 chosen_style.set(style);
                                 fade_swap(shown_style, style_fading, style_run, style);
                                 if let Some(handler) = on_chart_style_change { handler.call(style); }
                             },
                             options: vec![
-                                SegmentOption { value: "area".to_string(), label: Some(rsx! { "Area" }), ..Default::default() },
+                                SegmentOption { value: "line".to_string(), label: Some(rsx! { "Line" }), ..Default::default() },
                                 SegmentOption { value: "bars".to_string(), label: Some(rsx! { "Bars" }), ..Default::default() },
                             ],
                         }
@@ -420,6 +446,9 @@ pub fn SalesMetricsPanel(
                         variant: variant,
                         label: trend_title.clone(),
                         height: 240.0,
+                        value_intervals: 2,
+                        value_prefix: "$",
+                        fmt_axis: dollars_compact as fn(f64) -> String,
                     }
                 }
             }

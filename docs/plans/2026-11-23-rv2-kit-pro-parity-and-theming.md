@@ -190,7 +190,8 @@ time on the machine; lanes use cloned target directories.
 
 ## Exit criteria
 
-- 88 of 88 rated HIGH, or each exception listed with its reason.
+- 88 of 88 rated HIGH, or each exception listed with its reason; then the
+  other 149 compared items the same way (rounds 5 to 9).
 - Zero confirmed defects at 1280, 390 and 320 px, light and dark.
 - `no hardcoded hues` passes with the stylesheet scan; no `hue-scan-ok` in
   rv2-kit assets beyond those justified inline.
@@ -203,8 +204,51 @@ Progress is tracked in Chronis under epic `t-cedb7a`.
 
 ## Not in scope
 
-- The 51 rv2-affect components: they follow affectUI Clean (AF8) and theme
-  through `--aui-*` and the rv2 bridge already.
 - Matching affectUI's colours, sizes or motion.
-- The 75 non-component Pro items (blocks, screens, illustrations, motion). The
-  same procedure applies to them in a later pass.
+
+## Rounds 5 to 9: the other 149 items
+
+The first pass left 149 compared items unrated: the 51 free rv2-affect
+components, 23 free blocks, illustrations and motion items, and the 75
+non-component Pro stand-ins (46 screens, 13 blocks, 12 illustrations, 4
+motion). They went through the same loop.
+
+- **Free items (74) are ports**, so their builders worked from the public MIT
+  pages directly: port defects and gallery demos, no spec room.
+- **Pro stand-ins (75) stayed clean-room.** The spec room wrote Amendments 5
+  to 8 from public pages only, each scanned to 0 shared 8-word runs, and
+  builders worked from the amended specs. From Amendment 7 on, amendments give
+  positions and sizes as fractions of the rendered stage, because counts alone
+  did not fix composition for illustrations and screens.
+
+| Round | Rated | HIGH | MED | LOW |
+|---|---|---|---|---|
+| 5 (baseline) | 149 | 79 | 52 | 18 |
+| 5 (after fixes) | 149 | 115 | 29 | 5 |
+| 6 | 149 | 135 | 13 | 1 |
+| 7 | 149 | 143 | 6 | 0 |
+| 8 | 8 | 146 of 149 | 3 | 0 |
+| 9 | 4 | 149 of 149 | 0 | 0 |
+
+Rounds 5 to 7 re-rated all 149 with four fresh raters, one per lane. From
+round 7 on, every item still below HIGH got two more independent votes, and
+the majority of three decides. Rounds 8 and 9 rated only the items still open
+plus the components that share a changed part. Four items reached HIGH on a 2
+of 3 vote: inspected-agent-card-scene, outreach-fanout-lines,
+task-branch-scene and automation-canvas.
+
+Defects found by the loop rather than by a spec:
+
+- **SVG attributes written as camelCase strings** (`"stopColor"`,
+  `"floodColor"`, `"strokeWidth"`) are ignored by browsers, so gradients,
+  shadows and strokes rendered black or vanished in nine rv2-affect items. Fixed to the hyphenated names;
+  `tests/visuals.rs` bans the camelCase spellings.
+- **Gallery wrappers that shrink to fit** gave filter-menu, skeleton,
+  tool-call-card, otp-input and tips-panel zero width. The components were
+  fine.
+- **ContextMenu could not be shown open at rest.** It gained `open_at`: a
+  point relative to its area, opened on mount, that follows scroll and resize
+  until the user touches it.
+- **SeriesTrendChart's tick column** sat over the first 40px of every plot.
+
+Round 5 onward is tracked under epic `t-5b181f`.

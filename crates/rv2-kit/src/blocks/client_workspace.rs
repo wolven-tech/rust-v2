@@ -64,10 +64,12 @@ pub enum ItemKind {
     Report,
     File,
     Goal,
+    /// A connected app: a line with no author, whose text is the whole sentence.
+    App,
 }
 
 impl ItemKind {
-    pub const ALL: [ItemKind; 4] = [Self::Goal, Self::Note, Self::Report, Self::File];
+    pub const ALL: [ItemKind; 5] = [Self::Goal, Self::Note, Self::Report, Self::File, Self::App];
 
     pub fn as_str(self) -> &'static str {
         match self {
@@ -75,6 +77,7 @@ impl ItemKind {
             Self::Report => "report",
             Self::File => "file",
             Self::Goal => "goal",
+            Self::App => "app",
         }
     }
 
@@ -84,15 +87,28 @@ impl ItemKind {
             Self::Report => "Report",
             Self::File => "File",
             Self::Goal => "Goal",
+            Self::App => "App",
+        }
+    }
+
+    /// The letter drawn in the round kind badge; the word is read by assistive tech.
+    pub fn glyph(self) -> &'static str {
+        match self {
+            Self::Note => "N",
+            Self::Report => "R",
+            Self::File => "F",
+            Self::Goal => "G",
+            Self::App => "A",
         }
     }
 
     pub fn action(self) -> &'static str {
         match self {
-            Self::Note => "added a note",
+            Self::Note => "added context",
             Self::Report => "generated a report",
-            Self::File => "shared a file",
+            Self::File => "added files",
             Self::Goal => "set a goal",
+            Self::App => "connected an app",
         }
     }
 }
@@ -167,6 +183,14 @@ pub fn mention_matches(items: &[TimelineItem], draft: &str) -> Option<Vec<Refere
     )
 }
 
+/// The first letter of a name, upper-cased, for a round mark.
+pub fn initial_of(name: &str) -> String {
+    name.chars()
+        .next()
+        .map(|c| c.to_uppercase().collect())
+        .unwrap_or_default()
+}
+
 /// `just now`, `4 min ago`, `3 h ago`, `2 days ago`.
 pub fn relative_age(age_ms: u64) -> String {
     let secs = age_ms / 1000;
@@ -174,6 +198,7 @@ pub fn relative_age(age_ms: u64) -> String {
         0..=59 => "just now".to_string(),
         60..=3599 => format!("{} min ago", secs / 60),
         3600..=86_399 => format!("{} h ago", secs / 3600),
+        86_400..=172_799 => "1 day ago".to_string(),
         _ => format!("{} days ago", secs / 86_400),
     }
 }
@@ -206,6 +231,7 @@ pub fn ClientWorkspace(
     #[props(default)] on_open_reference: Option<EventHandler<Reference>>,
     #[props(default)] on_search_text: Option<EventHandler<String>>,
     #[props(default)] on_refresh: Option<EventHandler<()>>,
+    #[props(default = "You".to_string(), into)] viewer_name: String,
     #[props(default, into)] extra_classes: String,
 ) -> Element {
     let mut focused_stat = use_signal(|| None::<String>);
@@ -256,6 +282,8 @@ pub fn ClientWorkspace(
         .unwrap_or_default();
     let has_draft = !draft().trim().is_empty();
     let meta_line = workspace.meta.join(" · ");
+    let mark_letter = initial_of(&workspace.name);
+    let viewer_initial = initial_of(&viewer_name);
 
     rsx! {
         document::Link { rel: "stylesheet", href: KIT_CSS }
@@ -263,6 +291,7 @@ pub fn ClientWorkspace(
         section { class: "{root_class}", "aria-label": "Client workspace",
             header { class: "kit-ws__head",
                 div { class: "kit-ws__identity",
+                    span { class: "kit-ws__mark", "aria-hidden": "true", "{mark_letter}" }
                     h2 { class: "kit-ws__name", "{workspace.name}" }
                     if !meta_line.is_empty() {
                         p { class: "kit-ws__meta", "{meta_line}" }
@@ -281,6 +310,7 @@ pub fn ClientWorkspace(
                         span { class: "kit-ws__spin", "aria-hidden": "true", "↻" }
                     }
                     div { class: "kit-ws__switch",
+                        span { class: "kit-ws__switch-label", "Switch client" }
                         ListPicker {
                             options: workspace_options.iter().map(|o| PickOption { id: o.id.clone(), label: o.name.clone() }).collect::<Vec<_>>(),
                             selected: Some(workspace.id.clone()),
@@ -323,6 +353,7 @@ pub fn ClientWorkspace(
                                             variant: ChartVariant::Sparkline,
                                             axis: AxisMode::Off,
                                             show_tooltip: false,
+                                            initial_active: card.series.len().checked_sub(1),
                                             height: 36.0,
                                             label: card.label.clone(),
                                         }
@@ -385,7 +416,7 @@ pub fn ClientWorkspace(
                             let kind = ItemKind::ALL.into_iter().find(|k| k.as_str() == value);
                             if let Some(handler) = on_kind_change { handler.call(kind); }
                         },
-                        option { value: "all", selected: selected_kind.is_none(), "All kinds" }
+                        option { value: "all", selected: selected_kind.is_none(), "All" }
                         for kind in kind_options.iter().copied() {
                             option { key: "{kind.as_str()}", value: "{kind.as_str()}", selected: selected_kind == Some(kind), "{kind.word()}" }
                         }
@@ -400,6 +431,9 @@ pub fn ClientWorkspace(
             } else {
                 div { class: "kit-ws__pane", role: "tabpanel", "aria-label": "{current_section_label}",
                     form { class: "kit-ws__composer", onsubmit: move |e: FormEvent| e.prevent_default(),
+                        div { class: "kit-ws__compose-row",
+                        span { class: "kit-ws__avatar", "aria-hidden": "true", "{viewer_initial}" }
+                        div { class: "kit-ws__compose-body",
                         if !mentions.is_empty() {
                             ul { class: "kit-ws__mentions", role: "listbox", "aria-label": "Reports",
                                 for (i, r) in mentions.iter().enumerate() {
@@ -524,6 +558,8 @@ pub fn ClientWorkspace(
                                 }
                             }
                         }
+                        }
+                        }
                     }
                     if is_loading {
                         Loading { label: "Loading timeline", class: "kit-ws__timeline",
@@ -552,13 +588,23 @@ pub fn ClientWorkspace(
                                 let refs = item.references.clone();
                                 let body = item.text.clone();
                                 let title = item.title.clone().unwrap_or_else(|| item.kind.word().to_string());
-                                let sentence = format!("{} {}", item.author, item.kind.action());
+                                let is_app = item.kind == ItemKind::App;
+                                let sentence = if is_app {
+                                    item.text.clone()
+                                } else {
+                                    format!("{} {}", item.author, item.kind.action())
+                                };
                                 rsx! {
                                     li { key: "{item.id}", class: "kit-ws__item", "data-kind": item.kind.as_str(),
-                                        div { class: "kit-ws__avatar", "aria-hidden": "true", "{initial}" }
+                                        span { class: "kit-ws__kind-badge", "aria-hidden": "true", "{item.kind.glyph()}" }
+                                        span { class: "kit-sr", "{item.kind.word()}" }
+                                        if is_app {
+                                            span { class: "kit-ws__app-mark", "aria-hidden": "true" }
+                                        } else {
+                                            div { class: "kit-ws__avatar", "aria-hidden": "true", "{initial}" }
+                                        }
                                         div { class: "kit-ws__body",
                                             header { class: "kit-ws__item-head",
-                                                span { class: "kit-ws__kind-badge", "{item.kind.word()}" }
                                                 span { class: "kit-ws__sentence", "{sentence}" }
                                                 time { class: "kit-ws__age", "{age}" }
                                             }
@@ -573,7 +619,7 @@ pub fn ClientWorkspace(
                                                 if open {
                                                     p { class: "kit-ws__text", "{body}" }
                                                 }
-                                            } else {
+                                            } else if !is_app {
                                                 p { class: "kit-ws__text", "{body}" }
                                             }
                                             if !refs.is_empty() {

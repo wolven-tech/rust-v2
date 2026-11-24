@@ -27,22 +27,22 @@ pub fn TabOverload(
             svg { class: "ui-to-art", "viewBox": "0 0 360 240", "aria-hidden": "true",
                 defs {
                     linearGradient { id: "{id}-blob-h", x1: "0%", y1: "0%", x2: "100%", y2: "0%",
-                        stop { offset: "0%", "stopColor": "#FFB89E", "stopOpacity": "0.3" }
-                        stop { offset: "50%", "stopColor": "#C8A8E5", "stopOpacity": "0.3" }
-                        stop { offset: "100%", "stopColor": "#A8B5FF", "stopOpacity": "0.3" }
+                        stop { offset: "0%", stop_color: "#FFB89E", stop_opacity: "0.3" }
+                        stop { offset: "50%", stop_color: "#C8A8E5", stop_opacity: "0.3" }
+                        stop { offset: "100%", stop_color: "#A8B5FF", stop_opacity: "0.3" }
                     }
                     linearGradient { id: "{id}-blob-v", x1: "0%", y1: "100%", x2: "0%", y2: "0%",
-                        stop { offset: "0%", "stopColor": "#FF6B5C", "stopOpacity": "0.3" }
-                        stop { offset: "100%", "stopColor": "#FFB89E", "stopOpacity": "0.3" }
+                        stop { offset: "0%", stop_color: "#FF6B5C", stop_opacity: "0.3" }
+                        stop { offset: "100%", stop_color: "#FFB89E", stop_opacity: "0.3" }
                     }
                     filter { id: "{id}-blur", x: "-200%", y: "-200%", width: "500%", height: "500%",
                         feGaussianBlur { "stdDeviation": "12" }
                     }
                     linearGradient { id: "{id}-stroke", x1: "100%", y1: "0%", x2: "0%", y2: "100%",
-                        stop { offset: "0%", "stopColor": "#B5C0FF" }
-                        stop { offset: "40%", "stopColor": "#D5BBEF" }
-                        stop { offset: "75%", "stopColor": "#FFC5AB" }
-                        stop { offset: "100%", "stopColor": "#FFB5BC" }
+                        stop { offset: "0%", stop_color: "#B5C0FF" }
+                        stop { offset: "40%", stop_color: "#D5BBEF" }
+                        stop { offset: "75%", stop_color: "#FFC5AB" }
+                        stop { offset: "100%", stop_color: "#FFB5BC" }
                     }
                 }
 
@@ -53,11 +53,11 @@ pub fn TabOverload(
                             ellipse { cx: "{side_x}", cy: "{side_y}", rx: "14", ry: "90", fill: "url(#{id}-blob-v)", filter: "url(#{id}-blur)" }
                         }
                         g { class: "ui-to-tab ui-to-tab-{n}", transform: "translate({x} {y})",
-                            rect { class: "ui-to-frame", width: "380", height: "300", rx: "6", fill: "#F4F5F7", stroke: "#E4E7EC", "strokeWidth": "0.7" }
+                            rect { class: "ui-to-frame", width: "380", height: "300", rx: "6", fill: "#F4F5F7", stroke: "#E4E7EC", stroke_width: "0.7" }
                             circle { class: "ui-to-dot", cx: "14", cy: "14", r: "3", fill: "#CCCCCC" }
                             circle { class: "ui-to-dot", cx: "24", cy: "14", r: "3", fill: "#CCCCCC" }
                             circle { class: "ui-to-dot", cx: "34", cy: "14", r: "3", fill: "#CCCCCC" }
-                            rect { class: "ui-to-page", x: "4", y: "24", width: "372", height: "272", rx: "5", fill: "#FFFFFF", stroke: "#E4E7EC", "strokeWidth": "0.7" }
+                            rect { class: "ui-to-page", x: "4", y: "24", width: "372", height: "272", rx: "5", fill: "#FFFFFF", stroke: "#E4E7EC", stroke_width: "0.7" }
                         }
                         g { class: "ui-to-content ui-to-content-{n}", transform: "translate({x} {y})",
                             rect { class: "ui-to-bar", x: "12", y: "36", width: "30", height: "30", rx: "4", fill: "#EFF1F4" }
@@ -83,7 +83,7 @@ pub fn TabOverload(
                             d: "M {x} 240 L {x} {curve_y} A 6 6 0 0 1 {curve_x} {y} L {top_end} {y}",
                             fill: "none",
                             stroke: "url(#{id}-stroke)",
-                            "strokeWidth": "0.8",
+                            stroke_width: "0.8",
                         }
                     }
                 }

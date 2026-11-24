@@ -108,6 +108,10 @@
   --kit-text-md: 13px;
   --kit-text-lg: 14px;
   --kit-text-xl: 16px;
+  --kit-text-display: clamp(2rem, 4.2vw, 3.25rem);
+
+  /* Reads the accent and identity registers, so each theme sets its own gradient. */
+  --kit-gradient-accent: linear-gradient(135deg, var(--kit-accent), color-mix(in srgb, var(--kit-accent) 45%, var(--kit-id-1)));
 }
 
 /* Must follow the block above: same specificity as [data-theme], so order

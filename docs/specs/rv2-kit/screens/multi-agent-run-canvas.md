@@ -72,3 +72,30 @@ Shows a live run of several cooperating agents as a graph: which agent started w
 6. With `is_live` false, the clock and the flow do not change between two renders.
 7. A failed agent shows its error; the retry is a separate trace row.
 8. At phone width the page has no horizontal scroll; only the canvas scrolls inside itself.
+
+## Amendment 5: structure and demo
+
+Replaces: none (no earlier amendment in this spec).
+
+**Archetype:** graph canvas above a trace table, with a row of summary tiles between the header and the canvas's lower tabs. The agent panel is closed.
+
+**At rest (gallery demo):**
+- Header: run name, short run id, live badge, Pause run and Stop buttons.
+- Canvas: 16 agent nodes. One orchestrator at the top; below it four lanes of Research (5), Analysis (4), Writing (3) and Review (3). Edges run from each parent to its children only.
+- Node states: 11 done, 2 running, 1 needs you, 1 failed, 1 queued.
+- Zoom in, zoom out and fit controls in one corner of the canvas.
+- Summary tiles: agents done (11 of 16), elapsed, tokens, total cost.
+- Lower tabs with Trace open: 14 rows, each with a time bar. The failed agent's retry is its own row beneath the failed row. A now line sits at the current moment.
+
+**States at rest:** live; one node needs a person; one failed node with its retry row; agent panel closed.
+
+**Arrangement:** canvas takes most of the height. Summary tiles sit in one row above the lower tabs. The trace table spans the full width under the tabs.
+
+**Motion, settled frame:** flow lines stay static; the now line sits at the current moment. Bars are at their final lengths.
+
+**Checks (continued):**
+9. At rest the canvas shows 16 nodes in the lanes 5, 4, 3 and 3 beneath the orchestrator, and the trace shows 14 rows.
+10. The canvas shows node states 11 done, 2 running, 1 needs you, 1 failed and 1 queued. The agents-done tile reads 11 of 16.
+11. Each failed node's retry is a separate trace row directly beneath the failed row, with its own time bar.
+12. At 1280 by 800 the header, canvas, summary tiles and trace are all visible in one screen without a sideways page scroll.
+13. The zoom controls change the canvas scale only. The trace and tiles do not change.

@@ -65,3 +65,30 @@ In reading order:
 6. At narrow width, exactly one neighbour tile is visible per side and nothing scrolls horizontally.
 7. Pager Next on the last panel wraps to the first.
 8. With reduced motion preferred, opening a panel does not animate its width.
+
+## Amendment 5: structure and demo
+
+Archetype: centred heading over a strip of seven panel tiles, one open as a preview card, with a caption row and pager beneath.
+
+Visible at rest:
+- Section heading, centred, with one short line beneath it.
+- Seven tiles in one row: three collapsed tiles, the open tile, then three collapsed tiles. The open tile is the fourth.
+- Collapsed tile: artwork region de-emphasised; its title set vertically.
+- Open preview: one framed card with a header bar (agent swatch, a name selector showing the agent name, a "New agent" button, owner initials); a title and meta line; a trigger line; four figures with small trend lines (Runs, Success, Hours saved, Escalated); four tabs with Context selected; an "Agent context" section with one help line, a search field with a filter button, two context items (initials and text), and a composer row with an "Add context" button.
+- Caption row beneath the frame: agent name in bold, one sentence, and previous and next controls at the right, inside the frame.
+
+Gallery demo:
+- Heading "Specialist agents, one at a time". Line: "Each agent has its own steps, tools and limits."
+- Tiles in order: Ticket triage, Lead finder, Call notes, Renewal watch (open), Onboarding guide, Copy check, Changelog writer.
+- Open card: title "Renewal watch", meta "Updated 3 min ago", trigger "Starts when a plan has 30 days left · Owner Sam Ortega", figures Runs 126, Success 94%, Hours saved 2.8, Escalated 9.
+- Context items: "Renewals above the plan threshold go to the account owner first." (SO); "Sam added the regional price list on 2 Nov." (PN).
+- Caption: "Renewal watch. Flags quiet accounts before their contract ends and drafts the first call."
+
+Motion, settled frame: open preview with content; neighbours collapsed.
+Moves: opening widens the new panel and narrows the previous one in one transition. The preview content fades in after its panel has opened. Hovering a collapsed tile strengthens its artwork without opening it.
+Reduced motion: panel change is instant; the preview appears without a fade.
+
+Acceptance checks (continued):
+9. Seven tiles at rest: three collapsed tiles on each side of the open one.
+10. Every part of the open preview has content: header, title, four figures, four tabs, context items and composer row. No part is an empty region.
+11. Previous and next controls sit inside the frame at every width; Next on the last tile wraps to the first.

@@ -16,6 +16,7 @@ fn node(id: &str, kind: NodeKind, x: f64, y: f64) -> CanvasNode {
         pos_x: x,
         pos_y: y,
         node_status: NodeStatus::Ready,
+        chip: None,
     }
 }
 
@@ -88,14 +89,16 @@ fn branch_ports_sit_apart_on_the_bottom_edge_and_input_on_the_left() {
     assert!(yes.0 < no.0, "yes port left of no port");
     assert_eq!(yes.1, 160.0 + NODE_H);
     assert_eq!(no.1, 160.0 + NODE_H);
-    assert_eq!(input_point(&b), (40.0, 160.0 + NODE_H / 2.0));
+    assert_eq!(input_point(&b), (40.0 + NODE_W / 2.0, 160.0));
 }
 
 #[test]
-fn edge_path_runs_top_to_bottom_between_the_two_ends() {
-    let d = edge_path((100.0, 88.0), (100.0, 200.0));
-    assert!(d.starts_with("M 100.0 88.0 C 100.0 "), "{d}");
-    assert!(d.ends_with("100.0 200.0"), "{d}");
+fn edge_path_is_straight_within_a_column_and_curves_between_columns() {
+    let straight = edge_path((100.0, 88.0), (100.0, 200.0));
+    assert_eq!(straight, "M 100.0 88.0 L 100.0 200.0");
+    let curved = edge_path((100.0, 88.0), (150.0, 200.0));
+    assert!(curved.starts_with("M 100.0 88.0 C 100.0 "), "{curved}");
+    assert!(curved.ends_with("150.0 200.0"), "{curved}");
 }
 
 #[test]
@@ -239,12 +242,11 @@ fn loaded_board_names_steps_ports_comments_and_the_run_tabs() {
     assert!(html.contains("data-port=\"yes\""));
     assert!(html.contains("data-port=\"no\""));
     assert!(html.contains("aria-label=\"Comment by Ana: Check the threshold\""));
-    for tab in ["payload", "triggers", "errors", "timeline", "runs"] {
-        assert!(
-            html.contains("id=\"kit-ac-") && html.contains(&format!("-tab-{tab}\"")),
-            "tab {tab}"
-        );
-    }
+    assert!(
+        !html.contains("kit-ac__tabs"),
+        "the run area is closed at rest"
+    );
+    assert!(html.contains("aria-label=\"Run area\""));
     for control in ["Select", "Comment", "Zoom in", "Zoom out", "Fit to view"] {
         assert!(
             html.contains(&format!("aria-label=\"{control}\"")),
@@ -290,7 +292,7 @@ fn loading_board_shows_placeholders_and_keeps_the_palette_usable() {
     );
     assert!(html.contains("aria-busy=\"true\""));
     let add = html
-        .find("aria-label=\"Add Webhook trigger\"")
+        .find("aria-label=\"Add Webhook\"")
         .expect("palette item");
     let window = &html[add..add + 200];
     assert!(
@@ -367,7 +369,7 @@ fn pinch_keeps_the_point_under_the_midpoint_and_scales_by_spread() {
 #[test]
 fn start_test_is_offered_with_a_loaded_flow() {
     let html = render(loaded_app);
-    assert!(html.contains("Start test"));
+    assert!(html.contains("aria-label=\"Run area\""));
     assert!(html.contains("Production"));
     assert!(html.contains("Select a step to configure it."));
 }

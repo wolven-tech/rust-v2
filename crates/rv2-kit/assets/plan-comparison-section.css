@@ -96,6 +96,8 @@
 .kit-pcs__details { display: grid; gap: 12px; padding-top: 10px; border-top: 1px solid var(--kit-rule-soft); animation: kit-pcs-open var(--kit-slow) var(--kit-ease); }
 .kit-pcs__integrations h4 { margin: 0 0 4px; font-size: 13px; }
 .kit-pcs__integrations p { margin: 0; font-size: 13px; color: var(--kit-ink-muted); }
+.kit-pcs__marks { list-style: none; margin: 6px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+.kit-pcs__mark-chip { font-size: 12px; padding: 3px 8px; border: 1px solid var(--kit-rule-soft); border-radius: var(--kit-radius-pill); color: var(--kit-ink); }
 .kit-pcs__features li { display: grid; grid-template-columns: 16px minmax(0, 1fr) auto; gap: 8px; align-items: baseline; }
 .kit-pcs__features li[data-included] .kit-pcs__mark { color: var(--kit-ok-ink); }
 .kit-pcs__features li:not([data-included]) { color: var(--kit-ink-faint); }

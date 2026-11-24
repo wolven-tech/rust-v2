@@ -81,3 +81,31 @@ Reading order:
 8. Choosing Auto shows the explainer text beneath the chat selector.
 9. With reduced motion on, the rolling list beside Auto does not move.
 10. Below a narrow width, the filter tabs take their own line, and no horizontal page scroll occurs.
+
+## Amendment 5: structure and demo
+
+Replaces: none (no earlier amendment in this spec).
+
+**Archetype:** settings frame with a page header, a defaults card, a provider accordion whose expanded card shows per-model rows, and an API keys card.
+
+**At rest (gallery demo):**
+- Settings navigation with Models current.
+- Header: title and one line.
+- Defaults card: chat model selector set to Auto, with the Auto explainer open beneath it. Image model selector showing one image model.
+- Provider list card: filter tabs (All, Chat, Image, Custom) with All checked; empty search field; custom model button.
+- Four provider cards in this order: two EU-hosted providers, one global provider, one custom endpoint group.
+- The first EU-hosted provider card is expanded and shows its three model rows. Each row has the model name, a hosting note, an access menu reading Everyone, Engineering or Admins, and an enabled switch. The other three cards are collapsed.
+- API keys card: one line on billing, two masked keys with their added dates, and an add-key button.
+
+**States at rest:** Auto selected; one provider expanded; search empty; no form open.
+
+**Arrangement:** defaults card, then provider list card, then API keys card, in one column.
+
+**Motion, settled frame:** the Auto explainer is open and still. The rolling model list beside Auto is static at rest.
+
+**Checks (continued):**
+11. At rest one provider card is expanded and shows three model rows, each with an enabled switch and an access menu.
+12. The provider list shows four cards in this order: EU-hosted, EU-hosted, global, custom.
+13. The Auto explainer is open beneath the chat selector at rest, and the image selector shows one image model.
+14. The API keys card shows two masked keys with their added dates, and an add-key control.
+15. The filter tabs read All, Chat, Image and Custom with All checked, and the search field is empty.

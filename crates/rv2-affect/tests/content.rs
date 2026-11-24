@@ -482,6 +482,19 @@ fn decision_inbox_counts_pending_items_and_names_the_empty_state() {
 }
 
 #[test]
+fn decision_inbox_at_rest_gives_each_open_decision_both_answers() {
+    let html = render(|| {
+        rsx! { DecisionInbox { decisions: vec![decision("a", false), decision("b", false)] } }
+    });
+    assert_eq!(html.matches("ui-dic__btn ui-dic__btn--primary").count(), 2);
+    assert_eq!(html.matches("ui-dic__title--folded").count(), 0);
+    let folded = render(|| {
+        rsx! { DecisionInbox { decisions: vec![decision("a", false), decision("b", true)] } }
+    });
+    assert_eq!(folded.matches("ui-dic__title--folded").count(), 1);
+}
+
+#[test]
 fn first_name_and_initials_follow_the_name() {
     assert_eq!(first_name("  Jonas Weber "), "Jonas");
     assert_eq!(initials("Finance team"), "FT");
@@ -571,6 +584,15 @@ fn message_actions_render_the_default_bar_and_feedback_panel() {
     assert!(html.contains("aria-label=\"Bad response\""));
     assert!(html.contains("ui-mac__panel"));
     assert!(html.contains("ui-mac__versions"));
+}
+
+#[test]
+fn message_actions_start_with_the_feedback_panel_open_when_asked() {
+    let open =
+        render(|| rsx! { MessageActions { text: "Hello".to_string(), feedback_open: true } });
+    assert!(open.contains("data-open=\"\""));
+    let closed = render(|| rsx! { MessageActions { text: "Hello".to_string() } });
+    assert!(!closed.contains("data-open"));
 }
 
 #[test]

@@ -59,3 +59,31 @@ In reading order:
 6. At phone width shortcut hints are hidden and nothing scrolls sideways.
 
 Uses no partner logos.
+
+## Amendment 5: structure and demo
+
+Archetype: one card with a waveform well above a single status row, with soft light beneath it.
+
+Visible at rest:
+- Waveform well across the card's full width: 36 to 48 thin bars, one per sample, centred vertically. The newest bar is at the right; older bars shrink toward the left edge.
+- Status row beneath the well, one horizontal line: recording dot, elapsed time as m:ss, a vertical divider, "Done" with a Space keycap, "Cancel" with an Escape keycap.
+- Nothing above the waveform: no tabs, titles or state labels.
+- Soft light beneath the card's lower edge only, in two layers, one under each half of the card.
+
+Gallery demo:
+- Elapsed time "0:42". Samples: one fixed list of 40 values.
+- Status text ("Listening") stays in the accessible name only.
+
+Composition:
+- Card wide and short. Time sits at the left of the status row; the two actions follow it on the same line.
+- The card may run off the stage's right edge with a fade. No other edge is cropped.
+
+Motion, settled frame: waveform frozen on the fixed samples; dot visible; time fixed; light beneath at mid strength.
+Moves: while listening, bars rise and fall with each new sample and the newest enters at the right. The dot breathes, the time advances, and the light brightens with louder input.
+Reduced motion: waveform holds its latest values without scrolling; time still updates.
+
+Acceptance checks (continued):
+7. The status row is one horizontal line holding the time and both actions; nothing else sits above or beside the waveform.
+8. Bars are thin, one per sample, and the newest sits at the right edge of the well.
+9. The light sits only beneath the card, in two layers, one under each half.
+10. The only cropping at the stage edge is the right-hand fade.

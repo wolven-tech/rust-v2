@@ -104,12 +104,13 @@ fn dismiss(
     });
 }
 
+// Measures the body, not the card: the corner art overflows the card and scrollHeight counts it.
 fn measure_script(stack_id: &str) -> String {
     format!(
         "const root = document.getElementById({stack_id:?});
          const out = {{}};
          if (root) root.querySelectorAll(':scope > [data-notice]').forEach((el) => {{
-           out[el.dataset.notice] = el.scrollHeight + el.offsetHeight - el.clientHeight;
+           out[el.dataset.notice] = el.querySelector(':scope > .ui-nsc__body')?.offsetHeight ?? 0;
          }});
          return out;"
     )

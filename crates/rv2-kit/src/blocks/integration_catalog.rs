@@ -21,8 +21,9 @@ use crate::internal::{KIT_CSS, class_list};
 
 const CSS: Asset = asset!("/assets/integration-catalog.css");
 
-/// Cards shown per category before the "Discover more" card.
-pub const VISIBLE_LIMIT: usize = 6;
+/// Cards shown per category before the "Discover more" cell; a 3-column grid of 8 cards plus
+/// the cell fills three rows.
+pub const VISIBLE_LIMIT: usize = 8;
 
 pub const FEATURED: &str = "featured";
 pub const ALL: &str = "all";
@@ -132,8 +133,11 @@ fn IntegrationCard(
             header { class: "kit-catalog__card-head",
                 div { class: "kit-catalog__logo", "aria-hidden": "true", {item.logo.clone()} }
                 div { class: "kit-catalog__identity",
-                    h4 { class: "kit-catalog__name", "{item.name}" }
-                    p { class: "kit-catalog__vendor", "{item.vendor}" }
+                    h4 { class: "kit-catalog__name",
+                        "{item.name} "
+                        span { class: "kit-catalog__verified", "aria-label": "Verified", "✓" }
+                    }
+                    p { class: "kit-catalog__vendor", "By {item.vendor}" }
                 }
             }
             p { class: "kit-catalog__desc", "{item.description}" }
@@ -216,6 +220,7 @@ pub fn IntegrationCatalog(
     #[props(default)] search_text: String,
     #[props(default)] on_search_change: Option<EventHandler<String>>,
     #[props(default)] disabled: bool,
+    #[props(default)] read_more_href: Option<String>,
     #[props(default, into)] extra_classes: String,
 ) -> Element {
     let mut category = use_signal(|| FEATURED.to_string());
@@ -236,10 +241,10 @@ pub fn IntegrationCatalog(
         .take(VISIBLE_LIMIT)
         .map(|i| (*i).clone())
         .collect();
-    let more = matches.len() > VISIBLE_LIMIT;
+    let outside = integrations.len().saturating_sub(shown.len());
     let heading = match active.as_str() {
-        FEATURED => "Featured".to_string(),
-        ALL => "All integrations".to_string(),
+        FEATURED => "Essentials".to_string(),
+        ALL => "All apps".to_string(),
         other => categories
             .iter()
             .find(|c| c.id == other)
@@ -254,11 +259,11 @@ pub fn IntegrationCatalog(
     let mut category_items = vec![
         CategoryOption {
             id: FEATURED.to_string(),
-            label: "Featured".to_string(),
+            label: "Essentials".to_string(),
         },
         CategoryOption {
             id: ALL.to_string(),
-            label: "All".to_string(),
+            label: "All apps".to_string(),
         },
     ];
     category_items.extend(categories.iter().cloned());
@@ -271,12 +276,13 @@ pub fn IntegrationCatalog(
             header { class: "kit-catalog__head",
                 div {
                     h2 { id: "kit-catalog-title", class: "kit-catalog__title", "{title}" }
-                    p { class: "kit-catalog__intro", "{intro}" }
+                    p { class: "kit-catalog__intro", "{intro}"
+                        if let Some(href) = read_more_href.clone() {
+                            a { class: "kit-catalog__more-link", href: "{href}", " Read more" }
+                        }
+                    }
                 }
-                p { class: "kit-catalog__connected", "aria-live": "polite",
-                    span { class: "kit-catalog__count", "{connected}" }
-                    " connected"
-                }
+                p { class: "kit-catalog__connected", "aria-live": "polite", "{connected} connected" }
             }
             div { class: "kit-catalog__search",
                 input {
@@ -394,9 +400,10 @@ pub fn IntegrationCatalog(
                                     }
                                 }
                             }
-                            if more {
+                            if active.as_str() != ALL && outside > 0 {
                                 div { class: "kit-catalog__more",
-                                    p { "{matches.len() - VISIBLE_LIMIT} more in this list" }
+                                    p { class: "kit-catalog__more-title", "Discover more" }
+                                    p { class: "kit-catalog__more-count", "+{outside} apps" }
                                     button {
                                         r#type: "button",
                                         class: "kit-catalog__btn",

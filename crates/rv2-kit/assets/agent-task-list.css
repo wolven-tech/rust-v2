@@ -393,8 +393,8 @@
 .kit-atl__panel {
   display: grid;
   align-content: start;
-  gap: 12px;
-  padding: 14px;
+  gap: 8px;
+  padding: 12px;
   border: 1px solid var(--kit-rule-soft);
   border-radius: var(--kit-radius-lg);
   background: var(--kit-surface);
@@ -442,6 +442,30 @@
   padding: 0 0 0 18px;
   display: grid;
   gap: 4px;
+}
+
+.kit-atl__artifact-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.kit-atl__artifact-tab {
+  min-height: 28px;
+  padding: 0 10px;
+  border: 1px solid var(--kit-rule-soft);
+  border-radius: var(--kit-radius-sm);
+  background: var(--kit-surface);
+  color: var(--kit-ink-muted);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.kit-atl__artifact-tab[aria-selected="true"] {
+  border-color: var(--kit-rule);
+  color: var(--kit-ink);
+  background: var(--kit-raised);
 }
 
 .kit-atl__checklist li {

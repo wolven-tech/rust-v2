@@ -74,3 +74,31 @@ Metric cards; split stacked bar chart; trend or forecast chart; plan card with r
 6. Selecting a split bar and asking calls `on_ask` with a focus range covering only that group.
 7. With all levers off, the planned forecast equals the baseline forecast.
 8. With reduced motion requested, no roll or path animation runs.
+
+## Amendment 5: structure and demo
+
+Replaces: none (no earlier amendment in this spec).
+
+**Archetype:** single-column conversation with one answered exchange: answer text, metric cards, split bar chart, source row and follow-up chips, above a composer.
+
+**At rest (gallery demo):**
+- Question bubble on the right.
+- Answer: a two-sentence text paragraph, then three metric cards in one row.
+- Split chart: three provider bars, each with two or three model segments and a total label above it. Caption row beneath with the hint "click a bar to ask about it".
+- Source row: a label and two source chips, with copy and feedback icons at the end.
+- Follow-up chips: three in one row, below the source row.
+- Composer at the foot with the approval-mode control and the mode label.
+- Plan card: not shown at rest. It appears only when an answer carries a plan.
+- No data table in the thread at rest. Segment values are reachable in each bar's tooltip and in its focus announcement.
+
+**States at rest:** one answer; no pick; no plan card.
+
+**Arrangement:** one column at a fixed maximum width. Chart spans the column. Chips sit in one row under the source row.
+
+**Motion, settled frame:** values and bars at their final positions. Nothing rolls at rest.
+
+**Checks (continued):**
+9. Answer text and metric cards sit above the chart. The follow-up chips sit below the chart and above the composer.
+10. Any table an answer includes shows every row. The thread scrolls, and no row is cut at the bottom edge of the panel.
+11. The composer stays at the foot, and its approval-mode control is visible at 1280 wide and at phone width.
+12. Chip text wraps inside its chip. No chip label is clipped.

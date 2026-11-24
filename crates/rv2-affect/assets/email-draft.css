@@ -193,11 +193,12 @@
 .ui-edc__tick { color: var(--ui-edc-accent); stroke-width: 1.8; }
 
 /* Attachment */
+/* The recipient shrinks instead; a shrinking file would push its remove button past the row */
 .ui-edc__file {
   display: inline-flex;
+  flex: none;
   align-items: center;
   gap: 6px;
-  min-width: 0;
   font-size: 13px;
   white-space: nowrap;
   color: var(--ui-edc-text);

@@ -180,13 +180,13 @@ pub fn RegionDach(
                 svg { class: "ui-rd-art", "viewBox": "0 0 540 440", "aria-hidden": "true",
                     defs {
                         filter { id: "{root}-shadow", x: "-15%", y: "-15%", width: "130%", height: "130%",
-                            feDropShadow { class: "ui-rd-drop", dx: "0", dy: "3", "stdDeviation": "3.5", "floodColor": "#1F2128", "floodOpacity": "0.07" }
+                            feDropShadow { class: "ui-rd-drop", dx: "0", dy: "3", "stdDeviation": "3.5", flood_color: "#1F2128", flood_opacity: "0.07" }
                         }
                         linearGradient { id: "{root}-shine", "gradientUnits": "userSpaceOnUse", x1: "0", y1: "0", x2: "540", y2: "220",
-                            stop { offset: "0%", "stopColor": "#FFA0AB" }
-                            stop { offset: "33%", "stopColor": "#FFB89E" }
-                            stop { offset: "66%", "stopColor": "#C8A8E5" }
-                            stop { offset: "100%", "stopColor": "#A8B5FF" }
+                            stop { offset: "0%", stop_color: "#FFA0AB" }
+                            stop { offset: "33%", stop_color: "#FFB89E" }
+                            stop { offset: "66%", stop_color: "#C8A8E5" }
+                            stop { offset: "100%", stop_color: "#A8B5FF" }
                         }
                         filter { id: "{root}-blur", x: "-20%", y: "-20%", width: "140%", height: "140%",
                             feGaussianBlur { "stdDeviation": "4" }
@@ -228,30 +228,30 @@ fn MapLayer(root: String, region: Region, phase: Phase) -> Element {
                     }
                 }
                 radialGradient { id: "{lid}-fade", cx: "{cx}", cy: "{cy}", r: "{r}", "gradientUnits": "userSpaceOnUse",
-                    stop { offset: "0%", "stopColor": "#FFFFFF", "stopOpacity": "0.9" }
-                    stop { offset: "65%", "stopColor": "#FFFFFF", "stopOpacity": "0.6" }
-                    stop { offset: "90%", "stopColor": "#FFFFFF", "stopOpacity": "0.18" }
-                    stop { offset: "100%", "stopColor": "#FFFFFF", "stopOpacity": "0" }
+                    stop { offset: "0%", stop_color: "#FFFFFF", stop_opacity: "0.9" }
+                    stop { offset: "65%", stop_color: "#FFFFFF", stop_opacity: "0.6" }
+                    stop { offset: "90%", stop_color: "#FFFFFF", stop_opacity: "0.18" }
+                    stop { offset: "100%", stop_color: "#FFFFFF", stop_opacity: "0" }
                 }
                 mask { id: "{lid}-neighbors", "maskUnits": "userSpaceOnUse", x: "0", y: "0", width: "540", height: "440",
                     rect { x: "0", y: "0", width: "540", height: "440", fill: "{fade_url}" }
                 }
             }
-            g { mask: "{neighbors_url}", class: "ui-rd-neighbors", fill: "none", stroke: "#A6ABB3", "strokeWidth": "0.7", "strokeLinejoin": "round", "strokeLinecap": "round",
+            g { mask: "{neighbors_url}", class: "ui-rd-neighbors", fill: "none", stroke: "#A6ABB3", stroke_width: "0.7", stroke_linejoin: "round", stroke_linecap: "round",
                 for d in neighbors.iter().copied() {
                     path { d }
                 }
             }
-            g { class: "ui-rd-land", filter: "{shadow_url}", fill: "#F8F8F8", stroke: "#D6D9DE", "strokeWidth": "0.9", "strokeLinejoin": "round",
+            g { class: "ui-rd-land", filter: "{shadow_url}", fill: "#F8F8F8", stroke: "#D6D9DE", stroke_width: "0.9", stroke_linejoin: "round",
                 for d in land.iter().copied() {
                     path { d }
                 }
             }
-            g { fill: "none", stroke: "{shine_url}", "strokeLinecap": "round", "strokeLinejoin": "round",
-                path { class: "ui-rd-band", d: outline, "pathLength": "1000", "strokeWidth": "6", "strokeDasharray": "180 820", filter: "{blur_url}", mask: "{outside_url}", opacity: "0.45" }
-                path { class: "ui-rd-band", d: outline, "pathLength": "1000", "strokeWidth": "1.4", "strokeDasharray": "200 800", opacity: "0.32" }
-                path { class: "ui-rd-band ui-rd-band--1", d: outline, "pathLength": "1000", "strokeWidth": "1.4", "strokeDasharray": "140 860", "strokeDashoffset": "-30", opacity: "0.55" }
-                path { class: "ui-rd-band ui-rd-band--2", d: outline, "pathLength": "1000", "strokeWidth": "1.4", "strokeDasharray": "80 920", "strokeDashoffset": "-60" }
+            g { fill: "none", stroke: "{shine_url}", stroke_linecap: "round", stroke_linejoin: "round",
+                path { class: "ui-rd-band", d: outline, "pathLength": "1000", stroke_width: "6", stroke_dasharray: "180 820", filter: "{blur_url}", mask: "{outside_url}", opacity: "0.45" }
+                path { class: "ui-rd-band", d: outline, "pathLength": "1000", stroke_width: "1.4", stroke_dasharray: "200 800", opacity: "0.32" }
+                path { class: "ui-rd-band ui-rd-band--1", d: outline, "pathLength": "1000", stroke_width: "1.4", stroke_dasharray: "140 860", stroke_dashoffset: "-30", opacity: "0.55" }
+                path { class: "ui-rd-band ui-rd-band--2", d: outline, "pathLength": "1000", stroke_width: "1.4", stroke_dasharray: "80 920", stroke_dashoffset: "-60" }
             }
         }
     }
@@ -330,7 +330,7 @@ fn Switcher(value: Region, on_pick: EventHandler<Region>) -> Element {
                 },
                 span { "{selected_name}" }
                 svg { class: "ui-rd-chevron", "viewBox": "0 0 24 24", fill: "none", "aria-hidden": "true",
-                    path { class: "ui-rd-chevron-ink", d: "M18 9.00005C18 9.00005 13.5811 15 12 15C10.4188 15 6 9 6 9", stroke: "#737373", "strokeWidth": "1.5", "strokeLinecap": "round", "strokeLinejoin": "round" }
+                    path { class: "ui-rd-chevron-ink", d: "M18 9.00005C18 9.00005 13.5811 15 12 15C10.4188 15 6 9 6 9", stroke: "#737373", stroke_width: "1.5", stroke_linecap: "round", stroke_linejoin: "round" }
                 }
             }
             div { class: "ui-rd-menu", "data-open": open_attr, "inert": menu_inert,
@@ -381,7 +381,7 @@ fn Switcher(value: Region, on_pick: EventHandler<Region>) -> Element {
                             },
                             span { class: "ui-rd-option-name", "{name}" }
                             span { class: "ui-rd-check", "aria-hidden": "true",
-                                svg { "viewBox": "0 0 24 24", fill: "none", stroke: "currentColor", "strokeWidth": "1.75", "strokeLinecap": "round", "strokeLinejoin": "round", "aria-hidden": "true",
+                                svg { "viewBox": "0 0 24 24", fill: "none", stroke: "currentColor", stroke_width: "1.75", stroke_linecap: "round", stroke_linejoin: "round", "aria-hidden": "true",
                                     path { d: "M5 14L8.5 17.5L19 6.5" }
                                 }
                             }

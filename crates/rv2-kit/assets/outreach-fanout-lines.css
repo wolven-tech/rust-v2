@@ -1,12 +1,24 @@
-/* Outreach fanout lines. The square drawing scales with its container; tiles lift by transform. */
+/* Outreach fanout lines. The bordered card is the stage, 33 to 20. Tiles are placed by their bottom
+   edge and left edge, both percent of the stage, and sized by their own width. */
 .kit-fan {
   position: relative;
+  isolation: isolate;
   width: 100%;
-  max-width: 360px;
-  aspect-ratio: 1 / 1;
+  max-width: 560px;
+  aspect-ratio: 33 / 20;
+  box-sizing: border-box;
   margin: 0 auto;
+  border: 1px solid var(--kit-rule-soft);
+  border-radius: var(--kit-radius-card);
+  background: var(--kit-surface);
   color: var(--kit-ink);
   font-family: var(--kit-font);
+  overflow: hidden;
+}
+
+.kit-fan__stage {
+  position: absolute;
+  inset: 0;
 }
 
 .kit-fan__svg {
@@ -17,7 +29,6 @@
   overflow: visible;
 }
 
-.kit-fan__trunk,
 .kit-fan__branch {
   fill: none;
   stroke: var(--kit-rule);
@@ -25,9 +36,6 @@
   stroke-width: 0.6;
   vector-effect: non-scaling-stroke;
   animation: kit-fan-fade var(--kit-slow) var(--kit-ease) both;
-}
-
-.kit-fan__branch {
   transition: stroke var(--kit-fast) var(--kit-ease), stroke-width var(--kit-fast) var(--kit-ease);
 }
 
@@ -41,36 +49,28 @@
   stroke-width: 1.4;
 }
 
-.kit-fan__branch:nth-of-type(2) { animation-delay: 0.1s; }
+.kit-fan__junction {
+  fill: var(--kit-accent);
+  animation: kit-fan-fade var(--kit-slow) var(--kit-ease) both;
+}
 
 .kit-fan__pulse {
   fill: var(--kit-accent);
-  opacity: 0.85;
 }
 
 .kit-fan__tile {
   position: absolute;
-  translate: -50% -50%;
+  translate: -50% -100%;
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 4px;
-  width: 26%;
+  justify-content: center;
+  aspect-ratio: 1 / 1;
   box-sizing: border-box;
-  padding: 8px 4px;
   border: 1px solid var(--kit-rule-soft);
   border-radius: var(--kit-radius);
   background: var(--kit-surface);
   box-shadow: var(--kit-shadow);
   transition: transform var(--kit-fast) var(--kit-ease), box-shadow var(--kit-fast) var(--kit-ease);
-}
-
-.kit-fan__tile--source {
-  left: 50%;
-  top: 10%;
-  width: 34%;
-  translate: -50% 0;
-  animation: kit-fan-fade var(--kit-slow) var(--kit-ease) both;
 }
 
 .kit-fan__tile[data-state="rest"] {
@@ -86,29 +86,40 @@
 }
 
 .kit-fan__tile-icon {
+  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 22px;
-  height: 22px;
+  width: 50%;
+  height: 50%;
 }
 
-.kit-fan__tile-label {
-  max-width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-size: 11px;
-  color: var(--kit-ink-muted);
+.kit-fan__tile-icon > svg {
+  width: 100%;
+  height: 100%;
+}
+
+.kit-fan__light {
+  position: absolute;
+  z-index: -1;
+  left: 50%;
+  top: 100%;
+  width: 240%;
+  height: 60%;
+  translate: -50% -30%;
+  border-radius: 50%;
+  pointer-events: none;
+  filter: blur(6px);
+  background: radial-gradient(ellipse at 50% 0%, color-mix(in srgb, var(--kit-accent) 40%, transparent), transparent 70%);
 }
 
 .kit-fan__button {
   all: unset;
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 4px;
+  justify-content: center;
   width: 100%;
+  height: 100%;
   box-sizing: border-box;
   cursor: pointer;
 }
@@ -134,9 +145,8 @@
   .kit-fan__pulse {
     display: none;
   }
-  .kit-fan__trunk,
   .kit-fan__branch,
-  .kit-fan__tile--source {
+  .kit-fan__junction {
     animation: none;
   }
   .kit-fan__tile[data-state="rest"] {
