@@ -169,6 +169,12 @@ pub fn format_tick(seconds: f64, unit: TickUnit) -> String {
     }
 }
 
+/// A tick closer to the clock than 15% of the axis is left unlabelled, since the time pill covers it.
+/// The fraction holds at phone width, where a lane is only a few hundred pixels.
+pub fn tick_under_pill(tick_s: f64, clock_s: Option<f64>, axis_s: f64) -> bool {
+    clock_s.is_some_and(|clock| (tick_s - clock).abs() < axis_s * 0.15)
+}
+
 /// Next focused step for an arrow or Home/End key. `positions` holds (row index, begin
 /// time) for each drawn step; the result indexes the same slice.
 pub fn next_step(positions: &[(usize, f64)], current: usize, key: &str) -> Option<usize> {
@@ -258,6 +264,7 @@ struct StepView {
     aria: String,
     style: String,
     mode: &'static str,
+    edge: &'static str,
     running: bool,
     tool: Option<String>,
     tab: &'static str,
@@ -307,11 +314,24 @@ pub fn RunTimelineRows(
     let axis = axis_length(&spans, clock_s, axis_length_s);
     let unit = tick_unit(axis);
     let step = tick_step(axis);
-    let ticks: Vec<(String, String)> = (0..)
+    let ticks: Vec<(String, String, bool)> = (0..)
         .map(|k| k as f64 * step)
         .take_while(|t| *t <= axis)
-        .map(|t| (format!("{:.4}%", t / axis * 100.0), format_tick(t, unit)))
+        .filter(|t| !tick_under_pill(*t, clock_s, axis))
+        .map(|t| {
+            (
+                format!("{:.4}%", t / axis * 100.0),
+                format_tick(t, unit),
+                t >= axis,
+            )
+        })
         .collect();
+    let clock_mark = clock_s.map(|clock| {
+        (
+            format!("{:.4}%", clock / axis * 100.0),
+            format_mm_ss((clock * 1000.0) as u64),
+        )
+    });
 
     let row_of = |key: &str| rows.iter().position(|r| r.row_key == key);
     let drawn: Vec<(usize, usize, (f64, f64))> = spans
@@ -346,6 +366,7 @@ pub fn RunTimelineRows(
                     span.mode.level_pct() * 0.5
                 ),
                 mode: span.mode.as_str(),
+                edge: if begin / axis > 0.6 { "end" } else { "start" },
                 running: span.end_s.is_none() && clock_s.is_some(),
                 tool: span.tool_name.clone(),
                 tab: if focused() == Some(pos) || (focused().is_none() && pos == 0) {
@@ -488,11 +509,7 @@ pub fn RunTimelineRows(
                         focus_by_id(&format!("{id}-s{}", drawn[next].0));
                     }
                 },
-                div { class: "kit-rtr__axis", "aria-hidden": "true",
-                    for (pos, label) in ticks {
-                        span { key: "{pos}", class: "kit-rtr__tick", style: "left: {pos}", {label} }
-                    }
-                }
+                div { class: "kit-rtr__body",
                 div { class: "kit-rtr__rows",
                     for (key, name, note, count, kind, lane_steps, initial, hue, mark) in lanes {
                         div { key: "{key}", class: "kit-rtr__row", "data-kind": kind,
@@ -516,6 +533,7 @@ pub fn RunTimelineRows(
                                         r#type: "button",
                                         style: step.style.clone(),
                                         "data-mode": step.mode,
+                                        "data-edge": step.edge,
                                         "data-running": step.running.then_some("true"),
                                         "aria-label": step.aria.clone(),
                                         tabindex: step.tab,
@@ -540,6 +558,9 @@ pub fn RunTimelineRows(
                         }
                     }
                     div { class: "kit-rtr__overlay",
+                        if let Some((pos, _)) = clock_mark.clone() {
+                            div { class: "kit-rtr__playhead", "aria-hidden": "true", style: "left: {pos}" }
+                        }
                         for (index, key, style, label) in transfer_views {
                             button {
                                 key: "{key}",
@@ -553,6 +574,15 @@ pub fn RunTimelineRows(
                             }
                         }
                     }
+                }
+                div { class: "kit-rtr__axis", "aria-hidden": "true",
+                    for (pos, label, end) in ticks {
+                        span { key: "{pos}", class: if end { "kit-rtr__tick kit-rtr__tick--end" } else { "kit-rtr__tick" }, style: "left: {pos}", {label} }
+                    }
+                    if let Some((pos, text)) = clock_mark {
+                        span { class: "kit-rtr__pill", style: "left: {pos}", {text} }
+                    }
+                }
                 }
             }
             ul { class: "kit-rtr__legend", "aria-label": "Step kinds",

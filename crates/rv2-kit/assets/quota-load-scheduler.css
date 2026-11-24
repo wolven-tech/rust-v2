@@ -61,6 +61,7 @@
 }
 .kit-quota__tag {
   position: absolute;
+  z-index: 3;
   transform: translate(-50%, -50%);
   display: inline-grid;
   place-items: center;
@@ -79,11 +80,11 @@
   background: var(--kit-surface);
   color: var(--kit-ink);
   border: 1px solid var(--kit-rule);
-  transform: translate(var(--kit-space-3), -50%);
+  transform: translate(var(--kit-space-5), -50%);
   font-weight: 500;
   font-variant-numeric: tabular-nums;
 }
-.kit-quota__tag--peak[data-side="left"] { transform: translate(calc(-100% - var(--kit-space-3)), -50%); }
+.kit-quota__tag--peak[data-side="left"] { transform: translate(calc(-100% - var(--kit-space-5)), -50%); }
 .kit-quota__ceiling-label {
   position: absolute;
   right: 100%;
@@ -102,7 +103,7 @@
 /* Inside the plot's top edge, clear of the hour labels on the axis above. */
 .kit-quota__now-label { position: absolute; top: 0; left: var(--kit-space-1); padding: 0 var(--kit-space-1); border-radius: var(--kit-radius-sm); background: var(--kit-surface); color: var(--kit-ink); font-size: var(--kit-text-xs); font-weight: 600; white-space: nowrap; font-variant-numeric: tabular-nums; }
 .kit-quota__marks { position: relative; height: calc(var(--quota-axis) + var(--kit-space-1)); margin: 0 var(--quota-end) 0 var(--quota-gutter); font-size: var(--kit-text-xs); color: var(--kit-ink-muted); }
-.kit-quota__mark { position: absolute; top: 0; transform: translateX(-50%); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.kit-quota__mark { position: absolute; z-index: 3; top: 0; transform: translateX(-50%); padding: 0 var(--kit-space-1); background: var(--kit-surface); white-space: nowrap; font-variant-numeric: tabular-nums; }
 .kit-quota__deadline { margin: 0; font-size: var(--kit-text-sm); color: var(--kit-ink-muted); }
 .kit-quota__empty { color: var(--kit-ink-muted); font-size: var(--kit-text-md); margin: 0; }
 

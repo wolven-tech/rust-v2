@@ -1,6 +1,7 @@
 use dioxus::prelude::*;
 use rv2_kit::agents::run_timeline_rows::{
     RowKind, RowSpec, RunTimelineRows, Span, SpanMode, Transfer, describe_span, describe_transfer,
+    tick_under_pill,
 };
 
 fn render(app: fn() -> Element) -> String {
@@ -158,4 +159,70 @@ fn transfer_is_placed_by_row_index_so_it_follows_the_row_height() {
     let html = render(refund_batch);
     assert!(html.contains("top: calc(var(--kit-rtr-row-h) * 2 + var(--kit-rtr-row-h) / 2)"));
     assert!(html.contains("height: calc(var(--kit-rtr-row-h) * 1)"));
+}
+
+fn finished_run() -> Element {
+    let rows = vec![row(
+        "drafter",
+        "Drafter",
+        RowKind::Agent,
+        "writing the summary",
+    )];
+    let spans = vec![span("drafter", SpanMode::Reasoning, 26.0, Some(44.0), None)];
+    rsx! {
+        RunTimelineRows {
+            run_heading: "Refund batch",
+            rows: rows,
+            spans: spans,
+            axis_length_s: Some(60.0),
+        }
+    }
+}
+
+#[test]
+fn one_playhead_runs_from_the_lanes_to_the_axis_at_the_52_second_point() {
+    let html = render(refund_batch);
+    assert_eq!(count(&html, "class=\"kit-rtr__playhead\""), 1);
+    assert!(html.contains("left: 86.6667%"));
+    let rows = html.find("class=\"kit-rtr__rows\"").expect("lanes");
+    let playhead = html.find("kit-rtr__playhead").expect("playhead");
+    let axis = html.find("class=\"kit-rtr__axis\"").expect("axis");
+    assert!(rows < playhead && playhead < axis);
+}
+
+#[test]
+fn time_pill_is_centred_on_the_playhead_and_reads_the_clock() {
+    let html = render(refund_batch);
+    assert_eq!(count(&html, "class=\"kit-rtr__pill\""), 1);
+    assert!(html.contains("kit-rtr__pill\" style=\"left: 86.6667%\""));
+    assert!(html.contains(">0:52<"));
+    assert!(html.contains("clock 0:52"));
+}
+
+#[test]
+fn tick_under_the_pill_is_not_drawn_and_the_others_are() {
+    let html = render(refund_batch);
+    assert!(!html.contains(">50s<"));
+    assert!(html.contains(">40s<"));
+    assert!(tick_under_pill(50.0, Some(52.0), 60.0));
+    assert!(!tick_under_pill(40.0, Some(52.0), 60.0));
+    assert!(!tick_under_pill(50.0, None, 60.0));
+}
+
+#[test]
+fn finished_run_draws_neither_playhead_nor_time_pill() {
+    let html = render(finished_run);
+    assert_eq!(count(&html, "kit-rtr__playhead"), 0);
+    assert_eq!(count(&html, "kit-rtr__pill"), 0);
+}
+
+#[test]
+fn axis_sits_below_the_last_lane_and_each_note_sits_below_its_name() {
+    let html = render(refund_batch);
+    let courier = html.find(">Courier<").expect("last row name");
+    let axis = html.find("class=\"kit-rtr__axis\"").expect("axis");
+    assert!(courier < axis);
+    let who = html.find("class=\"kit-rtr__who\"").expect("row name");
+    let note = html.find("class=\"kit-rtr__note\"").expect("row note");
+    assert!(who < note);
 }

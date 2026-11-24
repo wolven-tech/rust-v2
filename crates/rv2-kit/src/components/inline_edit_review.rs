@@ -6,11 +6,14 @@
 //! Design choice: the diff is word-level LCS. Each token carries the whitespace before its word, so
 //! segment text concatenates back to the exact source text, and punctuation stays attached to its word.
 //! Design choice: undo restores the most recent decision. A pending change keeps the original words.
+//! Design choice: the popover hangs from the end of its change when the change sits past the midpoint
+//! of the text, so it stays inside the panel.
 //! Browser checks: accepting shrinks the removed words away; the popover follows the highlighted change;
 //! the arrows hide below narrow widths and Tab still reaches every pending change.
 
 use dioxus::prelude::*;
 
+use crate::agents::single_run_status_card::focus_by_id;
 use crate::internal::{KIT_CSS, next_id};
 
 const CSS: Asset = asset!("/assets/inline-edit-review.css");
@@ -151,6 +154,63 @@ pub fn pending_count(decisions: &[Option<Decision>]) -> usize {
         .count()
 }
 
+/// The next pending change after `current`, or the first (step forward) or last (step back) when
+/// nothing is highlighted. Decided changes are skipped and the search wraps.
+pub fn next_pending(
+    decisions: &[Option<Decision>],
+    current: Option<usize>,
+    step: isize,
+) -> Option<usize> {
+    let pending: Vec<usize> = decisions
+        .iter()
+        .enumerate()
+        .filter(|(_, decision)| decision.is_none())
+        .map(|(index, _)| index)
+        .collect();
+    let (first, last) = (*pending.first()?, *pending.last()?);
+    let forward = step >= 0;
+    Some(match current {
+        None if forward => first,
+        None => last,
+        Some(at) if forward => pending.iter().copied().find(|&i| i > at).unwrap_or(first),
+        Some(at) => pending
+            .iter()
+            .rev()
+            .copied()
+            .find(|&i| i < at)
+            .unwrap_or(last),
+    })
+}
+
+/// Accessible name of a change: its position, the words it replaces, and the keys that decide it.
+pub fn change_label(index: usize, total: usize, removed: &str, inserted: &str) -> String {
+    let (removed, inserted) = (removed.trim(), inserted.trim());
+    let what = match (removed.is_empty(), inserted.is_empty()) {
+        (false, false) => format!("replaces “{removed}” with “{inserted}”"),
+        (false, true) => format!("removes “{removed}”"),
+        _ => format!("adds “{inserted}”"),
+    };
+    format!(
+        "Change {} of {total}: {what}. Y accepts, N rejects.",
+        index + 1
+    )
+}
+
+/// Whether the popover of change `change` hangs from the end of the change: the change sits past the
+/// midpoint of the text, so a popover that hangs from its start would cross the panel's right edge.
+pub fn popover_hangs_from_end(segments: &[Segment], change: usize) -> bool {
+    let Some(&at) = change_indices(segments).get(change) else {
+        return false;
+    };
+    let weight = |segment: &Segment| match segment {
+        Segment::Same(text) => text.chars().count(),
+        Segment::Change { removed, inserted } => removed.chars().count() + inserted.chars().count(),
+    };
+    let total: usize = segments.iter().map(weight).sum();
+    let before: usize = segments[..at].iter().map(weight).sum();
+    before * 2 > total
+}
+
 /// Inline diff review over `before_text` and `after_text`, or over precomputed `segments`.
 #[component]
 pub fn InlineEditReview(
@@ -170,19 +230,27 @@ pub fn InlineEditReview(
     let mut highlight = use_signal(|| Option::<usize>::None);
     let mut history = use_signal(Vec::<(usize, Option<Decision>)>::new);
     let mut announce = use_signal(String::new);
+    let mut focus_request = use_signal(|| None::<String>);
+    use_effect(move || {
+        if let Some(target) = focus_request() {
+            focus_request.set(None);
+            focus_by_id(&target);
+        }
+    });
+    let undo_reject = format!("{id}-undo");
+    let undo_accept = undo_reject.clone();
 
     let current = decisions();
     let pending = pending_count(&current);
-    let _text_now = apply_decisions(&segments, &current);
     let class = if extra_class.is_empty() {
         "kit-ier".to_string()
     } else {
         format!("kit-ier {extra_class}")
     };
-    let toolbar_text = if pending == 0 {
-        "All changes reviewed".to_string()
+    let review_words = if pending == 0 {
+        "All changes reviewed"
     } else {
-        format!("{pending} pending")
+        "pending changes"
     };
     let review_state = if pending == 0 { "reviewed" } else { "pending" };
 
@@ -217,13 +285,32 @@ pub fn InlineEditReview(
             }
         }
     };
-    let decide_key = decide.clone();
     let mut decide_all_accept = decide.clone();
     let mut decide_all_reject = decide.clone();
+
+    // Keyboard and popover decisions move focus on: to the next pending change, or to Undo when none remain.
+    let advance = {
+        let mut decide = decide.clone();
+        let id = id.clone();
+        move |change: usize, next: Decision| {
+            decide(change, Some(next));
+            match next_pending(&decisions(), Some(change), 1) {
+                Some(target) => {
+                    highlight.set(Some(target));
+                    focus_request.set(Some(format!("{id}-h{target}")));
+                }
+                None => {
+                    highlight.set(None);
+                    focus_request.set(Some(format!("{id}-undo")));
+                }
+            }
+        }
+    };
 
     let undo = {
         let on_change = on_text_change.clone();
         let segments = segments.clone();
+        let id = id.clone();
         move |_: ()| {
             let Some((change, previous)) = history.with_mut(|list| list.pop()) else {
                 return;
@@ -233,8 +320,12 @@ pub fn InlineEditReview(
             let text = apply_decisions(&segments, &updated);
             decisions.set(updated);
             announce.set("Undone.".to_string());
+            highlight.set(Some(change));
             if let Some(h) = &on_change {
                 h.call(text);
+            }
+            if history().is_empty() {
+                focus_request.set(Some(format!("{id}-h{change}")));
             }
         }
     };
@@ -242,23 +333,13 @@ pub fn InlineEditReview(
     let mut undo_button = undo.clone();
 
     let step = move |step: isize| {
-        let count = change_count;
-        if count == 0 {
-            return;
+        if let Some(next) = next_pending(&decisions(), highlight(), step) {
+            highlight.set(Some(next));
         }
-        let next = match highlight() {
-            Some(at) => (at as isize + step).rem_euclid(count as isize) as usize,
-            None => {
-                if step >= 0 {
-                    0
-                } else {
-                    count - 1
-                }
-            }
-        };
-        highlight.set(Some(next));
     };
     let mut step_key = step;
+    let mut step_prev = step;
+    let mut step_next = step;
 
     let nodes: Vec<Element> = segments
         .iter()
@@ -277,43 +358,48 @@ pub fn InlineEditReview(
                     None => "pending",
                 };
                 let active = highlight() == Some(change);
-                let label = format!(
-                    "Change {} of {}: replace \"{}\" with \"{}\". Y accepts, N rejects.",
-                    change + 1,
-                    change_count,
-                    removed.trim(),
-                    inserted.trim()
-                );
+                let label = change_label(change, change_count, removed, inserted);
                 let key = format!("{id}-c{index}");
-                let mut accept_decide = decide_key.clone();
-                let mut reject_decide = decide_key.clone();
+                let hit = format!("{id}-h{change}");
                 let show_removed = !removed.is_empty() && state != Some(Decision::Accepted);
                 let show_inserted = !inserted.is_empty() && state != Some(Decision::Rejected);
                 let spaced = show_removed && show_inserted;
+                let show_popover = active && state.is_none();
+                let side = if popover_hangs_from_end(&segments, change) {
+                    "end"
+                } else {
+                    "start"
+                };
+                let mut accept_click = advance.clone();
+                let mut reject_click = advance.clone();
+                let mut accept_key = advance.clone();
+                let mut reject_key = advance.clone();
                 rsx! {
                     span { key: "{key}", class: "kit-ier__change", "data-state": state_attr, "data-active": if active { "true" } else { "false" },
                         button {
+                            id: "{hit}",
                             r#type: "button",
                             class: "kit-ier__hit",
                             aria_label: "{label}",
                             onclick: move |_| highlight.set(Some(change)),
+                            onfocus: move |_| highlight.set(Some(change)),
                             onkeydown: move |event: KeyboardEvent| {
                                 match event.key() {
                                     Key::Character(ref c) if c.eq_ignore_ascii_case("y") => {
                                         event.prevent_default();
-                                        accept_decide(change, Some(Decision::Accepted));
+                                        accept_key(change, Decision::Accepted);
                                     }
                                     Key::Enter => {
                                         event.prevent_default();
-                                        accept_decide(change, Some(Decision::Accepted));
+                                        accept_key(change, Decision::Accepted);
                                     }
                                     Key::Character(ref c) if c.eq_ignore_ascii_case("n") => {
                                         event.prevent_default();
-                                        reject_decide(change, Some(Decision::Rejected));
+                                        reject_key(change, Decision::Rejected);
                                     }
                                     Key::Backspace => {
                                         event.prevent_default();
-                                        reject_decide(change, Some(Decision::Rejected));
+                                        reject_key(change, Decision::Rejected);
                                     }
                                     _ => {}
                                 }
@@ -326,6 +412,24 @@ pub fn InlineEditReview(
                             }
                             if show_inserted {
                                 ins { class: "kit-ier__inserted", "{inserted}" }
+                            }
+                        }
+                        if show_popover {
+                            span { class: "kit-ier__pop", "data-side": side,
+                                button {
+                                    r#type: "button",
+                                    class: "kit-ier__accept",
+                                    onclick: move |_| accept_click(change, Decision::Accepted),
+                                    "Accept"
+                                    span { class: "kit-ier__key", "aria-hidden": "true", "Y" }
+                                }
+                                button {
+                                    r#type: "button",
+                                    class: "kit-ier__reject",
+                                    onclick: move |_| reject_click(change, Decision::Rejected),
+                                    "Reject"
+                                    span { class: "kit-ier__key", "aria-hidden": "true", "N" }
+                                }
                             }
                         }
                     }
@@ -361,7 +465,32 @@ pub fn InlineEditReview(
                 }
             }
             div { class: "kit-ier__toolbar", role: "toolbar", aria_label: "Review changes",
-                span { class: "kit-ier__count", "{toolbar_text}" }
+                span { class: "kit-ier__count",
+                    span { class: "kit-ier__badge", "{pending}" }
+                    "{review_words}"
+                }
+                button {
+                    r#type: "button",
+                    id: "{id}-prev",
+                    class: "kit-ier__arrow",
+                    "aria-label": "Previous change",
+                    disabled: pending == 0,
+                    onclick: move |_| step_prev(-1),
+                    svg { view_box: "0 0 16 16", width: "14", height: "14", fill: "none", stroke: "currentColor", "aria-hidden": "true",
+                        path { d: "M10 4 6 8l4 4" }
+                    }
+                }
+                button {
+                    r#type: "button",
+                    id: "{id}-next",
+                    class: "kit-ier__arrow",
+                    "aria-label": "Next change",
+                    disabled: pending == 0,
+                    onclick: move |_| step_next(1),
+                    svg { view_box: "0 0 16 16", width: "14", height: "14", fill: "none", stroke: "currentColor", "aria-hidden": "true",
+                        path { d: "M6 4l4 4-4 4" }
+                    }
+                }
                 button {
                     r#type: "button",
                     class: "kit-ier__reject-all",
@@ -372,6 +501,7 @@ pub fn InlineEditReview(
                                 decide_all_reject(change, Some(Decision::Rejected));
                             }
                         }
+                        focus_request.set(Some(undo_reject.clone()));
                     },
                     "Reject all"
                 }
@@ -385,15 +515,18 @@ pub fn InlineEditReview(
                                 decide_all_accept(change, Some(Decision::Accepted));
                             }
                         }
+                        focus_request.set(Some(undo_accept.clone()));
                     },
                     "Accept all"
                 }
-                button {
-                    r#type: "button",
-                    class: "kit-ier__undo",
-                    disabled: history().is_empty(),
-                    onclick: move |_| undo_button(()),
-                    "Undo"
+                if !history().is_empty() {
+                    button {
+                        r#type: "button",
+                        id: "{id}-undo",
+                        class: "kit-ier__undo",
+                        onclick: move |_| undo_button(()),
+                        "Undo"
+                    }
                 }
             }
             p { class: "kit-ier__live", role: "status", "aria-live": "polite", "{announce}" }

@@ -109,3 +109,27 @@ Heading bar, time axis with tick labels, row list with label block and plot lane
 13. The in-flight Auditor step ends at the clock point and carries the live marker; no step extends past the clock. The transfer is drawn because the clock has passed its time.
 14. Scout's tool step shows `fetch_index` beneath its line; the two reasoning steps show no tool name.
 15. Pointer or focus on the Drafter step opens its card, naming who, what, start and duration. Moving focus to the Drafter-to-Auditor transfer replaces that card with the transfer's card.
+
+## Amendment 4: structure and demo
+
+**Replaces:** the placement of the time axis in base Anatomy item 2 and in amendment 3's parts list (now under the last lane, not across the top), and the placement of the note in base Anatomy item 3 (now beneath the row name, not beside it). Amendment 3's gallery demo and checks 11 to 15 stand. Base checks 1 to 10 stand.
+
+**Archetype:** as amendment 3, with a playhead line and a time pill added to the axis.
+
+**Parts, top to bottom:**
+- Heading bar: run name, "5 rows · 3 steps", and the clock figure at the right.
+- Five rows, each with a name block (the name, with a present-tense note beneath it) and a plot lane.
+- Time axis under the last lane, with tick labels at the spacing the base spec sets.
+- Playhead: one vertical line at the clock position. It runs from the top of the first lane down to the axis and crosses every lane. It is drawn only while the clock is set.
+- Time pill: a small filled label on the axis, centred on the playhead, reading the clock in the same format as the heading clock figure. A tick label that would sit under the pill is not drawn.
+- Steps and transfers: drawn only up to the clock.
+- Card: closed at rest.
+
+**Gallery demo (our data):** the amendment 3 demo, unchanged: run "Refund batch", clock at 52 seconds, axis length 60 seconds. The heading clock figure and the time pill both read 0:52.
+
+**Acceptance checks (continued):**
+16. At rest the gallery draws one playhead line that crosses all five lanes at the 52-second point of the 60-second axis.
+17. The time pill sits on the axis, centred on the playhead, and reads 0:52. The heading clock figure reads the same.
+18. In the gallery the 0:50 tick label is not drawn, because the pill covers its position.
+19. A finished run, with the clock absent, draws neither a playhead nor a time pill.
+20. The axis lies below the last lane. Each row's note lies beneath its name, not beside it.
