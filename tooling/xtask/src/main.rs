@@ -25,6 +25,8 @@
 //! - `cargo xtask stage-web` — validate and stage an SSG release bundle.
 //! - `cargo xtask stage-app` — validate and stage the CSR application bundle.
 //! - `cargo xtask indexnow` — notify IndexNow after a successful deploy.
+//! - `cargo xtask protection [--apply]` — compare `main`'s branch protection
+//!   with `.github/branch-protection.json`, or apply it.
 //!
 //! Not covered here: `cargo deny` (its own job, needs a separate tool install)
 //! and the release bundle (slow, and `meta build` owns it).
@@ -33,6 +35,7 @@ mod discovery;
 mod kit_colours;
 mod kit_eval;
 mod kit_prefixes;
+mod protection;
 mod styles;
 
 use std::process::{Command, Stdio};
@@ -62,12 +65,15 @@ fn main() -> std::process::ExitCode {
         Some("stage-web") => discovery::stage(),
         Some("stage-app") => discovery::stage_app(),
         Some("indexnow") => discovery::notify_indexnow(),
+        Some("protection") => styles::workspace_root().and_then(|root| {
+            protection::run(&root, std::env::args().nth(2).as_deref() == Some("--apply"))
+        }),
         other => {
             if let Some(name) = other {
                 eprintln!("unknown task: {name}\n");
             }
             eprintln!(
-                "usage: cargo xtask <ci|styles|kit-colours|kit-prefixes|kit-eval [--write]|live|core|stage-web|stage-app|indexnow>"
+                "usage: cargo xtask <ci|styles|kit-colours|kit-prefixes|kit-eval [--write]|live|core|stage-web|stage-app|indexnow|protection [--apply]>"
             );
             return std::process::ExitCode::FAILURE;
         }
