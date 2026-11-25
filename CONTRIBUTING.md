@@ -43,6 +43,7 @@ no way to tell which won.
 | Kit code reaches the DOM through web-sys, not `document::eval`, so it runs under `script-src 'self' 'wasm-unsafe-eval'`; the eval calls left may only fall | `cargo xtask ci`, step `the kit runs without eval` (`tooling/xtask/kit-eval-ratchet.txt`; `cargo xtask kit-eval --write` lowers it) |
 | A background job is idempotent and safe to skip | Review. `rv2-jobs` runs **every job on every instance** — a job whose second concurrent execution is a defect does not belong there |
 | A metric label has bounded cardinality | Review. Label by matched route, never by path or entity id |
+| `main` requires `check`, `supply chain` and `live Core`, admins included, and takes no force push or deletion | GitHub branch protection, kept as data in `.github/branch-protection.json`. `cargo xtask protection` reports drift; an admin applies the file with `cargo xtask protection --apply`. A test fails when a required check names no job in `ci.yml`, since a renamed job would block every PR |
 
 ## Adding a dependency
 

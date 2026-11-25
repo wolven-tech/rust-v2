@@ -190,11 +190,15 @@ mobile menu, because the tail is hidden below 48rem.
 
 ## Gates
 
-### 8. `main` had no branch protection ✅
+### 8. `main` had no branch protection ⏳
 
 The protection API answered 404 "Branch not protected", and the repository has
-no git hooks, so every check was advisory. Protection with the three CI checks
-required is set once this document's PR shows their names.
+no git hooks, so every check was advisory. It still answered 404 on 2026-11-24.
+
+The settings are now versioned in `.github/branch-protection.json`: the three
+CI checks required, admins included, no force push or deletion. `cargo xtask
+protection` compares GitHub with the file. Open until an admin runs
+`cargo xtask protection --apply` and the compare passes.
 
 ### 9. CI and the local gate differed ✅
 
