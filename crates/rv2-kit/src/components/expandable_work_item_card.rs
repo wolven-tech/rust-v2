@@ -13,7 +13,7 @@
 
 use dioxus::prelude::*;
 
-use crate::internal::{KIT_CSS, class_list, next_id};
+use crate::internal::{KIT_CSS, class_list, focus_id, next_id};
 
 const CSS: Asset = asset!("/assets/expandable-work-item-card.css");
 
@@ -154,10 +154,6 @@ pub fn initials(name: &str) -> String {
         .filter_map(|word| word.chars().next())
         .flat_map(|c| c.to_uppercase())
         .collect()
-}
-
-fn focus_id(id: &str) {
-    document::eval(&format!("document.getElementById({id:?})?.focus();"));
 }
 
 /// A work item card that opens to reveal its subtasks, members and status.

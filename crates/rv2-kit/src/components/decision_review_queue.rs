@@ -215,9 +215,7 @@ pub fn diff_lines(diff: &str) -> Vec<(char, String)> {
 
 /// Opens the flag after the focused one and moves focus to its summary.
 fn focus_next_flag(root: &str) {
-    document::eval(&format!(
-        "const flags = [...document.querySelectorAll('#{root} .kit-drq__flag > summary')]; if (flags.length) {{ const at = flags.indexOf(document.activeElement); const next = flags[(at + 1) % flags.length]; next.parentElement.open = true; next.focus(); }}"
-    ));
+    crate::internal::focus_next_summary(root, ".kit-drq__flag > summary");
 }
 
 /// Progress: decided before this session plus decided here, out of that plus what is still queued.
