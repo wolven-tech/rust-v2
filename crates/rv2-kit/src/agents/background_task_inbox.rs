@@ -3,8 +3,10 @@
 //! filter tabs.
 //!
 //! Design choice: the clock is `clock_ms` when the host supplies one, else the
-//! milliseconds since mount. `started_at` is read on that clock. `SystemTime`
-//! is not used because it panics on `wasm32-unknown-unknown`.
+//! browser's epoch clock (`Date.now()`), so a `started_at` in epoch
+//! milliseconds shows its true age. `SystemTime` is not used because it panics
+//! on `wasm32-unknown-unknown`. With no browser and no `clock_ms` (SSR, tests)
+//! the clock is 0.
 //! Design choice: a running job without `started_at` counts from mount.
 //! Design choice: the container width is measured. Below 720 px the list replaces
 //! the board and the layout switch is not rendered, so no card is in the DOM twice.
@@ -17,7 +19,9 @@
 use dioxus::prelude::*;
 
 use crate::agents::delegation_card_tree::accent_hue;
-use crate::internal::{KIT_CSS, class_list, focus_after_frame, next_id, sleep, use_element_width};
+use crate::internal::{
+    KIT_CSS, class_list, focus_after_frame, next_id, use_element_width, use_now_ms,
+};
 
 /// Below this container width the board is replaced by the list and the switch is hidden.
 const NARROW_WIDTH_PX: f64 = 720.0;
@@ -302,20 +306,17 @@ pub fn BackgroundTaskInbox(
     let mut overrides = use_signal(Vec::<StageOverride>::new);
     let mut open = use_signal(Vec::<String>::new);
     let mut filter = use_signal(|| InboxFilter::All);
-    let mut local_ms = use_signal(|| 0u64);
-    use_future(move || async move {
-        loop {
-            sleep(1000).await;
-            local_ms += 1000;
-        }
-    });
-
-    let now = clock_ms.unwrap_or_else(|| local_ms());
+    let now = use_now_ms(clock_ms, 1000);
+    let mounted_at = use_hook(|| now);
     let current = overrides();
     let rows: Vec<InboxRow> = jobs
         .iter()
         .map(|job| {
-            let (stage, seconds) = resolve(job, &current, now);
+            let anchored = Job {
+                started_at: job.started_at.or(Some(mounted_at)),
+                ..job.clone()
+            };
+            let (stage, seconds) = resolve(&anchored, &current, now);
             InboxRow {
                 job: job.clone(),
                 stage,
@@ -352,7 +353,11 @@ pub fn BackgroundTaskInbox(
         match handler {
             Some(handler) => handler.call(job),
             None => {
-                let (_, seconds) = resolve(&job, &overrides.peek(), now);
+                let anchored = Job {
+                    started_at: job.started_at.or(Some(mounted_at)),
+                    ..job.clone()
+                };
+                let (_, seconds) = resolve(&anchored, &overrides.peek(), now);
                 if let Some(next) = override_for(&job.id, seconds, action, now) {
                     overrides.with_mut(|list| {
                         list.retain(|o| o.id != next.id);

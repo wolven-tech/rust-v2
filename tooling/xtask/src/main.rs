@@ -18,6 +18,8 @@
 //! - `cargo xtask styles` — compile each app's Tailwind stylesheet.
 //! - `cargo xtask kit-colours` — the rv2-kit stylesheet colour scan alone.
 //! - `cargo xtask kit-prefixes` — the rv2-kit class-block ownership scan alone.
+//! - `cargo xtask kit-eval [--write]` — the kit's `document::eval` ratchet alone;
+//!   `--write` lowers it to today's counts.
 //! - `cargo xtask live` — run the tests that need a live Core.
 //! - `cargo xtask core` — run AllSource Core with the dev settings.
 //! - `cargo xtask stage-web` — validate and stage an SSG release bundle.
@@ -29,6 +31,7 @@
 
 mod discovery;
 mod kit_colours;
+mod kit_eval;
 mod kit_prefixes;
 mod styles;
 
@@ -47,6 +50,13 @@ fn main() -> std::process::ExitCode {
         Some("kit-prefixes") => {
             styles::workspace_root().and_then(|root| kit_prefixes::check(&root))
         }
+        Some("kit-eval") => styles::workspace_root().and_then(|root| {
+            if std::env::args().nth(2).as_deref() == Some("--write") {
+                kit_eval::write(&root)
+            } else {
+                kit_eval::check(&root)
+            }
+        }),
         Some("live") => live(),
         Some("core") => core(),
         Some("stage-web") => discovery::stage(),
@@ -57,7 +67,7 @@ fn main() -> std::process::ExitCode {
                 eprintln!("unknown task: {name}\n");
             }
             eprintln!(
-                "usage: cargo xtask <ci|styles|kit-colours|kit-prefixes|live|core|stage-web|stage-app|indexnow>"
+                "usage: cargo xtask <ci|styles|kit-colours|kit-prefixes|kit-eval [--write]|live|core|stage-web|stage-app|indexnow>"
             );
             return std::process::ExitCode::FAILURE;
         }
@@ -132,6 +142,9 @@ fn ci() -> Fallible {
 
     step("rv2-kit class blocks are owned once");
     kit_prefixes::check(&styles::workspace_root()?)?;
+
+    step("the kit runs without eval");
+    kit_eval::check(&styles::workspace_root()?)?;
 
     step("apps speak the kit");
     rv2_isa::isa::check(&styles::workspace_root()?)?;
