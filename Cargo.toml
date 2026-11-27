@@ -81,6 +81,11 @@ tokio = { version = "1.53", features = [
 ] }
 tower = "0.5"
 tower-http = { version = "0.7.0", features = ["cors", "trace"] }
+# The OAuth pending-origin cookie (apps/api `infrastructure::auth::oauth_glue`):
+# HMAC-SHA256 over a base64url payload. `hmac` 0.13 pairs with the sha2 0.11 above.
+base64 = "0.22"
+hmac = "0.13"
+url = "2"
 
 # ── Product analytics & email (server-only) ──────────────────────────────────
 # Both are OFFICIAL SDKs, which is why they are dependencies rather than

@@ -523,9 +523,9 @@
         }
       ],
       "example": {
-        "file": "apps/web/src/main.rs",
-        "line": 238,
-        "code": "LinkButton { href: \"/#pricing\", size: Size::Large, \"Get started\" }"
+        "file": "apps/app/src/views.rs",
+        "line": 359,
+        "code": "LinkButton {\n    href: format!(\"{}/auth/oauth/google/start?return_to=/\", rv2_client::api_base()),\n    variant: Variant::Outline,\n    class: \"w-full\",\n    \"Continue with Google\"\n}"
       },
       "guarantees": [
         {

@@ -31,7 +31,7 @@ not verify are in [§10 Open Questions](#102-open-questions), never patched over
 | D15 | Read-model rebuild | Rebuild = **rename the worker's durable consumer id** (`.name("posts_v2")`), run old + new in parallel, cut reads, delete old state | Core keys the cursor server-side by consumer id, so a new id replays from zero. No manual cursor surgery. |
 | D16 | Client HTTP from WASM | `gloo-net 0.7` with `RequestCredentials::Include`; **not** `reqwest` | getformlab's proven `wasm32` path; `reqwest` on wasm drags a much larger tree into the bundle. |
 | D17 | Session transport | HttpOnly cookie issued by better-auth on `apps/api`; Dioxus sends `credentials: include`; Axum validates per-request | Matches `getformlab:apps/api/src/infrastructure/auth/middleware.rs`, which accepts cookie *or* `Bearer`. |
-| D18 | OAuth | Google, via `better_auth::plugins::oauth::OAuthPlugin`, callback landing on `apps/api`, signed pending-origin cookie | getformlab's ADR-006 pattern is the reference. |
+| D18 | OAuth | Google, via `better_auth::plugins::oauth::OAuthPlugin`, callback landing on `apps/api`, signed pending-origin cookie (`__Host-rv2_oauth_pending`). Linking to an existing account by email only when both sides report the email verified; otherwise refused and undone. Password accounts stay unlinked until email verification ships. | getformlab's ADR-006 pattern is the reference. Design: `docs/plans/2026-11-26-google-sign-in-design.md`. Setup: `docs/guides/google-sign-in-setup.md`. |
 | D19 | Not event-sourced | Rate-limit counters, session-validation cache, blob/media bytes, full-text/analytics indexes, and **uniqueness constraints** | AllSource has no unique index and no cross-entity transaction. Stated honestly in [§9](#9-what-is-not-event-sourced). |
 | D20 | TS packages | `logger`→`tracing`; `kv`→allframe `rate-limit`; `email`→`tera`; `react-query`→`use_resource`; `ui`→`rv2-ui` (Dioxus); `analytics`→PostHog JS snippet + AllSource events; `jobs`→**deleted** | Detail and per-package reasoning in [§8.4](#84-fate-of-the-typescript-support-packages). |
 
@@ -1046,6 +1046,15 @@ Google only at launch
 - `redirect_uri` registered in Google Cloud Console must equal `{base_url}/callback/google`,
   where `base_url` **includes the `/auth` segment** — the plugin appends only
   `/callback/{provider}`.
+- **As built** (design: `docs/plans/2026-11-26-google-sign-in-design.md`): the cookie is named
+  `__Host-rv2_oauth_pending`, not `oauth_origin`. The `__Host-` prefix stops a sibling subdomain
+  from setting or shadowing it, and a callback carrying two values is refused. It is verified with `hmac` (SHA-256, `verify_slice`,
+  constant-time) and `subtle` is not used. The redirect URI is derived from `AUTH_BASE_URL`, not
+  set separately. No nonce: identity comes from userinfo, and the id_token is stored unvalidated.
+  Google links by email to an existing account only when both sides report the email verified:
+  Google's `email_verified`, and the existing account's. Otherwise the sign-in is refused and
+  the link is undone (design, Amendment 1, revised 2026-11-27). Password accounts stay unlinked
+  until email verification ships.
 
 **Role assignment.** better-auth stores `user.role` as a string;
 getformlab parses it as a comma-separated *set* (`Role::parse_set("coach,trainee")`). rust-v2
@@ -1785,7 +1794,6 @@ silent one.
 
 | Gap | Where |
 |---|---|
-| Google OAuth (needs the HMAC-signed pending-origin cookie; without it the callback is an open redirect) | `apps/api/src/infrastructure/auth/better.rs` |
 | The ≤30s session cache for R5 | `apps/api/src/infrastructure/auth/middleware.rs` |
 | Transactional email (`tera`) | not present |
 | i18n — English only, OQ-5 | not present |

@@ -24,9 +24,14 @@ use std::sync::Arc;
 
 use better_auth::{
     AuthBuilder, AuthConfig, BetterAuth, core_paths,
-    plugins::{EmailPasswordPlugin, SessionManagementPlugin},
+    plugins::{
+        EmailPasswordPlugin, OAuthPlugin, SessionManagementPlugin,
+        oauth::{OAuthProvider, OAuthUserInfo},
+    },
 };
-use rv2_shared::ServerConfig;
+use rv2_shared::{GoogleOAuthConfig, ServerConfig};
+
+use crate::infrastructure::auth::oauth_glue::normalise_email;
 
 #[cfg(feature = "allsource-auth")]
 pub type ApiAuthDb = better_auth_allsource::AllsourceAuthAdapter;
@@ -48,6 +53,24 @@ const UNMOUNTED_USER_ROUTES: [&str; 4] = [
     core_paths::CHANGE_EMAIL,
     core_paths::DELETE_USER,
     core_paths::DELETE_USER_CALLBACK,
+];
+
+/// The OAuth plugin's token routes. They are mounted by the plugin and would
+/// otherwise let a session read or refresh the stored provider tokens; refresh
+/// is out of scope for this change (design, Scope).
+const UNMOUNTED_OAUTH_ROUTES: [&str; 2] = ["/get-access-token", "/refresh-token"];
+
+/// Session-management and username routes this app does not use. The client reads
+/// the session from `/me` and signs out with `/auth/sign-out`, so each of these is
+/// a door with no caller. The username route is a second password sign-in that the
+/// sign-in gate does not cover. Disabled by path, so every method answers 404.
+const UNMOUNTED_SESSION_ROUTES: [&str; 6] = [
+    "/get-session",
+    "/list-sessions",
+    "/revoke-session",
+    "/revoke-sessions",
+    "/revoke-other-sessions",
+    "/sign-in/username",
 ];
 
 #[cfg(feature = "allsource-auth")]
@@ -80,7 +103,11 @@ pub async fn build_auth(config: &ServerConfig) -> Result<Arc<ApiBetterAuth>, Str
         .base_url(&config.auth_base_url)
         .password_min_length(8);
 
-    for path in UNMOUNTED_USER_ROUTES {
+    for path in UNMOUNTED_USER_ROUTES
+        .into_iter()
+        .chain(UNMOUNTED_OAUTH_ROUTES)
+        .chain(UNMOUNTED_SESSION_ROUTES)
+    {
         auth_config = auth_config.disabled_path(path);
     }
 
@@ -88,32 +115,23 @@ pub async fn build_auth(config: &ServerConfig) -> Result<Arc<ApiBetterAuth>, Str
         auth_config = auth_config.trusted_origin(origin.clone());
     }
 
-    let builder = AuthBuilder::new(auth_config)
+    // Linking by email is on for Google only. The library links without checking the
+    // existing account's verification, so oauth_routes refuses an unverified account
+    // after the callback and undoes the link (design, Amendment 1).
+    auth_config.account.account_linking.enabled = true;
+    auth_config.account.account_linking.trusted_providers = vec!["google".into()];
+    // A refused link must leave the account's profile as it was.
+    auth_config.account.account_linking.update_user_info_on_link = false;
+    auth_config.account.encrypt_oauth_tokens = true;
+
+    let mut builder = AuthBuilder::new(auth_config)
         .database(adapter(config))
         .plugin(EmailPasswordPlugin::new().enable_signup(true))
         .plugin(SessionManagementPlugin::new());
 
-    // ── SEAM: OAuth ──────────────────────────────────────────────────────────
-    // §5.4 specifies Google via `OAuthPlugin`, with the callback landing on
-    // `apps/api` and the return origin bound in a short-TTL HMAC-signed
-    // `oauth_origin` cookie (getformlab's ADR-006 pattern). That signed-cookie
-    // glue is what makes a multi-origin OAuth flow safe rather than an open
-    // redirect, and it is **not implemented in this scaffold**.
-    //
-    // This is a marked gap, not a silent one: credential auth below is complete
-    // end to end. Registering the plugin without the origin-binding glue would
-    // ship a sign-in button that either fails at the callback or redirects
-    // anywhere an attacker names — strictly worse than not offering it.
-    //
-    // To close it: add `hmac` + `subtle`, port
-    // `getformlab:apps/api/src/infrastructure/auth/oauth_glue.rs`, then
-    // `.plugin(OAuthPlugin::new().add_provider("google",
-    //   OAuthProvider::google(&cfg.client_id, &cfg.client_secret)))`.
-    if config.google_oauth.is_some() {
-        tracing::warn!(
-            "GOOGLE_CLIENT_ID is set but the OAuth plugin is not wired in this build; \
-             see the SEAM comment in infrastructure/auth/better.rs"
-        );
+    if let Some(google) = &config.google_oauth {
+        builder =
+            builder.plugin(OAuthPlugin::new().add_provider("google", google_provider(google)));
     }
 
     builder
@@ -121,6 +139,30 @@ pub async fn build_auth(config: &ServerConfig) -> Result<Arc<ApiBetterAuth>, Str
         .await
         .map(Arc::new)
         .map_err(|e| format!("better-auth rejected the configuration: {e}"))
+}
+
+/// Google with the endpoints from configuration and the verified-email rule.
+fn google_provider(google: &GoogleOAuthConfig) -> OAuthProvider {
+    let mut provider = OAuthProvider::google(&google.client_id, &google.client_secret);
+    provider.auth_url = google.endpoints.auth_url.clone();
+    provider.token_url = google.endpoints.token_url.clone();
+    provider.user_info_url = google.endpoints.user_info_url.clone();
+    provider.map_user_info = verified_google_user;
+    provider
+}
+
+/// Refuses an address Google has not verified, rather than creating an account under it.
+fn verified_google_user(user: serde_json::Value) -> Result<OAuthUserInfo, String> {
+    if user["email_verified"].as_bool() != Some(true) {
+        return Err("Google reports the email as unverified".into());
+    }
+    Ok(OAuthUserInfo {
+        id: user["sub"].as_str().ok_or("missing sub")?.to_string(),
+        email: normalise_email(user["email"].as_str().ok_or("missing email")?),
+        name: user["name"].as_str().map(String::from),
+        image: user["picture"].as_str().map(String::from),
+        email_verified: true,
+    })
 }
 
 #[cfg(test)]
@@ -138,7 +180,32 @@ mod tests {
             cors_origins: vec!["http://localhost:4402".into()],
             trusted_proxy_hops: 0,
             google_oauth: None,
+            oauth_flow: None,
         }
+    }
+
+    #[tokio::test]
+    async fn google_registers_the_oauth_plugin_with_linking_for_google_only() {
+        let mut config = config();
+        config.google_oauth = Some(GoogleOAuthConfig {
+            client_id: "client".into(),
+            client_secret: "secret".into(),
+            endpoints: rv2_shared::OAuthEndpoints::google(),
+        });
+        let auth = build_auth(&config).await.expect("auth builds");
+        assert!(auth.plugin_names().contains(&"oauth"));
+        assert!(auth.config().account.account_linking.enabled);
+        assert_eq!(
+            auth.config().account.account_linking.trusted_providers,
+            vec!["google".to_string()]
+        );
+        assert!(auth.config().account.encrypt_oauth_tokens);
+    }
+
+    #[tokio::test]
+    async fn without_google_there_is_no_oauth_plugin() {
+        let auth = build_auth(&config()).await.expect("auth builds");
+        assert!(!auth.plugin_names().contains(&"oauth"));
     }
 
     #[tokio::test]
@@ -163,7 +230,11 @@ mod tests {
     #[tokio::test]
     async fn the_user_routes_that_write_role_or_email_are_not_mounted() {
         let auth = build_auth(&config()).await.unwrap();
-        for path in UNMOUNTED_USER_ROUTES {
+        for path in UNMOUNTED_USER_ROUTES
+            .into_iter()
+            .chain(UNMOUNTED_OAUTH_ROUTES)
+            .chain(UNMOUNTED_SESSION_ROUTES)
+        {
             let mut request = better_auth::AuthRequest::new(better_auth::HttpMethod::Post, path);
             request
                 .headers

@@ -123,10 +123,15 @@ client-side routing.
 | `disabled` | `bool` | `false` | Renders the link with no `href`. `pointer-events: none` alone, which is what the hand-written version did, stops a mouse and nothing else: the link stays in the tab order and Enter still follows it. An anchor without an `href` is not focusable and cannot be followed at all, which is what "disabled" has to mean. |
 | `children` | `Element` | — |  |
 
-Example, `apps/web/src/main.rs:238`:
+Example, `apps/app/src/views.rs:359`:
 
 ```rust
-LinkButton { href: "/#pricing", size: Size::Large, "Get started" }
+LinkButton {
+    href: format!("{}/auth/oauth/google/start?return_to=/", rv2_client::api_base()),
+    variant: Variant::Outline,
+    class: "w-full",
+    "Continue with Google"
+}
 ```
 
 Pinned by tests:

@@ -85,15 +85,23 @@ fn client_key<B>(request: &Request<B>, trusted_hops: usize) -> String {
         .unwrap_or_else(|| "unknown".to_string())
 }
 
+/// Spends one token from the caller's bucket. `false` when it is empty.
+pub fn within_limit<B>(state: &AppState, request: &Request<B>) -> bool {
+    let key = client_key(request, state.trusted_proxy_hops);
+    let allowed = state.rate_limiter.check(&key).is_ok();
+    if !allowed {
+        tracing::debug!(%key, "rate limited");
+    }
+    allowed
+}
+
 /// Axum middleware. Rejects with 429 when the bucket is empty.
 pub async fn layer(
     State(state): State<Arc<AppState>>,
     request: Request<axum::body::Body>,
     next: Next,
 ) -> Response {
-    let key = client_key(&request, state.trusted_proxy_hops);
-    if state.rate_limiter.check(&key).is_err() {
-        tracing::debug!(%key, "rate limited");
+    if !within_limit(&state, &request) {
         return ApiError::RateLimited.into_response();
     }
     next.run(request).await

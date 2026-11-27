@@ -8,6 +8,7 @@ use rv2_analytics::Analytics;
 use rv2_email::Mailer;
 use rv2_shared::ServerConfig;
 
+use crate::infrastructure::auth::oauth_routes::OAuthRuntime;
 use crate::infrastructure::auth::{ApiBetterAuth, build_auth};
 
 /// Everything a handler can reach.
@@ -19,6 +20,8 @@ pub struct AppState {
     /// [`Self::posts_handle`].
     pub posts: Option<ProjectionHandle<PostsReadModel>>,
     pub auth: Arc<ApiBetterAuth>,
+    /// `Some` when a sign-in provider is configured. See [`OAuthRuntime`].
+    pub oauth: Option<OAuthRuntime>,
     pub cors_origins: Vec<String>,
     /// Replaces rust-v1's `packages/kv` Upstash limiter (D20). Keyed by client
     /// ip; in-memory, because a rate-limit counter is explicitly *not* an event
@@ -37,6 +40,28 @@ pub struct AppState {
     /// `RESEND_API_KEY` was declared in its env schema and no code ever read it.
     /// Without the key this still renders, to the log.
     pub mailer: Mailer,
+    /// Where single-use claims and audit events are written. See [`Coordination`].
+    pub coordination: Coordination,
+    /// Failure switches for tests. Every field is `false` outside tests.
+    pub faults: Faults,
+}
+
+/// Where state that must hold across API instances is written.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Coordination {
+    /// AllSource Core. Single-use claims and audit events are shared by every instance.
+    Shared,
+    /// This process only. Safe for one instance and for tests; not across instances.
+    Local,
+}
+
+/// Failure switches, read on each use and flipped by tests while an app is running.
+/// Each one makes the named write fail as an outage would.
+#[derive(Debug, Default)]
+pub struct Faults {
+    pub audit_down: std::sync::atomic::AtomicBool,
+    pub claims_down: std::sync::atomic::AtomicBool,
+    pub settle_down: std::sync::atomic::AtomicBool,
 }
 
 impl AppState {
@@ -57,6 +82,18 @@ impl AppState {
 /// an auth stack that will not build. Both are configuration errors, so failing
 /// at boot is correct.
 pub async fn build_state(config: &ServerConfig) -> Result<AppState, String> {
+    build_state_with(config, Coordination::Shared).await
+}
+
+/// [`build_state`] with the coordination mode chosen by the caller.
+///
+/// # Errors
+///
+/// As [`build_state`].
+pub async fn build_state_with(
+    config: &ServerConfig,
+    coordination: Coordination,
+) -> Result<AppState, String> {
     let allsource = AllSource::new(
         &config.allsource_core_url,
         &config.allsource_query_url,
@@ -87,6 +124,7 @@ pub async fn build_state(config: &ServerConfig) -> Result<AppState, String> {
         allsource,
         posts,
         auth,
+        oauth: OAuthRuntime::from_config(config),
         cors_origins: config.cors_origins.clone(),
         // 60 rps sustained, 120 burst, per client ip. Generous enough that a
         // normal SPA never notices and tight enough to blunt a scripted abuse
@@ -95,5 +133,7 @@ pub async fn build_state(config: &ServerConfig) -> Result<AppState, String> {
         trusted_proxy_hops: config.trusted_proxy_hops,
         analytics,
         mailer,
+        coordination,
+        faults: Faults::default(),
     })
 }

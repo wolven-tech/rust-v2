@@ -8,6 +8,7 @@ const FAVICON: Asset = asset!("/assets/favicon.svg");
 
 fn main() {
     dioxus::logger::initialize_default();
+    app::capture_sign_in_search();
     dioxus::launch(App);
 }
 
