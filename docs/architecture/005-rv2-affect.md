@@ -3,7 +3,8 @@
 `crates/rv2-affect` is a Dioxus port of the 74 MIT-licensed items of
 [affectUI](https://www.affectui.com): 51 components, 4 motion effects, 2 page
 blocks and 17 illustrations. The licence notice is
-`crates/rv2-affect/LICENSE-affectui`.
+`crates/rv2-affect/LICENSE-affectui`. It also holds original components
+(AF9).
 
 ## Decisions
 
@@ -17,6 +18,7 @@ blocks and 17 illustrations. The licence notice is
 | AF6 | WASM-safe, and added to the `wasm32 boundary` check in `cargo xtask ci`. | Both apps compile to `wasm32-unknown-unknown`; a crate they may take must too. |
 | AF7 | affectUI's Pro items are rebuilt clean-room in a separate crate, `rv2-kit`, never ported. | Their source is licensed, and this repository is public under MIT. Function is not protected; code, CSS, art and copy are. A spec room reads only the public pages and writes functional specs (`docs/specs/rv2-kit/`) with no styling values, prose or art; a clean room implements from those specs alone, in rv2's own look. The specs are the provenance record. |
 | AF8 | The 51 components follow affectUI's **Clean** variant (`/r/<slug>-clean.json`); its Classic variant is not shipped. Class names carry the Clean prefixes (`ui-tglc`, `ui-buttonc`, …). Blocks, motion and illustrations keep the variant they were ported from. | Clean is what affectUI's own pages show by default, so a side-by-side with the site matches. Shipping both would double every stylesheet for a look nobody compares against. `rv2-bridge.css` overrides its mapped hooks under `[data-theme="dark"]`, because rv2's registers are light-only and Clean's ink would otherwise stay dark on dark. |
+| AF9 | `rv2-affect` also holds original free components. `StepRail` (`step_rail.rs`, `assets/step-rail.css`), the ritual step rail from the cos desktop app, is the first. They are licensed as the crate is (MIT, the workspace licence), not under `LICENSE-affectui`, and are not affectUI ports. They follow the crate's conventions: `ui-*` classes, colours from `--aui-*` hooks so `Rv2Theme` themes them, motion off under `prefers-reduced-motion: reduce`. | The rail was liked enough in cos to be wanted elsewhere, and this crate already carries the theming seam and the gallery it needs. A separate crate for one component would add a dependency line and a stylesheet bridge for no gain. Recording it here keeps the provenance plain: the port rules (AF3, AF8) do not apply to these items. |
 
 ## Not ported
 

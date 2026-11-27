@@ -28,7 +28,9 @@
 use dioxus::html::FileData;
 use dioxus::prelude::*;
 
-use crate::internal::{KIT_CSS, focus_after_frame, next_id, prefers_motion_script, use_now_ms};
+use crate::internal::{
+    KIT_CSS, focus_after_frame, next_id, prefers_motion_script, use_now_ms, use_pin_to_end,
+};
 
 const CSS: Asset = asset!("/assets/orchestrator-thread.css");
 
@@ -316,30 +318,9 @@ pub fn OrchestratorThread(
     let root_id = format!("kit-ot-{uid}-root");
     let (hook_root, hook_input, hook_scroll) =
         (root_id.clone(), input_id.clone(), scroll_id.clone());
-    let mount_scroll = scroll_id.clone();
 
     // Stays at the bottom while the reader is there; a one-time mount scroll can run before layout.
-    use_effect(move || {
-        document::eval(&format!(
-            "const s = document.getElementById({mount_scroll:?});\
-             if (s && !s.dataset.pinned) {{\
-                 s.dataset.pinned = '1';\
-                 let atEnd = true;\
-                 const pin = () => {{ if (atEnd) s.scrollTop = s.scrollHeight; }};\
-                 s.addEventListener('scroll', () => {{ atEnd = s.scrollTop + s.clientHeight >= s.scrollHeight - 4; }});\
-                 const ro = new ResizeObserver(pin);\
-                 ro.observe(s);\
-                 if (s.firstElementChild) ro.observe(s.firstElementChild);\
-                 (window.__kitPin ||= new Map()).set({uid}, () => ro.disconnect());\
-                 pin();\
-             }}"
-        ));
-    });
-    use_drop(move || {
-        document::eval(&format!(
-            "window.__kitPin?.get({uid})?.(); window.__kitPin?.delete({uid});"
-        ));
-    });
+    use_pin_to_end(scroll_id.clone());
 
     use_hook(move || {
         document::eval(&format!(

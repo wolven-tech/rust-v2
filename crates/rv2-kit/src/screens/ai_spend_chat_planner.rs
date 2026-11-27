@@ -26,7 +26,7 @@ use crate::components::prompt_input_bar::{Model, PromptInputBar, Submission};
 use crate::components::series_trend_chart::{
     ChartVariant, SeriesTone, SeriesTrendChart, TrendSeries, group_digits,
 };
-use crate::internal::{KIT_CSS, follow_thread_end, next_id};
+use crate::internal::{KIT_CSS, copy_to_clipboard, follow_thread_end, next_id};
 
 const CSS: Asset = asset!("/assets/ai-spend-chat-planner.css");
 
@@ -391,7 +391,7 @@ fn AnswerView(answer: Answer, on_ask: EventHandler<AskRequest>) -> Element {
                     div { class: "kit-spend__actions",
                         button { class: "kit-spend__icon", r#type: "button", "aria-label": "Copy answer",
                             onclick: move |_| {
-                                document::eval(&format!("navigator.clipboard?.writeText({copy_text:?});"));
+                                copy_to_clipboard(&copy_text);
                             },
                             svg { view_box: "0 0 16 16", fill: "none", stroke: "currentColor", stroke_width: "1.5", "aria-hidden": "true",
                                 rect { x: "5", y: "5", width: "8", height: "8", rx: "1.5" }

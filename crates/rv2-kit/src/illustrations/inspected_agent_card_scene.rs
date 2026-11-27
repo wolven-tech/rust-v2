@@ -18,7 +18,7 @@
 
 use dioxus::prelude::*;
 
-use crate::internal::{KIT_CSS, class_list, next_id, prefers_motion_script, sleep};
+use crate::internal::{KIT_CSS, class_list, next_id, offset_width, prefers_motion_script, sleep};
 
 const CSS: Asset = asset!("/assets/inspected-agent-card-scene.css");
 
@@ -274,16 +274,10 @@ pub fn InspectedAgentCardScene(
 
     let measure_id = uid.clone();
     use_effect(use_reactive((&current_row,), move |(row,)| {
-        let script = format!(
-            "const el = document.querySelector('#{measure_id} .kit-inspect__row[data-row=\"{row}\"]');
-             dioxus.send(el ? el.offsetWidth : 0);"
-        );
-        let mut channel = document::eval(&script);
-        spawn(async move {
-            if let Ok(width) = channel.recv::<u32>().await {
-                frame_width.set((width > 0).then_some(width));
-            }
-        });
+        let selector = format!("#{measure_id} .kit-inspect__row[data-row=\"{row}\"]");
+        if let Some(width) = offset_width(&selector) {
+            frame_width.set((width > 0).then_some(width));
+        }
     }));
 
     let guide_y = row_top(current_row) as i32;
