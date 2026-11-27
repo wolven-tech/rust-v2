@@ -9,6 +9,7 @@ use rv2_affect::notification_stack::{Notice, NoticeAction, NoticePattern, Notifi
 use rv2_affect::progress_tracker::{ProgressStep, ProgressTracker};
 use rv2_affect::reaction_bar::{ReactionBar, ReactionKey, ReactionState};
 use rv2_affect::smart_recommendation::{Recommendation, SmartRecommendation};
+use rv2_affect::step_rail::{RailState, RailStep, StepRail};
 use rv2_affect::thinking_loader::{
     DoneLabel, ThinkingLoader, ThinkingLoaderSize, ThinkingLoaderVariant,
 };
@@ -181,6 +182,28 @@ fn step(id: &str, label: &str, done: bool) -> ProgressStep {
         done,
         icon: None,
     }
+}
+
+const RITUAL: [&str; 8] = [
+    "Think", "Spec", "Approve", "Plan", "Build", "Review", "Ship", "Reflect",
+];
+
+/// The ritual's steps with the flow standing at `at`, in `live`.
+fn ritual(at: usize, live: RailState) -> Vec<RailStep> {
+    RITUAL
+        .iter()
+        .enumerate()
+        .map(|(i, name)| {
+            let state = if i < at {
+                RailState::Finished
+            } else if i == at {
+                live
+            } else {
+                RailState::Queued
+            };
+            RailStep::new(name.to_lowercase(), *name, state)
+        })
+        .collect()
 }
 
 #[component]
@@ -411,6 +434,17 @@ pub fn Content() -> Element {
                     }
                 }
                 p { class: "gl-out", "Accepted: {accepted}" }
+            }
+            Item { name: "StepRail", wide: true,
+                Ex { label: "Ritual, at Build",
+                    StepRail { steps: ritual(4, RailState::Current), aria_label: "Ritual steps" }
+                }
+                Ex { label: "Ritual, Spec drifted after approval",
+                    StepRail { steps: ritual(1, RailState::Errored), aria_label: "Ritual steps" }
+                }
+                Ex { label: "Ritual, awaiting approval",
+                    StepRail { steps: ritual(2, RailState::AwaitingApproval), aria_label: "Ritual steps" }
+                }
             }
             Item { name: "ThinkingLoader",
                 Ex { label: "Pill, running",

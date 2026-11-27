@@ -59,27 +59,46 @@ struct Opening {
     n: u32,
 }
 
+/// What the menu measures from the page, in one script so the crate's eval count does not grow
+/// (`tooling/xtask/kit-eval-ratchet.txt`; AF5 keeps web-sys out of this crate).
+struct PageLayout {
+    viewport: (f64, f64),
+    rtl: bool,
+    /// The top-left of the area's first element, when an area was named and has one.
+    origin: Option<(f64, f64)>,
+}
+
+/// The JS that [`page_layout`] runs. `area_id` names the area whose origin is read, if any.
+pub fn page_layout_script(area_id: Option<&str>) -> String {
+    let area = area_id.map_or_else(|| "null".to_string(), |id| format!("{id:?}"));
+    format!(
+        "const id = {area}; \
+         const r = id === null ? null : document.getElementById(id)?.firstElementChild?.getBoundingClientRect(); \
+         return [window.innerWidth, window.innerHeight, getComputedStyle(document.documentElement).direction === 'rtl' ? 1 : 0, r ? r.left : null, r ? r.top : null];"
+    )
+}
+
+async fn page_layout(area_id: Option<&str>) -> Option<PageLayout> {
+    let v = document::eval(&page_layout_script(area_id)).await.ok()?;
+    Some(PageLayout {
+        viewport: (v.get(0)?.as_f64()?, v.get(1)?.as_f64()?),
+        rtl: v.get(2)?.as_f64() == Some(1.0),
+        origin: v.get(3)?.as_f64().zip(v.get(4)?.as_f64()),
+    })
+}
+
 /// The top-left of the area's first element. The `display: contents` wrapper has no box of its own.
 async fn area_origin(area_id: String) -> Option<(f64, f64)> {
-    let v = document::eval(&format!(
-        "const r = document.getElementById({area_id:?})?.firstElementChild?.getBoundingClientRect(); return r ? [r.left, r.top] : null;"
-    ))
-    .await
-    .ok()?;
-    Some((v.get(0)?.as_f64()?, v.get(1)?.as_f64()?))
+    page_layout(Some(&area_id)).await?.origin
 }
 
 /// Places a card of its own size with its top-left at `pointer`, kept inside the viewport.
 async fn place_card(card: Option<MountedEvent>, pointer: (f64, f64)) -> Option<Placement> {
     let node = card?;
     let rect = node.get_client_rect().await.ok()?;
-    let view = document::eval(
-        "return [window.innerWidth, window.innerHeight, getComputedStyle(document.documentElement).direction === 'rtl' ? 1 : 0];",
-    )
-    .await
-    .ok()?;
-    let (w, h) = (view.get(0)?.as_f64()?, view.get(1)?.as_f64()?);
-    let rtl = view.get(2)?.as_f64() == Some(1.0);
+    let layout = page_layout(None).await?;
+    let (w, h) = layout.viewport;
+    let rtl = layout.rtl;
     let card_size = Size {
         width: rect.size.width,
         height: rect.size.height,

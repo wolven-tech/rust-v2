@@ -8,6 +8,8 @@
 //!
 //! Source: the 74 MIT items of <https://www.affectui.com> (51 components, 4
 //! motion, 2 blocks, 17 illustrations). Licence notice: `LICENSE-affectui`.
+//! The crate also holds original components under its own licence, starting
+//! with [`step_rail::StepRail`].
 //!
 //! ## How a component is built
 //!
@@ -96,6 +98,9 @@ pub mod smart_recommendation;
 pub mod thinking_loader;
 pub mod tips_panel;
 pub mod tool_call_card;
+
+// Original components, not affectUI ports (AF9)
+pub mod step_rail;
 
 pub mod blocks;
 pub mod illustrations;

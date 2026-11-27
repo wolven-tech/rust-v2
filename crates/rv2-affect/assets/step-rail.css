@@ -1,0 +1,174 @@
+/* Colors and motion as variables – override them on .ui-step-rail.
+   Each colour is named for its job and defaults to an --aui-* hook, so Rv2Theme
+   (assets/rv2-bridge.css) themes it with the rest of the crate. */
+.ui-step-rail {
+  --ui-sr-ink: var(--aui-ink, #171717);
+  --ui-sr-muted: var(--aui-muted, #737373);
+  --ui-sr-rule: var(--aui-border-strong, #d4d4d4);
+  --ui-sr-surface: var(--aui-surface, #ffffff);
+  --ui-sr-done: var(--aui-info, #1d4ed8);
+  --ui-sr-wait: var(--aui-warning, #b25e00);
+  --ui-sr-fault: var(--aui-danger, #c4320a);
+  --ui-sr-ease: var(--aui-ease, cubic-bezier(0.22, 1, 0.36, 1));
+  --ui-sr-node: 12px;
+  --ui-sr-slow: 520ms;
+  --ui-sr-loop: 2400ms;
+  --ui-sr-stagger: 90ms;
+
+  display: flex;
+  flex-wrap: wrap;
+  row-gap: 8px;
+  box-sizing: border-box;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-family: var(--aui-font, "Inter", "InterVariable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif);
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--ui-sr-muted);
+  text-align: left;
+  -webkit-font-smoothing: antialiased;
+}
+.ui-step-rail *,
+.ui-step-rail *::before,
+.ui-step-rail *::after {
+  box-sizing: border-box;
+}
+
+/* Each step's line runs from its own node to the next step's node */
+.ui-step-rail__step {
+  --ui-sr-pulse: var(--ui-sr-done);
+  position: relative;
+  flex: 1 1 80px;
+  min-width: 80px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: var(--ui-sr-node);
+  align-content: start;
+  row-gap: 4px;
+  justify-items: start;
+  padding-inline-end: 8px;
+  border-radius: var(--aui-radius-sm, 5px);
+}
+.ui-step-rail__node {
+  position: relative;
+  z-index: 1;
+  width: var(--ui-sr-node);
+  height: var(--ui-sr-node);
+  border: 2px solid var(--ui-sr-rule);
+  border-radius: 50%;
+  background: var(--ui-sr-surface);
+  transition:
+    background-color 220ms var(--ui-sr-ease),
+    border-color 220ms var(--ui-sr-ease);
+}
+.ui-step-rail__line {
+  position: absolute;
+  top: calc(var(--ui-sr-node) / 2 - 1px);
+  left: var(--ui-sr-node);
+  width: calc(100% - var(--ui-sr-node));
+  height: 2px;
+  overflow: visible;
+  pointer-events: none;
+}
+.ui-step-rail__line path {
+  fill: none;
+  stroke: var(--ui-sr-rule);
+  stroke-width: 1;
+}
+/* No vector-effect here: non-scaling-stroke measures the dash in screen
+   pixels, which turns the pathLength="1" draw-in into a dotted line */
+.ui-step-rail__line--drawn path {
+  stroke: var(--ui-sr-done);
+  stroke-dasharray: 1;
+  stroke-dashoffset: 0;
+}
+.ui-step-rail__name {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 500;
+}
+.ui-step-rail__state {
+  font-size: 12px;
+  line-height: 16px;
+}
+
+.ui-step-rail__step[data-state="finished"] {
+  color: var(--ui-sr-ink);
+}
+.ui-step-rail__step[data-state="finished"] .ui-step-rail__node {
+  border-color: var(--ui-sr-done);
+  background: var(--ui-sr-done);
+}
+.ui-step-rail__step:is([data-state="current"], [data-state="awaiting-approval"]) {
+  color: var(--ui-sr-ink);
+}
+.ui-step-rail__step[data-state="current"] .ui-step-rail__node {
+  border-color: var(--ui-sr-done);
+}
+.ui-step-rail__step[data-state="awaiting-approval"] {
+  --ui-sr-pulse: var(--ui-sr-wait);
+}
+.ui-step-rail__step[data-state="awaiting-approval"] .ui-step-rail__node {
+  border-color: var(--ui-sr-wait);
+}
+.ui-step-rail__step[data-state="errored"] {
+  color: var(--ui-sr-fault);
+}
+.ui-step-rail__step[data-state="errored"] .ui-step-rail__node {
+  border-color: var(--ui-sr-fault);
+  background: var(--ui-sr-fault);
+}
+.ui-step-rail__step[aria-current="step"] .ui-step-rail__name {
+  font-weight: 600;
+}
+
+/* Motion: the drawn line draws in, one step after another; the current node
+   breathes; a drifted step flashes once */
+.ui-step-rail__line--drawn path {
+  animation: ui-step-rail-draw var(--ui-sr-slow) var(--ui-sr-ease) both;
+  animation-delay: calc(var(--ui-sr-i, 0) * var(--ui-sr-stagger));
+}
+.ui-step-rail__step[aria-current="step"]:not([data-state="errored"]) .ui-step-rail__node {
+  animation: ui-step-rail-breathe var(--ui-sr-loop) ease-in-out infinite;
+}
+.ui-step-rail__step[data-state="errored"] {
+  animation: ui-step-rail-flash var(--ui-sr-slow) ease-out 1;
+}
+
+@keyframes ui-step-rail-draw {
+  from { stroke-dashoffset: 1; }
+  to { stroke-dashoffset: 0; }
+}
+@keyframes ui-step-rail-breathe {
+  0%, 100% { box-shadow: 0 0 0 0 transparent; }
+  50% { box-shadow: 0 0 0 4px color-mix(in srgb, var(--ui-sr-pulse) 18%, transparent); }
+}
+@keyframes ui-step-rail-flash {
+  from { background-color: color-mix(in srgb, var(--ui-sr-fault) 24%, transparent); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-step-rail,
+  .ui-step-rail *,
+  .ui-step-rail *::before,
+  .ui-step-rail *::after {
+    animation: none !important;
+    transition-duration: 1ms !important;
+    transition-delay: 0ms !important;
+  }
+}
+
+/* Dark mode: follows a .dark class or data-theme="dark" on any ancestor, e.g. <html> */
+:where(.dark, [data-theme="dark"]) .ui-step-rail {
+  --ui-sr-ink: var(--aui-ink, #ededee);
+  --ui-sr-muted: var(--aui-muted, #a1a1aa);
+  --ui-sr-rule: var(--aui-border-strong, rgba(255, 255, 255, 0.18));
+  --ui-sr-surface: var(--aui-surface, #1c1c1e);
+  --ui-sr-done: var(--aui-info, #70b8ff);
+  --ui-sr-wait: var(--aui-warning, #ffb35c);
+  --ui-sr-fault: var(--aui-danger, #ff8a7a);
+}

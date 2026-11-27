@@ -1,5 +1,7 @@
 use dioxus::prelude::*;
-use rv2_affect::context_menu::{ContextMenu, anchored_point, is_menu_key, keyboard_origin};
+use rv2_affect::context_menu::{
+    ContextMenu, anchored_point, is_menu_key, keyboard_origin, page_layout_script,
+};
 use rv2_affect::dialog::{AlertDialog, Dialog, DialogSize, tab_wrap};
 use rv2_affect::dropdown_menu::{
     DropdownMenu, DropdownTrigger, MenuItem, RovingStep, menu_typeahead, roving_index,
@@ -567,6 +569,25 @@ fn shift_f10_and_the_menu_key_open_a_context_menu_and_plain_f10_does_not() {
     assert!(is_menu_key(&Key::ContextMenu, false));
     assert!(is_menu_key(&Key::F10, true));
     assert!(!is_menu_key(&Key::F10, false));
+}
+
+#[test]
+fn the_page_layout_script_reads_the_viewport_and_direction_and_the_named_areas_first_element() {
+    let with_area = page_layout_script(Some("ui-ctx-7"));
+    assert!(
+        with_area.contains(r#"const id = "ui-ctx-7";"#),
+        "{with_area}"
+    );
+    assert!(
+        with_area
+            .contains("document.getElementById(id)?.firstElementChild?.getBoundingClientRect()")
+    );
+    assert!(with_area.contains(
+        "return [window.innerWidth, window.innerHeight, getComputedStyle(document.documentElement).direction === 'rtl' ? 1 : 0, r ? r.left : null, r ? r.top : null];"
+    ));
+    let without = page_layout_script(None);
+    assert!(without.contains("const id = null;"), "{without}");
+    assert!(without.contains("window.innerWidth, window.innerHeight"));
 }
 
 #[test]

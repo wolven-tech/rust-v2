@@ -1880,21 +1880,13 @@ pub fn AutomationCanvas(
                                     // Fits on every size change, so a stylesheet that lands after mount is measured too.
                                     let observed = board_id.clone();
                                     spawn(async move {
-                                        let mut sizes = document::eval(&format!(
-                                            "const el = document.getElementById({observed:?});\
-                                             if (!el) return;\
-                                             const ro = new ResizeObserver(() => dioxus.send(true));\
-                                             el.__kitFitObserver?.disconnect();\
-                                             el.__kitFitObserver = ro;\
-                                             ro.observe(el);\
-                                             await new Promise(() => {{}});"
-                                        ));
-                                        while sizes.recv::<bool>().await.is_ok() {
+                                        each_resize(&observed, move || {
                                             with_board(board_mount, move |b| {
                                                 board_origin.set((b.x, b.y));
                                                 view.set(fit_view(&nodes(), b.w, b.h));
                                             });
-                                        }
+                                        })
+                                        .await;
                                     });
                                 },
                                 onkeydown: move |e: KeyboardEvent| board_keys(e),

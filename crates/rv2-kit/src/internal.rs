@@ -280,17 +280,190 @@ mod web {
         }
         let _ = next.focus();
     }
+
+    /// A scroll container kept at its end while the reader stays within `slack`
+    /// px of it. Dropping it disconnects the observer and removes the listener.
+    struct Follow {
+        el: web_sys::Element,
+        observer: web_sys::ResizeObserver,
+        on_scroll: Closure<dyn FnMut()>,
+        _on_resize: Closure<dyn FnMut(js_sys::Array)>,
+    }
+
+    impl Follow {
+        /// `None` when `el` already carries `marker`: a re-run effect must not
+        /// add a second listener.
+        fn start(
+            el: web_sys::Element,
+            observed: &[web_sys::Element],
+            marker: &str,
+            slack: i32,
+        ) -> Option<Self> {
+            if el.has_attribute(marker) {
+                return None;
+            }
+            let _ = el.set_attribute(marker, "1");
+            let at_end = Rc::new(std::cell::Cell::new(true));
+            let on_scroll = {
+                let (el, at_end) = (el.clone(), at_end.clone());
+                Closure::<dyn FnMut()>::new(move || {
+                    at_end.set(el.scroll_top() + el.client_height() >= el.scroll_height() - slack);
+                })
+            };
+            let _ =
+                el.add_event_listener_with_callback("scroll", on_scroll.as_ref().unchecked_ref());
+            let on_resize = {
+                let el = el.clone();
+                Closure::<dyn FnMut(js_sys::Array)>::new(move |_entries| {
+                    if at_end.get() {
+                        el.set_scroll_top(el.scroll_height());
+                    }
+                })
+            };
+            let observer = web_sys::ResizeObserver::new(on_resize.as_ref().unchecked_ref()).ok()?;
+            for target in observed {
+                observer.observe(target);
+            }
+            Some(Self {
+                el,
+                observer,
+                on_scroll,
+                _on_resize: on_resize,
+            })
+        }
+    }
+
+    impl Drop for Follow {
+        fn drop(&mut self) {
+            self.observer.disconnect();
+            let _ = self.el.remove_event_listener_with_callback(
+                "scroll",
+                self.on_scroll.as_ref().unchecked_ref(),
+            );
+        }
+    }
+
+    /// Lives as long as the page, as the eval'd script it replaces did.
+    pub(super) fn follow_thread_end(thread_id: &str) {
+        let Some(el) = document().and_then(|d| d.get_element_by_id(thread_id)) else {
+            return;
+        };
+        let Some(stream) = el.first_element_child() else {
+            return;
+        };
+        if let Some(follow) = Follow::start(el, &[stream], "data-follow", 24) {
+            std::mem::forget(follow);
+        }
+    }
+
+    pub(super) fn use_pin_to_end(id: String) {
+        let pin = use_hook(|| Rc::new(RefCell::new(None::<Follow>)));
+        let slot = pin.clone();
+        use_effect(move || {
+            let Some(el) = document().and_then(|d| d.get_element_by_id(&id)) else {
+                return;
+            };
+            let mut observed = vec![el.clone()];
+            observed.extend(el.first_element_child());
+            if let Some(follow) = Follow::start(el.clone(), &observed, "data-pinned", 4) {
+                el.set_scroll_top(el.scroll_height());
+                *slot.borrow_mut() = Some(follow);
+            }
+        });
+        use_drop(move || {
+            pin.borrow_mut().take();
+        });
+    }
+
+    pub(super) fn offset_width(selector: &str) -> Option<u32> {
+        let width = document()
+            .and_then(|d| d.query_selector(selector).ok().flatten())
+            .and_then(|el| el.dyn_into::<web_sys::HtmlElement>().ok())
+            .map_or(0, |el| el.offset_width());
+        Some(u32::try_from(width).unwrap_or(0))
+    }
+
+    /// The observer and its closure, disconnected when the awaiting task ends.
+    struct Resizes {
+        observer: web_sys::ResizeObserver,
+        _callback: Closure<dyn FnMut(js_sys::Array)>,
+    }
+
+    impl Drop for Resizes {
+        fn drop(&mut self) {
+            self.observer.disconnect();
+        }
+    }
+
+    pub(super) async fn each_resize(id: &str, mut on_resize: impl FnMut()) {
+        const KEY: &str = "__kitFitObserver";
+        let Some(el) = document().and_then(|d| d.get_element_by_id(id)) else {
+            return;
+        };
+        // A remount observes again: the observer it left behind is disconnected first.
+        if let Ok(previous) = js_sys::Reflect::get(&el, &KEY.into())
+            && let Ok(previous) = previous.dyn_into::<web_sys::ResizeObserver>()
+        {
+            previous.disconnect();
+        }
+        let (tx, mut rx) = futures_channel::mpsc::unbounded::<()>();
+        let callback = Closure::<dyn FnMut(js_sys::Array)>::new(move |_entries| {
+            let _ = tx.unbounded_send(());
+        });
+        let Ok(observer) = web_sys::ResizeObserver::new(callback.as_ref().unchecked_ref()) else {
+            return;
+        };
+        let _ = js_sys::Reflect::set(&el, &KEY.into(), &observer);
+        observer.observe(&el);
+        let _watch = Resizes {
+            observer,
+            _callback: callback,
+        };
+        while rx.recv().await.is_ok() {
+            on_resize();
+        }
+    }
+}
+
+/// Keeps the scroll container `id` at its end while the reader is within 4 px
+/// of it, following size changes of the container and its first child. Pins
+/// once at mount; stops when the component unmounts.
+pub(crate) fn use_pin_to_end(id: String) {
+    #[cfg(target_arch = "wasm32")]
+    web::use_pin_to_end(id);
+    #[cfg(not(target_arch = "wasm32"))]
+    let _ = id;
+}
+
+/// `offsetWidth` of the first element `selector` matches, 0 when none does.
+/// `None` with no browser (SSR, tests).
+pub(crate) fn offset_width(selector: &str) -> Option<u32> {
+    #[cfg(target_arch = "wasm32")]
+    return web::offset_width(selector);
+    #[cfg(not(target_arch = "wasm32"))]
+    {
+        let _ = selector;
+        None
+    }
+}
+
+/// Calls `on_resize` from the awaiting task each time the element `id` changes
+/// size, until that task is dropped. Returns at once with no browser, or when
+/// no element has `id`.
+pub(crate) async fn each_resize(id: &str, on_resize: impl FnMut()) {
+    #[cfg(target_arch = "wasm32")]
+    web::each_resize(id, on_resize).await;
+    #[cfg(not(target_arch = "wasm32"))]
+    let _ = (id, on_resize);
 }
 
 /// Keeps the scroll container `thread_id` pinned to its end while the user has not scrolled up. Its first child is
 /// the stream whose size changes as charts draw, so the pin follows size changes rather than running once at mount.
 pub(crate) fn follow_thread_end(thread_id: &str) {
-    document::eval(&format!(
-        "const el = document.getElementById({thread_id:?}); const stream = el && el.firstElementChild; \
-         if (stream && !el.dataset.follow) {{ el.dataset.follow = '1'; let stick = true; \
-         el.addEventListener('scroll', () => {{ stick = el.scrollTop + el.clientHeight >= el.scrollHeight - 24; }}); \
-         new ResizeObserver(() => {{ if (stick) el.scrollTop = el.scrollHeight; }}).observe(stream); }}"
-    ));
+    #[cfg(target_arch = "wasm32")]
+    web::follow_thread_end(thread_id);
+    #[cfg(not(target_arch = "wasm32"))]
+    let _ = thread_id;
 }
 
 /// Joins a component's base class with the caller's layout class.
