@@ -56,12 +56,52 @@ pub struct ServerConfig {
     /// Google OAuth, if configured. `None` disables the OAuth plugin entirely
     /// rather than registering a half-configured provider.
     pub google_oauth: Option<GoogleOAuthConfig>,
+    /// The provider-agnostic pending-origin settings. Required whenever any
+    /// OAuth provider is configured; see [`OAuthFlowConfig`].
+    pub oauth_flow: Option<OAuthFlowConfig>,
 }
 
 #[derive(Clone)]
 pub struct GoogleOAuthConfig {
     pub client_id: String,
     pub client_secret: String,
+    /// Where the flow sends the browser and fetches tokens and identity. Google's
+    /// production endpoints unless a test points them at a stub provider.
+    pub endpoints: OAuthEndpoints,
+}
+
+/// Provider endpoints. Fixed per provider; not read from the environment.
+#[derive(Clone, Debug)]
+pub struct OAuthEndpoints {
+    pub auth_url: String,
+    pub token_url: String,
+    pub user_info_url: String,
+}
+
+impl OAuthEndpoints {
+    #[must_use]
+    pub fn google() -> Self {
+        Self {
+            auth_url: "https://accounts.google.com/o/oauth2/v2/auth".into(),
+            token_url: "https://oauth2.googleapis.com/token".into(),
+            user_info_url: "https://www.googleapis.com/oauth2/v3/userinfo".into(),
+        }
+    }
+}
+
+/// Settings shared by every OAuth provider's sign-in flow.
+///
+/// The return target travels in a cookie sealed with `pending_secret`, and the
+/// callback redirects only to an origin in `return_origins`. Both are needed:
+/// the seal proves the cookie came from this server, and the allowlist stops a
+/// sealed value from naming an origin the operator never listed.
+#[derive(Clone)]
+pub struct OAuthFlowConfig {
+    /// HMAC-SHA256 key for the pending-origin cookie. At least 32 bytes. Never
+    /// logged; [`ServerConfig`]'s `Debug` prints only whether it is set.
+    pub pending_secret: String,
+    /// Origins the browser may be returned to after sign-in, as `scheme://host[:port]`.
+    pub return_origins: Vec<String>,
 }
 
 /// Redacts secrets. `ServerConfig` gets logged at boot; the secrets must not.
@@ -77,6 +117,7 @@ impl fmt::Debug for ServerConfig {
             .field("cors_origins", &self.cors_origins)
             .field("trusted_proxy_hops", &self.trusted_proxy_hops)
             .field("google_oauth", &self.google_oauth.is_some())
+            .field("oauth_flow", &self.oauth_flow.is_some())
             .finish()
     }
 }
@@ -176,6 +217,7 @@ impl ServerConfig {
             (Some(client_id), Some(client_secret)) => Some(GoogleOAuthConfig {
                 client_id,
                 client_secret,
+                endpoints: OAuthEndpoints::google(),
             }),
             (None, None) => None,
             // Half-configured OAuth is worse than none: it produces a sign-in
@@ -187,6 +229,11 @@ impl ServerConfig {
                 });
             }
         };
+
+        let oauth_flow = oauth_flow_from_env(&cors_origins)?;
+        if google_oauth.is_some() && oauth_flow.is_none() {
+            return Err(ConfigError::Missing("OAUTH_PENDING_SECRET"));
+        }
 
         Ok(Self {
             bind_addr: format!("{host}:{port}"),
@@ -201,7 +248,70 @@ impl ServerConfig {
             cors_origins,
             trusted_proxy_hops,
             google_oauth,
+            oauth_flow,
         })
+    }
+}
+
+/// `OAUTH_PENDING_SECRET` and `OAUTH_RETURN_ORIGINS`. `None` when the secret is
+/// unset; a configured provider then fails the boot.
+fn oauth_flow_from_env(cors_origins: &[String]) -> Result<Option<OAuthFlowConfig>, ConfigError> {
+    let Some(pending_secret) = env::var("OAUTH_PENDING_SECRET")
+        .ok()
+        .map(|v| v.trim().to_string())
+        .filter(|v| !v.is_empty())
+    else {
+        return Ok(None);
+    };
+    if pending_secret.len() < 32 {
+        return Err(ConfigError::Invalid {
+            name: "OAUTH_PENDING_SECRET",
+            reason: "must be at least 32 bytes".into(),
+        });
+    }
+
+    let return_origins: Vec<String> = match env::var("OAUTH_RETURN_ORIGINS").ok() {
+        Some(raw) if !raw.trim().is_empty() => raw
+            .split(',')
+            .map(|s| s.trim())
+            .filter(|s| !s.is_empty())
+            .map(|s| validate_origin("OAUTH_RETURN_ORIGINS", s))
+            .collect::<Result<_, _>>()?,
+        // Defaults to CORS_ORIGINS: the apps that may call the API are the ones a sign-in may return to.
+        _ => cors_origins
+            .iter()
+            .map(|s| validate_origin("CORS_ORIGINS", s))
+            .collect::<Result<_, _>>()?,
+    };
+    if return_origins.is_empty() {
+        return Err(ConfigError::Invalid {
+            name: "OAUTH_RETURN_ORIGINS",
+            reason: "at least one origin is required".into(),
+        });
+    }
+
+    Ok(Some(OAuthFlowConfig {
+        pending_secret,
+        return_origins,
+    }))
+}
+
+/// An origin is `scheme://host[:port]` with no path, query or trailing slash.
+/// A return target is compared against these strings, so anything looser would
+/// make the comparison mean less than it looks.
+fn validate_origin(name: &'static str, value: &str) -> Result<String, ConfigError> {
+    let trimmed = value.trim_end_matches('/');
+    let authority = trimmed
+        .strip_prefix("https://")
+        .or_else(|| trimmed.strip_prefix("http://"));
+    match authority {
+        Some(a) if !a.is_empty() && !a.contains('/') && !a.contains('?') && !a.contains('#') => {
+            Ok(trimmed.to_string())
+        }
+        _ => Err(ConfigError::Invalid {
+            name,
+            reason: format!("`{value}` is not an origin (scheme://host[:port], no path)"),
+        }),
     }
 }
 
@@ -233,6 +343,18 @@ mod tests {
 
     /// A variable exported as `""` in a shell script is a very common way to
     /// think you configured something. Treat it as unset.
+    #[test]
+    fn return_origins_are_scheme_and_authority_only() {
+        assert_eq!(
+            validate_origin("X", "http://localhost:4402/").unwrap(),
+            "http://localhost:4402"
+        );
+        assert!(validate_origin("X", "http://localhost:4402/app").is_err());
+        assert!(validate_origin("X", "localhost:4402").is_err());
+        assert!(validate_origin("X", "https://").is_err());
+        assert!(validate_origin("X", "https://evil.example?x=1").is_err());
+    }
+
     #[test]
     fn blank_is_treated_as_unset() {
         assert!(required_in("X", Some("   ".into())).is_err());

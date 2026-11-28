@@ -8,8 +8,8 @@
 use dioxus::prelude::*;
 use rv2_api_types::{CreatePostRequest, PostView, SessionView};
 use rv2_ui::{
-    Button, Card, Container, EmptyState, ErrorBanner, NavLink, PageHeader, ProductHeader, Skeleton,
-    TEXT_LINK, TextArea, TextField, Variant, Width,
+    Button, Card, Container, EmptyState, ErrorBanner, LinkButton, NavLink, PageHeader,
+    ProductHeader, Skeleton, TEXT_LINK, TextArea, TextField, Variant, Width,
 };
 use uuid::Uuid;
 
@@ -352,11 +352,38 @@ pub fn Login() -> Element {
                     }
                 }
             }
-            p { class: "mt-4 text-xs text-ink-muted",
-                // §5.4 / SEAM in apps/api: OAuth is deliberately not wired in
-                // this scaffold, and saying so beats a button that fails.
-                "Google sign-in is not wired in this scaffold — see the OAuth SEAM note in apps/api."
+            if let Some(message) = sign_in_notice() {
+                div { class: "mt-4", ErrorBanner { message } }
+            }
+            div { class: "mt-4",
+                LinkButton {
+                    href: format!("{}/auth/oauth/google/start?return_to=/", rv2_client::api_base()),
+                    variant: Variant::Outline,
+                    class: "w-full",
+                    "Continue with Google"
+                }
             }
         }
     }
+}
+
+static SIGN_IN_SEARCH: std::sync::OnceLock<String> = std::sync::OnceLock::new();
+
+/// Called from `main` before `launch`. Read at render time instead, the query is gone.
+pub fn capture_sign_in_search() {
+    let search = web_sys::window()
+        .and_then(|window| window.location().search().ok())
+        .unwrap_or_default();
+    let _ = SIGN_IN_SEARCH.set(search);
+}
+
+/// The notice the API puts in the sign-in URL when it refuses a Google sign-in.
+fn sign_in_notice() -> Option<String> {
+    SIGN_IN_SEARCH
+        .get()?
+        .contains("error=unverified_link")
+        .then(|| {
+            "This email has an account that hasn't been verified. Verify it to link Google."
+                .to_string()
+        })
 }

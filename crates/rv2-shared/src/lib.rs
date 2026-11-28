@@ -9,5 +9,5 @@ pub mod config;
 
 pub use crate::{
     auth::{AuthUser, Role},
-    config::{ConfigError, ServerConfig},
+    config::{ConfigError, GoogleOAuthConfig, OAuthEndpoints, OAuthFlowConfig, ServerConfig},
 };

@@ -212,6 +212,8 @@ This repo follows portable rules published at [decebal-claude-skills](https://gi
 | [`docs/plans/2026-10-12-command-select-design.md`](docs/plans/2026-10-12-command-select-design.md) | Shared searchable selection, consumption API, theme variables and keyboard/browser acceptance. |
 | [`docs/plans/2026-11-23-rv2-kit-pro-parity-and-theming.md`](docs/plans/2026-11-23-rv2-kit-pro-parity-and-theming.md) | Bringing all 88 rv2-kit stand-ins for affectUI Pro components to HIGH parity without breaking the clean room, and moving every kit colour, radius and density value onto overridable tokens with a gate and a three-theme proof. |
 | [`docs/NEXT_BET_START.md`](docs/NEXT_BET_START.md) | Checklist for placing a new product bet from this foundation. |
+| [`docs/plans/2026-11-26-google-sign-in-design.md`](docs/plans/2026-11-26-google-sign-in-design.md) | Google sign-in on `apps/api`: the sealed pending-origin cookie, the link rule (both sides verified), the refusal and its undo, the ISA sinks and the test matrix. |
+| [`docs/guides/google-sign-in-setup.md`](docs/guides/google-sign-in-setup.md) | The Google Cloud console values for Google sign-in: consent screen, scopes, OAuth client, redirect URIs per environment. |
 | [`AGENTS.md`](AGENTS.md) | Short orientation for anyone arriving with no context. Read this first. |
 | [`CONTRIBUTING.md`](CONTRIBUTING.md) | The rules and what enforces each one. |
 | [`SECURITY.md`](SECURITY.md) | How to report a vulnerability. |

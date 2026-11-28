@@ -91,9 +91,19 @@ pub fn build_router(state: Arc<AppState>) -> Router {
         .route("/health", get(handlers::health::health))
         .route("/ready", get(handlers::health::ready))
         .route("/openapi.json", get(handlers::openapi::spec))
+        .route(
+            "/auth/oauth/{provider}/start",
+            get(infrastructure::auth::oauth_routes::start),
+        )
         .with_state(Arc::clone(&state))
         .merge(domain_routes)
         .nest("/auth", auth_router)
+        // Must follow the nest: a layer only wraps routes that exist when it is
+        // applied, and the callback route comes from better-auth's nested router.
+        .layer(middleware::from_fn_with_state(
+            Arc::clone(&state),
+            infrastructure::auth::oauth_routes::gate,
+        ))
         // Outermost of the application layers, so it sees every request —
         // including the ones the rate limiter rejects. "How often are we
         // shedding load?" is one of the few questions this exists to answer,

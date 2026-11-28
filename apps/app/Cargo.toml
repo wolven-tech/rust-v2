@@ -34,6 +34,8 @@ rv2-a2ui-dioxus.workspace = true
 rv2-api-types.workspace = true
 rv2-client.workspace = true
 rv2-ui.workspace = true
+# Reads `location.search` for the sign-in notice on the login view.
+web-sys = { workspace = true, features = ["Location", "Window"] }
 uuid.workspace = true
 
 [dev-dependencies]

@@ -15,6 +15,7 @@ pub mod runway;
 pub mod views;
 
 pub use crate::routes::Route;
+pub use crate::views::capture_sign_in_search;
 
 pub const PUBLIC_SITE_URL: &str = match option_env!("PUBLIC_SITE_URL") {
     Some(url) => url,

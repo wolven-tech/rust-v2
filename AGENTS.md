@@ -141,8 +141,6 @@ and click the thing. The suite will not tell you.
   deterministic core value must remain available.
 - **A durable job queue.** The seam is a leased queue over AllSource
   (`job.claimed` / `job.finished` events); it needs a real workload first.
-- **Google OAuth.** Marked with a `SEAM` comment. Wiring it without the
-  HMAC-signed pending-origin cookie glue produces an open redirect.
 - **Product-specific discovery credentials.** SSG, release staging, sitemap,
   IndexNow, and static Fly serving are built. Search Console verification files,
   canonical domains, and product identity belong in each product repository.
